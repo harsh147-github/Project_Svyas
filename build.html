@@ -3,818 +3,295 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SUAS · Build Space — Start Building Now</title>
-  <meta name="description" content="Your AI-powered building workspace. Describe your problem and start building a solution instantly." />
-  <meta name="theme-color" content="#2B6B4F" />
+  <title>SUAS · Build Space</title>
+  <meta name="theme-color" content="#0A0F0C" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232B6B4F'/><text x='50' y='72' text-anchor='middle' font-size='60' font-weight='bold' fill='white'>S.</text></svg>" />
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0E1A12;
-      --bg2: #121F16;
-      --card: #152119;
-      --card2: #1A2A1F;
-      --border: #243529;
-      --border2: #2E4535;
-      --accent: #2B6B4F;
-      --accent-bright: #3A8A65;
-      --sunrise: #D4933A;
-      --sunrise-soft: rgba(212,147,58,0.12);
-      --text: #D4E4CE;
-      --text-bright: #E8F0E4;
-      --text-muted: #7E9478;
-      --text-dim: #4A6344;
-      --danger: #B84A3A;
-      --blue: #4A7FB5;
-      --violet: #7B6DAF;
+      --bg: #0A0F0C;
+      --surface: #111916;
+      --surface2: #16201B;
+      --surface3: #1C2923;
+      --border: #1E2B25;
+      --border2: #283D32;
+      --accent: #4ADE80;
+      --accent-dim: rgba(74,222,128,0.08);
+      --accent-mid: rgba(74,222,128,0.15);
+      --accent-glow: rgba(74,222,128,0.04);
+      --warm: #F59E0B;
+      --warm-dim: rgba(245,158,11,0.1);
+      --text: #E2EDE6;
+      --text2: #9BAFA2;
+      --text3: #5A7266;
+      --text4: #3A5246;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
-    body {
-      font-family: 'Space Grotesk', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      overflow: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    ::selection { background: rgba(43,107,79,0.3); }
-    ::-webkit-scrollbar { width: 5px; }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    ::selection { background: rgba(74,222,128,0.2); }
+    ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--border2); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-    /* Layout */
-    .app { display: flex; height: 100vh; }
+    .app { display: grid; grid-template-columns: 240px 1fr 260px; grid-template-rows: 52px 1fr; height: 100vh; }
 
-    /* Sidebar */
-    .sidebar {
-      width: 280px;
-      background: var(--bg2);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-    }
-    .sidebar-header {
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-    .sidebar-header-top {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    .sidebar-tabs {
-      display: flex; gap: 0;
-      border-top: 1px solid var(--border);
-      margin: 0 -24px;
-      padding: 0 24px;
-    }
-    .sidebar-tab {
-      padding: 10px 18px;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 13px; font-weight: 600;
-      text-decoration: none;
-      transition: all 0.3s;
-      border-bottom: 2px solid transparent;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .sidebar-tab.active { color: var(--accent-bright); border-bottom-color: var(--accent-bright); }
-    .sidebar-tab:not(.active) { color: var(--text-dim); }
-    .sidebar-tab:not(.active):hover { color: var(--text-muted); }
-    .sidebar-tab .beta-badge {
-      font-size: 9px; font-weight: 700; color: #fff;
-      background: #D4933A; padding: 2px 6px; border-radius: 5px;
-    }
-    .logo-box {
-      width: 34px; height: 34px; border-radius: 9px;
-      background: var(--accent);
-      display: grid; place-items: center;
-      font-size: 14px; font-weight: 800; color: #fff;
-    }
-    .logo-text { font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; color: var(--text-bright); }
-    .logo-sub { font-size: 10px; color: var(--text-dim); letter-spacing: 0.05em; }
-    .sidebar-section { padding: 20px 16px; flex: 1; overflow-y: auto; }
-    .sidebar-section-label {
-      font-size: 10px; font-weight: 700; color: var(--text-dim);
-      letter-spacing: 0.2em; text-transform: uppercase;
-      margin-bottom: 12px; padding: 0 8px;
-    }
-
-    .agent-btn {
-      width: 100%; padding: 14px 16px;
-      background: transparent;
-      border: 1.5px solid transparent;
-      border-radius: 12px;
-      cursor: pointer;
-      text-align: left;
-      margin-bottom: 4px;
-      transition: all 0.25s ease;
-      display: flex; align-items: center; gap: 12px;
-    }
-    .agent-btn:hover { background: var(--card); border-color: var(--border); }
-    .agent-btn.active {
-      background: var(--card);
-      border-color: var(--accent);
-      box-shadow: 0 0 20px rgba(43,107,79,0.08);
-    }
-    .agent-btn .emoji { font-size: 22px; flex-shrink: 0; }
-    .agent-btn .name { font-size: 14px; font-weight: 600; color: var(--text); display: block; }
-    .agent-btn .role { font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px; }
-    .agent-btn.active .name { color: var(--text-bright); }
-
-    .sidebar-back {
-      padding: 16px 24px;
-      border-top: 1px solid var(--border);
-    }
-    .back-link {
-      font-size: 13px; color: var(--text-muted);
-      text-decoration: none;
-      display: flex; align-items: center; gap: 8px;
-      transition: color 0.3s;
-    }
-    .back-link:hover { color: var(--accent-bright); }
-
-    /* Main area */
-    .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-
-    /* Top bar */
     .topbar {
-      padding: 16px 32px;
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
-      background: var(--bg);
+      grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; background: rgba(10,15,12,0.85); backdrop-filter: blur(40px);
+      border-bottom: 1px solid var(--border); z-index: 100;
     }
-    .topbar-agent {
-      display: flex; align-items: center; gap: 10px;
-    }
-    .topbar-agent .emoji { font-size: 20px; }
-    .topbar-agent .name {
-      font-family: 'Instrument Serif', Georgia, serif;
-      font-size: 20px; color: var(--text-bright);
-    }
-    .topbar-status {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 12px; color: var(--text-muted);
-    }
-    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-bright); }
-    .topbar-badge {
-      font-size: 10px; font-weight: 700; color: var(--sunrise);
-      background: var(--sunrise-soft);
-      padding: 4px 12px; border-radius: 6px;
-      letter-spacing: 0.05em;
-    }
+    .topbar-left { display: flex; align-items: center; gap: 24px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-mark { width: 28px; height: 28px; border-radius: 7px; background: var(--accent); display: grid; place-items: center; font-size: 12px; font-weight: 800; color: var(--bg); }
+    .logo-name { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+    .nav-tabs { display: flex; height: 100%; align-items: stretch; }
+    .nav-tab { padding: 0 20px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--text3); text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.3s; }
+    .nav-tab:hover { color: var(--text2); }
+    .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .badge { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 4px; background: var(--warm-dim); color: var(--warm); }
+    .status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text3); }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s ease infinite; }
 
-    /* Messages area */
-    .messages {
-      flex: 1; overflow-y: auto;
-      padding: 32px 32px 16px;
-      display: flex; flex-direction: column; gap: 20px;
-    }
+    .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+    .sidebar-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text4); padding: 12px 12px 8px; }
+    .agent-btn { width: 100%; padding: 10px 14px; background: transparent; border: 1px solid transparent; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s; }
+    .agent-btn:hover { background: var(--surface2); }
+    .agent-btn.active { background: var(--accent-dim); border-color: rgba(74,222,128,0.12); }
+    .agent-icon { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: var(--surface2); color: var(--text3); transition: all 0.3s; flex-shrink: 0; }
+    .agent-btn.active .agent-icon { background: var(--accent); color: var(--bg); }
+    .agent-info { text-align: left; }
+    .agent-name { font-size: 13px; font-weight: 600; color: var(--text2); display: block; transition: color 0.2s; }
+    .agent-btn.active .agent-name { color: var(--text); }
+    .agent-role { font-size: 11px; color: var(--text4); display: block; margin-top: 1px; }
+    .sidebar-footer { margin-top: auto; padding: 16px 12px 4px; border-top: 1px solid var(--border); }
+    .sidebar-footer a { font-size: 12px; color: var(--text4); text-decoration: none; transition: color 0.2s; }
+    .sidebar-footer a:hover { color: var(--accent); }
 
-    .msg {
-      display: flex; gap: 14px; align-items: flex-start;
-      max-width: 820px;
-      animation: fadeIn 0.3s ease;
-    }
-    .msg.user { flex-direction: row-reverse; align-self: flex-end; }
+    .chat { display: flex; flex-direction: column; background: var(--bg); position: relative; overflow: hidden; }
+    .chat::before { content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, var(--accent-glow), transparent 70%); pointer-events: none; z-index: 0; }
+    .messages { flex: 1; overflow-y: auto; padding: 32px 40px; position: relative; z-index: 1; }
 
-    .msg-avatar {
-      width: 36px; height: 36px; border-radius: 10px;
-      display: grid; place-items: center; font-size: 18px;
-      flex-shrink: 0;
-      background: var(--card);
-      border: 1px solid var(--border);
-    }
-    .msg.user .msg-avatar {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
-      font-size: 14px;
-      font-weight: 700;
-    }
+    .welcome { display: flex; align-items: center; justify-content: center; height: 100%; padding: 40px; }
+    .welcome-inner { max-width: 520px; text-align: center; }
+    .welcome-glyph { width: 48px; height: 48px; border-radius: 14px; background: var(--accent-dim); border: 1px solid rgba(74,222,128,0.1); display: grid; place-items: center; margin: 0 auto 28px; font-size: 20px; color: var(--accent); }
+    .welcome h1 { font-size: 28px; font-weight: 300; color: var(--text); letter-spacing: -0.03em; line-height: 1.4; margin-bottom: 12px; }
+    .welcome h1 strong { font-weight: 600; color: var(--accent); }
+    .welcome p { font-size: 15px; color: var(--text3); line-height: 1.7; margin-bottom: 36px; }
+    .starters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .starter { padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; text-align: left; transition: all 0.25s ease; font-family: 'Inter', sans-serif; }
+    .starter:hover { border-color: var(--border2); background: var(--surface2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+    .starter-tag { font-size: 10px; font-weight: 600; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .starter-text { font-size: 13px; color: var(--text2); line-height: 1.5; }
 
-    .msg-bubble {
-      padding: 16px 20px;
-      border-radius: 16px;
-      line-height: 1.7;
-      font-size: 15px;
-    }
-    .msg.assistant .msg-bubble {
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-    .msg.user .msg-bubble {
-      background: var(--accent);
-      border: 1px solid var(--accent-bright);
-      color: #E8F0E4;
-    }
-    .msg-bubble p { margin-bottom: 12px; }
+    .msg { display: flex; gap: 12px; margin-bottom: 24px; animation: msgIn 0.4s cubic-bezier(0.16,1,0.3,1); max-width: 720px; }
+    .msg.user { flex-direction: row-reverse; margin-left: auto; }
+    .msg-avatar { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; font-size: 11px; font-weight: 700; }
+    .msg.assistant .msg-avatar { background: var(--accent-dim); color: var(--accent); }
+    .msg.user .msg-avatar { background: var(--surface2); color: var(--text3); }
+    .msg-content { min-width: 0; }
+    .msg-meta { font-size: 11px; color: var(--text4); margin-bottom: 6px; font-weight: 500; }
+    .msg-bubble { padding: 14px 18px; border-radius: 14px; font-size: 14px; line-height: 1.75; }
+    .msg.assistant .msg-bubble { background: var(--surface); border: 1px solid var(--border); color: var(--text2); }
+    .msg.user .msg-bubble { background: var(--accent); color: var(--bg); font-weight: 500; }
+    .msg-bubble h2 { font-size: 16px; font-weight: 600; color: var(--text); margin: 16px 0 8px; }
+    .msg-bubble h2:first-child { margin-top: 0; }
+    .msg-bubble h3 { font-size: 14px; font-weight: 600; color: var(--text); margin: 14px 0 6px; }
+    .msg-bubble p { margin-bottom: 10px; }
     .msg-bubble p:last-child { margin-bottom: 0; }
-    .msg-bubble strong { color: var(--text-bright); font-weight: 600; }
-    .msg-bubble h1, .msg-bubble h2, .msg-bubble h3 {
-      font-family: 'Instrument Serif', Georgia, serif;
-      font-weight: 400;
-      color: var(--text-bright);
-      margin: 20px 0 10px;
-    }
-    .msg-bubble h1:first-child, .msg-bubble h2:first-child, .msg-bubble h3:first-child { margin-top: 0; }
-    .msg-bubble h2 { font-size: 20px; }
-    .msg-bubble h3 { font-size: 17px; }
-    .msg-bubble ul, .msg-bubble ol { padding-left: 20px; margin-bottom: 12px; }
-    .msg-bubble li { margin-bottom: 6px; }
-    .msg-bubble code {
-      background: var(--bg);
-      padding: 2px 7px;
-      border-radius: 5px;
-      font-size: 13px;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      color: var(--accent-bright);
-    }
-    .msg-bubble pre {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px 20px;
-      overflow-x: auto;
-      margin: 12px 0;
-    }
-    .msg-bubble pre code {
-      background: none; padding: 0;
-      color: var(--text);
-      font-size: 13px; line-height: 1.6;
-    }
-    .msg-bubble blockquote {
-      border-left: 3px solid var(--accent);
-      padding-left: 16px;
-      margin: 12px 0;
-      color: var(--text-muted);
-      font-style: italic;
-    }
+    .msg-bubble strong { color: var(--text); font-weight: 600; }
+    .msg-bubble ul, .msg-bubble ol { padding-left: 18px; margin-bottom: 10px; }
+    .msg-bubble li { margin-bottom: 4px; }
+    .msg-bubble code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace; color: var(--accent); }
+    .msg-bubble pre { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; overflow-x: auto; margin: 10px 0; }
+    .msg-bubble pre code { background: none; padding: 0; color: var(--text2); font-size: 12px; line-height: 1.6; }
+    .msg-bubble blockquote { border-left: 2px solid var(--accent); padding-left: 14px; margin: 10px 0; color: var(--text3); font-style: italic; }
 
-    .agent-label {
-      font-size: 11px; font-weight: 600;
-      color: var(--accent-bright);
-      margin-bottom: 6px;
-      display: flex; align-items: center; gap: 6px;
-    }
+    .msg-actions { display: flex; gap: 6px; margin-top: 12px; }
+    .msg-action { padding: 6px 14px; background: var(--accent-dim); border: 1px solid rgba(74,222,128,0.1); border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--accent); cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+    .msg-action:hover { background: var(--accent-mid); border-color: rgba(74,222,128,0.2); transform: translateY(-1px); }
 
-    /* Thinking indicator */
-    .thinking {
-      display: flex; align-items: center; gap: 8px;
-      padding: 16px 20px;
-      color: var(--text-muted);
-      font-size: 14px;
-    }
-    .thinking-dots { display: flex; gap: 4px; }
-    .thinking-dots span {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--accent);
-      animation: dotPulse 1.2s ease infinite;
-    }
-    .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
-    .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+    .thinking { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; animation: msgIn 0.3s ease; }
+    .thinking-avatar { width: 30px; height: 30px; border-radius: 8px; background: var(--accent-dim); display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--accent); }
+    .thinking-bar { display: flex; gap: 4px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+    .thinking-bar span { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: think 1.4s ease infinite; }
+    .thinking-bar span:nth-child(2) { animation-delay: 0.15s; }
+    .thinking-bar span:nth-child(3) { animation-delay: 0.3s; }
 
-    /* Input area */
-    .input-area {
-      padding: 20px 32px;
-      border-top: 1px solid var(--border);
-      background: var(--bg2);
-    }
-    .input-row { display: flex; gap: 12px; align-items: flex-end; }
-    .input-wrap {
-      flex: 1;
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 14px;
-      transition: border-color 0.3s;
-      overflow: hidden;
-    }
-    .input-wrap:focus-within { border-color: var(--accent); }
-    .input-wrap textarea {
-      width: 100%;
-      padding: 16px 20px;
-      background: transparent;
-      border: none; outline: none;
-      color: var(--text-bright);
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 15px;
-      line-height: 1.6;
-      resize: none;
-      min-height: 52px;
-      max-height: 200px;
-    }
-    .input-wrap textarea::placeholder { color: var(--text-dim); }
-    .input-bottom {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0 12px 10px 20px;
-    }
-    .input-hint { font-size: 11px; color: var(--text-dim); }
+    .input-area { padding: 16px 40px 24px; position: relative; z-index: 1; }
+    .input-box { display: flex; align-items: flex-end; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 6px 6px 6px 20px; transition: border-color 0.3s, box-shadow 0.3s; }
+    .input-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim), 0 8px 32px rgba(0,0,0,0.2); }
+    .input-box textarea { flex: 1; background: none; border: none; outline: none; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; padding: 10px 0; resize: none; min-height: 24px; max-height: 160px; }
+    .input-box textarea::placeholder { color: var(--text4); }
+    .send-btn { width: 38px; height: 38px; background: var(--accent); border: none; border-radius: 10px; color: var(--bg); font-size: 16px; font-weight: 700; cursor: pointer; display: grid; place-items: center; transition: all 0.2s; flex-shrink: 0; }
+    .send-btn:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 20px var(--accent-dim); }
+    .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .input-hint { font-size: 11px; color: var(--text4); margin-top: 8px; padding-left: 20px; }
 
-    .send-btn {
-      width: 48px; height: 48px;
-      background: var(--accent);
-      border: none; border-radius: 12px;
-      color: white; font-size: 18px;
-      cursor: pointer;
-      display: grid; place-items: center;
-      transition: all 0.25s ease;
-      flex-shrink: 0;
-    }
-    .send-btn:hover:not(:disabled) {
-      background: var(--accent-bright);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(43,107,79,0.25);
-    }
-    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .panel { background: var(--surface); border-left: 1px solid var(--border); padding: 20px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+    .panel-title { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text4); }
+    .wf-step { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+    .wf-step:hover { background: var(--surface2); }
+    .wf-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid var(--text4); }
+    .wf-step.done .wf-dot { background: var(--accent); border-color: var(--accent); }
+    .wf-step.active .wf-dot { background: var(--warm); border-color: var(--warm); box-shadow: 0 0 8px var(--warm-dim); }
+    .wf-label { color: var(--text4); }
+    .wf-step.active .wf-label { color: var(--text2); font-weight: 600; }
+    .wf-step.done .wf-label { color: var(--text3); }
+    .ctx-card { padding: 12px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; }
+    .ctx-tag { font-size: 10px; font-weight: 600; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+    .ctx-text { font-size: 12px; color: var(--text3); line-height: 1.6; }
+    .ctx-empty { font-size: 12px; color: var(--text4); line-height: 1.7; text-align: center; padding: 20px 0; }
 
-    /* Welcome screen */
-    .welcome {
-      flex: 1; display: flex; align-items: center; justify-content: center;
-      padding: 48px;
-    }
-    .welcome-inner { max-width: 620px; text-align: center; }
-    .welcome-emoji { font-size: 48px; margin-bottom: 24px; display: block; }
-    .welcome h1 {
-      font-family: 'Instrument Serif', Georgia, serif;
-      font-size: 36px; font-weight: 400;
-      color: var(--text-bright);
-      margin-bottom: 16px; line-height: 1.3;
-    }
-    .welcome h1 em { color: var(--sunrise); font-style: italic; }
-    .welcome p { font-size: 17px; color: var(--text-muted); line-height: 1.7; margin-bottom: 16px; }
-    .welcome-starters {
-      display: flex; flex-wrap: wrap; gap: 10px;
-      justify-content: center;
-      margin-top: 32px;
-    }
-    .starter-btn {
-      padding: 12px 20px;
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      font-size: 14px;
-      font-family: 'Space Grotesk', sans-serif;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      text-align: left;
-      max-width: 280px;
-    }
-    .starter-btn:hover {
-      border-color: var(--accent);
-      background: var(--card2);
-      transform: translateY(-2px);
-    }
-    .starter-btn .starter-label {
-      font-size: 11px; color: var(--text-dim);
-      display: block; margin-bottom: 4px;
-      font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
-    }
-
-    /* Project context panel */
-    .context-panel {
-      width: 300px;
-      background: var(--bg2);
-      border-left: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      flex-shrink: 0;
-    }
-    .context-header {
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--border);
-    }
-    .context-header h3 {
-      font-family: 'Instrument Serif', Georgia, serif;
-      font-size: 18px; font-weight: 400; color: var(--text-bright);
-    }
-    .context-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
-    .context-item {
-      padding: 14px 16px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      margin-bottom: 10px;
-    }
-    .context-item-label {
-      font-size: 10px; font-weight: 700;
-      color: var(--accent-bright);
-      letter-spacing: 0.1em; text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-    .context-item-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
-    .context-empty {
-      text-align: center; padding: 32px 16px;
-      color: var(--text-dim); font-size: 13px; line-height: 1.7;
-    }
-    .context-empty .emoji { font-size: 28px; display: block; margin-bottom: 12px; }
-
-    .workflow-step {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px;
-      border-radius: 10px;
-      margin-bottom: 6px;
-      font-size: 13px;
-      transition: all 0.3s;
-    }
-    .workflow-step .step-emoji { font-size: 16px; }
-    .workflow-step .step-text { color: var(--text-dim); }
-    .workflow-step.completed { background: rgba(43,107,79,0.08); }
-    .workflow-step.completed .step-text { color: var(--text-muted); }
-    .workflow-step.active { background: rgba(212,147,58,0.08); border: 1px solid rgba(212,147,58,0.15); }
-    .workflow-step.active .step-text { color: var(--sunrise); font-weight: 600; }
-
-    /* Animations */
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-    @keyframes dotPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.7); } }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Quick action buttons inside messages */
-    .msg-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-    .msg-action-btn {
-      padding: 8px 16px;
-      background: rgba(43,107,79,0.1);
-      border: 1px solid rgba(43,107,79,0.2);
-      border-radius: 8px;
-      color: var(--accent-bright);
-      font-size: 13px; font-weight: 600;
-      font-family: 'Space Grotesk', sans-serif;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .msg-action-btn:hover {
-      background: rgba(43,107,79,0.18);
-      border-color: var(--accent);
-      transform: translateY(-1px);
-    }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    @keyframes think { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1); } }
   </style>
 </head>
 <body>
   <div id="root"></div>
-
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-  <!-- Markdown parser -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
-
   <script type="text/babel">
-    const { useState, useEffect, useRef, useCallback } = React;
-
-    const API_URL = "/api/agent";
-
+    const { useState, useEffect, useRef } = React;
+    const API = "/api/agent";
     const AGENTS = [
-      { id: "orchestrator", name: "SUAS Guide", emoji: "🌿", role: "Your AI companion", color: "var(--accent-bright)" },
-      { id: "ideation", name: "Ideation Agent", emoji: "🧠", role: "Shape your idea", color: "var(--sunrise)" },
-      { id: "research", name: "Research Agent", emoji: "🔍", role: "Understand the space", color: "var(--blue)" },
-      { id: "builder", name: "Builder Agent", emoji: "⚙️", role: "Build your prototype", color: "#6BAF8D" },
-      { id: "connector", name: "Connector Agent", emoji: "🤝", role: "Find your people", color: "var(--violet)" },
-      { id: "launch", name: "Launch Agent", emoji: "📣", role: "Ship it to the world", color: "var(--sunrise)" },
+      { id: "orchestrator", name: "Guide", letter: "G", role: "General assistant" },
+      { id: "ideation", name: "Ideation", letter: "I", role: "Shape ideas" },
+      { id: "research", name: "Research", letter: "R", role: "Map the space" },
+      { id: "builder", name: "Builder", letter: "B", role: "Write code" },
+      { id: "connector", name: "Connector", letter: "C", role: "Find people" },
+      { id: "launch", name: "Launch", letter: "L", role: "Ship it" },
     ];
-
     const STARTERS = [
-      { label: "Health", text: "I want to help people in rural areas get basic health checkups without traveling to the city" },
-      { label: "Education", text: "I want to make learning math fun for kids who hate it — something they'd actually choose to use" },
-      { label: "Environment", text: "I want to help reduce food waste in my neighborhood — restaurants throw away so much every day" },
-      { label: "Finance", text: "I want to help street vendors track their daily income and expenses without needing a smartphone" },
+      { tag: "Health", text: "Help people in rural areas get basic health checkups without traveling to the city" },
+      { tag: "Education", text: "Make learning math fun for kids who hate it — something they'd actually choose to use" },
+      { tag: "Environment", text: "Help reduce food waste in my neighborhood — restaurants throw away so much daily" },
+      { tag: "Finance", text: "Help street vendors track daily income and expenses without needing a smartphone" },
     ];
-
-    /* ─── Markdown renderer ─── */
-    const renderMarkdown = (text) => {
-      if (!text) return "";
-      if (typeof marked !== "undefined") {
-        marked.setOptions({ breaks: true, gfm: true });
-        return { __html: marked.parse(text) };
-      }
-      return { __html: text.replace(/\n/g, "<br/>") };
+    const md = (t) => {
+      if (!t) return { __html: "" };
+      if (typeof marked !== "undefined") { marked.setOptions({ breaks: true, gfm: true }); return { __html: marked.parse(t) }; }
+      return { __html: t.replace(/\n/g, "<br/>") };
     };
-
-    /* ─── Main App ─── */
     function App() {
-      const [messages, setMessages] = useState([]);
+      const [msgs, setMsgs] = useState([]);
       const [input, setInput] = useState("");
-      const [activeAgent, setActiveAgent] = useState("orchestrator");
-      const [isThinking, setIsThinking] = useState(false);
-      const [projectContext, setProjectContext] = useState([]);
-      const [workflowSteps, setWorkflowSteps] = useState([
-        { agent: "orchestrator", label: "Describe your idea", status: "active" },
-        { agent: "ideation", label: "Shape the idea", status: "pending" },
-        { agent: "research", label: "Research the space", status: "pending" },
-        { agent: "builder", label: "Build prototype", status: "pending" },
-        { agent: "connector", label: "Find people", status: "pending" },
-        { agent: "launch", label: "Launch it", status: "pending" },
+      const [agent, setAgent] = useState("orchestrator");
+      const [loading, setLoading] = useState(false);
+      const [ctx, setCtx] = useState([]);
+      const [wf, setWf] = useState([
+        { id: "orchestrator", label: "Describe idea", status: "active" },
+        { id: "ideation", label: "Shape it", status: "" },
+        { id: "research", label: "Research", status: "" },
+        { id: "builder", label: "Build", status: "" },
+        { id: "connector", label: "Connect", status: "" },
+        { id: "launch", label: "Launch", status: "" },
       ]);
-      const messagesEndRef = useRef(null);
-      const textareaRef = useRef(null);
-
-      const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      };
-      useEffect(scrollToBottom, [messages, isThinking]);
-
-      const autoResize = (el) => {
-        if (!el) return;
-        el.style.height = "52px";
-        el.style.height = Math.min(el.scrollHeight, 200) + "px";
-      };
-
-      const updateWorkflow = (agentId) => {
-        setWorkflowSteps(prev => prev.map(step => {
-          if (step.agent === agentId) return { ...step, status: "active" };
-          if (step.status === "active" && step.agent !== agentId) return { ...step, status: "completed" };
-          return step;
-        }));
-      };
-
-      const switchAgent = (agentId) => {
-        setActiveAgent(agentId);
-        updateWorkflow(agentId);
-      };
-
-      const sendMessage = async (text) => {
-        const userMsg = text || input.trim();
-        if (!userMsg || isThinking) return;
-
-        const newUserMsg = { role: "user", content: userMsg, agent: activeAgent };
-        const updatedMessages = [...messages, newUserMsg];
-        setMessages(updatedMessages);
-        setInput("");
-        if (textareaRef.current) {
-          textareaRef.current.style.height = "52px";
-        }
-        setIsThinking(true);
-
-        // Build conversation history for the current agent
-        const agentMessages = updatedMessages
-          .filter(m => m.agent === activeAgent || m.role === "user")
-          .map(m => ({ role: m.role, content: m.content }));
-
-        // Build project context string
-        const ctxStr = projectContext.map(c => `[${c.label}]: ${c.text}`).join("\n");
-
+      const endRef = useRef(null);
+      const taRef = useRef(null);
+      useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, loading]);
+      const resize = (el) => { if (!el) return; el.style.height = "24px"; el.style.height = Math.min(el.scrollHeight, 160) + "px"; };
+      const switchAgent = (id) => { setAgent(id); setWf(p => p.map(s => s.id === id ? { ...s, status: "active" } : s.status === "active" ? { ...s, status: "done" } : s)); };
+      const send = async (text) => {
+        const val = text || input.trim();
+        if (!val || loading) return;
+        const userMsg = { role: "user", content: val, agent };
+        const all = [...msgs, userMsg];
+        setMsgs(all); setInput(""); if (taRef.current) taRef.current.style.height = "24px"; setLoading(true);
+        const history = all.filter(m => m.agent === agent || m.role === "user").map(m => ({ role: m.role, content: m.content }));
+        const ctxStr = ctx.map(c => `[${c.tag}]: ${c.text}`).join("\n");
         try {
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              messages: agentMessages,
-              agent: activeAgent,
-              projectContext: ctxStr,
-            }),
-          });
-
-          if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.error || `Server error: ${res.status}`);
-          }
-
+          const res = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: history, agent, projectContext: ctxStr }) });
+          if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || `Error ${res.status}`); }
           const data = await res.json();
-
-          setMessages(prev => [...prev, {
-            role: "assistant",
-            content: data.response,
-            agent: activeAgent,
-            agentName: data.agent,
-            agentEmoji: data.agentEmoji,
-          }]);
-
-          // Auto-extract context from first assistant response
-          if (projectContext.length === 0 && activeAgent === "orchestrator") {
-            setProjectContext([{ label: "Initial Idea", text: userMsg }]);
-          }
-
+          setMsgs(p => [...p, { role: "assistant", content: data.response, agent, agentName: data.agent }]);
+          if (ctx.length === 0 && agent === "orchestrator") setCtx([{ tag: "Idea", text: val }]);
         } catch (err) {
-          setMessages(prev => [...prev, {
-            role: "assistant",
-            content: `**Connection Error:** ${err.message}\n\nMake sure the Anthropic API key is set in Netlify environment variables. Go to Netlify → Site settings → Environment variables → Add \`ANTHROPIC_API_KEY\`.`,
-            agent: "system",
-            agentName: "System",
-            agentEmoji: "⚠️",
-          }]);
-        } finally {
-          setIsThinking(false);
-        }
+          setMsgs(p => [...p, { role: "assistant", content: `**Error:** ${err.message}`, agent: "system", agentName: "System" }]);
+        } finally { setLoading(false); }
       };
-
-      const handleKeyDown = (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
-        }
-      };
-
-      const handleStarter = (text) => {
-        sendMessage(text);
-      };
-
-      const currentAgent = AGENTS.find(a => a.id === activeAgent);
-
+      const cur = AGENTS.find(a => a.id === agent);
       return (
         <div className="app">
-          {/* ═══ SIDEBAR ═══ */}
-          <div className="sidebar">
-            <div className="sidebar-header">
-              <div className="sidebar-header-top">
-                <div className="logo-box">S.</div>
-                <div>
-                  <div className="logo-text">SUAS</div>
-                  <div className="logo-sub">स्वास · pure breath</div>
-                </div>
-              </div>
-              <div className="sidebar-tabs">
-                <a href="/" className="sidebar-tab">🏠 Home</a>
-                <a href="/build.html" className="sidebar-tab active">🚀 Build Space <span className="beta-badge">BETA</span></a>
+          <div className="topbar">
+            <div className="topbar-left">
+              <a href="/" className="logo"><div className="logo-mark">S.</div><span className="logo-name">SUAS</span></a>
+              <div className="nav-tabs">
+                <a href="/" className="nav-tab">Home</a>
+                <a href="/build.html" className="nav-tab active">Build Space <span className="badge">BETA</span></a>
               </div>
             </div>
-
-            <div className="sidebar-section">
-              <div className="sidebar-section-label">AI Agents</div>
-              {AGENTS.map(a => (
-                <button
-                  key={a.id}
-                  className={`agent-btn ${activeAgent === a.id ? "active" : ""}`}
-                  onClick={() => switchAgent(a.id)}
-                >
-                  <span className="emoji">{a.emoji}</span>
-                  <div>
-                    <span className="name">{a.name}</span>
-                    <span className="role">{a.role}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <div className="sidebar-back">
-              <a href="/" className="back-link">
-                ← Back to SUAS home
-              </a>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div className="status"><span className="status-dot" /> Connected</div>
             </div>
           </div>
-
-          {/* ═══ MAIN CHAT ═══ */}
-          <div className="main">
-            <div className="topbar">
-              <div className="topbar-agent">
-                <span className="emoji">{currentAgent.emoji}</span>
-                <span className="name">{currentAgent.name}</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <span className="topbar-badge">BETA</span>
-                <div className="topbar-status">
-                  <span className="status-dot"></span>
-                  Ready
-                </div>
-              </div>
-            </div>
-
-            {messages.length === 0 ? (
-              <div className="welcome">
-                <div className="welcome-inner">
-                  <span className="welcome-emoji">🌿</span>
-                  <h1>What do you want to <em>build?</em></h1>
-                  <p>
-                    Describe any problem you want to solve — even if it's messy, vague, or half-baked.
-                    Our AI agents will help you shape it, research it, build it, and launch it.
-                  </p>
-                  <p style={{ fontSize: "14px", color: "var(--text-dim)" }}>
-                    No coding needed. No experience needed. Just your curiosity.
-                  </p>
-                  <div className="welcome-starters">
-                    {STARTERS.map((s, i) => (
-                      <button key={i} className="starter-btn" onClick={() => handleStarter(s.text)}>
-                        <span className="starter-label">{s.label}</span>
-                        {s.text.length > 80 ? s.text.slice(0, 80) + "..." : s.text}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+          <div className="sidebar">
+            <div className="sidebar-label">Agents</div>
+            {AGENTS.map(a => (
+              <button key={a.id} className={`agent-btn ${agent === a.id ? "active" : ""}`} onClick={() => switchAgent(a.id)}>
+                <div className="agent-icon">{a.letter}</div>
+                <div className="agent-info"><span className="agent-name">{a.name}</span><span className="agent-role">{a.role}</span></div>
+              </button>
+            ))}
+            <div className="sidebar-footer"><a href="/">← Back to home</a></div>
+          </div>
+          <div className="chat">
+            {msgs.length === 0 ? (
+              <div className="welcome"><div className="welcome-inner">
+                <div className="welcome-glyph">→</div>
+                <h1>What will you <strong>build?</strong></h1>
+                <p>Describe any problem. Our agents will help you shape it, research it, build it, and ship it.</p>
+                <div className="starters">{STARTERS.map((s, i) => (
+                  <button key={i} className="starter" onClick={() => send(s.text)}>
+                    <span className="starter-tag">{s.tag}</span><span className="starter-text">{s.text}</span>
+                  </button>
+                ))}</div>
+              </div></div>
             ) : (
               <div className="messages">
-                {messages.map((msg, i) => (
-                  <div key={i} className={`msg ${msg.role}`}>
-                    <div className="msg-avatar">
-                      {msg.role === "user" ? "You" : (msg.agentEmoji || currentAgent.emoji)}
-                    </div>
-                    <div>
-                      {msg.role === "assistant" && (
-                        <div className="agent-label">
-                          {msg.agentEmoji || currentAgent.emoji} {msg.agentName || currentAgent.name}
-                        </div>
-                      )}
-                      <div
-                        className="msg-bubble"
-                        dangerouslySetInnerHTML={renderMarkdown(msg.content)}
-                      />
-                      {msg.role === "assistant" && i === messages.length - 1 && activeAgent === "orchestrator" && (
+                {msgs.map((m, i) => (
+                  <div key={i} className={`msg ${m.role}`}>
+                    <div className="msg-avatar">{m.role === "user" ? "Y" : (AGENTS.find(a => a.id === m.agent)?.letter || "!")}</div>
+                    <div className="msg-content">
+                      {m.role === "assistant" && <div className="msg-meta">{m.agentName || cur.name}</div>}
+                      <div className="msg-bubble" dangerouslySetInnerHTML={md(m.content)} />
+                      {m.role === "assistant" && i === msgs.length - 1 && agent === "orchestrator" && (
                         <div className="msg-actions">
-                          <button className="msg-action-btn" onClick={() => switchAgent("ideation")}>🧠 Shape this idea</button>
-                          <button className="msg-action-btn" onClick={() => switchAgent("research")}>🔍 Research this space</button>
-                          <button className="msg-action-btn" onClick={() => switchAgent("builder")}>⚙️ Start building</button>
+                          <button className="msg-action" onClick={() => switchAgent("ideation")}>Shape idea</button>
+                          <button className="msg-action" onClick={() => switchAgent("research")}>Research</button>
+                          <button className="msg-action" onClick={() => switchAgent("builder")}>Build it</button>
                         </div>
                       )}
                     </div>
                   </div>
                 ))}
-                {isThinking && (
-                  <div className="msg assistant">
-                    <div className="msg-avatar">{currentAgent.emoji}</div>
-                    <div className="thinking">
-                      <div className="thinking-dots">
-                        <span></span><span></span><span></span>
-                      </div>
-                      {currentAgent.name} is thinking...
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
+                {loading && <div className="thinking"><div className="thinking-avatar">{cur.letter}</div><div className="thinking-bar"><span/><span/><span/></div></div>}
+                <div ref={endRef} />
               </div>
             )}
-
-            {/* Input */}
             <div className="input-area">
-              <div className="input-row">
-                <div className="input-wrap">
-                  <textarea
-                    ref={textareaRef}
-                    value={input}
-                    onChange={e => { setInput(e.target.value); autoResize(e.target); }}
-                    onKeyDown={handleKeyDown}
-                    placeholder={activeAgent === "orchestrator"
-                      ? "Describe a problem you want to solve..."
-                      : `Ask the ${currentAgent.name} anything...`}
-                    rows={1}
-                    disabled={isThinking}
-                  />
-                  <div className="input-bottom">
-                    <span className="input-hint">Enter to send · Shift+Enter for new line</span>
-                  </div>
-                </div>
-                <button
-                  className="send-btn"
-                  onClick={() => sendMessage()}
-                  disabled={!input.trim() || isThinking}
-                >
-                  →
-                </button>
+              <div className="input-box">
+                <textarea ref={taRef} value={input} onChange={e => { setInput(e.target.value); resize(e.target); }} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }} placeholder={`Message ${cur.name} agent...`} rows={1} disabled={loading} />
+                <button className="send-btn" onClick={() => send()} disabled={!input.trim() || loading}>↑</button>
               </div>
+              <div className="input-hint">Enter to send · Shift+Enter for new line</div>
             </div>
           </div>
-
-          {/* ═══ CONTEXT PANEL ═══ */}
-          <div className="context-panel">
-            <div className="context-header">
-              <h3>Your Project</h3>
-            </div>
-            <div className="context-body">
-              {/* Workflow */}
-              <div style={{ marginBottom: 24 }}>
-                <div className="sidebar-section-label" style={{ padding: 0, marginBottom: 10 }}>Workflow</div>
-                {workflowSteps.map((step, i) => {
-                  const agent = AGENTS.find(a => a.id === step.agent);
-                  return (
-                    <div key={i} className={`workflow-step ${step.status}`}
-                      style={{ cursor: "pointer" }}
-                      onClick={() => switchAgent(step.agent)}>
-                      <span className="step-emoji">
-                        {step.status === "completed" ? "✓" : agent?.emoji}
-                      </span>
-                      <span className="step-text">{step.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Context items */}
-              <div className="sidebar-section-label" style={{ padding: 0, marginBottom: 10 }}>Context</div>
-              {projectContext.length === 0 ? (
-                <div className="context-empty">
-                  <span className="emoji">💭</span>
-                  Start a conversation and your project context will build here
-                </div>
-              ) : (
-                projectContext.map((ctx, i) => (
-                  <div key={i} className="context-item">
-                    <div className="context-item-label">{ctx.label}</div>
-                    <div className="context-item-text">{ctx.text}</div>
-                  </div>
-                ))
-              )}
-            </div>
+          <div className="panel">
+            <div><div className="panel-title">Workflow</div><div style={{ marginTop: 10 }}>{wf.map((s, i) => (
+              <div key={i} className={`wf-step ${s.status}`} onClick={() => switchAgent(s.id)}><div className="wf-dot" /><span className="wf-label">{s.label}</span></div>
+            ))}</div></div>
+            <div><div className="panel-title">Context</div>{ctx.length === 0 ? <div className="ctx-empty">Start a conversation to build context</div> : ctx.map((c, i) => (
+              <div key={i} className="ctx-card"><div className="ctx-tag">{c.tag}</div><div className="ctx-text">{c.text}</div></div>
+            ))}</div>
           </div>
         </div>
       );
     }
-
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<App />);
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
   </script>
 </body>
 </html>
