@@ -115,13 +115,13 @@ const Navbar = () => {
           <a key={l} href={`#${l.toLowerCase().replace(/ /g, "-")}`} style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 15, color: C.muted, textDecoration: "none", fontWeight: 500, transition: "color 0.3s", cursor: "pointer" }}
             onMouseOver={e => e.target.style.color = C.text} onMouseOut={e => e.target.style.color = C.muted}>{l}</a>
         ))}
-        <a href="#join" style={{ textDecoration: "none" }}>
+        <a href="/build.html" style={{ textDecoration: "none" }}>
           <button style={{
             padding: "11px 28px", background: C.accent, border: "none", borderRadius: 10,
             color: "#fff", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'Space Grotesk', sans-serif",
             transition: "transform 0.2s, box-shadow 0.3s",
           }} onMouseOver={e => { e.target.style.transform = "translateY(-1px)"; e.target.style.boxShadow = `0 4px 20px ${C.accent}30`; }}
-             onMouseOut={e => { e.target.style.transform = "none"; e.target.style.boxShadow = "none"; }}>Come Aboard</button>
+             onMouseOut={e => { e.target.style.transform = "none"; e.target.style.boxShadow = "none"; }}>Start Building →</button>
         </a>
       </div>
     </nav>
@@ -212,14 +212,14 @@ const Hero = () => {
 
         {/* CTAs */}
         <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap", opacity: m ? 1 : 0, transition: "opacity 1s ease 2.1s" }}>
-          <a href="#join" style={{ textDecoration: "none" }}>
+          <a href="/build.html" style={{ textDecoration: "none" }}>
             <button style={{
               padding: "18px 48px", background: C.accent, border: "none", borderRadius: 12,
               color: "#fff", fontSize: 18, fontWeight: 600, cursor: "pointer", fontFamily: "'Space Grotesk', sans-serif",
               transition: "transform 0.2s, box-shadow 0.3s",
             }} onMouseOver={e => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = `0 8px 30px ${C.accent}25`; }}
                onMouseOut={e => { e.target.style.transform = "none"; e.target.style.boxShadow = "none"; }}>
-              Come Aboard →
+              Start Building →
             </button>
           </a>
           <a href="#story" style={{ textDecoration: "none" }}>
@@ -1035,7 +1035,7 @@ const CTASection = () => (
           transition: "transform 0.3s, box-shadow 0.4s",
         }} onMouseOver={e => { e.target.style.transform = "translateY(-3px)"; e.target.style.boxShadow = `0 12px 40px ${C.accent}25`; }}
            onMouseOut={e => { e.target.style.transform = "none"; e.target.style.boxShadow = "none"; }}>
-          Come Aboard →
+          Start Building →
         </button>
         <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 14, color: C.dim, marginTop: 20 }}>
           No credentials. No skills required. No experience needed.<br />Just you, your curiosity, and the desire to solve.
