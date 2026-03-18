@@ -1,5 +1,7 @@
 # SUAS · स्वास · Shut Up And Solve
 
+Website: https://harsh147-github.github.io/Project_Svyas/
+
 > **The missing infrastructure of Indian democracy.**  
 > Democracy speaks once every five years through voting. Between elections, there is zero structured mechanism for collective public will to reach decision-makers. SUAS is the pipe that should have always existed.
 
