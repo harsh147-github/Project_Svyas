@@ -3,20 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>SUAS — Shut Up And Solve</title>
-<meta name="description" content="The missing infrastructure of Indian democracy. A collective intelligence engine where 1.4 billion minds build solutions that can't be ignored.">
-<meta property="og:title" content="SUAS — Shut Up And Solve">
-<meta property="og:description" content="Democracy speaks once every five years. Between elections, silence. SUAS builds the pipe between what citizens know and what gets done.">
+<title>SUAS — Shut Up And Solve | By India, For India</title>
+<meta name="description" content="The missing infrastructure of Indian democracy. 387 hours lost to disruptions. Topics decided by lottery. ₹2.5 lakh wasted per minute. What if the nation came together instead?">
+<meta property="og:title" content="SUAS — By India, For India">
+<meta property="og:description" content="Democracy speaks once every five years. Between elections, silence. What if 1.4 billion people could build solutions together?">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="SUAS — Shut Up And Solve">
-<meta name="twitter:description" content="The missing infrastructure of Indian democracy. Collective intelligence that can't be ignored.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0a0a08;--fg:#f5f0e8;--accent:#c8ff00;--muted:#6b6960;--warm:#e8c9a0;--dim:#2a2a24;--serif:'Playfair Display',Georgia,serif;--sans:'Inter',system-ui,sans-serif}
+:root{--bg:#0a0a08;--fg:#f5f0e8;--accent:#c8ff00;--muted:#6b6960;--warm:#e8c9a0;--saffron:#FF9933;--white-i:#fff;--green-i:#138808;--navy:#000080;--serif:'Playfair Display',Georgia,serif;--sans:'Inter',system-ui,sans-serif}
 html{background:var(--bg);color:var(--fg);font-family:var(--sans)}
 html.lenis,html.lenis body{height:auto}
 .lenis.lenis-smooth{scroll-behavior:auto!important}
@@ -27,55 +24,84 @@ a{color:inherit;text-decoration:none}
 section{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 40px}
 @media(max-width:768px){section{padding:60px 20px;min-height:auto}}
 .si{max-width:900px;width:100%;margin:0 auto}
-.hero{min-height:100vh;flex-direction:column;text-align:center;overflow:hidden}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(200,255,0,.06),transparent 70%)}
-.hero-pre{font-size:clamp(11px,1.2vw,14px);letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:24px;opacity:0;transform:translateY(20px);animation:fu .8s .3s forwards}
-.hero-t{font-family:var(--serif);font-size:clamp(56px,10vw,160px);font-weight:900;line-height:.9;letter-spacing:-.03em;opacity:0;transform:translateY(40px);animation:fu 1s .5s forwards}
-.hero-t em{font-style:italic;color:var(--accent)}
-.hero-s{font-size:clamp(16px,2vw,22px);color:var(--muted);max-width:600px;margin:32px auto 0;line-height:1.7;font-weight:300;opacity:0;transform:translateY(20px);animation:fu .8s .9s forwards}
-.hero-sc{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fu .8s 1.4s forwards}
-.hero-sc span{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
-.scl{width:1px;height:40px;background:linear-gradient(to bottom,var(--muted),transparent);animation:sp 2s infinite}
-@keyframes fu{to{opacity:1;transform:translateY(0)}}
-@keyframes sp{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.3)}}
-.rv{opacity:0;transform:translateY(60px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
-.rv.v{opacity:1;transform:translateY(0)}
+.rv{opacity:0;transform:translateY(60px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}.rv.v{opacity:1;transform:translateY(0)}
 .d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}.d4{transition-delay:.4s}
 .ey{font-size:12px;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;display:block}
 .tg{display:inline-block;padding:4px 12px;border:1px solid rgba(200,255,0,.2);border-radius:20px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
 h2.st{font-family:var(--serif);font-size:clamp(32px,5vw,64px);font-weight:700;line-height:1.1;margin-bottom:32px;letter-spacing:-.02em}
 p.bt{font-size:clamp(16px,1.8vw,20px);color:var(--muted);line-height:1.8;margin-bottom:20px;font-weight:300}
 p.bt strong{color:var(--fg);font-weight:600}
-.sp{display:flex;gap:60px;align-items:flex-start}
-.sp .col{flex:1}
+.sp{display:flex;gap:60px;align-items:flex-start}.sp .col{flex:1}
 @media(max-width:768px){.sp{flex-direction:column;gap:32px}}
 .hb{border-left:3px solid var(--accent);padding:24px 32px;margin:32px 0;background:rgba(200,255,0,.03)}
 .hb p{color:var(--fg)!important;font-size:clamp(18px,2vw,24px)!important;font-family:var(--serif);font-style:italic;line-height:1.6!important;margin:0!important}
+.dv{width:60px;height:1px;background:rgba(200,255,0,.3);margin:0 auto}
+
+/* Indian flag bar */
+.flag-bar{height:4px;display:flex;position:fixed;top:0;left:0;right:0;z-index:10000}
+.flag-bar span{flex:1}
+.flag-bar .sf{background:var(--saffron)}
+.flag-bar .wh{background:var(--white-i)}
+.flag-bar .gr{background:var(--green-i)}
+
+/* Hero with Parliament bg */
+.hero{min-height:100vh;flex-direction:column;text-align:center;overflow:hidden;position:relative}
+.hero-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1600&q=80') center/cover no-repeat;opacity:.08}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(200,255,0,.06),transparent 70%);z-index:1}
+.hero>*{position:relative;z-index:2}
+.hero-flag{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:20px;opacity:0;animation:fu .8s .1s forwards}
+.hero-flag svg{width:32px;height:22px}
+.hero-flag span{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--warm)}
+.hero-pre{font-size:clamp(11px,1.2vw,14px);letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:24px;opacity:0;transform:translateY(20px);animation:fu .8s .3s forwards}
+.hero-t{font-family:var(--serif);font-size:clamp(52px,9vw,140px);font-weight:900;line-height:.9;letter-spacing:-.03em;opacity:0;transform:translateY(40px);animation:fu 1s .5s forwards}
+.hero-t em{font-style:italic;color:var(--accent)}
+.hero-sub{font-size:clamp(16px,2vw,22px);color:var(--muted);max-width:640px;margin:32px auto 0;line-height:1.7;font-weight:300;opacity:0;transform:translateY(20px);animation:fu .8s .9s forwards}
+.hero-stat-row{display:flex;gap:32px;justify-content:center;margin-top:40px;flex-wrap:wrap;opacity:0;animation:fu .8s 1.2s forwards}
+.hero-stat{text-align:center}
+.hero-stat .num{font-family:var(--serif);font-size:clamp(28px,4vw,44px);font-weight:900;color:var(--saffron)}
+.hero-stat .lbl{font-size:11px;color:var(--muted);margin-top:4px;max-width:120px;line-height:1.4}
+.hero-sc{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fu .8s 1.6s forwards;z-index:2}
+.hero-sc span{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.scl{width:1px;height:40px;background:linear-gradient(to bottom,var(--muted),transparent);animation:sp 2s infinite}
+@keyframes fu{to{opacity:1;transform:translateY(0)}}
+@keyframes sp{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.3)}}
+
+/* Marquee */
 .mw{overflow:hidden;border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04);padding:20px 0;white-space:nowrap}
 .mq{display:inline-flex;animation:mqa 30s linear infinite}
 .mq span{font-family:var(--serif);font-size:clamp(14px,1.5vw,18px);color:var(--muted);padding:0 40px;opacity:.5}
 .mq span em{color:var(--warm);font-style:normal}
 @keyframes mqa{to{transform:translateX(-50%)}}
-.ss{background:var(--bg);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}
-.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;max-width:1000px;width:100%;text-align:center}
-@media(max-width:768px){.sg{grid-template-columns:1fr;gap:32px}}
-.sn{font-family:var(--serif);font-size:clamp(48px,7vw,80px);font-weight:900;color:var(--accent);line-height:1}
-.sl{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.5;max-width:220px;margin-left:auto;margin-right:auto}
-.pc{border:1px solid rgba(200,255,0,.15);border-radius:12px;padding:40px;margin-top:32px;background:rgba(200,255,0,.02);width:100%}
-.ps{font-family:var(--serif);font-size:clamp(28px,4vw,48px);font-weight:900;color:var(--accent);margin-bottom:8px}
-.pd{font-size:16px;color:var(--muted);line-height:1.7}
-.pd strong{color:var(--fg)}
-.pg{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;width:100%;margin-top:32px}
-@media(max-width:768px){.pg{grid-template-columns:1fr}}
-.pm{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:28px;background:rgba(255,255,255,.02)}
-.pmn{font-family:var(--serif);font-size:32px;font-weight:700;color:var(--warm)}
-.pmt{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+/* Parliament section with image */
+.parl-section{position:relative;overflow:hidden}
+.parl-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1532375810709-75b1da00537c?w=1600&q=80') center/cover no-repeat;opacity:.05}
+.parl-section>*{position:relative;z-index:1}
+
+/* Stat cards */
+.waste-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:32px}
+@media(max-width:768px){.waste-grid{grid-template-columns:repeat(2,1fr)}}
+.waste-card{border:1px solid rgba(255,153,51,.15);border-radius:12px;padding:24px;background:rgba(255,153,51,.03);text-align:center}
+.waste-card .wn{font-family:var(--serif);font-size:clamp(24px,3vw,36px);font-weight:900;color:var(--saffron)}
+.waste-card .wl{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+/* Failed apps */
+.fail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px}
+@media(max-width:768px){.fail-grid{grid-template-columns:1fr}}
+.fail-card{border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:24px;position:relative;overflow:hidden}
+.fail-card::after{content:'FAILED';position:absolute;top:12px;right:-20px;transform:rotate(12deg);font-size:10px;font-weight:800;letter-spacing:.15em;color:rgba(226,75,74,.3);padding:2px 28px;border:1px solid rgba(226,75,74,.15)}
+.fail-card h4{font-size:15px;font-weight:600;margin-bottom:6px}
+.fail-card p{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* How cards */
 .hg{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px;width:100%}
 @media(max-width:768px){.hg{grid-template-columns:1fr}}
 .hc{border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:32px 24px;position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(255,255,255,.02),transparent)}
 .hc::before{content:attr(data-step);position:absolute;top:-10px;right:16px;font-family:var(--serif);font-size:100px;font-weight:900;color:rgba(200,255,0,.04);line-height:1}
 .hc h3{font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:10px}
 .hc p{font-size:14px;color:var(--muted);line-height:1.7}
+
+/* Governance tiers */
 .gt{border:1px solid rgba(255,255,255,.08);border-radius:12px;margin-bottom:8px;overflow:hidden}
 .gh{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;transition:background .2s}
 .gh:hover{background:rgba(255,255,255,.03)}
@@ -91,16 +117,21 @@ p.bt strong{color:var(--fg);font-weight:600}
 .gg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 @media(max-width:768px){.gg{grid-template-columns:1fr}}
 .gk{border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:14px 16px;background:rgba(255,255,255,.02)}
-.gk h4{font-size:13px;font-weight:600;margin-bottom:4px}
-.gk p{font-size:12px;color:var(--muted);line-height:1.6;margin:0}
+.gk h4{font-size:13px;font-weight:600;margin-bottom:4px}.gk p{font-size:12px;color:var(--muted);line-height:1.6;margin:0}
+
+/* AI cards */
 .ag{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:32px}
 @media(max-width:768px){.ag{grid-template-columns:1fr}}
 .ac{border:1px solid rgba(200,255,0,.1);border-radius:12px;padding:28px 24px;background:rgba(200,255,0,.02)}
 .ac h4{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:8px;color:var(--accent)}
 .ac p{font-size:14px;color:var(--muted);line-height:1.7}
+
+/* PR flow */
 .pf{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:24px 0}
 .pe{padding:10px 18px;border:1px solid rgba(200,255,0,.15);border-radius:8px;font-size:13px;font-weight:500;background:rgba(200,255,0,.03)}
 .pa{color:var(--muted);font-size:18px}
+
+/* Timeline */
 .tl{position:relative;padding-left:32px;margin-top:32px}
 .tl::before{content:'';position:absolute;left:6px;top:8px;bottom:8px;width:1px;background:rgba(200,255,0,.2)}
 .ti{margin-bottom:32px;position:relative}
@@ -109,31 +140,61 @@ p.bt strong{color:var(--fg);font-weight:600}
 .til{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
 .tit{font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:6px}
 .tid{font-size:14px;color:var(--muted);line-height:1.7}
-.dv{width:60px;height:1px;background:rgba(200,255,0,.3);margin:0 auto}
+
+/* Teamwork section */
+.team-section{position:relative;overflow:hidden}
+.team-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1600&q=80') center/cover no-repeat;opacity:.06}
+.team-section>*{position:relative;z-index:1}
+.team-quote{text-align:center;max-width:700px;margin:0 auto;padding:80px 0}
+.team-quote h2{font-family:var(--serif);font-size:clamp(28px,4vw,48px);font-weight:700;line-height:1.2;margin-bottom:24px}
+.team-quote h2 em{color:var(--saffron);font-style:italic}
+.team-quote p{font-size:clamp(15px,1.6vw,18px);color:var(--muted);line-height:1.8;font-weight:300}
+
+/* Proof section */
+.pc{border:1px solid rgba(200,255,0,.15);border-radius:12px;padding:40px;margin-top:32px;background:rgba(200,255,0,.02);width:100%}
+.ps{font-family:var(--serif);font-size:clamp(28px,4vw,48px);font-weight:900;color:var(--accent);margin-bottom:8px}
+.pd{font-size:16px;color:var(--muted);line-height:1.7}.pd strong{color:var(--fg)}
+.pg{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;width:100%;margin-top:32px}
+@media(max-width:768px){.pg{grid-template-columns:1fr}}
+.pm{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:28px;background:rgba(255,255,255,.02)}
+.pmn{font-family:var(--serif);font-size:32px;font-weight:700;color:var(--warm)}
+.pmt{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+/* CTA */
 .cs{min-height:80vh;text-align:center;flex-direction:column;background:radial-gradient(ellipse 60% 50% at 50% 60%,rgba(200,255,0,.04),transparent)}
 .cs h2{font-family:var(--serif);font-size:clamp(36px,6vw,80px);font-weight:900;line-height:1;letter-spacing:-.03em;margin-bottom:24px}
 .cs h2 em{color:var(--accent);font-style:italic}
-.cs p{font-size:clamp(15px,1.6vw,18px);color:var(--muted);max-width:520px;margin:0 auto 40px;line-height:1.7;font-weight:300}
+.cs p{font-size:clamp(15px,1.6vw,18px);color:var(--muted);max-width:560px;margin:0 auto 40px;line-height:1.7;font-weight:300}
 .cb{display:inline-flex;align-items:center;gap:10px;padding:18px 40px;background:var(--accent);color:var(--bg);font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:60px;transition:transform .3s,box-shadow .3s;cursor:pointer;border:none;font-family:var(--sans)}
 .cb:hover{transform:translateY(-2px);box-shadow:0 8px 40px rgba(200,255,0,.25)}
-.cb svg{width:18px;height:18px;transition:transform .3s}
-.cb:hover svg{transform:translateX(4px)}
+.cb svg{width:18px;height:18px;transition:transform .3s}.cb:hover svg{transform:translateX(4px)}
 .cl{margin-top:24px;display:flex;gap:24px;justify-content:center}
 .cl a{font-size:14px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,.15);padding-bottom:2px;transition:color .3s,border-color .3s}
 .cl a:hover{color:var(--accent);border-color:var(--accent)}
 .ft{padding:40px;text-align:center;border-top:1px solid rgba(255,255,255,.06)}
 .ft p{font-size:13px;color:var(--muted);line-height:1.8}
-.ft a{color:var(--accent);border-bottom:1px solid rgba(200,255,0,.3);transition:border-color .3s}
-.ft a:hover{border-color:var(--accent)}
+.ft a{color:var(--accent);border-bottom:1px solid rgba(200,255,0,.3)}
 </style>
 </head>
 <body>
 <div class="noise"></div>
+<div class="flag-bar"><span class="sf"></span><span class="wh"></span><span class="gr"></span></div>
 
+<!-- HERO -->
 <section class="hero">
+<div class="hero-bg"></div>
+<div class="hero-flag">
+<svg viewBox="0 0 45 30"><rect width="45" height="10" fill="#FF9933"/><rect y="10" width="45" height="10" fill="#fff"/><rect y="20" width="45" height="10" fill="#138808"/><circle cx="22.5" cy="15" r="4" fill="none" stroke="#000080" stroke-width=".7"/></svg>
+<span>By India, For India</span>
+</div>
 <div class="hero-pre">The missing infrastructure of Indian democracy</div>
 <h1 class="hero-t">Shut Up<br>And <em>Solve</em></h1>
-<p class="hero-s">1.4 billion people have opinions. Zero structured ways to turn them into action. Until now.</p>
+<p class="hero-sub">387 hours lost to Parliament disruptions. Topics decided by lottery. ₹2.5 lakh wasted every minute. What if the nation came together to actually solve things?</p>
+<div class="hero-stat-row">
+<div class="hero-stat"><div class="num">47%</div><div class="lbl">Parliament productivity (17th Lok Sabha)</div></div>
+<div class="hero-stat"><div class="num">55</div><div class="lbl">Sitting days/year vs 135 in the 1950s</div></div>
+<div class="hero-stat"><div class="num">7 min</div><div class="lbl">Farm Laws passed in Rajya Sabha without proper vote</div></div>
+</div>
 <div class="hero-sc"><span>Scroll</span><div class="scl"></div></div>
 </section>
 
@@ -142,131 +203,175 @@ p.bt strong{color:var(--fg);font-weight:600}
 <span>Potholes in <em>Kharadi</em></span><span>Water crisis in <em>Viman Nagar</em></span><span>Traffic in <em>Hinjewadi</em></span><span>Garbage in <em>Kondhwa</em></span><span>Roads in <em>Baner</em></span><span>Drainage in <em>Undri</em></span><span>Meters broken in <em>Pune</em></span><span>Footpaths in <em>Deccan</em></span>
 </div></div>
 
-<section style="padding-top:120px;padding-bottom:120px">
+<!-- PARLIAMENT BROKEN -->
+<section class="parl-section" style="padding-top:120px;padding-bottom:120px">
+<div class="parl-bg"></div>
 <div class="si">
-<div class="rv"><span class="ey">The problem</span><h2 class="st">Democracy speaks once every five years. Between elections, silence.</h2></div>
+<div class="rv"><span class="ey">The broken system</span>
+<h2 class="st">Parliament decides what to discuss by lottery. Not by what matters to you.</h2></div>
 <div class="sp">
-<div class="col rv d1"><p class="bt">India has <strong>no structured pipeline</strong> between what citizens collectively know and what decision-makers act on. The gap gets filled by whoever has access &mdash; lobbyists, contractors, the loudest voice in the room.</p><p class="bt">Complaints scatter across PMC apps, WhatsApp rants, Twitter threads, and chai-shop arguments. <strong>None of it reaches anyone in a structured, actionable form.</strong></p></div>
-<div class="col rv d2"><p class="bt">Ward officers drown in <strong>200 duplicate complaints</strong> about the same pothole. Housing society secretaries decide based on <strong>whoever shouts loudest.</strong> Corporators rely on political instinct instead of data.</p><p class="bt">Lok Sabha and Rajya Sabha sessions get consumed by political theatre while <strong>the actual problems people face go undiscussed.</strong></p></div>
+<div class="col rv d1">
+<p class="bt">In Question Hour &mdash; the one hour meant to hold the government accountable &mdash; <strong>which topics get raised is decided by ballot.</strong> A lottery. Not by urgency. Not by how many citizens are affected. A random draw decides whether your water crisis gets 60 seconds of attention or gets ignored entirely.</p>
+<p class="bt">And even that one hour is routinely destroyed. <strong>The 17th Lok Sabha lost 387 hours to disruptions</strong> &mdash; walkouts, sloganeering, adjournments. The opposition roasts the government. The government roasts the opposition. The public watches from home and wonders: <strong>when will someone discuss MY road, MY water, MY child&rsquo;s school?</strong></p>
 </div>
-<div class="hb rv d3"><p>It&rsquo;s not that the system can&rsquo;t act. It&rsquo;s that the system has no signal. The intelligence exists in the crowd &mdash; scattered, unstructured, invisible.</p></div>
-</div></section>
-
-<section style="padding-top:80px;padding-bottom:120px;background:linear-gradient(to bottom,var(--bg),#0f0f0a)">
-<div class="si">
-<div class="rv"><span class="tg">Proof it&rsquo;s possible</span><h2 class="st">Pune proved the system works. When it wants to.</h2><p class="bt">For the Bajaj Pune Grand Tour 2026, India&rsquo;s first UCI international cycling race &mdash;</p></div>
-<div class="pc rv d1"><div class="ps">&#8377;500 Crore. 75 Days. 400 km.</div><div class="pd">The same roads with potholes for years. The same PMC that couldn&rsquo;t finish a 22.5 km riverside road in a decade. The same administration whose pothole app died in 6 months. But when <strong>international cameras and national pride</strong> were on the line &mdash; done in 75 days. The CM said: <strong>&ldquo;What typically takes decades has been accomplished in months.&rdquo;</strong></div></div>
-<div class="pg rv d2">
-<div class="pm"><div class="pmn">437 km</div><div class="pmt">of race-ready roads built to UCI international standards</div></div>
-<div class="pm"><div class="pmn">42%</div><div class="pmt">of Pune&rsquo;s water meters are faulty &mdash; nobody acts without pressure</div></div>
-<div class="pm"><div class="pmn">6 months</div><div class="pmt">PMC&rsquo;s Road Mitra pothole app survived before dying</div></div>
-<div class="pm"><div class="pmn">0</div><div class="pmt">structured tools for collective citizen intelligence in India</div></div>
+<div class="col rv d2">
+<p class="bt">Parliament met for just <strong>55 days per year</strong> in the 17th Lok Sabha &mdash; down from 135 days in the 1950s. The UK Parliament sits 150+ days. The US Congress sits 260 days. India, the world&rsquo;s largest democracy, sits the least.</p>
+<p class="bt"><strong>42% of bills were passed with less than 30 minutes of debate.</strong> The Farm Laws &mdash; affecting 600 million farmers &mdash; were passed in 7 minutes in Rajya Sabha. Seven minutes. No proper vote. No proper discussion. Your livelihood, decided faster than a pizza delivery.</p>
 </div>
-<div class="hb rv d3"><p>The capability exists. The money exists. The only thing missing is a mechanism that makes ignoring people&rsquo;s problems more costly than solving them.</p></div>
+</div>
+<div class="waste-grid rv d3">
+<div class="waste-card"><div class="wn">387</div><div class="wl">Hours lost to disruptions in 17th Lok Sabha</div></div>
+<div class="waste-card"><div class="wn">₹2.5L</div><div class="wl">Taxpayer money wasted per minute of disruption</div></div>
+<div class="waste-card"><div class="wn">42%</div><div class="wl">Bills passed with less than 30 min of debate</div></div>
+<div class="waste-card"><div class="wn">Lottery</div><div class="wl">How Question Hour topics are selected</div></div>
+</div>
+<div class="hb rv d4"><p>The people who are supposed to represent you spend more time fighting each other than fighting for you. This is not democracy working. This is democracy on pause.</p></div>
 </div></section>
 
-<section class="ss"><div class="sg">
-<div class="rv"><div class="sn" data-count="1.4" data-suffix="B+">0</div><div class="sl">People with lived experience of their local problems</div></div>
-<div class="rv d1"><div class="sn">0</div><div class="sl">Structured systems turning that knowledge into action</div></div>
-<div class="rv d2"><div class="sn">1</div><div class="sl">Platform building the missing pipe. This one.</div></div>
-</div></section>
-
-<section style="padding-top:120px;padding-bottom:80px">
+<!-- FAILED GOVT APPS -->
+<section style="padding-top:80px;padding-bottom:100px">
 <div class="si">
-<div class="rv"><span class="ey">The solution</span><h2 class="st">SUAS is the real-time nervous system between citizens and action.</h2></div>
-<div class="rv d1"><p class="bt">Not a complaint box. Not a petition tool. Not another app that dies in six months. <strong>A continuous, living expression</strong> of what a community knows, wants, and has figured out &mdash; structured by AI into something any decision-maker can act on immediately.</p><p class="bt">The autorickshaw driver knows which junction needs a signal. The chai wallah knows which drain overflows every monsoon. <strong>Every one of these inputs is a puzzle piece.</strong> SUAS assembles the puzzle.</p></div>
-<div class="hb rv d2"><p>Voting says &ldquo;I choose you.&rdquo; SUAS says &ldquo;here&rsquo;s what we need you to do, here&rsquo;s how, and we&rsquo;re all watching.&rdquo;</p></div>
+<div class="rv"><span class="ey">The failed solutions</span>
+<h2 class="st">Every government app built for citizens has failed. Because they were built for government, not people.</h2></div>
+<div class="rv d1"><p class="bt">The government keeps building apps that <strong>nobody wants to use.</strong> Not because people don&rsquo;t care &mdash; because the apps are complicated, require 15 form fields, ask for Aadhaar numbers, crash on basic phones, and mark complaints as &ldquo;resolved&rdquo; without doing anything. <strong>Citizens don&rsquo;t have time for this.</strong> They&rsquo;re working, commuting, surviving. If contributing to democracy requires filling a 10-field form, democracy loses.</p></div>
+<div class="fail-grid rv d2">
+<div class="fail-card"><h4>PMC Road Mitra</h4><p>Launched Aug 2025 to report potholes. Died within 6 months. Officials didn&rsquo;t even know it stopped working.</p></div>
+<div class="fail-card"><h4>PMC Care App</h4><p>Complaints marked &ldquo;resolved&rdquo; without action. Can&rsquo;t load Google Maps. Submit button breaks. 2023 tickets buried under 2025 ones.</p></div>
+<div class="fail-card"><h4>Every other grievance portal</h4><p>Complex forms. No follow-up. No synthesis. No transparency. One complaint in, zero change out. Repeat forever.</p></div>
+</div>
+<div class="hb rv d3"><p>What if contributing took 10 seconds instead of 10 minutes? What if you just texted what you see &mdash; like telling a friend &mdash; and the system did the rest?</p></div>
 </div></section>
 
+<div class="dv"></div>
+
+<!-- TEAMWORK SECTION -->
+<section class="team-section" style="padding-top:0;padding-bottom:0;min-height:auto">
+<div class="team-bg"></div>
+<div class="team-quote rv">
+<h2>What if we stopped blaming<br>and started <em>building</em>?</h2>
+<p>Every day, 1.4 billion Indians complain about the same things &mdash; roads, water, traffic, corruption, slow government. We post on Twitter. We rant on WhatsApp. We blame politicians. We blame each other. And nothing changes. <strong>What if we took all that energy and pointed it in the same direction?</strong> Not as a protest. Not as a movement. Just as a nation that finally decided to work as a team &mdash; each person contributing one small piece of what they know, AI assembling it into something no authority can ignore.</p>
+</div></section>
+
+<div class="dv"></div>
+
+<!-- WHAT SUAS IS -->
+<section style="padding-top:100px;padding-bottom:80px">
+<div class="si">
+<div class="rv"><span class="ey">The solution</span><h2 class="st">SUAS: the real-time nervous system between citizens and action.</h2></div>
+<div class="rv d1"><p class="bt">Not a complaint box. Not a petition tool. Not another app that dies in six months. <strong>A continuous, living expression</strong> of what the community knows, wants, and has figured out &mdash; structured by AI into something any decision-maker can act on immediately.</p>
+<p class="bt">The autorickshaw driver knows which junction needs a signal. The chai wallah knows which drain overflows every monsoon. <strong>Every opinion is a puzzle piece. SUAS assembles the puzzle.</strong></p></div>
+<div class="hb rv d2"><p>Voting says &ldquo;I choose you.&rdquo; SUAS says &ldquo;here&rsquo;s what we need you to do, here&rsquo;s how, and 843 of us are watching.&rdquo;</p></div>
+</div></section>
+
+<!-- HOW IT WORKS -->
 <section style="padding-top:80px;padding-bottom:120px">
 <div class="si">
-<div style="text-align:center" class="rv"><span class="ey">How it works</span><h2 class="st">Speak freely. AI structures it. The world sees it.</h2></div>
+<div style="text-align:center" class="rv"><span class="ey">How it works</span><h2 class="st">10 seconds. That&rsquo;s all it takes.</h2></div>
 <div class="hg">
-<div class="hc rv d1" data-step="01"><h3>Vibe it</h3><p>Type casually &mdash; like texting a friend. &ldquo;Bhai Kharadi ka paani bohot kharab hai.&rdquo; No formality. Any language. Your lived experience is the only credential.</p></div>
-<div class="hc rv d2" data-step="02"><h3>AI refines it</h3><p>Transforms casual input into structured, actionable intelligence. Preserves your meaning. Works in English, Hindi, Marathi, and more.</p></div>
-<div class="hc rv d3" data-step="03"><h3>Collective intelligence emerges</h3><p>Every input is a puzzle piece. AI synthesizes ALL solutions into an evolving optimal solution with confidence scores and action plans.</p></div>
+<div class="hc rv d1" data-step="01"><h3>Vibe it</h3><p>Type like you&rsquo;re texting a friend. &ldquo;Bhai Kharadi ka paani bohot kharab hai.&rdquo; Hindi, Marathi, English &mdash; whatever. No forms. No Aadhaar. No 15 fields. Just your experience.</p></div>
+<div class="hc rv d2" data-step="02"><h3>AI refines it</h3><p>Your casual input becomes structured intelligence. AI preserves your meaning while making it ready for synthesis. You approve before it goes in &mdash; your voice, never misrepresented.</p></div>
+<div class="hc rv d3" data-step="03"><h3>Collective intelligence emerges</h3><p>Every input is a puzzle piece. AI synthesizes ALL solutions into an evolving optimal answer with confidence scores, themes, and action plans. The more people contribute, the sharper it gets.</p></div>
 </div>
 <div class="hg" style="margin-top:16px">
-<div class="hc rv d1" data-step="04"><h3>Auto-routes to authority</h3><p>AI classifies: society issue, ward issue, district issue, or national? Routes automatically. You just speak &mdash; the system handles the rest.</p></div>
-<div class="hc rv d2" data-step="05"><h3>Problems bubble up</h3><p>When 8 wards report water issues, AI auto-synthesizes at city level. Individual potholes become systemic failures that need the collector&rsquo;s attention.</p></div>
-<div class="hc rv d3" data-step="06"><h3>Transparency forces action</h3><p>843 contributors. Solution ready 127 days. Zero response. The good officer acts on signal. The lazy one acts because ignoring is now costly.</p></div>
+<div class="hc rv d1" data-step="04"><h3>Auto-routes to authority</h3><p>AI decides: society issue? Ward? District? State? National? Routes automatically. You never have to figure out who to complain to. The system knows.</p></div>
+<div class="hc rv d2" data-step="05"><h3>Problems bubble up</h3><p>8 wards report water issues? AI auto-creates a city-level synthesis: &ldquo;This is systemic.&rdquo; Individual potholes become district-level infrastructure failures. Patterns that no human could spot.</p></div>
+<div class="hc rv d3" data-step="06"><h3>Transparency forces action</h3><p>843 contributors. Solution ready 127 days. Zero response. Public. Timestamped. Undeniable. The good officer acts on signal. The rest act because ignoring just got expensive.</p></div>
 </div>
 </div></section>
 
 <div class="dv"></div>
 
+<!-- PULL REQUEST MODEL -->
 <section style="padding-top:100px;padding-bottom:100px">
 <div class="si">
 <div class="rv"><span class="ey">The model</span><h2 class="st">Democracy as a pull request.</h2></div>
-<div class="rv d1"><p class="bt">Think of it like GitHub. <strong>Citizens are contributors.</strong> They submit lived experience and proposed solutions. <strong>AI synthesizes these into a pull request</strong> &mdash; a structured solution with confidence scores. <strong>The decision-maker is the reviewer</strong> &mdash; society secretary, corporator, collector, or minister.</p><p class="bt">They can <strong>accept</strong> (take action), <strong>request changes</strong> (ask for more input), or <strong>ignore</strong> &mdash; but ignoring is publicly visible and timestamped. No one fights anyone. The transparency does the work.</p></div>
+<div class="rv d1"><p class="bt"><strong>Citizens are contributors.</strong> They submit lived experience and solutions. <strong>AI synthesizes it into a pull request</strong> &mdash; structured, optimized, with confidence scores. <strong>The decision-maker is the reviewer</strong> &mdash; secretary, corporator, collector, minister. They accept, request changes, or ignore &mdash; but ignoring is public, timestamped, and everyone sees it.</p></div>
 <div class="pf rv d2">
 <div class="pe">Citizens contribute</div><span class="pa">&rarr;</span>
-<div class="pe">AI synthesizes solution</div><span class="pa">&rarr;</span>
+<div class="pe">AI synthesizes</div><span class="pa">&rarr;</span>
 <div class="pe">Public dashboard</div><span class="pa">&rarr;</span>
-<div class="pe" style="border-color:rgba(200,255,0,.4)">Authority reviews &amp; acts</div>
+<div class="pe" style="border-color:rgba(200,255,0,.4)">Authority acts</div>
 </div>
-<div class="hb rv d3"><p>The decision-maker doesn&rsquo;t need surveys, town halls, or 400 WhatsApp messages. They get a merge-ready solution built by the people who actually live the problem.</p></div>
+<div class="hb rv d3"><p>No surveys. No town halls. No reading 400 WhatsApp messages. A merge-ready solution built by the people who live the problem.</p></div>
 </div></section>
 
 <div class="dv"></div>
 
-<section style="padding-top:100px;padding-bottom:100px">
+<!-- PROOF -->
+<section style="padding-top:100px;padding-bottom:100px;background:linear-gradient(to bottom,var(--bg),#0f0f0a)">
 <div class="si">
-<div class="rv"><span class="ey">The structure</span><h2 class="st">Mirrors India&rsquo;s governance. Every level, one intelligence layer.</h2><p class="bt">You don&rsquo;t choose a category. You describe your problem. AI routes it to the right governance level. Every node has a real authority on the other end.</p></div>
-
-<div class="rv d1"><div class="gt" id="g0" onclick="tg('g0')"><div class="gh"><div class="gd" style="background:#E24B4A"></div><div class="gi"><div class="gn">National</div><div class="ga">Lok Sabha &middot; Rajya Sabha &middot; PM / Cabinet &middot; Ministries</div></div><div class="gb">Policy + legislation</div><svg class="gc" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="gby"><div class="gcn"><p>Problems requiring central government action &mdash; national policy, inter-state disputes, railways, telecom. When 5+ states report the same problem, AI auto-synthesizes at national level and flags relevant MPs and ministries.</p><div class="gg"><div class="gk"><h4>Example</h4><p>&ldquo;UPI failures up 300% &mdash; RBI and NPCI need to address server capacity&rdquo;</p></div><div class="gk"><h4>Accountability</h4><p>&ldquo;23 lakh citizens, 18 states. Synthesized 90 days ago. No response from Ministry of Finance.&rdquo;</p></div></div></div></div></div></div>
-
-<div class="rv d1"><div class="gt" id="g1" onclick="tg('g1')"><div class="gh"><div class="gd" style="background:#534AB7"></div><div class="gi"><div class="gn">State</div><div class="ga">Vidhan Sabha &middot; CM / Governor &middot; State departments</div></div><div class="gb">State policy + budget</div><svg class="gc" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="gby"><div class="gcn"><p>State highways, police, healthcare, education, electricity, water policy. Bubbles up when 5+ districts report the same issue.</p><div class="gg"><div class="gk"><h4>Example</h4><p>&ldquo;Maharashtra&rsquo;s 42% faulty water meters need state-level replacement program&rdquo;</p></div><div class="gk"><h4>Reviewers</h4><p>MLAs, state ministers, department secretaries, divisional commissioners</p></div></div></div></div></div></div>
-
-<div class="rv d2"><div class="gt o" id="g2" onclick="tg('g2')"><div class="gh"><div class="gd" style="background:#378ADD"></div><div class="gi"><div class="gn">District / City</div><div class="ga">District Collector &middot; Municipal Corporation &middot; Zilla Parishad</div></div><div class="gb">Execution</div><svg class="gc" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="gby"><div class="gcn"><p>Where most civic action happens. The collector coordinates. PMC handles city services. This is where synthesis becomes road repairs, water pipelines, and garbage trucks.</p><div class="gg"><div class="gk"><h4>Urban</h4><p>Municipal Corporation &rarr; Commissioner &rarr; Department heads (roads, water, sanitation)</p></div><div class="gk"><h4>Rural</h4><p>Zilla Parishad &rarr; Block Development Officer &rarr; Gram Panchayat &rarr; Sarpanch</p></div></div></div></div></div></div>
-
-<div class="rv d3"><div class="gt" id="g3" onclick="tg('g3')"><div class="gh"><div class="gd" style="background:#1D9E75"></div><div class="gi"><div class="gn">Ward / Panchayat</div><div class="ga">Corporator &middot; Ward officer &middot; Sarpanch &middot; Gram Sabha</div></div><div class="gb">Local action</div><svg class="gc" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="gby"><div class="gcn"><p>Hyperlocal. Potholes, streetlights, drainage, garbage. If unresolved for 45 days (Maharashtra&rsquo;s legal requirement), auto-escalates to district level.</p><div class="gg"><div class="gk"><h4>Where SUAS starts</h4><p>One ward. Real problems. Real synthesis. One corporator who looks at it. Everything scales from here.</p></div><div class="gk"><h4>PR model</h4><p>Corporator = reviewer. Citizens = contributors. Synthesis = PR. Dashboard = open repo.</p></div></div></div></div></div></div>
-
-<div class="rv d4"><div class="gt" id="g4" onclick="tg('g4')"><div class="gh"><div class="gd" style="background:#BA7517"></div><div class="gi"><div class="gn">Society / Neighbourhood</div><div class="ga">Housing society secretary &middot; RWA president &middot; Mohalla committee</div></div><div class="gb">On-ramp</div><svg class="gc" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="gby"><div class="gcn"><p>Instead of 200 WhatsApp messages, one synthesis: &ldquo;78% want CCTV at gate B. Cost: &#8377;45K. 3 quotes collected.&rdquo; Can&rsquo;t solve locally? Auto-escalates to ward level with full context.</p><div class="gg"><div class="gk"><h4>The hook</h4><p>People start with their society&rsquo;s parking problem. They stay to solve their ward&rsquo;s water crisis.</p></div><div class="gk"><h4>WhatsApp replacement</h4><p>Structured intelligence instead of noise. Secretary gets signal, not chaos.</p></div></div></div></div></div></div>
-
+<div class="rv"><span class="tg">Proof it works when they want it to</span><h2 class="st">₹500 crore. 75 days. 400 km. Same PMC.</h2></div>
+<div class="pc rv d1"><div class="ps">Bajaj Pune Grand Tour 2026</div><div class="pd">The same roads with potholes for years. Same PMC whose app died in 6 months. But when <strong>international cameras and national pride</strong> were on the line &mdash; 400 km of roads built to UCI standards in 75 days. CM Fadnavis said: <strong>&ldquo;What typically takes decades has been accomplished in months.&rdquo;</strong></div></div>
+<div class="pg rv d2">
+<div class="pm"><div class="pmn">437 km</div><div class="pmt">Race-ready roads in 75 days</div></div>
+<div class="pm"><div class="pmn">42%</div><div class="pmt">Faulty water meters &mdash; nobody acts without pressure</div></div>
+<div class="pm"><div class="pmn">6 months</div><div class="pmt">Road Mitra app survived before dying</div></div>
+<div class="pm"><div class="pmn">0</div><div class="pmt">Collective intelligence tools exist for Indian citizens</div></div>
+</div>
+<div class="hb rv d3"><p>The capability exists. The money exists. The only thing missing is a mechanism that makes ignoring people&rsquo;s problems more costly than solving them. SUAS is that mechanism.</p></div>
 </div></section>
 
 <div class="dv"></div>
 
+<!-- GOVERNANCE HIERARCHY -->
 <section style="padding-top:100px;padding-bottom:100px">
 <div class="si">
-<div class="rv"><span class="ey">The engine</span><h2 class="st">AI that doesn&rsquo;t just chat. It decides.</h2><p class="bt">The same neural network operates at every tier, performing four critical jobs:</p></div>
+<div class="rv"><span class="ey">The structure</span><h2 class="st">Mirrors India&rsquo;s governance. Every level, one intelligence layer.</h2></div>
+
+<div class="rv d1"><div class="gt" id="g0" onclick="tg('g0')"><div class="gh"><div class="gd" style="background:#E24B4A"></div><div class="gi"><div class="gn">National</div><div class="ga">Lok Sabha &middot; Rajya Sabha &middot; PM / Cabinet</div></div><div class="gb">Policy</div><svg class="gc" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="gby"><div class="gcn"><p>No more lottery for topics. When 5+ states report the same problem, SUAS auto-synthesizes at national level. Parliament gets a data-backed brief instead of whoever shouts loudest deciding the agenda.</p><div class="gg"><div class="gk"><h4>What changes</h4><p>Topics prioritized by citizen data, not political strategy. 23 lakh contributors across 18 states? That&rsquo;s the agenda.</p></div><div class="gk"><h4>Accountability</h4><p>&ldquo;Solution synthesized 90 days ago. No response from Ministry.&rdquo; Public. Timestamped. Undeniable.</p></div></div></div></div></div></div>
+
+<div class="rv d1"><div class="gt" id="g1" onclick="tg('g1')"><div class="gh"><div class="gd" style="background:#534AB7"></div><div class="gi"><div class="gn">State</div><div class="ga">Vidhan Sabha &middot; CM &middot; State departments</div></div><div class="gb">State policy</div><svg class="gc" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="gby"><div class="gcn"><p>State highways, police, healthcare, water policy. Bubbles up when 5+ districts report the same issue.</p><div class="gg"><div class="gk"><h4>Example</h4><p>&ldquo;42% faulty water meters across Maharashtra &mdash; state replacement program needed&rdquo;</p></div><div class="gk"><h4>Reviewers</h4><p>MLAs, state ministers, divisional commissioners</p></div></div></div></div></div></div>
+
+<div class="rv d2"><div class="gt o" id="g2" onclick="tg('g2')"><div class="gh"><div class="gd" style="background:#378ADD"></div><div class="gi"><div class="gn">District / City</div><div class="ga">Collector &middot; Municipal Corporation &middot; Zilla Parishad</div></div><div class="gb">Execution</div><svg class="gc" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="gby"><div class="gcn"><p>Where synthesis becomes road repairs, water pipelines, and garbage trucks. The collector coordinates. PMC executes.</p><div class="gg"><div class="gk"><h4>Urban</h4><p>Municipal Corp &rarr; Commissioner &rarr; Department heads</p></div><div class="gk"><h4>Rural</h4><p>Zilla Parishad &rarr; BDO &rarr; Gram Panchayat &rarr; Sarpanch</p></div></div></div></div></div></div>
+
+<div class="rv d3"><div class="gt" id="g3" onclick="tg('g3')"><div class="gh"><div class="gd" style="background:#1D9E75"></div><div class="gi"><div class="gn">Ward / Panchayat</div><div class="ga">Corporator &middot; Ward officer &middot; Sarpanch</div></div><div class="gb">Local</div><svg class="gc" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="gby"><div class="gcn"><p>Hyperlocal. Potholes, streetlights, garbage. Unresolved 45 days? Auto-escalates to district with full context.</p><div class="gg"><div class="gk"><h4>Where SUAS starts</h4><p>One ward in Pune. Real problems. Real synthesis. Everything scales from here.</p></div><div class="gk"><h4>PR model</h4><p>Corporator = reviewer. Citizens = contributors. Dashboard = open repo.</p></div></div></div></div></div></div>
+
+<div class="rv d4"><div class="gt" id="g4" onclick="tg('g4')"><div class="gh"><div class="gd" style="background:#BA7517"></div><div class="gi"><div class="gn">Society / Neighbourhood</div><div class="ga">Secretary &middot; RWA president &middot; Mohalla committee</div></div><div class="gb">On-ramp</div><svg class="gc" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="gby"><div class="gcn"><p>Replace 200 WhatsApp messages with one synthesis: &ldquo;78% want CCTV at gate B. &#8377;45K. 3 quotes ready.&rdquo; Can&rsquo;t solve locally? Escalates with full context.</p><div class="gg"><div class="gk"><h4>The hook</h4><p>Start with society parking. Stay to solve your ward&rsquo;s water crisis.</p></div><div class="gk"><h4>For secretaries</h4><p>Finally know what residents actually want &mdash; not just whoever shows up.</p></div></div></div></div></div></div>
+</div></section>
+
+<div class="dv"></div>
+
+<!-- AI ENGINE -->
+<section style="padding-top:100px;padding-bottom:100px">
+<div class="si">
+<div class="rv"><span class="ey">The engine</span><h2 class="st">AI that doesn&rsquo;t just chat. It decides.</h2></div>
 <div class="ag rv d1">
-<div class="ac"><h4>Refinement</h4><p>Transforms casual vibe comments into structured intelligence. Works in English, Hindi, Marathi, and more. You text like talking to a friend &mdash; the system handles the rest.</p></div>
-<div class="ac"><h4>Routing</h4><p>Classifies governance level automatically. Pothole = ward. Water meter policy = state. Railway safety = national. The citizen never thinks about this.</p></div>
-<div class="ac"><h4>Synthesis</h4><p>Aggregates all inputs into an optimal solution with confidence scores, agreement themes, and action items. Every new input evolves it. Never static.</p></div>
-<div class="ac"><h4>Bubble-up detection</h4><p>5+ nodes report the same problem? AI auto-synthesizes at the parent level. Individual complaints become systemic patterns that force attention.</p></div>
+<div class="ac"><h4>Refinement</h4><p>Casual vibe &rarr; structured intelligence. Hindi, Marathi, English. You text like talking to a friend. The system handles the rest.</p></div>
+<div class="ac"><h4>Routing</h4><p>Pothole = ward. Water policy = state. Railway = national. AI classifies instantly. You never think about who to complain to.</p></div>
+<div class="ac"><h4>Synthesis</h4><p>All inputs &rarr; one optimal solution. Confidence scores. Agreement themes. Action items. Every new voice makes it sharper.</p></div>
+<div class="ac"><h4>Bubble-up</h4><p>5+ nodes report the same issue? Parent-level synthesis auto-generates. Individual potholes become systemic patterns.</p></div>
 </div>
-<div class="hb rv d2" style="margin-top:40px"><p>Every opinion is a puzzle piece. The AI assembles the puzzle. The public sees the picture. The authority has no excuse not to act.</p></div>
 </div></section>
 
 <div class="dv"></div>
 
+<!-- VISION -->
 <section style="padding-top:100px;padding-bottom:120px">
 <div class="si">
 <div class="rv"><span class="ey">The vision</span><h2 class="st">Not an app. An infrastructure upgrade for how India makes decisions.</h2></div>
 <div class="tl rv d1">
-<div class="ti a"><div class="til">Now</div><div class="tit">Prove it in one ward in Pune</div><div class="tid">50 people contributing real solutions. One synthesis a society secretary calls useful. One petition a ward officer acts on.</div></div>
-<div class="ti"><div class="til">6 months</div><div class="tit">Every locality in Pune</div><div class="tid">Public dashboard showing response times. Local media starts covering it. First &ldquo;SUAS synthesis vs government inaction&rdquo; story gets written.</div></div>
-<div class="ti"><div class="til">12 months</div><div class="tit">Multi-city expansion</div><div class="tid">Mumbai, Bangalore, Hyderabad. Geographic hierarchy scales naturally. IAS officers in progressive districts start requesting access.</div></div>
-<div class="ti"><div class="til">24 months</div><div class="tit">National intelligence layer</div><div class="tid">India&rsquo;s top 100 unsolved problems, ranked by engagement, with ready-made solutions. Political parties reference SUAS data in campaigns.</div></div>
-<div class="ti"><div class="til">The endgame</div><div class="tit">Lok Sabha references what crores of citizens already synthesized</div><div class="tid">Not because we forced them. Because it became the most reliable, most structured, most undeniable signal of public will. The pipe between elections finally exists.</div></div>
+<div class="ti a"><div class="til">Now</div><div class="tit">One ward in Pune</div><div class="tid">50 people. Real problems. Real synthesis. One petition that gets acted on.</div></div>
+<div class="ti"><div class="til">6 months</div><div class="tit">All of Pune</div><div class="tid">Public dashboard. Local media coverage. First &ldquo;SUAS synthesis vs government inaction&rdquo; story.</div></div>
+<div class="ti"><div class="til">12 months</div><div class="tit">Multi-city</div><div class="tid">Mumbai. Bangalore. Hyderabad. IAS officers requesting access.</div></div>
+<div class="ti"><div class="til">24 months</div><div class="tit">National intelligence layer</div><div class="tid">India&rsquo;s top 100 unsolved problems. Political parties referencing SUAS data in campaigns.</div></div>
+<div class="ti"><div class="til">The endgame</div><div class="tit">Parliament discusses what citizens already synthesized</div><div class="tid">Not because we forced them. Because SUAS became the most reliable signal of what 1.4 billion people actually need. No more lottery. No more theatre. Just data.</div></div>
 </div>
 <div class="sp rv d2" style="margin-top:48px">
-<div class="col"><p class="bt">We&rsquo;re not fixing corruption. We&rsquo;re making the system <strong>so transparent</strong> that corruption becomes structurally harder to sustain.</p></div>
-<div class="col"><p class="bt">Not through revolt. Not through protest. <strong>Through basic common sense</strong> and collective intelligence that finally has a voice.</p></div>
+<div class="col"><p class="bt">We&rsquo;re not fixing corruption. We&rsquo;re making the system <strong>so transparent</strong> that corruption becomes structurally harder.</p></div>
+<div class="col"><p class="bt">Not revolt. Not protest. <strong>Teamwork.</strong> A nation that decided to stop blaming and start building. Together.</p></div>
 </div>
 </div></section>
 
+<!-- CTA -->
 <section class="cs">
 <div class="rv">
 <h2>Stop complaining.<br>Start <em>solving.</em></h2>
-<p>SUAS is being built right now. Starting in Pune. If you believe the system can be better &mdash; join us.</p>
+<p>SUAS is being built right now. Starting in Pune. If you believe India deserves better &mdash; not through fighting, but through collective intelligence &mdash; this is your platform.</p>
 <a href="https://478421c3-f633-4888-a301-72a61c9235bc-00-3n2i4ddsygvo9.worf.replit.dev/app" class="cb" target="_blank">Enter the platform<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
 <div class="cl"><a href="https://github.com/harsh147-github/Project_Svyas" target="_blank">GitHub</a><a href="mailto:harsh@suas.in">Get in touch</a></div>
 </div></section>
 
-<div class="ft"><p>Built with desire, not degrees. Starting from Pune, India.<br><span style="opacity:.5">&copy; 2026 SUAS &middot; &#x0938;&#x094D;&#x0935;&#x093E;&#x0938; &middot; Shut Up And Solve</span></p></div>
+<div class="ft"><p>Built with desire, not degrees. By India, For India.<br><span style="opacity:.5">&copy; 2026 SUAS &middot; &#x0938;&#x094D;&#x0935;&#x093E;&#x0938; &middot; Shut Up And Solve</span></p></div>
 
 <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
 <script>
@@ -274,8 +379,6 @@ const lenis=new Lenis({duration:1.2,easing:t=>Math.min(1,1.001-Math.pow(2,-10*t)
 function raf(time){lenis.raf(time);requestAnimationFrame(raf)}requestAnimationFrame(raf);
 const obs=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting){e.target.classList.add('v');obs.unobserve(e.target)}})},{threshold:.15,rootMargin:'0px 0px -60px 0px'});
 document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
-const cobs=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting){const el=e.target,t=el.textContent;if(t==='0'&&el.dataset.count){const end=parseFloat(el.dataset.count),sf=el.dataset.suffix||'',dur=2000,st=performance.now();function a(now){const p=Math.min((now-st)/dur,1),ea=1-Math.pow(1-p,3);el.textContent=(ea*end).toFixed(end%1?1:0)+sf;if(p<1)requestAnimationFrame(a)}requestAnimationFrame(a)}cobs.unobserve(el)}})},{threshold:.5});
-document.querySelectorAll('.sn').forEach(c=>cobs.observe(c));
 function tg(id){const el=document.getElementById(id),w=el.classList.contains('o');document.querySelectorAll('.gt').forEach(t=>t.classList.remove('o'));if(!w)el.classList.add('o')}
 </script>
 </body>
