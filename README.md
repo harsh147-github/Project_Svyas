@@ -1,201 +1,165 @@
-# SUAS · स्वास · Shut Up And Solve
+# SUAS — Shut Up And Solve
 
-Website: https://harsh147-github.github.io/Project_Svyas/
+### The Missing Infrastructure of Indian Democracy
 
-> **The missing infrastructure of Indian democracy.**  
-> Democracy speaks once every five years through voting. Between elections, there is zero structured mechanism for collective public will to reach decision-makers. SUAS is the pipe that should have always existed.
-
-**Stage:** MVP (Live on Replit) + Manifesto (GitHub Pages)  
-**Starting from:** Pune, India  
+**[🌐 Live Manifesto](https://harsh147-github.github.io/Project_Svyas/) · [🚀 Try the MVP](https://478421c3-f633-4888-a301-72a61c9235bc-00-3n2i4ddsygvo9.worf.replit.dev/app)**
 
 ---
 
-## The Problem
+India votes once every 5 years. Between elections, 1.4 billion people have **zero structured mechanism** to tell decision-makers what they need. CPGRAMS has 62% satisfaction. PMC Road Mitra died in 6 months. Twitter is noise without synthesis. Change.org collects signatures with no solutions.
 
-India has **no structured pipeline** between what 1.4 billion citizens collectively know and what decision-makers act on.
+**SUAS is the pipe that should always have existed.**
 
-The gap gets filled by whoever has access — lobbyists, contractors, the loudest voice in the room. Ward officers drown in 200 duplicate complaints about the same pothole. Housing society secretaries decide based on whoever shouts loudest in the WhatsApp group. Lok Sabha and Rajya Sabha sessions get consumed by political theatre while actual problems go undiscussed.
+Citizens contribute "vibe answers" — casual, low-friction inputs about local problems in any language. AI synthesizes thousands of these into optimal, structured solutions with confidence scores, action items, cost estimates, and responsible authorities. A transparent dashboard serves **both citizens and decision-makers** at every governance level — from your housing society secretary to Parliament.
 
-Complaints scatter across PMC apps, WhatsApp rants, Twitter threads, and chai-shop arguments. None of it reaches anyone who can act on it in a structured, actionable form.
-
-**It's not that the system can't act. It's that the system has no signal.**
-
----
-
-## The Proof
-
-When the Bajaj Pune Grand Tour 2026 (India's first UCI cycling race) needed roads upgraded:
-
-| Metric | What happened |
-|--------|--------------|
-| **₹500 Crore** | Spent on infrastructure upgrades |
-| **75 days** | To build 400+ km of race-ready roads to international standards |
-| **Same PMC** | That couldn't fix potholes for years or keep their reporting app alive for 6 months |
-
-> *"What typically takes decades has been accomplished in months."* — CM Devendra Fadnavis
-
-**The capability exists. The money exists. The only thing missing is a mechanism that makes ignoring people's problems more costly than solving them.**
+> **Voting says "I choose you."**
+> **SUAS says "Here's what we need you to do, here's how, and we're all watching."**
 
 ---
 
-## What SUAS Is
+## What Makes SUAS Different
 
-A **collective intelligence platform** — the real-time nervous system between citizens and action.
+**Without AI, this is Reddit. With AI, this is national infrastructure.**
 
-Not a complaint box. Not a petition tool. Not another app that dies in six months. A continuous, living expression of what a community knows, wants, and has figured out — structured by AI into something any decision-maker can act on immediately.
+The AI engine does three things no community platform can:
 
-> Voting says "I choose you." SUAS says "here's what we need you to do, here's how, and we're all watching."
+1. **Lowers the bar** — Say "paani nahi aa raha subah se" and AI converts it into structured governance intelligence. Any language. 5 seconds. No policy papers needed.
 
----
+2. **Synthesizes at scale** — 10,000 citizen opinions become ONE optimal solution with weighted themes, action items, cost estimates, and responsible authorities. No human moderator team can process this. The AI does it in 15 seconds.
 
-## How It Works
+3. **Routes intelligently** — AI knows a pothole is a ward problem and a water policy is a state problem. It auto-classifies governance level and routes to the exact right desk.
 
-### 1. Vibe it
-Type casually — like texting a friend. "Bhai Kharadi ka paani bohot kharab hai." No formality. No structured forms. Any language. Your lived experience is the only credential needed.
-
-### 2. AI refines it
-The engine transforms casual input into structured, actionable intelligence. Preserves meaning while making it ready for synthesis with thousands of other inputs.
-
-### 3. Collective intelligence emerges
-Every input is a puzzle piece. AI synthesizes ALL solutions into an evolving optimal solution with confidence scores, agreement levels, and implementable action plans.
-
-### 4. Auto-routes to the right authority
-AI classifies each problem: society issue, ward issue, district issue, state issue, or national issue. Routes automatically to the correct governance level. Citizens just speak — the system handles the rest.
-
-### 5. Problems bubble up
-When 5+ nodes at one level report the same problem, AI auto-synthesizes at the parent level. 8 wards reporting water issues → city-level synthesis appears automatically. Individual potholes become systemic failures that demand the collector's attention.
-
-### 6. Transparency forces action
-843 contributors. Solution ready for 127 days. Zero response from Ward 14. That data speaks louder than any protest. Good officers act because they finally have signal. Lazy ones act because ignoring is now the costly option.
+**Plus: Problem Interconnection Analysis** — SUAS maps hidden causal relationships between problems. "Hinjewadi traffic" isn't one problem — it's 4 sub-problems (missing buses, narrow roads, no metro, no parking) controlled by 4 different authorities. SUAS decomposes compound crises for parallel resolution across departments.
 
 ---
 
-## The Model: Democracy as a Pull Request
+## Dual Interface: Citizens + Decision-Makers
 
-Think of it like GitHub:
+SUAS is designed for **both sides** of the governance equation.
 
-- **Citizens = contributors** — submit lived experience and proposed solutions
-- **AI synthesis = the pull request** — structured, optimized solution with confidence scores
-- **Decision-maker = the reviewer** — society secretary, corporator, collector, or minister
-- **Public dashboard = the open repo** — everyone can see status, response times, who's acting
+### For Citizens
+- Zero-friction contribution in any language (voice, text, images)
+- AI refines casual input into structured intelligence (approve or correct)
+- See how YOUR input shaped the synthesis — contribution attribution
+- Transparent dashboard at every governance level
+- Track whether authorities respond — inaction is publicly timestamped
 
-The reviewer can **accept** (take action), **request changes** (ask for more input), or **ignore** — but ignoring is publicly visible, timestamped, and becomes the accountability signal.
+### For Decision-Makers (The Authority Dashboard)
+- **Prioritized intelligence queue** — not a pile of complaints, but ranked problems with urgency scores and ready solutions
+- **AI-synthesized action plans** — each problem comes with action items, responsible department, cost estimate, and timeline
+- **Early warning system** — 5+ wards report the same issue → auto-escalation before it becomes a media headline
+- **Problem decomposition** — compound crises broken into parallel workstreams across departments
+- **One-click response** — respond publicly and get credit for being responsive. Easier than any existing channel.
+- **Performance metrics** — response rates per department for reviews and resource allocation
+- **Budget justification** — "2,341 citizens need water meter replacement, AI estimates ₹45Cr" is stronger than any bureaucratic assessment
 
-```
-Citizens contribute → AI synthesizes → Public dashboard → Authority reviews & acts
-```
+---
 
-The decision-maker doesn't need to run surveys, hold town halls, read 400 WhatsApp messages, or knock on doors. They get a merge-ready solution built by the people who actually live the problem.
+## The AI Engine — 6 Autonomous Jobs
+
+| Job | Trigger | Model | Latency | What It Does |
+|-----|---------|-------|---------|--------------|
+| **REFINE** | New solution | gpt-4o-mini | <3s | Converts casual vibe input into structured intelligence. Auto-detects language. |
+| **ROUTE** | New problem | gpt-4o-mini | <2s | Classifies governance level and routes to correct authority/department. |
+| **SYNTHESIZE** | 5/15/50/100 solutions | gpt-4o | 5-15s | Aggregates all inputs into optimal solution with themes, action items, costs. |
+| **BUBBLE-UP** | Every 6 hours | gpt-4o | Async | Detects 5+ child locations with same problem → auto-escalates to parent level. |
+| **INTERCONNECT** | On synthesis | gpt-4o | 5-10s | Maps causal relationships. Decomposes compound problems for parallel resolution. |
+| **PETITION** | Petition created | gpt-4o | 5-10s | Generates formal petition with RTI-ready language and PDF. |
 
 ---
 
 ## Governance Hierarchy
 
-SUAS mirrors India's actual governance structure. You don't choose a category — you describe your problem, AI routes it:
+SUAS mirrors India's actual governance structure. Geography is the organizer — every node has a real authority on the other end.
 
-| Level | Authority | What routes here | Bubble-up trigger |
-|-------|-----------|-----------------|-------------------|
-| **🔴 National** | Lok Sabha, Rajya Sabha, PM/Cabinet, Ministries | Inter-state issues, national policy, railways, telecom | 5+ states report same problem |
-| **🟣 State** | Vidhan Sabha, CM, State departments | State highways, police, healthcare, education, water policy | 5+ districts report same problem |
-| **🔵 District/City** | District Collector, Municipal Corporation, Zilla Parishad | City infrastructure, roads, water supply, sanitation coordination | 5+ wards report same problem |
-| **🟢 Ward/Panchayat** | Corporator, Ward officer, Sarpanch, Gram Sabha | Potholes, streetlights, drainage, garbage, local encroachments | Auto-escalates after 45 days unresolved |
-| **🟡 Society/Neighbourhood** | Housing society secretary, RWA president, Mohalla committee | Parking, maintenance, noise, CCTV, vendor selection | Escalates when local authority can't resolve |
+```
+INDIA (National)  ← PM, Cabinet, Lok Sabha, Rajya Sabha
+  └── MAHARASHTRA (State)  ← CM, State Cabinet, Vidhan Sabha
+       └── PUNE (City)  ← Municipal Commissioner
+            └── Ward 5 - Kharadi (Ward)  ← Corporator, Ward Officer
+                 └── Kumar Pristine (Society)  ← Society Secretary
 
-**Every node has a real authority on the other end.** Problems that can't be solved locally auto-escalate upward with full context — no information lost between levels.
+Auto-escalation:
+  5+ wards same problem  → City-level synthesis
+  5+ cities same problem → State-level synthesis
+  5+ states same problem → National-level synthesis
+```
 
 ---
 
-## The AI Engine
+## Tech Stack
 
-The same neural network operates at every tier of governance, performing four critical jobs:
+**Frontend:** React 18 + Vite + TailwindCSS v4 + Framer Motion + wouter + TanStack Query
 
-### Refinement
-Transforms casual "vibe comments" into structured, actionable intelligence. Works in English, Hindi, Marathi, and more. Users type like texting a friend — the system handles the rest.
+**Backend:** Express.js + PostgreSQL + Drizzle ORM + Redis (Upstash) + BullMQ job queue
 
-### Routing
-Classifies which governance level a problem belongs to. A pothole is ward-level. A water meter policy is state-level. Railway safety is national. The citizen never thinks about this.
+**AI:** OpenAI API (gpt-4o-mini for refine/route, gpt-4o for synthesis/petition) + structured JSON output + prompt versioning
 
-### Synthesis
-Aggregates all inputs at a given node into an optimal solution with confidence scores, themes of agreement/disagreement, and implementable action items. Every new input evolves the synthesis — it's never static.
+**Auth:** Phone OTP via Firebase Auth + JWT + Redis-backed sessions
 
-### Bubble-up Detection
-When 5+ nodes at one level report the same problem, AI auto-synthesizes at the parent level. Individual complaints become systemic patterns. 8 wards reporting water issues → city-level synthesis that says "this isn't 8 local problems — it's one systemic failure that needs the collector."
+**Deploy:** Cloudflare Pages (frontend) + Railway (backend) + Neon.tech (PostgreSQL)
 
-> Every opinion is a puzzle piece. The AI assembles the puzzle. The public sees the picture. The authority has no excuse not to act.
+**Cost:** $20-35/month runs the entire platform for a city.
+
+---
+
+## Real Problems We're Solving (Pune Seed Data)
+
+1. **PMC Road Mitra app dead** — 6 months after launch (verified, March 2026)
+2. **Kharadi water crisis** — residents buying tanker water daily
+3. **Hinjewadi-Baner traffic** — 2+ hour commute for 10km (interconnected: 4 departments)
+4. **42% of Pune's water meters faulty** — bills are guesswork (PMC Budget 2026-27)
+5. **Garbage collection failure** in Viman Nagar — wet waste ignored
+6. **Baner-Balewadi** — 300% growth in 10 years, zero infrastructure planning
+7. **Kondhwa-Saswad Road** — deadly potholes ignored for years
+8. **Undri-Pisoli summer water emergency** — annual crisis, no permanent solution
+
+---
+
+## Why This Matters (The Data)
+
+All data verified from PRS Legislative Research, official Lok Sabha/Rajya Sabha records, and DARPG.
+
+- **55 sitting days/year** — the 17th Lok Sabha averaged the lowest of any full-term Lok Sabha (was 135 in the 1950s)
+- **84% of bills** passed without parliamentary committee review (17th Lok Sabha)
+- **35% of bills** passed with less than 1 hour of debate
+- **387 hours** of functioning time lost to disruptions
+- **62% CPGRAMS satisfaction** — 38% find grievances inadequately addressed
+- **State legislatures average 20-22 days/year** — in 2021, 44% of state bills passed same day as introduced
+
+The capability exists — PMC built 400km of roads in 75 days for the Bajaj Grand Tour. What's missing is the infrastructure to channel citizen intelligence to decision-makers. SUAS is that infrastructure.
 
 ---
 
 ## The Vision
 
-| When | What | Milestone |
-|------|------|-----------|
-| **Now** | Prove it in one ward in Pune | 50 people contributing. One useful synthesis. One petition acted upon. |
-| **6 months** | Every locality in Pune | Public dashboard. Local media coverage. First "SUAS vs inaction" story. |
-| **12 months** | Multi-city expansion | Mumbai, Bangalore, Hyderabad. IAS officers requesting access. |
-| **24 months** | National intelligence layer | India's top 100 unsolved problems with ready-made solutions. Parties referencing SUAS data. |
-| **Endgame** | Lok Sabha references citizen synthesis | Not because we forced them. Because SUAS became the most reliable signal of public will in the country. |
-
-We're not fixing corruption. We're making the system so transparent that corruption becomes structurally harder to sustain. Not through revolt. Through basic common sense and collective intelligence that finally has a voice.
-
----
-
-## Architecture
-
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React + Vite + TailwindCSS v4 + Framer Motion |
-| **Backend** | Express.js + PostgreSQL + Drizzle ORM |
-| **AI Engine** | GPT-4o-mini for refinement + synthesis, with custom routing and bubble-up detection models |
-| **Auth** | Session-based (upgrading to phone OTP via Firebase) |
-| **Landing/Manifesto** | Static HTML + Lenis smooth scroll (GitHub Pages) |
-| **Integration targets** | WhatsApp Business API, Reddit Devvit, Telegram bots, Twitter/X bot |
-
-### Data Model
+**Aadhaar** gave every Indian an identity. **UPI** gave every Indian a payment system. **SUAS** gives every Indian a voice that decision-makers can actually hear.
 
 ```
-users          → id, username, locality, verified
-locations      → id, name, type (nation/state/district/city/ward/society), parentId, authorityName, authorityRole
-problems       → id, authorId, locationId, content, category, isAuthority, authorityTarget, status
-solutions      → id, problemId, authorId, rawContent (vibe), refinedContent (AI-structured), upvotes
-syntheses      → id, locationId, problemId, content, themes[], actionItems[], confidence, inputCount, version
-swipe_actions  → id, userId, problemId, action (engage/skip/bookmark)
-cares          → userId + problemId (petition signatures)
+Aadhaar → Identity
+UPI     → Payments
+SUAS    → Participation
 ```
 
 ---
 
-## Live
+## Roadmap
 
-- **Manifesto**: [harsh147-github.github.io/Project_Svyas](https://harsh147-github.github.io/Project_Svyas)
-- **Platform**: [SUAS on Replit](https://478421c3-f633-4888-a301-72a61c9235bc-00-3n2i4ddsygvo9.worf.replit.dev/app)
-
----
-
-## Contributing
-
-This is bigger than one person. If you care about making India's systems actually work for its people, reach out.
-
-**What we need:**
-- **Builders** — React, Node.js, AI/ML, mobile (React Native/Expo)
-- **AI/ML** — Classification models for routing, synthesis quality improvement, multilingual NLP
-- **Designers** — UX for civic tech, multilingual interfaces, data visualization
-- **Community** — People embedded in Pune's neighbourhoods, housing societies, RWAs
-- **Domain experts** — Governance, urban planning, civic law, public policy
-- **Connectors** — Anyone with relationships to local authorities, NGOs, or media
-
-No credentials required. Your contribution is your credential.
+| Phase | Timeline | Milestone |
+|-------|----------|-----------|
+| **Pilot** | Month 1-3 | One city (Pune). 50 users. First petition submitted to PMC. Commissioner sees Authority Dashboard. |
+| **Expand** | Month 3-6 | Multi-city (Mumbai, Bangalore). State dashboards live. WhatsApp bot integration. |
+| **National** | Month 6-12 | 100 Smart Cities. Central government dashboard. CPGRAMS integration. BHASHINI for 22 languages. |
+| **Scale** | Year 2+ | Panchayat to Parliament. Custom ML models. India exports the model to other democracies. |
 
 ---
 
-## The Philosophy
+## Built By
 
-Hard is not impossible. ₹500 crore and 75 days proved that. The system works when it wants to. SUAS makes it want to — by making collective citizen intelligence so structured, so visible, and so undeniable that ignoring it becomes the more expensive option.
+**Harsh Sonawane** — Pune, India
 
-Someone is going to build the missing infrastructure of Indian democracy. It should be us — together.
+This is not a side project. This is a mission to build the democratic infrastructure India was always supposed to have.
 
 ---
 
-<p align="center">
-  <strong>Stop complaining. Start solving.</strong><br>
-  <em>Built with desire, not degrees. © 2026 SUAS · स्वास</em>
-</p>
+*Data sourced from PRS Legislative Research, Official Lok Sabha/Rajya Sabha records, DARPG Annual Reports, and verified Indian journalism (The Hindu, Indian Express, Business Standard, Punekar News).*
