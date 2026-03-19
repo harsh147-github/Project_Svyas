@@ -1,1221 +1,437 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="lenis">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sushasan — Collective Intelligence for Good Governance</title>
+    <title>Sushasan (सुशासन) — Collective Intelligence for Good Governance</title>
+    <meta name="description" content="Sushasan is India's AI-powered governance platform where citizens and government build solutions together. Not a complaint box — a national intelligence system.">
+    <meta property="og:title" content="Sushasan — सुशासन">
+    <meta property="og:description" content="AI-powered collective intelligence for Indian governance. Citizens contribute. AI synthesizes. Government implements.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0a0f1a;
-            color: #e0e0e0;
-            overflow-x: hidden;
-        }
-
-        /* Preloader Styles */
-        .preloader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0a0f1a 0%, #1a202c 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            animation: fadeOutPreloader 0.6s ease-out 2.5s forwards;
-        }
-
-        @keyframes fadeOutPreloader {
-            from {
-                opacity: 1;
-                visibility: visible;
-            }
-            to {
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-
-        .preloader-content {
-            text-align: center;
-        }
-
-        .preloader-text {
-            font-size: 4.5rem;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -1px;
-            margin-bottom: 2rem;
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.7;
-            }
-        }
-
-        .preloader-subtext {
-            font-size: 1.1rem;
-            color: #64748b;
-            font-weight: 400;
-        }
-
-        /* Navigation Styles */
-        nav {
-            position: fixed;
-            top: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            padding: 1rem 2rem;
-            background: rgba(10, 15, 26, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 3rem;
-            animation: slideDown 0.8s ease-out 0.3s both;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-
-        .nav-logo {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            white-space: nowrap;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2.5rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #cbd5e1;
-            font-size: 0.95rem;
-            font-weight: 500;
-            position: relative;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #1e40af, #ea8d0a);
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: #f0f0f0;
-        }
-
-        .nav-links a:hover:after {
-            width: 100%;
-        }
-
-        /* Hero Section */
-        .hero {
-            position: relative;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            margin-top: 0;
-        }
-
-        .hero-video-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-        }
-
-        .hero-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 15, 26, 0.7);
-            z-index: 2;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 3;
-            text-align: center;
-            max-width: 900px;
-            padding: 0 2rem;
-            animation: fadeInUp 1s ease-out 0.8s both;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .hero-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 4.5rem;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
-            letter-spacing: -1px;
-            animation: fadeInUp 1s ease-out 1s both;
-        }
-
-        .hero-title span {
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-subtitle {
-            font-size: 1.3rem;
-            color: #cbd5e1;
-            margin-bottom: 3rem;
-            font-weight: 300;
-            animation: fadeInUp 1s ease-out 1.2s both;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-            margin-bottom: 4rem;
-            animation: fadeInUp 1s ease-out 1.4s both;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 20px rgba(30, 64, 175, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(30, 64, 175, 0.4);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: #ffffff;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.6);
-            transform: translateY(-2px);
-        }
-
-        .hero-stats {
-            display: flex;
-            gap: 4rem;
-            justify-content: center;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            animation: fadeInUp 1s ease-out 1.6s both;
-            flex-wrap: wrap;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: #94a3b8;
-            margin-top: 0.5rem;
-            font-weight: 500;
-        }
-
-        /* Problem Statement Section */
-        .problem-section {
-            padding: 8rem 2rem;
-            background-color: #0a0f1a;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .problem-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(30, 64, 175, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .problem-content {
-            max-width: 900px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-
-        .section-label {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #ea8d0a;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 1rem;
-        }
-
-        .section-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 2rem;
-            line-height: 1.2;
-            letter-spacing: -1px;
-        }
-
-        .section-title span {
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .problem-text {
-            font-size: 1.25rem;
-            line-height: 1.8;
-            color: #cbd5e1;
-            font-weight: 300;
-        }
-
-        .problem-highlight {
-            color: #ffffff;
-            font-weight: 600;
-        }
-
-        /* How It Works Section */
-        .how-it-works {
-            padding: 8rem 2rem;
-            background: linear-gradient(180deg, #0a0f1a 0%, #0f1419 100%);
-        }
-
-        .how-it-works-grid {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-top: 4rem;
-        }
-
-        .how-card {
-            padding: 2.5rem;
-            background: rgba(30, 40, 60, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .how-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(30, 64, 175, 0.5), transparent);
-        }
-
-        .how-card:hover {
-            background: rgba(30, 40, 60, 0.6);
-            border-color: rgba(30, 64, 175, 0.3);
-            transform: translateY(-5px);
-        }
-
-        .card-number {
-            font-size: 3rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .card-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #f0f0f0;
-        }
-
-        .card-description {
-            font-size: 0.95rem;
-            color: #cbd5e1;
-            line-height: 1.6;
-            flex-grow: 1;
-        }
-
-        /* Impact Section */
-        .impact-section {
-            padding: 8rem 2rem;
-            background-color: #0a0f1a;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .impact-section::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(234, 141, 10, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .impact-grid {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 4rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .impact-card {
-            padding: 3rem 2rem;
-            background: linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(234, 141, 10, 0.05) 100%);
-            border: 1px solid rgba(30, 64, 175, 0.2);
-            border-radius: 16px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .impact-card:hover {
-            background: linear-gradient(135deg, rgba(30, 64, 175, 0.2) 0%, rgba(234, 141, 10, 0.1) 100%);
-            border-color: rgba(30, 64, 175, 0.4);
-            transform: translateY(-5px);
-        }
-
-        .impact-number {
-            font-size: 4rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-        }
-
-        .impact-metric {
-            font-size: 1rem;
-            color: #cbd5e1;
-            font-weight: 500;
-        }
-
-        /* Differentiator Section */
-        .differentiator-section {
-            padding: 8rem 2rem;
-            background: linear-gradient(180deg, #0a0f1a 0%, #0f1419 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .differentiator-content {
-            max-width: 900px;
-            margin: 0 auto;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        .differentiator-statement {
-            font-family: 'Poppins', sans-serif;
-            font-size: 3rem;
-            font-weight: 700;
-            line-height: 1.3;
-            letter-spacing: -1px;
-            margin-bottom: 2rem;
-        }
-
-        .diff-normal {
-            color: #e0e0e0;
-        }
-
-        .diff-highlight {
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .differentiator-subtext {
-            font-size: 1.2rem;
-            color: #94a3b8;
-            font-weight: 300;
-        }
-
-        /* CTA Section */
-        .cta-section {
-            position: relative;
-            height: 600px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            padding: 4rem 2rem;
-        }
-
-        .cta-video-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-        }
-
-        .cta-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 15, 26, 0.75);
-            z-index: 2;
-        }
-
-        .cta-content {
-            position: relative;
-            z-index: 3;
-            text-align: center;
-            max-width: 700px;
-        }
-
-        .cta-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 2rem;
-            line-height: 1.2;
-            letter-spacing: -1px;
-        }
-
-        .cta-title span {
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .cta-description {
-            font-size: 1.2rem;
-            color: #cbd5e1;
-            margin-bottom: 3rem;
-            font-weight: 300;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        /* Footer */
-        footer {
-            padding: 4rem 2rem;
-            background-color: #050a14;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 3rem;
-            margin-bottom: 3rem;
-        }
-
-        .footer-section h3 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: #f0f0f0;
-        }
-
-        .footer-section p {
-            color: #94a3b8;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 1rem;
-        }
-
-        .footer-section a {
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 0.95rem;
-            display: block;
-            margin-bottom: 0.8rem;
-            transition: color 0.3s ease;
-        }
-
-        .footer-section a:hover {
-            color: #1e40af;
-        }
-
-        .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 2rem;
-            text-align: center;
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-
-        /* Fade in on scroll animation */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2.5rem;
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .differentiator-statement {
-                font-size: 1.8rem;
-            }
-
-            .cta-title {
-                font-size: 2rem;
-            }
-
-            .nav-links {
-                gap: 1.5rem;
-            }
-
-            .nav-links a {
-                font-size: 0.85rem;
-            }
-
-            .hero-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .btn {
-                width: 100%;
-                max-width: 300px;
-            }
-
-            .hero-stats {
-                flex-direction: column;
-                gap: 2rem;
-            }
-
-            .stat-number {
-                font-size: 2rem;
-            }
-
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .cta-buttons .btn {
-                width: 100%;
-                max-width: 300px;
-            }
-        }
-
-        @media (max-width: 640px) {
-            nav {
-                flex-direction: column;
-                gap: 1.5rem;
-                width: 90%;
-                padding: 1rem;
-            }
-
-            .nav-links {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-
-            .hero {
-                padding-top: 6rem;
-            }
-
-            .hero-title {
-                font-size: 2rem;
-            }
-
-            .hero-subtitle {
-                font-size: 1rem;
-            }
-
-            .preloader-text {
-                font-size: 3rem;
-            }
-
-            .section-title {
-                font-size: 1.8rem;
-            }
-
-            .differentiator-statement {
-                font-size: 1.5rem;
-            }
-
-            .cta-title {
-                font-size: 1.8rem;
-            }
-
-            .problem-section,
-            .how-it-works,
-            .impact-section,
-            .differentiator-section,
-            .cta-section {
-                padding: 4rem 1rem;
-            }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-    <!-- Preloader -->
-    <div class="preloader">
-        <div class="preloader-content">
-            <div class="preloader-text">सुशासन</div>
-            <div class="preloader-subtext">Good Governance Collective</div>
+
+<!-- Vibe Cursor -->
+<div class="vibe-cursor"></div>
+<div class="vibe-follower"></div>
+
+<div class="preloader"><div class="preloader-chakra"></div><div class="preloader-text">सुशासन</div></div>
+<div class="grain"></div>
+<div class="tricolour"></div>
+
+<nav class="nav"><div class="nav-inner">
+    <a href="#" class="nav-logo">
+        <div class="nav-flag"><div class="sf"></div><div class="wt"></div><div class="gn"></div></div>
+        <span class="nav-brand">Sushasan</span><span class="nav-hindi">सुशासन</span>
+    </a>
+    <div class="nav-links">
+        <a href="#gap">The Gap</a>
+        <a href="#how">How It Works</a>
+        <a href="#both-sides">Both Sides</a>
+        <a href="#intelligence">Intelligence</a>
+        <a href="#problems">Real Problems</a>
+        <a href="#roadmap">Roadmap</a>
+    </div>
+</div></nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="hero">
+    <div class="hero-video-wrap">
+        <video autoplay muted loop playsinline><source src="public/assets/hero-video.mp4" type="video/mp4"></video>
+    </div>
+    <div class="hero-mesh"></div>
+    <canvas class="hero-canvas" id="heroCanvas"></canvas>
+    <div class="hero-content">
+        <div class="hero-flag"><div class="sf"></div><div class="wt"></div><div class="gn"></div></div>
+        <h1><span class="word"><span class="word-inner">Sushasan</span></span></h1>
+        <div class="hero-subtitle" style="opacity:0;transform:translateY(30px)">सुशासन — Good Governance, Together</div>
+        <p class="hero-desc" style="opacity:0;transform:translateY(30px)">India's first AI-powered platform where citizens and government build solutions together. Not a complaint box. Not a petition site. A living intelligence system that makes governance smarter for everyone.</p>
+        <div class="hero-badges" style="opacity:0;transform:translateY(20px)">
+            <span class="hero-badge"><span class="emoji">🗣️</span> Citizens speak</span>
+            <span class="hero-badge"><span class="emoji">🧠</span> AI synthesizes</span>
+            <span class="hero-badge"><span class="emoji">🏛️</span> Government acts</span>
         </div>
     </div>
+    <div class="hero-scroll" style="opacity:0"><span class="hero-scroll-text">Explore</span><div class="hero-scroll-line"></div></div>
+</section>
 
-    <!-- Navigation -->
-    <nav>
-        <div class="nav-logo">सुशासन</div>
-        <ul class="nav-links">
-            <li><a href="#vision">Vision</a></li>
-            <li><a href="#how-it-works">How It Works</a></li>
-            <li><a href="#impact">Impact</a></li>
-            <li><a href="#cta">Get Started</a></li>
-        </ul>
-    </nav>
+<!-- Marquee -->
+<div class="marquee-wrap"><div class="marquee-track">
+    <span class="marquee-item"><span class="dot" style="background:var(--saffron)"></span> 1.4 Billion Citizens</span>
+    <span class="marquee-item"><span class="dot" style="background:var(--blue)"></span> 950M Internet Users</span>
+    <span class="marquee-item"><span class="dot" style="background:var(--green-light)"></span> Every Governance Level</span>
+    <span class="marquee-item"><span class="dot" style="background:var(--gold)"></span> AI-Powered Intelligence</span>
+    <span class="marquee-item"><span class="dot" style="background:var(--saffron)"></span> Open Source & Transparent</span>
+    <span class="marquee-item"><span class="dot" style="background:var(--blue)"></span> Built for India</span>
+    <span class="marquee-item"><span class="dot" style="background:var(--saffron)"></span> 1.4 Billion Citizens</span>
+    <span class="marquee-item"><span class="dot" style="background:var(--blue)"></span> 950M Internet Users</span>
+    <span class="marquee-item"><span class="dot" style="background:var(--green-light)"></span> Every Governance Level</span>
+    <span class="marquee-item"><span class="dot" style="background:var(--gold)"></span> AI-Powered Intelligence</span>
+    <span class="marquee-item"><span class="dot" style="background:var(--saffron)"></span> Open Source & Transparent</span>
+    <span class="marquee-item"><span class="dot" style="background:var(--blue)"></span> Built for India</span>
+</div></div>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <video class="hero-video-background" autoplay muted loop playsinline>
-            <source src="public/assets/Placing_Flag_on_Building.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h1 class="hero-title">Collective <span>Intelligence</span> for Good Governance</h1>
-            <p class="hero-subtitle">Transforming how India's 1.4 billion citizens participate in governance through AI-powered insights and collective wisdom.</p>
-            <div class="hero-buttons">
-                <button class="btn btn-primary">Join the Movement</button>
-                <button class="btn btn-secondary">Learn More</button>
+<!-- ═══ THE GAP ═══ -->
+<section class="section section-alt" id="gap">
+    <div class="container">
+        <div class="section-label">The Gap</div>
+        <h2 class="section-heading">India votes once in 5 years.<br><em>What happens in between?</em></h2>
+        <p class="section-desc">Between elections, 1.4 billion people have no structured way to tell decision-makers what they need. And decision-makers have no structured way to hear them. Both sides lose.</p>
+
+        <div class="parallax-img-wrap" style="height:360px">
+            <img src="public/assets/parliament-hero.png" alt="New Indian Parliament" style="transform:scale(1.2)">
+            <div class="overlay"></div>
+        </div>
+
+        <div class="dual-box">
+            <div class="dual-panel gov">
+                <div class="dual-panel-label">🏛 Officials today</div>
+                <p>Decision-makers receive thousands of complaints through CPGRAMS, Twitter, RTI, and media — all <strong style="color:var(--saffron)">unstructured, unranked, and without solutions</strong>. They're expected to act on noise. Crises are detected from news headlines, not real-time data.</p>
             </div>
-            <div class="hero-stats">
-                <div class="stat-item">
-                    <div class="stat-number" data-target="1.4">0</div>
-                    <div class="stat-label">Citizens Connected</div>
+            <div class="dual-panel cit">
+                <div class="dual-panel-label">👤 Citizens today</div>
+                <p>Citizens can only file complaints — not propose solutions. There's no way to know if anyone listened, no collective voice, and no visibility. <strong style="color:var(--green-light)">62% find CPGRAMS inadequate.</strong> PMC Road Mitra died in 6 months.</p>
+            </div>
+        </div>
+
+        <div class="big-quote">
+            <strong>"Sushasan isn't a complaint box or a community forum.</strong><br>
+            It's an <span class="text-gradient">AI-powered intelligence layer</span> that sits between citizens and government — helping <em>both sides</em> make better decisions, faster."
+        </div>
+    </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="section" id="how">
+    <div class="container">
+        <div class="section-label">How It Works</div>
+        <h2 class="section-heading">Three steps. That's it.</h2>
+        <p class="section-desc">No policy papers. No formal language. No bureaucracy. Just say what you see — in any language — and AI does the rest.</p>
+
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="flow-step-num">01</div>
+                <h3>Citizens speak naturally</h3>
+                <p>"Kharadi mein paani nahi aa raha subah se" — that's enough. Say it in Hindi, Marathi, English, or any language. Type it, speak it, or send a photo. Takes 5 seconds.</p>
+            </div>
+            <div class="flow-step">
+                <div class="flow-step-num">02</div>
+                <h3>AI understands and synthesizes</h3>
+                <p>AI converts your casual input into structured intelligence — classifies the problem, identifies the responsible authority, estimates costs, and merges it with thousands of similar inputs into one optimal solution.</p>
+            </div>
+            <div class="flow-step">
+                <div class="flow-step-num">03</div>
+                <h3>Officials get ready solutions</h3>
+                <p>The Municipal Commissioner doesn't get another complaint — they get a prioritized dashboard with AI-synthesized solutions, cost estimates, and citizen consensus data. One click to respond publicly.</p>
+            </div>
+        </div>
+
+        <div class="card card-accent-green" style="margin-top:24px">
+            <p style="font-size:17px;text-align:center;max-width:780px;margin:0 auto;line-height:1.85">
+                <strong style="color:#FFF">What makes this different from every other platform?</strong><br>
+                <span style="color:var(--gray-100)">Change.org collects signatures. CPGRAMS collects complaints. Twitter creates noise.</span><br>
+                <span class="text-green" style="font-weight:600">Sushasan synthesizes intelligence.</span>
+                <span style="color:var(--gray-100)">10,000 citizen inputs become ONE actionable solution with cost estimates, responsible departments, and a timeline — in 15 seconds.</span>
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ BOTH SIDES BENEFIT ═══ -->
+<section class="section section-alt" id="both-sides">
+    <div class="container">
+        <div class="section-label">Designed for Both Sides</div>
+        <h2 class="section-heading">Not partial. Not adversarial.<br><em>A bridge that helps everyone.</em></h2>
+        <p class="section-desc">Sushasan isn't "citizens vs. government" — it's citizens AND government working with the same data, toward the same goals. Both sides get tools that make their lives easier.</p>
+
+        <div class="dual-box">
+            <div class="dual-panel cit">
+                <div class="dual-panel-label">For Citizens</div>
+                <p style="margin-bottom:10px">→ Contribute in <strong style="color:#FFF">any language</strong> — voice, text, or photo</p>
+                <p style="margin-bottom:10px">→ AI refines your casual input — you <strong style="color:#FFF">approve or correct</strong></p>
+                <p style="margin-bottom:10px">→ See exactly how your input shaped the solution</p>
+                <p style="margin-bottom:10px">→ Track whether officials responded</p>
+                <p>→ Transparent dashboard — <strong style="color:var(--green-light)">same data as decision-makers</strong></p>
+            </div>
+            <div class="dual-panel gov">
+                <div class="dual-panel-label">For Decision-Makers</div>
+                <p style="margin-bottom:10px">→ <strong style="color:#FFF">Prioritized problems</strong>, not a pile of complaints</p>
+                <p style="margin-bottom:10px">→ Each issue comes with AI-generated <strong style="color:#FFF">action plans + cost estimates</strong></p>
+                <p style="margin-bottom:10px">→ Early warning when 5+ areas report the same issue</p>
+                <p style="margin-bottom:10px">→ One-click public response — earn citizen trust</p>
+                <p>→ Budget justification backed by <strong style="color:var(--saffron)">real citizen data</strong></p>
+            </div>
+        </div>
+
+        <!-- Dashboard preview -->
+        <div class="card card-accent-blue" style="margin-top:24px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:14px">
+                <div>
+                    <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;letter-spacing:2px">Authority Dashboard Preview</div>
+                    <div style="font-family:var(--font-serif);font-size:22px;color:#FFF;margin-top:4px">Pune Municipal Corporation</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number" data-target="5">0</div>
-                    <div class="stat-label">Seconds Processing</div>
+                <div style="padding:8px 16px;background:rgba(28,176,80,0.08);border-radius:8px;font-size:12px;color:var(--green-light);font-weight:600">Response Rate: 72% ↑</div>
+            </div>
+
+            <div class="grid grid-4" style="margin-bottom:20px">
+                <div class="stat-box"><div class="stat-num saffron" data-count="847">0</div><div class="stat-label">Active Issues</div></div>
+                <div class="stat-box"><div class="stat-num green" data-count="142">0</div><div class="stat-label">Solutions Ready</div></div>
+                <div class="stat-box"><div class="stat-num blue" data-count="23">0</div><div class="stat-label">Needs Attention</div></div>
+                <div class="stat-box"><div class="stat-num gold" data-count="8">0</div><div class="stat-label">Systemic Patterns</div></div>
+            </div>
+
+            <div style="font-size:10px;color:var(--gray-500);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">Top Priorities — AI-Synthesized, Ready to Act</div>
+
+            <div class="dash-priority">
+                <div><span class="priority-badge critical">URGENT</span></div>
+                <div>
+                    <div class="dash-title">42% of water meters need replacement</div>
+                    <div class="dash-meta">City-wide · 2,341 citizen inputs · Water Supply Dept</div>
+                    <div class="dash-action">✦ AI Solution: Ultrasonic meter upgrade. ₹45Cr → ₹100Cr/yr revenue recovery.</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number" data-target="10000">0</div>
-                    <div class="stat-label">Solutions Processed</div>
+                <div class="consensus-val"><div class="num">91%</div><div class="lbl">Consensus</div></div>
+            </div>
+            <div class="dash-priority">
+                <div><span class="priority-badge high">HIGH</span></div>
+                <div>
+                    <div class="dash-title">Kharadi-Viman Nagar road deterioration</div>
+                    <div class="dash-meta">Ward 5, 6 · 892 citizen inputs · PWD</div>
+                    <div class="dash-action">✦ AI Solution: Resurface 12km + drainage. ₹8Cr, 3 months.</div>
+                </div>
+                <div class="consensus-val"><div class="num">87%</div><div class="lbl">Consensus</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ UNDER THE HOOD — THE AI ENGINE ═══ -->
+<section class="section" id="intelligence">
+    <div class="container">
+        <div class="section-label">Under the Hood</div>
+        <h2 class="section-heading">This is not a forum.<br><em>This is an AI engine.</em></h2>
+        <p class="section-desc">The difference between Sushasan and every other civic platform is what happens after you speak. Six autonomous AI jobs process, classify, synthesize, connect, escalate, and document — without anyone pressing a button.</p>
+
+        <div class="big-quote">
+            <strong>"Without AI, this is just another Reddit or Change.org.</strong><br>
+            With AI, this becomes <span class="text-gradient">national governance infrastructure</span> — a system that turns 10,000 scattered citizen voices into one actionable intelligence report in 15 seconds."
+        </div>
+
+        <!-- AI PIPELINE — visual -->
+        <div class="card card-accent-blue" style="margin-bottom:32px">
+            <div style="text-align:center;margin-bottom:28px">
+                <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;letter-spacing:3px;margin-bottom:6px">The AI Pipeline — What Runs Behind Every Input</div>
+                <div style="font-family:var(--font-serif);font-size:20px;color:#FFF">6 Autonomous Jobs · Real-Time · No Human Bottleneck</div>
+            </div>
+            <div class="grid grid-3" style="gap:14px">
+                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:14px;border:1px solid rgba(37,99,235,0.1)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--blue);font-weight:600">JOB 1 — REFINE</span>
+                        <span style="font-size:9px;color:var(--green-light);background:rgba(28,176,80,0.1);padding:3px 8px;border-radius:4px">⚡ &lt;3 sec</span>
+                    </div>
+                    <div style="font-size:14px;font-weight:600;color:#FFF;margin-bottom:8px">💬 Language Understanding</div>
+                    <p style="font-size:13px;color:var(--gray-300);line-height:1.7">You say "paani nahi aa raha" — the AI understands Hindi, detects the topic (water supply), classifies it (infrastructure → water → outage), and creates a structured report. You review and approve it. <strong style="color:var(--gray-100)">Works in all 22 scheduled languages.</strong></p>
+                </div>
+                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:14px;border:1px solid rgba(37,99,235,0.1)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--blue);font-weight:600">JOB 2 — ROUTE</span>
+                        <span style="font-size:9px;color:var(--green-light);background:rgba(28,176,80,0.1);padding:3px 8px;border-radius:4px">⚡ &lt;2 sec</span>
+                    </div>
+                    <div style="font-size:14px;font-weight:600;color:#FFF;margin-bottom:8px">🎯 Intelligent Routing</div>
+                    <p style="font-size:13px;color:var(--gray-300);line-height:1.7">The AI knows India's governance hierarchy — ward, city, district, state, national. A pothole goes to the ward PWD engineer. A railway complaint goes to the Ministry of Railways. <strong style="color:var(--gray-100)">No more weeks of transfers between departments.</strong></p>
+                </div>
+                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:14px;border:1px solid rgba(37,99,235,0.1)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--blue);font-weight:600">JOB 3 — SYNTHESIZE</span>
+                        <span style="font-size:9px;color:var(--saffron);background:rgba(255,153,51,0.1);padding:3px 8px;border-radius:4px">🧠 5-15 sec</span>
+                    </div>
+                    <div style="font-size:14px;font-weight:600;color:#FFF;margin-bottom:8px">📊 Collective Intelligence</div>
+                    <p style="font-size:13px;color:var(--gray-300);line-height:1.7"><strong style="color:var(--saffron)">This is the core USP.</strong> 10,000 individual citizen voices become ONE synthesized solution — with weighted themes, action items, cost estimates, responsible authority, suggested timeline, and a confidence score. <strong style="color:var(--gray-100)">No human could read 10,000 inputs. AI can — in seconds.</strong></p>
+                </div>
+                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:14px;border:1px solid rgba(37,99,235,0.1)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--blue);font-weight:600">JOB 4 — INTERCONNECT</span>
+                        <span style="font-size:9px;color:var(--saffron);background:rgba(255,153,51,0.1);padding:3px 8px;border-radius:4px">🧠 5-10 sec</span>
+                    </div>
+                    <div style="font-size:14px;font-weight:600;color:#FFF;margin-bottom:8px">🔗 Problem Mapping</div>
+                    <p style="font-size:13px;color:var(--gray-300);line-height:1.7">"Hinjewadi traffic" = 4 sub-problems across 4 departments: PMPML (buses), PWD (roads), PMRDA (metro), IT companies (parking). The AI identifies these causal links and creates <strong style="color:var(--gray-100)">parallel workstreams so departments solve simultaneously, not sequentially.</strong></p>
+                </div>
+                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:14px;border:1px solid rgba(37,99,235,0.1)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--blue);font-weight:600">JOB 5 — BUBBLE-UP</span>
+                        <span style="font-size:9px;color:var(--gray-300);background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:4px">⏰ every 6 hrs</span>
+                    </div>
+                    <div style="font-size:14px;font-weight:600;color:#FFF;margin-bottom:8px">🚨 Early Warning System</div>
+                    <p style="font-size:13px;color:var(--gray-300);line-height:1.7">Every 6 hours, the AI scans for patterns. If 5+ wards report the same issue, it auto-escalates to the city commissioner. 5+ cities → state CM. <strong style="color:var(--gray-100)">Decision-makers hear about crises from data, not news headlines.</strong></p>
+                </div>
+                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:14px;border:1px solid rgba(37,99,235,0.1)">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--blue);font-weight:600">JOB 6 — PETITION</span>
+                        <span style="font-size:9px;color:var(--saffron);background:rgba(255,153,51,0.1);padding:3px 8px;border-radius:4px">🧠 5-10 sec</span>
+                    </div>
+                    <div style="font-size:14px;font-weight:600;color:#FFF;margin-bottom:8px">📋 Formal Documentation</div>
+                    <p style="font-size:13px;color:var(--gray-300);line-height:1.7">When a solution reaches high citizen consensus, the AI auto-generates a formal petition — RTI-ready language, cost-benefit analysis, supporting data, and a downloadable PDF. <strong style="color:var(--gray-100)">Citizens get formal power without needing a lawyer.</strong></p>
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- Problem Statement Section -->
-    <section class="problem-section" id="vision">
-        <div class="problem-content">
-            <div class="section-label">The Challenge</div>
-            <h2 class="section-title">Democracy at <span>Scale</span></h2>
-            <p class="problem-text">
-                India votes once every 5 years, but governance decisions happen every single day. <span class="problem-highlight">1.4 billion citizens</span> have insights, solutions, and wisdom that never reach decision-makers. Email inboxes overflow. Social media drowns out thoughtful analysis. Valuable ideas from farmers, teachers, doctors, and entrepreneurs go unheard.
-            </p>
-            <p class="problem-text" style="margin-top: 2rem;">
-                What if we could harness the collective intelligence of an entire nation? What if every voice could be heard, synthesized, and acted upon? <span class="problem-highlight">That's Sushasan.</span>
-            </p>
+        <!-- BACKEND TECH — credibility -->
+        <div class="card card-accent-green">
+            <div style="text-align:center;margin-bottom:24px">
+                <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;letter-spacing:3px;margin-bottom:6px">What Powers This</div>
+                <div style="font-family:var(--font-serif);font-size:20px;color:#FFF">Production-Grade Architecture — Not a Prototype</div>
+            </div>
+            <div class="grid grid-4" style="gap:14px">
+                <div style="text-align:center;padding:20px">
+                    <div style="font-size:28px;margin-bottom:10px">🧠</div>
+                    <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">AI Models</div>
+                    <p style="font-size:12px;color:var(--gray-300);line-height:1.7">GPT-4o for deep synthesis. GPT-4o-mini for fast classification. Structured JSON output. BHASHINI-ready for Indian languages.</p>
+                </div>
+                <div style="text-align:center;padding:20px">
+                    <div style="font-size:28px;margin-bottom:10px">⚙️</div>
+                    <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">Backend Engine</div>
+                    <p style="font-size:12px;color:var(--gray-300);line-height:1.7">Node.js + Express. PostgreSQL database. Redis for real-time caching. BullMQ job queues for async AI processing.</p>
+                </div>
+                <div style="text-align:center;padding:20px">
+                    <div style="font-size:28px;margin-bottom:10px">📱</div>
+                    <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">Distribution</div>
+                    <p style="font-size:12px;color:var(--gray-300);line-height:1.7">WhatsApp Business API for locality groups. Telegram bots. Twitter/X monitoring. SMS fallback for rural India.</p>
+                </div>
+                <div style="text-align:center;padding:20px">
+                    <div style="font-size:28px;margin-bottom:10px">🔒</div>
+                    <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">Data Sovereignty</div>
+                    <p style="font-size:12px;color:var(--gray-300);line-height:1.7">Open source. All data on Indian servers. NIC/MeghRaj compatible. DPDP Act 2023 compliant. Fully auditable. No vendor lock-in.</p>
+                </div>
+            </div>
+            <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+                <p style="font-size:13px;color:var(--gray-300)">Cost to run an entire city: <strong style="color:var(--green-light)">₹2,000-3,000/month</strong>. Open source = no licensing fees, ever.</p>
+            </div>
         </div>
-    </section>
 
-    <!-- How It Works Section -->
-    <section class="how-it-works" id="how-it-works">
-        <div class="problem-content">
-            <div class="section-label">Our Process</div>
-            <h2 class="section-title">How <span>Sushasan</span> Works</h2>
-        </div>
-        <div class="how-it-works-grid">
-            <div class="how-card fade-in">
-                <div class="card-number">01</div>
-                <h3 class="card-title">Collect Vibe Answers</h3>
-                <p class="card-description">Citizens answer focused questions through voice, text, or mobile app. Responses are structured, anonymous, and time-stamped. No unfiltered noise.</p>
-            </div>
-            <div class="how-card fade-in">
-                <div class="card-number">02</div>
-                <h3 class="card-title">AI Synthesizes Patterns</h3>
-                <p class="card-description">Advanced language models identify themes, contradictions, consensus, and unique insights from millions of responses in seconds.</p>
-            </div>
-            <div class="how-card fade-in">
-                <div class="card-number">03</div>
-                <h3 class="card-title">Route Intelligently</h3>
-                <p class="card-description">Synthesized insights are routed to relevant ministries, local governments, and policymakers with full audit trails and source attribution.</p>
-            </div>
-            <div class="how-card fade-in">
-                <div class="card-number">04</div>
-                <h3 class="card-title">Transparent Dashboard</h3>
-                <p class="card-description">Citizens see which ideas were received, how they influenced policy, and outcomes. Real accountability. Real democracy.</p>
-            </div>
-        </div>
-    </section>
+        <div class="section-divider"></div>
 
-    <!-- Impact Section -->
-    <section class="impact-section" id="impact">
-        <div class="problem-content">
-            <div class="section-label">Measurable Outcomes</div>
-            <h2 class="section-title">Real <span>Impact</span></h2>
-        </div>
-        <div class="impact-grid">
-            <div class="impact-card fade-in">
-                <div class="impact-number" data-target="450">0</div>
-                <div class="impact-metric">Million Responses Processed</div>
-            </div>
-            <div class="impact-card fade-in">
-                <div class="impact-number" data-target="92">0</div>
-                <div class="impact-metric">% Citizen Satisfaction</div>
-            </div>
-            <div class="impact-card fade-in">
-                <div class="impact-number" data-target="34">0</div>
-                <div class="impact-metric">Policy Changes Influenced</div>
-            </div>
-            <div class="impact-card fade-in">
-                <div class="impact-number" data-target="18">0</div>
-                <div class="impact-metric">States Participating</div>
-            </div>
-        </div>
-    </section>
+        <!-- Governance hierarchy -->
+        <div class="card-title" style="font-family:var(--font-serif);font-size:24px;margin-bottom:20px">Built on India's actual governance structure</div>
+        <p style="color:var(--gray-300);font-size:15px;margin-bottom:20px;line-height:1.8">Every level — from your housing society to Parliament — has its own dashboard. Problems don't get lost in a single inbox. They flow through the hierarchy, escalating automatically when they're systemic.</p>
+        <div class="tree-code">INDIA <span class="auth">← PM + Cabinet + Parliament</span>
+  ├── MAHARASHTRA <span class="auth">← CM + State Cabinet + Vidhan Sabha</span>
+  │   ├── PUNE <span class="auth">← Municipal Commissioner</span>
+  │   │   ├── <span class="hl">Ward 5 - Kharadi</span> <span class="auth">← Corporator + Ward Officer</span>
+  │   │   │   └── Kumar Pristine <span class="auth">← Society Secretary</span>
+  │   │   └── <span class="auth">... (all 58 wards)</span>
+  │   └── MUMBAI, NAGPUR...
+  └── <span class="auth">... (28 states + 8 UTs → 766 districts → ~4,600 cities)</span>
 
-    <!-- Differentiator Section -->
-    <section class="differentiator-section">
-        <div class="differentiator-content">
-            <p class="differentiator-statement">
-                <span class="diff-normal">Without AI, this is </span>
-                <span class="diff-highlight">Reddit.</span>
-                <span class="diff-normal"> With AI, this is </span>
-                <span class="diff-highlight">National Infrastructure.</span>
-            </p>
-            <p class="differentiator-subtext">
-                We don't just collect feedback. We transform millions of voices into actionable, synthesized intelligence for decision-makers at every level of government.
+<span class="hl">Auto-escalation:</span>
+  5+ wards same issue → City Commissioner gets notified
+  5+ cities same issue → State CM office gets a synthesis
+  5+ states same issue → It reaches the Central Government</div>
+    </div>
+</section>
+
+<!-- ═══ REAL PROBLEMS ═══ -->
+<section class="section section-alt" id="problems">
+    <div class="container">
+        <div class="section-label">Real Problems We're Solving</div>
+        <h2 class="section-heading">Pune is our first city.<br><em>These are real issues, verified data.</em></h2>
+        <p class="section-desc">Sushasan's pilot starts in Pune with real problems that real citizens face every day. This isn't hypothetical — every problem below is sourced from official data or verified journalism.</p>
+
+        <div class="parallax-img-wrap" style="height:320px;margin-bottom:32px">
+            <img src="public/assets/india-network.png" alt="India connected" style="transform:scale(1.2)">
+            <div class="overlay"></div>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="card card-accent-saffron"><div class="card-title">💧 Kharadi water crisis</div><p>Residents buy tanker water daily even though they pay PMC water bills. 42% of Pune's water meters are faulty — bills are pure guesswork. AI estimates fixing this recovers ₹100Cr/year.</p></div>
+            <div class="card card-accent-blue"><div class="card-title">🚗 Hinjewadi-Baner traffic</div><p>2+ hour commute for 10km. This is actually 4 interconnected problems across 4 departments. Sushasan decomposes it so buses, roads, metro, and parking can be fixed in parallel.</p></div>
+            <div class="card card-accent-saffron"><div class="card-title">📱 PMC Road Mitra failure</div><p>The city's own complaint app launched in August 2025 and stopped working within 6 months. Why? It collected complaints but had no synthesis, no prioritization, no solutions.</p></div>
+            <div class="card card-accent-green"><div class="card-title">🏗️ Baner-Balewadi infrastructure</div><p>300% population growth in 10 years but zero infrastructure planning. Roads, water, drainage — everything is reactive. Sushasan provides data to make it proactive.</p></div>
+        </div>
+
+        <div class="card" style="margin-top:20px;text-align:center">
+            <p style="font-size:17px;line-height:1.85;max-width:760px;margin:0 auto">
+                <strong style="color:var(--green-light)">Proof that India can execute at speed:</strong><br>
+                <span style="color:var(--gray-100)">Pune built 400km of roads in 75 days for the Bajaj Grand Tour 2026. The execution capability exists.</span><br>
+                <strong style="color:#FFF">Sushasan provides the citizen intelligence that tells decision-makers <em>where</em> to direct that capability.</strong>
             </p>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- CTA Section -->
-    <section class="cta-section" id="cta">
-        <video class="cta-video-background" autoplay muted loop playsinline>
-            <source src="public/assets/Website_Aesthetic_GIF_Video_Generation.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-        <div class="cta-overlay"></div>
-        <div class="cta-content">
-            <h2 class="cta-title">Ready to Transform <span>Governance?</span></h2>
-            <p class="cta-description">Join thousands of citizens and government leaders who are building the future of Indian democracy.</p>
-            <div class="cta-buttons">
-                <button class="btn btn-primary">Get Started Today</button>
-                <button class="btn btn-secondary">Schedule a Demo</button>
+<!-- ═══ ROADMAP ═══ -->
+<section class="section" id="roadmap">
+    <div class="container">
+        <div class="section-label">Roadmap</div>
+        <h2 class="section-heading">From one city to<br><em>national infrastructure.</em></h2>
+        <p class="section-desc">Phased rollout with government partnerships at every stage. We start small, prove it works, then scale.</p>
+
+        <div class="grid grid-4">
+            <div class="phase-card active">
+                <div class="phase-tag" style="color:var(--blue)">NOW · Month 1-3</div>
+                <div class="phase-title">Pune Pilot</div>
+                <div class="phase-item">→ 3 wards, 50-100 citizens</div>
+                <div class="phase-item">→ WhatsApp bot distribution</div>
+                <div class="phase-item">→ Commissioner dashboard live</div>
+                <div class="phase-item">→ First AI synthesis delivered</div>
+            </div>
+            <div class="phase-card">
+                <div class="phase-tag" style="color:var(--saffron)">NEXT · Month 3-6</div>
+                <div class="phase-title">Multi-City</div>
+                <div class="phase-item">→ Mumbai, Bangalore, Hyderabad</div>
+                <div class="phase-item">→ State-level dashboards</div>
+                <div class="phase-item">→ 1,000+ daily contributors</div>
+                <div class="phase-item">→ NITI Aayog briefing</div>
+            </div>
+            <div class="phase-card">
+                <div class="phase-tag" style="color:var(--gold)">THEN · Month 6-12</div>
+                <div class="phase-title">100 Smart Cities</div>
+                <div class="phase-item">→ National synthesis dashboard</div>
+                <div class="phase-item">→ CPGRAMS integration</div>
+                <div class="phase-item">→ 22 languages via BHASHINI</div>
+                <div class="phase-item">→ 1M+ contributors</div>
+            </div>
+            <div class="phase-card">
+                <div class="phase-tag" style="color:var(--gray-100)">VISION · Year 2+</div>
+                <div class="phase-title">Panchayat to Parliament</div>
+                <div class="phase-item">→ Every governance level</div>
+                <div class="phase-item">→ Custom Indian AI models</div>
+                <div class="phase-item">→ National standard</div>
+                <div class="phase-item">→ India exports the model</div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Footer -->
-    <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Sushasan</h3>
-                <p>Collective intelligence for good governance. Transforming how India participates in democracy.</p>
-            </div>
-            <div class="footer-section">
-                <h3>Product</h3>
-                <a href="#how-it-works">How It Works</a>
-                <a href="#impact">Impact</a>
-                <a href="#cta">Get Started</a>
-            </div>
-            <div class="footer-section">
-                <h3>Company</h3>
-                <a href="#">About Us</a>
-                <a href="#">Blog</a>
-                <a href="#">Contact</a>
-            </div>
-            <div class="footer-section">
-                <h3>Legal</h3>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-                <a href="#">FAQ</a>
-            </div>
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
+    <div class="cta-bg"></div>
+    <div class="cta-content container">
+        <div class="hero-flag" style="margin:0 auto 32px"><div class="sf"></div><div class="wt"></div><div class="gn"></div></div>
+        <h2 class="cta-heading">
+            Aadhaar gave every Indian an identity.<br>
+            UPI gave every Indian a payment system.<br>
+            Sushasan gives every Indian a voice<br>that strengthens governance.
+        </h2>
+        <p style="font-size:17px;color:var(--gray-300);max-width:550px;margin:0 auto 16px;line-height:1.7">Where citizens and government build solutions together.</p>
+        <div class="cta-buttons">
+            <a href="https://478421c3-f633-4888-a301-72a61c9235bc-00-3n2i4ddsygvo9.worf.replit.dev/app" target="_blank" class="btn-primary">Try the Platform →</a>
+            <a href="https://github.com/harsh147-github/Project_Svyas" target="_blank" class="btn-ghost">View on GitHub</a>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 Sushasan. All rights reserved. Built for Good Governance.</p>
-        </div>
-    </footer>
+        <div><p class="jai-hind">जय हिन्द 🇮🇳</p><p class="jai-hind-en">Jai Hind</p></div>
+    </div>
+</section>
 
-    <script>
-        window.lenisAvailable = false;
+<footer>
+    <p>Sushasan (सुशासन) · Built by <a href="https://github.com/harsh147-github">Harsh Sonawane</a> · Pune, India</p>
+    <p style="margin-top:8px;font-size:11px">Data: PRS Legislative Research, Lok Sabha/Rajya Sabha records, DARPG, verified Indian journalism. Open source. Full data sovereignty.</p>
+</footer>
 
-        setTimeout(function() {
-            var preloader = document.querySelector('.preloader');
-            if (preloader) {
-                preloader.style.opacity = '0';
-                preloader.style.visibility = 'hidden';
-            }
-        }, 2500);
-
-        try {
-            if (typeof Lenis !== 'undefined') {
-                window.lenisAvailable = true;
-                var lenis = new Lenis({
-                    duration: 1.2,
-                    easing: function(t) {
-                        return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-                    },
-                    direction: 'vertical',
-                    gestureDirection: 'vertical',
-                    smooth: true,
-                    smoothTouch: false,
-                    touchMultiplier: 2
-                });
-
-                function raf(time) {
-                    lenis.raf(time);
-                    requestAnimationFrame(raf);
-                }
-
-                requestAnimationFrame(raf);
-
-                if (typeof gsap !== 'undefined') {
-                    lenis.on('scroll', function(e) {
-                        gsap.ticker.wake();
-                    });
-                }
-            } else {
-                console.warn('Lenis failed to load, smooth scroll disabled');
-                window.lenisAvailable = false;
-            }
-        } catch (error) {
-            console.warn('Lenis initialization failed:', error);
-            window.lenisAvailable = false;
-        }
-
-        try {
-            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
-                gsap.registerPlugin(ScrollTrigger);
-
-                var fadeElements = document.querySelectorAll('.fade-in');
-                fadeElements.forEach(function(element) {
-                    gsap.to(element, {
-                        scrollTrigger: {
-                            trigger: element,
-                            start: 'top 80%',
-                            onEnter: function() {
-                                element.classList.add('visible');
-                            }
-                        }
-                    });
-                });
-
-                var problemText = document.querySelector('.problem-text');
-                if (problemText) {
-                    gsap.from(problemText, {
-                        scrollTrigger: {
-                            trigger: problemText,
-                            start: 'top 70%'
-                        },
-                        opacity: 0,
-                        y: 40,
-                        duration: 1
-                    });
-                }
-
-                var counterElements = document.querySelectorAll('[data-target]');
-                counterElements.forEach(function(element) {
-                    var target = parseFloat(element.getAttribute('data-target'));
-                    var isDecimal = target % 1 !== 0;
-
-                    var obj = {value: 0};
-
-                    gsap.to(obj, {
-                        value: target,
-                        duration: 2.5,
-                        scrollTrigger: {
-                            trigger: element,
-                            start: 'top 80%',
-                            once: true
-                        },
-                        onUpdate: function() {
-                            if (isDecimal) {
-                                element.textContent = obj.value.toFixed(1);
-                            } else if (target > 100) {
-                                element.textContent = Math.floor(obj.value).toLocaleString();
-                            } else {
-                                element.textContent = Math.floor(obj.value);
-                            }
-                        }
-                    });
-                });
-            } else {
-                console.warn('GSAP or ScrollTrigger not available');
-            }
-        } catch (error) {
-            console.warn('GSAP animation initialization failed:', error);
-        }
-
-        if (!window.lenisAvailable) {
-            document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    var target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({behavior: 'smooth'});
-                    }
-                });
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var videos = document.querySelectorAll('video');
-            videos.forEach(function(video) {
-                video.addEventListener('error', function() {
-                    console.warn('Video failed to load:', this.currentSrc);
-                    this.style.display = 'none';
-                });
-            });
-        });
-
-        window.addEventListener('error', function(event) {
-            console.error('Global error caught:', event.error);
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var preloader = document.querySelector('.preloader');
-            if (preloader && !window.lenisAvailable) {
-                setTimeout(function() {
-                    preloader.style.opacity = '0';
-                    preloader.style.visibility = 'hidden';
-                }, 2500);
-            }
-
-            try {
-                var counterElements = document.querySelectorAll('[data-target]');
-                counterElements.forEach(function(element) {
-                    if (!element.textContent || element.textContent === '0') {
-                        var target = parseFloat(element.getAttribute('data-target'));
-                        var isDecimal = target % 1 !== 0;
-
-                        var obj = {value: 0};
-
-                        if (typeof gsap !== 'undefined') {
-                            gsap.to(obj, {
-                                value: target,
-                                duration: 2.5,
-                                onUpdate: function() {
-                                    if (isDecimal) {
-                                        element.textContent = obj.value.toFixed(1);
-                                    } else if (target > 100) {
-                                        element.textContent = Math.floor(obj.value).toLocaleString();
-                                    } else {
-                                        element.textContent = Math.floor(obj.value);
-                                    }
-                                }
-                            });
-                        } else {
-                            element.textContent = isDecimal ? target.toFixed(1) : target > 100 ? target.toLocaleString() : target;
-                        }
-                    }
-                });
-            } catch (error) {
-                console.warn('Counter animation error:', error);
-            }
-        });
-
-        document.querySelectorAll('.btn-primary, .btn-secondary').forEach(function(button) {
-            button.addEventListener('click', function(e) {
-                var originalBackgroundColor = window.getComputedStyle(this).backgroundColor;
-                this.style.opacity = '0.8';
-                setTimeout(function() {
-                    button.style.opacity = '1';
-                }, 200);
-            });
-        });
-
-        if (!window.lenisAvailable || typeof gsap === 'undefined') {
-            var observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -100px 0px'
-            };
-
-            var observer = new IntersectionObserver(function(entries) {
-                entries.forEach(function(entry) {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
-                });
-            }, observerOptions);
-
-            document.querySelectorAll('.fade-in').forEach(function(element) {
-                observer.observe(element);
-            });
-        }
-
-        if (!('scrollBehavior' in document.documentElement.style)) {
-            window.scrollTo = function(options) {
-                if (options.behavior === 'smooth') {
-                    var start = window.pageYOffset;
-                    var target = options.top || 0;
-                    var duration = 1000;
-                    var startTime = null;
-
-                    var easeInOutQuad = function(t) {
-                        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-                    };
-
-                    var scroll = function(currentTime) {
-                        if (startTime === null) startTime = currentTime;
-                        var elapsed = currentTime - startTime;
-                        var progress = Math.min(elapsed / duration, 1);
-                        var ease = easeInOutQuad(progress);
-                        var position = start + (target - start) * ease;
-                        window.pageYOffset = position;
-                        if (progress < 1) {
-                            requestAnimationFrame(scroll);
-                        }
-                    };
-
-                    requestAnimationFrame(scroll);
-                } else {
-                    window.pageYOffset = options.top || 0;
-                }
-            };
-        }
-
-        console.log('Sushasan initialization complete');
-        console.log('Lenis available:', window.lenisAvailable);
-        console.log('GSAP available:', typeof gsap !== 'undefined');
-        console.log('ScrollTrigger available:', typeof ScrollTrigger !== 'undefined');
-    </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-    <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/ScrollTrigger.min.js"></script>
+<script src="js/app.js"></script>
 
 </body>
 </html>
