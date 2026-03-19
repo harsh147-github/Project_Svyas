@@ -3,7 +3,7 @@
   <img src="https://harsh147-github.github.io/Project_Svyas/public/assets/india-network.png" alt="Sushasan Header" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
   
   <h1 style="margin: 0; padding: 0;">Sushasan (सुशासन)</h1>
-  <p><strong>Collective Intelligence for Good Governance</strong></p>
+  <p><strong>Collective Intelligence for Civic Infrastructure</strong></p>
 
   <p>
     <a href="https://harsh147-github.github.io/Project_Svyas/"><b>🌐 Live Manifesto</b></a> &middot; 
@@ -12,11 +12,11 @@
   <br/>
 </div>
 
-India votes once every 5 years. Between elections, 1.4 billion people have **zero structured mechanism** to tell decision-makers what they need. CPGRAMS has 62% satisfaction. PMC Road Mitra died in 6 months. Twitter is noise without synthesis. Change.org collects signatures with no solutions.
+Every day, 1.4 billion people generate insights, solutions, and community intelligence that rarely reach the right decision-makers in a structured format. Emails overflow. Social media creates noise. Valuable ideas from citizens are often lost in the sheer volume of unstructured data.
 
-**Sushasan is the pipe that should always have existed.** 🇮🇳
+**Sushasan is the collective intelligence engine that bridges this gap.** 🇮🇳
 
-Citizens contribute "vibe answers" — casual, low-friction inputs about local problems in any language. Our backend AI synthesizes thousands of these into optimal, structured solutions with confidence scores, action items, cost estimates, and responsible authorities. A transparent dashboard serves **both citizens and decision-makers** at every governance level — from your housing society secretary to Parliament.
+Citizens contribute inputs about local issues naturally in any language. Our backend AI synthesizes thousands of these into optimal, structured briefs with confidence scores, action items, cost estimates, and responsible authorities. A transparent digital dashboard safely routes this directly to decision-makers at every civic level — from housing society secretaries to Parliament.
 
 > **Voting says "I choose you."**  
 > **Sushasan says "Here's what we need, here's how to do it, and here's our support."**
@@ -113,8 +113,8 @@ graph TD;
 |-------|----------|-----------|
 | **1. Pilot** | Month 1-3 | One city (Pune). 50 users. First petition submitted to PMC. Commissioner sees Authority Dashboard. |
 | **2. Expand** | Month 3-6 | Multi-city (Mumbai, Bangalore). State dashboards live. WhatsApp bot integration. |
-| **3. National** | Month 6-12 | 100 Smart Cities. Central government dashboard. CPGRAMS integration. BHASHINI for 22 languages. |
-| **4. Scale** | Year 2+ | Panchayat to Parliament. Custom ML models. India exports the model to other democracies. |
+| **3. National** | Month 6-12 | 100 Smart Cities. Central civic platform integration. BHASHINI for 22 languages. |
+| **4. Scale** | Year 2+ | Panchayat to Parliament. Custom ML models. Scale infrastructure nationwide. |
 
 ---
 
