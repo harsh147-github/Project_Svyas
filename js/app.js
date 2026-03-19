@@ -49,9 +49,8 @@ function animateHero() {
     .to('.hero-desc', {
         y: 0, opacity: 1, duration: 0.8,
     }, '-=0.6')
-    .to('.hero-stat', {
+    .to('.hero-badges', {
         y: 0, opacity: 1, duration: 0.7,
-        stagger: 0.1,
     }, '-=0.5')
     .to('.hero-scroll', {
         opacity: 1, duration: 0.6,
@@ -72,7 +71,7 @@ gsap.utils.toArray('.section-label, .section-heading, .section-desc').forEach(el
 });
 
 // ── Card Stagger Reveals ──
-gsap.utils.toArray('.grid, .dual-box').forEach(grid => {
+gsap.utils.toArray('.grid, .dual-box, .flow-steps').forEach(grid => {
     const children = grid.children;
     gsap.from(children, {
         y: 60, opacity: 0, duration: 0.8,
@@ -83,6 +82,15 @@ gsap.utils.toArray('.grid, .dual-box').forEach(grid => {
             start: 'top 82%',
             toggleActions: 'play none none none',
         }
+    });
+});
+
+// ── Big Quote Reveal ──
+gsap.utils.toArray('.big-quote').forEach(q => {
+    gsap.from(q, {
+        y: 40, opacity: 0, duration: 1.2,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: q, start: 'top 85%', toggleActions: 'play none none none' }
     });
 });
 
