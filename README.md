@@ -1,68 +1,102 @@
-<br/>
+
 <div align="center">
-  <img src="https://harsh147-github.github.io/Project_Svyas/public/assets/india-network.png" alt="Sushasan Header" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
-  
-  <h1 style="margin: 0; padding: 0;">Sushasan (सुशासन)</h1>
-  <p><strong>Collective Intelligence for Civic Infrastructure</strong></p>
+  <img src="https://harsh147-github.github.io/Project_Svyas/public/assets/india-network.png" alt="Sushasan" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
+
+  <h1>सुशासन — Sushasan</h1>
+  <p><strong>Where Citizens and Government Build Solutions Together</strong></p>
 
   <p>
-    <a href="https://harsh147-github.github.io/Project_Svyas/"><b>🌐 Live Manifesto</b></a> &middot; 
+    <a href="https://harsh147-github.github.io/Project_Svyas/"><b>🌐 Website</b></a> ·
     <a href="https://478421c3-f633-4888-a301-72a61c9235bc-00-3n2i4ddsygvo9.worf.replit.dev/app"><b>🚀 Try the MVP</b></a>
   </p>
   <br/>
 </div>
 
-Every day, 1.4 billion people generate insights, solutions, and community intelligence that rarely reach the right decision-makers in a structured format. Emails overflow. Social media creates noise. Valuable ideas from citizens are often lost in the sheer volume of unstructured data.
+PMC built 400km of roads in 75 days for the Bajaj Grand Tour. The capability was never the problem — **the infrastructure to channel citizen intelligence to decision-makers was.**
 
-**Sushasan is the collective intelligence engine that bridges this gap.** 🇮🇳
+**Sushasan is that infrastructure.** A platform where every citizen's perspective joins together through AI — not to collect opinions, but to build optimized solutions where every factor is considered. The solutions are ready. Only execution awaits. 🇮🇳
 
-Citizens contribute inputs about local issues naturally in any language. Our backend AI synthesizes thousands of these into optimal, structured briefs with confidence scores, action items, cost estimates, and responsible authorities. A transparent digital dashboard safely routes this directly to decision-makers at every civic level — from housing society secretaries to Parliament.
-
-> **Voting says "I choose you."**  
-> **Sushasan says "Here's what we need, here's how to do it, and here's our support."**
-
----
-
-## 🌟 What Makes Sushasan Different?
-*Without AI, this is Reddit. With AI, this is national infrastructure.*
-
-1. **Lowers the Bar** — Say *"paani nahi aa raha subah se"* and AI converts it into structured governance intelligence. Any language. 5 seconds.
-2. **Synthesizes at Scale** — 10,000 citizen opinions become **ONE** optimal solution with weighted themes, action items, cost estimates, and responsible authorities. 15 seconds.
-3. **Routes Intelligently** — AI knows a pothole is a ward problem and a water policy is a state problem. Auto-classifies and routes to the exact right desk.
-4. **Interconnects Problems** — "Hinjewadi traffic" isn't a singular issue — it's 4 sub-problems across 4 departments. Sushasan decomposes compound crises for parallel resolution.
+> **It's not about collecting 1.4 billion opinions.**
+> **It's about joining them together — into solutions where every factor is considered.**
+> **Not the best decision. The most considered one.**
 
 ---
 
-## 🏛️ Dual Interface: Citizens & Decision-Makers
+## 🤝 The Idea
+
+India is the world's most powerful democracy. Every day, 1.4 billion citizens think about how to make their communities better — but there's no way to bring all those ideas together.
+
+Sushasan changes that. When thousands of people share what they see in their communities — in any language, any dialect, voice or text — AI doesn't just listen. It **joins every perspective together** into one optimized solution where all factors, all constraints, every community impact has been weighed.
+
+The result? A **transparent national dashboard** where every optimized solution is visible to everyone — citizens, officials, media. Complete transparency on what's being discussed, what's been solved, and what awaits execution.
+
+---
+
+## ⚡ How It Works
+
+```
+Citizens share what they see    →    AI joins every perspective    →    Optimized solution    →    Visible to everyone
+(any language, voice/text)           (weighs all factors)               (not majority rules)       (transparent dashboard)
+```
+
+1. **Anyone Can Contribute** — Say *"paani nahi aa raha subah se"* — that's it. Any language, any dialect, voice or text. In 5 seconds, your perspective joins the bigger picture.
+2. **Every Voice Joins the Picture** — Each perspective is understood, geotagged, and connected to others. Building a complete picture no single person could see alone.
+3. **AI Weighs Every Factor** — Deep neural networks join all perspectives: root causes, affected areas, feasibility, budget. An optimized solution where every constraint is considered.
+4. **Citizens & Government Act Together** — A clear, considered solution reaches the right people — with full transparency back to the community.
+
+---
+
+## 🏛️ Built for Everyone
 
 ### 👤 For Citizens
-- **Zero-friction contribution** in any language (voice, text, images).
-- AI refines casual input into structured intelligence (you approve or correct).
-- See exactly how YOUR input shaped the final synthesis **(contribution attribution)**.
-- Transparent dashboard at every governance level.
-- Track progress — see exactly when authorities respond and what definitive actions they take.
+- **Zero-friction contribution** — any language (voice, text, images). Just speak your reality.
+- **Contribution attribution** — when your insight shapes a solution, you know.
+- **Real-time progress tracking** — received → synthesized → routed → acknowledged → in progress → resolved.
+- **Full transparency** — see exactly how decisions are being made and what awaits execution.
 
-### 🏛 For Decision-Makers (The Authority Dashboard)
-- **Prioritized intelligence queue** — ranked problems with urgency scores and ready solutions.
-- **AI-synthesized action plans** — actionable items, responsible department, cost estimate, and timeline.
-- **Early warning system** — Auto-escalation triggers when 5+ wards report the same systemic issue.
-- **Problem decomposition** — compound crises broken into parallel operational workstreams.
-- **One-click response** — respond publicly and get credit for being digitally responsive.
-- **Performance metrics** — response rate tracking per department for performance reviews.
-- **Budget justification** — *"2,341 verified citizens need X, AI estimates ₹45Cr"* — data-backed spending.
+### 🏛 For Decision-Makers
+- **Prioritized intelligence queue** — ranked issues with community consensus and ready solutions.
+- **AI-generated action plans** — root cause, recommended actions, cost estimates, affected population, department dependencies.
+- **Early warning system** — detect emerging crises before they escalate.
+- **Budget justification** — evidence-backed proposals with real citizen data.
+- **Performance transparency** — response tracking visible to everyone.
 
 ---
 
-## 🧠 The AI Engine — 6 Autonomous Jobs
+## 🧠 The AI Engine
 
-| Job | Trigger | Model | Latency | What It Does |
-|-----|---------|-------|---------|--------------|
-| **REFINE** | New input | `gpt-4o-mini` | `< 3s` | Converts casual vibe input into structured intelligence. Auto-detects language. |
-| **ROUTE** | New problem | `gpt-4o-mini` | `< 2s` | Classifies governance level and routes to correct authority/department. |
-| **SYNTHESIZE**| 15/50 inputs| `gpt-4o` | `5-15s` | Aggregates all inputs into an optimal solution with themes, action items, costs. |
-| **BUBBLE-UP** | Every 6 hrs | `gpt-4o` | `Async` | Detects 5+ child locations with same problem &rarr; auto-escalates to parent level. |
-| **INTERCONNECT**| On synthesis| `gpt-4o` | `5-10s` | Maps causal relationships. Decomposes compound problems for parallel resolution. |
-| **PETITION** | Created | `gpt-4o` | `5-10s` | Generates a formal petition with RTI-ready language and PDF. |
+| Job | Model | What It Does |
+|-----|-------|--------------|
+| **UNDERSTAND** | `gpt-4o-mini` | Converts casual input in any language into structured intelligence. Auto-detects language. < 3s. |
+| **CONNECT** | `gpt-4o-mini` | Classifies governance level (Ward → City → State → National) and routes to the right people. < 2s. |
+| **SYNTHESIZE** | `gpt-4o` | Joins thousands of perspectives into one optimized solution — root causes, actions, costs. 5-15s. |
+| **OPTIMIZE** | `gpt-4o` | Weighs all factors — feasibility, budget, community impact — to find the most considered solution. |
+| **INTERCONNECT** | `gpt-4o` | Maps relationships between problems across departments. Coordinates parallel resolution. |
+| **ESCALATE** | Async | When 5+ locations report the same problem, auto-escalates to the parent authority. |
+
+---
+
+## 📊 Transparent National Dashboard
+
+Every optimized solution is visible to everyone — citizens, officials, media. No solutions locked behind bureaucratic walls.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  sushasan.in/dashboard                          🟢 LIVE — ALL  │
+├──────────────────┬──────────────────────────────────────────────┤
+│ Top Issues       │  Water Supply — Ward 12, Pune               │
+│                  │  ┌────────┐ ┌────────┐ ┌────────┐           │
+│ ● Water Supply   │  │ 12,847 │ │ 94.2%  │ │ ₹4.2Cr │           │
+│ ● Traffic        │  │ voices │ │ consns │ │  cost  │           │
+│ ● Sanitation     │  └────────┘ └────────┘ └────────┘           │
+│ ● Power Outages  │                                              │
+│ ● Public Transit │  SOLUTION: Pipeline rehabilitation,          │
+│                  │  Sector 7 main line. Phased over 6 months.  │
+│                  │                                              │
+│                  │  DEPTS: Municipal Water Board, PWD           │
+│                  │  STATUS: ✅ Solution Ready — Awaits Exec    │
+└──────────────────┴──────────────────────────────────────────────┘
+```
 
 ---
 
@@ -70,57 +104,53 @@ Citizens contribute inputs about local issues naturally in any language. Our bac
 
 ```mermaid
 graph TD;
-    In[INDIA National - PM, Cabinet] --> MH[MAHARASHTRA State - CM, Vidhan Sabha];
-    MH --> PN[PUNE City - Municipal Commissioner];
-    PN --> W5[Ward 5 Kharadi - Corporator];
-    W5 --> KP[Kumar Pristine Society - Secretary];
+    In[INDIA National — PM, Cabinet] --> MH[MAHARASHTRA State — CM, Vidhan Sabha];
+    MH --> PN[PUNE City — Municipal Commissioner];
+    PN --> W5[Ward 5 Kharadi — Corporator];
+    W5 --> KP[Kumar Pristine Society — Secretary];
 ```
 
-**Auto-escalation Logic:**
-- `5+ wards` reporting the same problem &rarr; City-level synthesis.
-- `5+ cities` reporting the same problem &rarr; State-level synthesis.
-- `5+ states` reporting the same problem &rarr; National-level synthesis.
+**Auto-escalation:** `5+ wards` → City-level · `5+ cities` → State-level · `5+ states` → National-level
 
 ---
 
-## 💻 Tech Stack (Full Platform)
+## 🚀 The Vision
+
+**Aadhaar** gave every Indian a verifiable identity. **UPI** gave every Indian seamless payments. **Sushasan** gives every Indian a way to participate in solving the nation's problems — together.
+
+<div align="center">
+  <h3>Aadhaar → Identity</h3>
+  <h3>UPI → Payments</h3>
+  <h3>Sushasan → Participation</h3>
+</div>
+
+---
+
+## 💻 Tech Stack
 
 - **Frontend:** React 18 / Vite / TailwindCSS v4 / Framer Motion / wouter / TanStack Query
 - **Backend:** Express.js / PostgreSQL / Drizzle ORM / Redis (Upstash) / BullMQ
-- **AI Integration:** OpenAI API (`gpt-4o-mini`, `gpt-4o`) / Structured JSON outputs 
-- **Authentication:** Phone OTP via Firebase Auth / JWT / Redis-backed sessions
-- **Infrastructure:** GitHub Pages (manifesto) / Railway (backend) / Neon.tech (DB)
+- **AI:** OpenAI API (`gpt-4o-mini`, `gpt-4o`) / Structured JSON outputs
+- **Auth:** Phone OTP via Firebase Auth / JWT / Redis-backed sessions
+- **Infra:** GitHub Pages (website) / Railway (backend) / Neon.tech (DB)
+- **Website:** Built with Framer
 
-> **Cost Efficiency:** Runs the entire platform compute for a medium-to-large city for ~$20-35/month.
-
----
-
-## 🚀 The Vision: A New Digital Public Good
-
-**Aadhaar** gave every Indian a verifiable identity. **UPI** gave every Indian a seamless payment system. **Sushasan** gives every Indian a voice that decision-makers can actually hear and act upon.
-
-<div align="center">
-  <h3>Aadhaar &rarr; Identity</h3>
-  <h3>UPI &rarr; Payments</h3>
-  <h3 style="color: #FF9933;">Sushasan &rarr; Participation</h3>
-</div>
+> **Cost:** Runs the entire platform for a medium-to-large city at ~$20-35/month.
 
 ---
 
 ## 🗺️ Execution Roadmap
 
-| Phase | Timeline | Milestone |
-|-------|----------|-----------|
-| **1. Pilot** | Month 1-3 | One city (Pune). 50 users. First petition submitted to PMC. Commissioner sees Authority Dashboard. |
-| **2. Expand** | Month 3-6 | Multi-city (Mumbai, Bangalore). State dashboards live. WhatsApp bot integration. |
-| **3. National** | Month 6-12 | 100 Smart Cities. Central civic platform integration. BHASHINI for 22 languages. |
-| **4. Scale** | Year 2+ | Panchayat to Parliament. Custom ML models. Scale infrastructure nationwide. |
+| Phase | Milestone |
+|-------|-----------|
+| **1. Pilot** | 3 municipal wards in Pune. Validate input quality, AI accuracy, official adoption. Target: 10,000 inputs. |
+| **2. City-Wide** | Full Pune Municipal Corporation. WhatsApp + voice channels. Grievance system integration. Target: 100,000 inputs. |
+| **3. Multi-City** | 5 major Indian cities. Inter-city pattern detection. Decision-maker dashboards. Target: 1M inputs. |
+| **4. National** | Full national deployment as Digital Public Good. Auto-escalation across all tiers. Open API. Target: 1.4B citizens. |
 
 ---
 
 <div align="center">
-  <p><b>Built By Harsh Sonawane — Pune, India</b></p>
-  <i>This is not a side project. This is a mission to build the democratic infrastructure India was always supposed to have. 🇮🇳</i>
-  <br/><br/>
-  <p><sub>Data sourced from PRS Legislative Research, Official Lok Sabha/Rajya Sabha records, DARPG Annual Reports, and verified Indian journalism.</sub></p>
+  <p><b>Built by Harsh Sonawane — Pune, India</b></p>
+  <i>The capability was never the problem. The infrastructure was. Sushasan is that infrastructure. 🇮🇳</i>
 </div>
