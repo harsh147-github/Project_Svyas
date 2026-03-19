@@ -6,7 +6,7 @@
   <p><strong>Where Citizens and Government Build Solutions Together</strong></p>
 
   <p>
-    <a href="https://harsh147-github.github.io/Project_Svyas/"><b>🌐 Website</b></a> ·
+    <a href="https://sushaasan.framer.website/"><b>🌐 Website</b></a> ·
     <a href="https://478421c3-f633-4888-a301-72a61c9235bc-00-3n2i4ddsygvo9.worf.replit.dev/app"><b>🚀 Try the MVP</b></a>
   </p>
   <br/>
