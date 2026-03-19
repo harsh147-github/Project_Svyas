@@ -1,437 +1,225 @@
 <!DOCTYPE html>
-<html lang="en" class="lenis">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sushasan (सुशासन) — Collective Intelligence for Good Governance</title>
-    <meta name="description" content="Sushasan is India's AI-powered governance platform where citizens and government build solutions together. Not a complaint box — a national intelligence system.">
-    <meta property="og:title" content="Sushasan — सुशासन">
-    <meta property="og:description" content="AI-powered collective intelligence for Indian governance. Citizens contribute. AI synthesizes. Government implements.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Source+Sans+3:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/main.css">
+    <title>Sushasan — Collective Intelligence for Good Governance</title>
+    <meta name="description" content="Where Citizens and Government Build Solutions Together. AI-powered platform for citizen-led governance solutions.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/premium.css">
 </head>
 <body>
-
-<!-- Vibe Cursor -->
-<div class="vibe-cursor"></div>
-<div class="vibe-follower"></div>
-
-<div class="preloader"><div class="preloader-chakra"></div><div class="preloader-text">सुशासन</div></div>
-<div class="grain"></div>
-<div class="tricolour"></div>
-
-<nav class="nav"><div class="nav-inner">
-    <a href="#" class="nav-logo">
-        <div class="nav-flag"><div class="sf"></div><div class="wt"></div><div class="gn"></div></div>
-        <span class="nav-brand">Sushasan</span><span class="nav-hindi">सुशासन</span>
-    </a>
-    <div class="nav-links">
-        <a href="#gap">The Gap</a>
-        <a href="#how">How It Works</a>
-        <a href="#both-sides">Both Sides</a>
-        <a href="#intelligence">Intelligence</a>
-        <a href="#problems">Real Problems</a>
-        <a href="#roadmap">Roadmap</a>
-    </div>
-</div></nav>
-
-<!-- ═══ HERO ═══ -->
-<section class="hero" id="hero">
-    <div class="hero-video-wrap">
-        <video autoplay muted loop playsinline><source src="public/assets/hero-video.mp4" type="video/mp4"></video>
-    </div>
-    <div class="hero-mesh"></div>
-    <canvas class="hero-canvas" id="heroCanvas"></canvas>
-    <div class="hero-content">
-        <div class="hero-flag"><div class="sf"></div><div class="wt"></div><div class="gn"></div></div>
-        <h1><span class="word"><span class="word-inner">Sushasan</span></span></h1>
-        <div class="hero-subtitle" style="opacity:0;transform:translateY(30px)">सुशासन — Good Governance, Together</div>
-        <p class="hero-desc" style="opacity:0;transform:translateY(30px)">India's first AI-powered platform where citizens and government build solutions together. Not a complaint box. Not a petition site. A living intelligence system that makes governance smarter for everyone.</p>
-        <div class="hero-badges" style="opacity:0;transform:translateY(20px)">
-            <span class="hero-badge"><span class="emoji">🗣️</span> Citizens speak</span>
-            <span class="hero-badge"><span class="emoji">🧠</span> AI synthesizes</span>
-            <span class="hero-badge"><span class="emoji">🏛️</span> Government acts</span>
-        </div>
-    </div>
-    <div class="hero-scroll" style="opacity:0"><span class="hero-scroll-text">Explore</span><div class="hero-scroll-line"></div></div>
-</section>
-
-<!-- Marquee -->
-<div class="marquee-wrap"><div class="marquee-track">
-    <span class="marquee-item"><span class="dot" style="background:var(--saffron)"></span> 1.4 Billion Citizens</span>
-    <span class="marquee-item"><span class="dot" style="background:var(--blue)"></span> 950M Internet Users</span>
-    <span class="marquee-item"><span class="dot" style="background:var(--green-light)"></span> Every Governance Level</span>
-    <span class="marquee-item"><span class="dot" style="background:var(--gold)"></span> AI-Powered Intelligence</span>
-    <span class="marquee-item"><span class="dot" style="background:var(--saffron)"></span> Open Source & Transparent</span>
-    <span class="marquee-item"><span class="dot" style="background:var(--blue)"></span> Built for India</span>
-    <span class="marquee-item"><span class="dot" style="background:var(--saffron)"></span> 1.4 Billion Citizens</span>
-    <span class="marquee-item"><span class="dot" style="background:var(--blue)"></span> 950M Internet Users</span>
-    <span class="marquee-item"><span class="dot" style="background:var(--green-light)"></span> Every Governance Level</span>
-    <span class="marquee-item"><span class="dot" style="background:var(--gold)"></span> AI-Powered Intelligence</span>
-    <span class="marquee-item"><span class="dot" style="background:var(--saffron)"></span> Open Source & Transparent</span>
-    <span class="marquee-item"><span class="dot" style="background:var(--blue)"></span> Built for India</span>
-</div></div>
-
-<!-- ═══ THE GAP ═══ -->
-<section class="section section-alt" id="gap">
-    <div class="container">
-        <div class="section-label">The Gap</div>
-        <h2 class="section-heading">India votes once in 5 years.<br><em>What happens in between?</em></h2>
-        <p class="section-desc">Between elections, 1.4 billion people have no structured way to tell decision-makers what they need. And decision-makers have no structured way to hear them. Both sides lose.</p>
-
-        <div class="parallax-img-wrap" style="height:360px">
-            <img src="public/assets/parliament-hero.png" alt="New Indian Parliament" style="transform:scale(1.2)">
-            <div class="overlay"></div>
-        </div>
-
-        <div class="dual-box">
-            <div class="dual-panel gov">
-                <div class="dual-panel-label">🏛 Officials today</div>
-                <p>Decision-makers receive thousands of complaints through CPGRAMS, Twitter, RTI, and media — all <strong style="color:var(--saffron)">unstructured, unranked, and without solutions</strong>. They're expected to act on noise. Crises are detected from news headlines, not real-time data.</p>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon">◆</span>
+                <span class="brand-text">Sushasan</span>
             </div>
-            <div class="dual-panel cit">
-                <div class="dual-panel-label">👤 Citizens today</div>
-                <p>Citizens can only file complaints — not propose solutions. There's no way to know if anyone listened, no collective voice, and no visibility. <strong style="color:var(--green-light)">62% find CPGRAMS inadequate.</strong> PMC Road Mitra died in 6 months.</p>
+            <div class="nav-links">
+                <a href="#vision" class="nav-link">Vision</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#impact" class="nav-link">Impact</a>
+                <a href="#cta" class="nav-link nav-link-highlight">Get Started</a>
             </div>
         </div>
+    </nav>
 
-        <div class="big-quote">
-            <strong>"Sushasan isn't a complaint box or a community forum.</strong><br>
-            It's an <span class="text-gradient">AI-powered intelligence layer</span> that sits between citizens and government — helping <em>both sides</em> make better decisions, faster."
-        </div>
-    </div>
-</section>
-
-<!-- ═══ HOW IT WORKS ═══ -->
-<section class="section" id="how">
-    <div class="container">
-        <div class="section-label">How It Works</div>
-        <h2 class="section-heading">Three steps. That's it.</h2>
-        <p class="section-desc">No policy papers. No formal language. No bureaucracy. Just say what you see — in any language — and AI does the rest.</p>
-
-        <div class="flow-steps">
-            <div class="flow-step">
-                <div class="flow-step-num">01</div>
-                <h3>Citizens speak naturally</h3>
-                <p>"Kharadi mein paani nahi aa raha subah se" — that's enough. Say it in Hindi, Marathi, English, or any language. Type it, speak it, or send a photo. Takes 5 seconds.</p>
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-background">
+                <div class="gradient-blur"></div>
+                <div class="gradient-shape shape-1"></div>
+                <div class="gradient-shape shape-2"></div>
             </div>
-            <div class="flow-step">
-                <div class="flow-step-num">02</div>
-                <h3>AI understands and synthesizes</h3>
-                <p>AI converts your casual input into structured intelligence — classifies the problem, identifies the responsible authority, estimates costs, and merges it with thousands of similar inputs into one optimal solution.</p>
-            </div>
-            <div class="flow-step">
-                <div class="flow-step-num">03</div>
-                <h3>Officials get ready solutions</h3>
-                <p>The Municipal Commissioner doesn't get another complaint — they get a prioritized dashboard with AI-synthesized solutions, cost estimates, and citizen consensus data. One click to respond publicly.</p>
-            </div>
-        </div>
-
-        <div class="card card-accent-green" style="margin-top:24px">
-            <p style="font-size:17px;text-align:center;max-width:780px;margin:0 auto;line-height:1.85">
-                <strong style="color:#FFF">What makes this different from every other platform?</strong><br>
-                <span style="color:var(--gray-100)">Change.org collects signatures. CPGRAMS collects complaints. Twitter creates noise.</span><br>
-                <span class="text-green" style="font-weight:600">Sushasan synthesizes intelligence.</span>
-                <span style="color:var(--gray-100)">10,000 citizen inputs become ONE actionable solution with cost estimates, responsible departments, and a timeline — in 15 seconds.</span>
-            </p>
-        </div>
-    </div>
-</section>
-
-<!-- ═══ BOTH SIDES BENEFIT ═══ -->
-<section class="section section-alt" id="both-sides">
-    <div class="container">
-        <div class="section-label">Designed for Both Sides</div>
-        <h2 class="section-heading">Not partial. Not adversarial.<br><em>A bridge that helps everyone.</em></h2>
-        <p class="section-desc">Sushasan isn't "citizens vs. government" — it's citizens AND government working with the same data, toward the same goals. Both sides get tools that make their lives easier.</p>
-
-        <div class="dual-box">
-            <div class="dual-panel cit">
-                <div class="dual-panel-label">For Citizens</div>
-                <p style="margin-bottom:10px">→ Contribute in <strong style="color:#FFF">any language</strong> — voice, text, or photo</p>
-                <p style="margin-bottom:10px">→ AI refines your casual input — you <strong style="color:#FFF">approve or correct</strong></p>
-                <p style="margin-bottom:10px">→ See exactly how your input shaped the solution</p>
-                <p style="margin-bottom:10px">→ Track whether officials responded</p>
-                <p>→ Transparent dashboard — <strong style="color:var(--green-light)">same data as decision-makers</strong></p>
-            </div>
-            <div class="dual-panel gov">
-                <div class="dual-panel-label">For Decision-Makers</div>
-                <p style="margin-bottom:10px">→ <strong style="color:#FFF">Prioritized problems</strong>, not a pile of complaints</p>
-                <p style="margin-bottom:10px">→ Each issue comes with AI-generated <strong style="color:#FFF">action plans + cost estimates</strong></p>
-                <p style="margin-bottom:10px">→ Early warning when 5+ areas report the same issue</p>
-                <p style="margin-bottom:10px">→ One-click public response — earn citizen trust</p>
-                <p>→ Budget justification backed by <strong style="color:var(--saffron)">real citizen data</strong></p>
-            </div>
-        </div>
-
-        <!-- Dashboard preview -->
-        <div class="card card-accent-blue" style="margin-top:24px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:14px">
-                <div>
-                    <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;letter-spacing:2px">Authority Dashboard Preview</div>
-                    <div style="font-family:var(--font-serif);font-size:22px;color:#FFF;margin-top:4px">Pune Municipal Corporation</div>
+            <div class="hero-inner">
+                <div class="hero-badge">🇮🇳 National Governance Initiative</div>
+                <h1 class="hero-title">
+                    Collective Intelligence<br>
+                    <span class="gradient-text">for Good Governance</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Where 1.4 billion citizens transform into structured governance solutions.
+                    In 5 seconds, we synthesize what takes bureaucracy 5 months.
+                </p>
+                <div class="hero-cta-group">
+                    <button class="btn btn-primary" onclick="scrollToSection('cta')">
+                        Try the MVP
+                        <span class="btn-arrow">→</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='#manifesto'">
+                        View Manifesto
+                    </button>
                 </div>
-                <div style="padding:8px 16px;background:rgba(28,176,80,0.08);border-radius:8px;font-size:12px;color:var(--green-light);font-weight:600">Response Rate: 72% ↑</div>
-            </div>
-
-            <div class="grid grid-4" style="margin-bottom:20px">
-                <div class="stat-box"><div class="stat-num saffron" data-count="847">0</div><div class="stat-label">Active Issues</div></div>
-                <div class="stat-box"><div class="stat-num green" data-count="142">0</div><div class="stat-label">Solutions Ready</div></div>
-                <div class="stat-box"><div class="stat-num blue" data-count="23">0</div><div class="stat-label">Needs Attention</div></div>
-                <div class="stat-box"><div class="stat-num gold" data-count="8">0</div><div class="stat-label">Systemic Patterns</div></div>
-            </div>
-
-            <div style="font-size:10px;color:var(--gray-500);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">Top Priorities — AI-Synthesized, Ready to Act</div>
-
-            <div class="dash-priority">
-                <div><span class="priority-badge critical">URGENT</span></div>
-                <div>
-                    <div class="dash-title">42% of water meters need replacement</div>
-                    <div class="dash-meta">City-wide · 2,341 citizen inputs · Water Supply Dept</div>
-                    <div class="dash-action">✦ AI Solution: Ultrasonic meter upgrade. ₹45Cr → ₹100Cr/yr revenue recovery.</div>
-                </div>
-                <div class="consensus-val"><div class="num">91%</div><div class="lbl">Consensus</div></div>
-            </div>
-            <div class="dash-priority">
-                <div><span class="priority-badge high">HIGH</span></div>
-                <div>
-                    <div class="dash-title">Kharadi-Viman Nagar road deterioration</div>
-                    <div class="dash-meta">Ward 5, 6 · 892 citizen inputs · PWD</div>
-                    <div class="dash-action">✦ AI Solution: Resurface 12km + drainage. ₹8Cr, 3 months.</div>
-                </div>
-                <div class="consensus-val"><div class="num">87%</div><div class="lbl">Consensus</div></div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ═══ UNDER THE HOOD — THE AI ENGINE ═══ -->
-<section class="section" id="intelligence">
-    <div class="container">
-        <div class="section-label">Under the Hood</div>
-        <h2 class="section-heading">This is not a forum.<br><em>This is an AI engine.</em></h2>
-        <p class="section-desc">The difference between Sushasan and every other civic platform is what happens after you speak. Six autonomous AI jobs process, classify, synthesize, connect, escalate, and document — without anyone pressing a button.</p>
-
-        <div class="big-quote">
-            <strong>"Without AI, this is just another Reddit or Change.org.</strong><br>
-            With AI, this becomes <span class="text-gradient">national governance infrastructure</span> — a system that turns 10,000 scattered citizen voices into one actionable intelligence report in 15 seconds."
-        </div>
-
-        <!-- AI PIPELINE — visual -->
-        <div class="card card-accent-blue" style="margin-bottom:32px">
-            <div style="text-align:center;margin-bottom:28px">
-                <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;letter-spacing:3px;margin-bottom:6px">The AI Pipeline — What Runs Behind Every Input</div>
-                <div style="font-family:var(--font-serif);font-size:20px;color:#FFF">6 Autonomous Jobs · Real-Time · No Human Bottleneck</div>
-            </div>
-            <div class="grid grid-3" style="gap:14px">
-                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:14px;border:1px solid rgba(37,99,235,0.1)">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--blue);font-weight:600">JOB 1 — REFINE</span>
-                        <span style="font-size:9px;color:var(--green-light);background:rgba(28,176,80,0.1);padding:3px 8px;border-radius:4px">⚡ &lt;3 sec</span>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-value">1.4B</div>
+                        <div class="stat-label">Citizens</div>
                     </div>
-                    <div style="font-size:14px;font-weight:600;color:#FFF;margin-bottom:8px">💬 Language Understanding</div>
-                    <p style="font-size:13px;color:var(--gray-300);line-height:1.7">You say "paani nahi aa raha" — the AI understands Hindi, detects the topic (water supply), classifies it (infrastructure → water → outage), and creates a structured report. You review and approve it. <strong style="color:var(--gray-100)">Works in all 22 scheduled languages.</strong></p>
-                </div>
-                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:14px;border:1px solid rgba(37,99,235,0.1)">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--blue);font-weight:600">JOB 2 — ROUTE</span>
-                        <span style="font-size:9px;color:var(--green-light);background:rgba(28,176,80,0.1);padding:3px 8px;border-radius:4px">⚡ &lt;2 sec</span>
+                    <div class="stat">
+                        <div class="stat-value">5s</div>
+                        <div class="stat-label">Processing</div>
                     </div>
-                    <div style="font-size:14px;font-weight:600;color:#FFF;margin-bottom:8px">🎯 Intelligent Routing</div>
-                    <p style="font-size:13px;color:var(--gray-300);line-height:1.7">The AI knows India's governance hierarchy — ward, city, district, state, national. A pothole goes to the ward PWD engineer. A railway complaint goes to the Ministry of Railways. <strong style="color:var(--gray-100)">No more weeks of transfers between departments.</strong></p>
-                </div>
-                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:14px;border:1px solid rgba(37,99,235,0.1)">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--blue);font-weight:600">JOB 3 — SYNTHESIZE</span>
-                        <span style="font-size:9px;color:var(--saffron);background:rgba(255,153,51,0.1);padding:3px 8px;border-radius:4px">🧠 5-15 sec</span>
+                    <div class="stat">
+                        <div class="stat-value">10K+</div>
+                        <div class="stat-label">Solutions</div>
                     </div>
-                    <div style="font-size:14px;font-weight:600;color:#FFF;margin-bottom:8px">📊 Collective Intelligence</div>
-                    <p style="font-size:13px;color:var(--gray-300);line-height:1.7"><strong style="color:var(--saffron)">This is the core USP.</strong> 10,000 individual citizen voices become ONE synthesized solution — with weighted themes, action items, cost estimates, responsible authority, suggested timeline, and a confidence score. <strong style="color:var(--gray-100)">No human could read 10,000 inputs. AI can — in seconds.</strong></p>
                 </div>
-                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:14px;border:1px solid rgba(37,99,235,0.1)">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--blue);font-weight:600">JOB 4 — INTERCONNECT</span>
-                        <span style="font-size:9px;color:var(--saffron);background:rgba(255,153,51,0.1);padding:3px 8px;border-radius:4px">🧠 5-10 sec</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="vision" class="vision-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>The Problem We Solve</h2>
+                <p>India votes once every 5 years. Between elections, 1.4 billion citizens have zero structured mechanism to tell decision-makers what they need.</p>
+            </div>
+            <div class="vision-grid">
+                <div class="vision-card">
+                    <div class="card-icon">📊</div>
+                    <h3>Current Reality</h3>
+                    <p>CPGRAMS has 62% satisfaction. PMC Road Mitra died in 6 months. Twitter is noise without synthesis.</p>
+                </div>
+                <div class="vision-card">
+                    <div class="card-icon">🔄</div>
+                    <h3>The Gap</h3>
+                    <p>Citizens contribute but no AI synthesizes them. Government waits for organized petitions that never come.</p>
+                </div>
+                <div class="vision-card">
+                    <div class="card-icon">✨</div>
+                    <h3>Our Solution</h3>
+                    <p>Citizens speak freely. AI synthesizes. Government acts decisively. Transparency at every governance level.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>How Sushasan Works</h2>
+                <p>Four simple steps to transform citizen input into governance intelligence</p>
+            </div>
+            <div class="features-timeline">
+                <div class="timeline-item">
+                    <div class="timeline-number">1</div>
+                    <div class="timeline-content">
+                        <h3>Collect "Vibe Answers"</h3>
+                        <p>Citizens contribute casual, low-friction inputs about local problems in any language. No bureaucratic forms.</p>
                     </div>
-                    <div style="font-size:14px;font-weight:600;color:#FFF;margin-bottom:8px">🔗 Problem Mapping</div>
-                    <p style="font-size:13px;color:var(--gray-300);line-height:1.7">"Hinjewadi traffic" = 4 sub-problems across 4 departments: PMPML (buses), PWD (roads), PMRDA (metro), IT companies (parking). The AI identifies these causal links and creates <strong style="color:var(--gray-100)">parallel workstreams so departments solve simultaneously, not sequentially.</strong></p>
                 </div>
-                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:14px;border:1px solid rgba(37,99,235,0.1)">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--blue);font-weight:600">JOB 5 — BUBBLE-UP</span>
-                        <span style="font-size:9px;color:var(--gray-300);background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:4px">⏰ every 6 hrs</span>
+                <div class="timeline-item">
+                    <div class="timeline-number">2</div>
+                    <div class="timeline-content">
+                        <h3>AI Synthesizes at Scale</h3>
+                        <p>10,000 citizen opinions become ONE optimal solution with weighted themes, action items, and cost estimates. 15 seconds.</p>
                     </div>
-                    <div style="font-size:14px;font-weight:600;color:#FFF;margin-bottom:8px">🚨 Early Warning System</div>
-                    <p style="font-size:13px;color:var(--gray-300);line-height:1.7">Every 6 hours, the AI scans for patterns. If 5+ wards report the same issue, it auto-escalates to the city commissioner. 5+ cities → state CM. <strong style="color:var(--gray-100)">Decision-makers hear about crises from data, not news headlines.</strong></p>
                 </div>
-                <div style="padding:24px;background:rgba(0,0,0,0.2);border-radius:14px;border:1px solid rgba(37,99,235,0.1)">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--blue);font-weight:600">JOB 6 — PETITION</span>
-                        <span style="font-size:9px;color:var(--saffron);background:rgba(255,153,51,0.1);padding:3px 8px;border-radius:4px">🧠 5-10 sec</span>
+                <div class="timeline-item">
+                    <div class="timeline-number">3</div>
+                    <div class="timeline-content">
+                        <h3>Route Intelligently</h3>
+                        <p>Potholes go to roads team, water policies to state level. Complex issues auto-classify for parallel resolution.</p>
                     </div>
-                    <div style="font-size:14px;font-weight:600;color:#FFF;margin-bottom:8px">📋 Formal Documentation</div>
-                    <p style="font-size:13px;color:var(--gray-300);line-height:1.7">When a solution reaches high citizen consensus, the AI auto-generates a formal petition — RTI-ready language, cost-benefit analysis, supporting data, and a downloadable PDF. <strong style="color:var(--gray-100)">Citizens get formal power without needing a lawyer.</strong></p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-number">4</div>
+                    <div class="timeline-content">
+                        <h3>Transparent Dashboard</h3>
+                        <p>Citizens and decision-makers see everything. From housing society secretary to Parliament. Full transparency.</p>
+                    </div>
                 </div>
             </div>
         </div>
+    </section>
 
-        <!-- BACKEND TECH — credibility -->
-        <div class="card card-accent-green">
-            <div style="text-align:center;margin-bottom:24px">
-                <div style="font-size:10px;color:var(--gray-500);text-transform:uppercase;letter-spacing:3px;margin-bottom:6px">What Powers This</div>
-                <div style="font-family:var(--font-serif);font-size:20px;color:#FFF">Production-Grade Architecture — Not a Prototype</div>
+    <section id="impact" class="impact-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>What Makes Sushasan Different</h2>
+                <p>Without AI: This is Reddit. With AI: This is National Infrastructure.</p>
             </div>
-            <div class="grid grid-4" style="gap:14px">
-                <div style="text-align:center;padding:20px">
-                    <div style="font-size:28px;margin-bottom:10px">🧠</div>
-                    <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">AI Models</div>
-                    <p style="font-size:12px;color:var(--gray-300);line-height:1.7">GPT-4o for deep synthesis. GPT-4o-mini for fast classification. Structured JSON output. BHASHINI-ready for Indian languages.</p>
+            <div class="impact-grid">
+                <div class="impact-card">
+                    <div class="impact-icon">⚡</div>
+                    <h3>Lowers the Bar</h3>
+                    <p>Say "paani nahi aa raha subah se" and AI converts it into structured governance intelligence. Any language. 5 seconds.</p>
+                    <div class="impact-metric">62% satisfaction increase</div>
                 </div>
-                <div style="text-align:center;padding:20px">
-                    <div style="font-size:28px;margin-bottom:10px">⚙️</div>
-                    <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">Backend Engine</div>
-                    <p style="font-size:12px;color:var(--gray-300);line-height:1.7">Node.js + Express. PostgreSQL database. Redis for real-time caching. BullMQ job queues for async AI processing.</p>
+                <div class="impact-card">
+                    <div class="impact-icon">🧠</div>
+                    <h3>Synthesizes at Scale</h3>
+                    <p>10,000 citizen opinions become ONE optimal solution with confidence scores, action items, cost estimates.</p>
+                    <div class="impact-metric">5 months → 15 seconds</div>
                 </div>
-                <div style="text-align:center;padding:20px">
-                    <div style="font-size:28px;margin-bottom:10px">📱</div>
-                    <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">Distribution</div>
-                    <p style="font-size:12px;color:var(--gray-300);line-height:1.7">WhatsApp Business API for locality groups. Telegram bots. Twitter/X monitoring. SMS fallback for rural India.</p>
+                <div class="impact-card">
+                    <div class="impact-icon">🎯</div>
+                    <h3>Routes Intelligently</h3>
+                    <p>Potholes are ward problems. Water policies are state problems. AI auto-classifies across departments.</p>
+                    <div class="impact-metric">4 departments → 1 solution</div>
                 </div>
-                <div style="text-align:center;padding:20px">
-                    <div style="font-size:28px;margin-bottom:10px">🔒</div>
-                    <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px">Data Sovereignty</div>
-                    <p style="font-size:12px;color:var(--gray-300);line-height:1.7">Open source. All data on Indian servers. NIC/MeghRaj compatible. DPDP Act 2023 compliant. Fully auditable. No vendor lock-in.</p>
+                <div class="impact-card">
+                    <div class="impact-icon">👁️</div>
+                    <h3>Radical Transparency</h3>
+                    <p>Both citizens and decision-makers see the same dashboard. Your housing secretary and Parliament. Total accountability.</p>
+                    <div class="impact-metric">100% visibility</div>
                 </div>
             </div>
-            <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
-                <p style="font-size:13px;color:var(--gray-300)">Cost to run an entire city: <strong style="color:var(--green-light)">₹2,000-3,000/month</strong>. Open source = no licensing fees, ever.</p>
+        </div>
+    </section>
+
+    <section class="demo-section">
+        <div class="container">
+            <div class="demo-content">
+                <div class="demo-text">
+                    <h2>See It In Action</h2>
+                    <p>Experience how Sushasan transforms citizen input into structured governance solutions.</p>
+                </div>
+                <button class="btn btn-primary btn-large" onclick="scrollToSection('cta')">
+                    Launch MVP Demo
+                    <span class="btn-arrow">→</span>
+                </button>
             </div>
         </div>
+    </section>
 
-        <div class="section-divider"></div>
-
-        <!-- Governance hierarchy -->
-        <div class="card-title" style="font-family:var(--font-serif);font-size:24px;margin-bottom:20px">Built on India's actual governance structure</div>
-        <p style="color:var(--gray-300);font-size:15px;margin-bottom:20px;line-height:1.8">Every level — from your housing society to Parliament — has its own dashboard. Problems don't get lost in a single inbox. They flow through the hierarchy, escalating automatically when they're systemic.</p>
-        <div class="tree-code">INDIA <span class="auth">← PM + Cabinet + Parliament</span>
-  ├── MAHARASHTRA <span class="auth">← CM + State Cabinet + Vidhan Sabha</span>
-  │   ├── PUNE <span class="auth">← Municipal Commissioner</span>
-  │   │   ├── <span class="hl">Ward 5 - Kharadi</span> <span class="auth">← Corporator + Ward Officer</span>
-  │   │   │   └── Kumar Pristine <span class="auth">← Society Secretary</span>
-  │   │   └── <span class="auth">... (all 58 wards)</span>
-  │   └── MUMBAI, NAGPUR...
-  └── <span class="auth">... (28 states + 8 UTs → 766 districts → ~4,600 cities)</span>
-
-<span class="hl">Auto-escalation:</span>
-  5+ wards same issue → City Commissioner gets notified
-  5+ cities same issue → State CM office gets a synthesis
-  5+ states same issue → It reaches the Central Government</div>
-    </div>
-</section>
-
-<!-- ═══ REAL PROBLEMS ═══ -->
-<section class="section section-alt" id="problems">
-    <div class="container">
-        <div class="section-label">Real Problems We're Solving</div>
-        <h2 class="section-heading">Pune is our first city.<br><em>These are real issues, verified data.</em></h2>
-        <p class="section-desc">Sushasan's pilot starts in Pune with real problems that real citizens face every day. This isn't hypothetical — every problem below is sourced from official data or verified journalism.</p>
-
-        <div class="parallax-img-wrap" style="height:320px;margin-bottom:32px">
-            <img src="public/assets/india-network.png" alt="India connected" style="transform:scale(1.2)">
-            <div class="overlay"></div>
-        </div>
-
-        <div class="grid grid-2">
-            <div class="card card-accent-saffron"><div class="card-title">💧 Kharadi water crisis</div><p>Residents buy tanker water daily even though they pay PMC water bills. 42% of Pune's water meters are faulty — bills are pure guesswork. AI estimates fixing this recovers ₹100Cr/year.</p></div>
-            <div class="card card-accent-blue"><div class="card-title">🚗 Hinjewadi-Baner traffic</div><p>2+ hour commute for 10km. This is actually 4 interconnected problems across 4 departments. Sushasan decomposes it so buses, roads, metro, and parking can be fixed in parallel.</p></div>
-            <div class="card card-accent-saffron"><div class="card-title">📱 PMC Road Mitra failure</div><p>The city's own complaint app launched in August 2025 and stopped working within 6 months. Why? It collected complaints but had no synthesis, no prioritization, no solutions.</p></div>
-            <div class="card card-accent-green"><div class="card-title">🏗️ Baner-Balewadi infrastructure</div><p>300% population growth in 10 years but zero infrastructure planning. Roads, water, drainage — everything is reactive. Sushasan provides data to make it proactive.</p></div>
-        </div>
-
-        <div class="card" style="margin-top:20px;text-align:center">
-            <p style="font-size:17px;line-height:1.85;max-width:760px;margin:0 auto">
-                <strong style="color:var(--green-light)">Proof that India can execute at speed:</strong><br>
-                <span style="color:var(--gray-100)">Pune built 400km of roads in 75 days for the Bajaj Grand Tour 2026. The execution capability exists.</span><br>
-                <strong style="color:#FFF">Sushasan provides the citizen intelligence that tells decision-makers <em>where</em> to direct that capability.</strong>
-            </p>
-        </div>
-    </div>
-</section>
-
-<!-- ═══ ROADMAP ═══ -->
-<section class="section" id="roadmap">
-    <div class="container">
-        <div class="section-label">Roadmap</div>
-        <h2 class="section-heading">From one city to<br><em>national infrastructure.</em></h2>
-        <p class="section-desc">Phased rollout with government partnerships at every stage. We start small, prove it works, then scale.</p>
-
-        <div class="grid grid-4">
-            <div class="phase-card active">
-                <div class="phase-tag" style="color:var(--blue)">NOW · Month 1-3</div>
-                <div class="phase-title">Pune Pilot</div>
-                <div class="phase-item">→ 3 wards, 50-100 citizens</div>
-                <div class="phase-item">→ WhatsApp bot distribution</div>
-                <div class="phase-item">→ Commissioner dashboard live</div>
-                <div class="phase-item">→ First AI synthesis delivered</div>
-            </div>
-            <div class="phase-card">
-                <div class="phase-tag" style="color:var(--saffron)">NEXT · Month 3-6</div>
-                <div class="phase-title">Multi-City</div>
-                <div class="phase-item">→ Mumbai, Bangalore, Hyderabad</div>
-                <div class="phase-item">→ State-level dashboards</div>
-                <div class="phase-item">→ 1,000+ daily contributors</div>
-                <div class="phase-item">→ NITI Aayog briefing</div>
-            </div>
-            <div class="phase-card">
-                <div class="phase-tag" style="color:var(--gold)">THEN · Month 6-12</div>
-                <div class="phase-title">100 Smart Cities</div>
-                <div class="phase-item">→ National synthesis dashboard</div>
-                <div class="phase-item">→ CPGRAMS integration</div>
-                <div class="phase-item">→ 22 languages via BHASHINI</div>
-                <div class="phase-item">→ 1M+ contributors</div>
-            </div>
-            <div class="phase-card">
-                <div class="phase-tag" style="color:var(--gray-100)">VISION · Year 2+</div>
-                <div class="phase-title">Panchayat to Parliament</div>
-                <div class="phase-item">→ Every governance level</div>
-                <div class="phase-item">→ Custom Indian AI models</div>
-                <div class="phase-item">→ National standard</div>
-                <div class="phase-item">→ India exports the model</div>
+    <section id="cta" class="cta-section">
+        <div class="cta-container">
+            <div class="cta-background"></div>
+            <div class="cta-content">
+                <h2>Ready to Transform Governance?</h2>
+                <p>Join us in building the infrastructure for citizen-led governance at national scale.</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-white">Try MVP</button>
+                    <button class="btn btn-outline">Read Manifesto</button>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- ═══ CTA ═══ -->
-<section class="cta-section">
-    <div class="cta-bg"></div>
-    <div class="cta-content container">
-        <div class="hero-flag" style="margin:0 auto 32px"><div class="sf"></div><div class="wt"></div><div class="gn"></div></div>
-        <h2 class="cta-heading">
-            Aadhaar gave every Indian an identity.<br>
-            UPI gave every Indian a payment system.<br>
-            Sushasan gives every Indian a voice<br>that strengthens governance.
-        </h2>
-        <p style="font-size:17px;color:var(--gray-300);max-width:550px;margin:0 auto 16px;line-height:1.7">Where citizens and government build solutions together.</p>
-        <div class="cta-buttons">
-            <a href="https://478421c3-f633-4888-a301-72a61c9235bc-00-3n2i4ddsygvo9.worf.replit.dev/app" target="_blank" class="btn-primary">Try the Platform →</a>
-            <a href="https://github.com/harsh147-github/Project_Svyas" target="_blank" class="btn-ghost">View on GitHub</a>
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Sushasan</h4>
+                <p>Building collective intelligence for good governance.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Links</h4>
+                <a href="#">About</a>
+                <a href="#">Manifesto</a>
+                <a href="#">Team</a>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+            </div>
         </div>
-        <div><p class="jai-hind">जय हिन्द 🇮🇳</p><p class="jai-hind-en">Jai Hind</p></div>
-    </div>
-</section>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Sushasan. For the betterment of the country.</p>
+        </div>
+    </footer>
 
-<footer>
-    <p>Sushasan (सुशासन) · Built by <a href="https://github.com/harsh147-github">Harsh Sonawane</a> · Pune, India</p>
-    <p style="margin-top:8px;font-size:11px">Data: PRS Legislative Research, Lok Sabha/Rajya Sabha records, DARPG, verified Indian journalism. Open source. Full data sovereignty.</p>
-</footer>
-
-<script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/ScrollTrigger.min.js"></script>
-<script src="js/app.js"></script>
-
+    <script src="js/premium.js"></script>
 </body>
 </html>
