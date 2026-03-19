@@ -1,6 +1,6 @@
-# SUAS — Shut Up And Solve
+# Sushasan (सुशासन) — Collective Intelligence for Good Governance
 
-### The Missing Infrastructure of Indian Democracy
+### Collective Intelligence for Good Governance
 
 **[🌐 Live Manifesto](https://harsh147-github.github.io/Project_Svyas/) · [🚀 Try the MVP](https://478421c3-f633-4888-a301-72a61c9235bc-00-3n2i4ddsygvo9.worf.replit.dev/app)**
 
@@ -8,16 +8,16 @@
 
 India votes once every 5 years. Between elections, 1.4 billion people have **zero structured mechanism** to tell decision-makers what they need. CPGRAMS has 62% satisfaction. PMC Road Mitra died in 6 months. Twitter is noise without synthesis. Change.org collects signatures with no solutions.
 
-**SUAS is the pipe that should always have existed.**
+**Sushasan is the pipe that should always have existed.**
 
 Citizens contribute "vibe answers" — casual, low-friction inputs about local problems in any language. AI synthesizes thousands of these into optimal, structured solutions with confidence scores, action items, cost estimates, and responsible authorities. A transparent dashboard serves **both citizens and decision-makers** at every governance level — from your housing society secretary to Parliament.
 
 > **Voting says "I choose you."**
-> **SUAS says "Here's what we need you to do, here's how, and we're all watching."**
+> **Sushasan says "Here's what we need, here's how to do it, and here's our support."**
 
 ---
 
-## What Makes SUAS Different
+## What Makes Sushasan Different
 
 **Without AI, this is Reddit. With AI, this is national infrastructure.**
 
@@ -29,20 +29,20 @@ The AI engine does three things no community platform can:
 
 3. **Routes intelligently** — AI knows a pothole is a ward problem and a water policy is a state problem. It auto-classifies governance level and routes to the exact right desk.
 
-**Plus: Problem Interconnection Analysis** — SUAS maps hidden causal relationships between problems. "Hinjewadi traffic" isn't one problem — it's 4 sub-problems (missing buses, narrow roads, no metro, no parking) controlled by 4 different authorities. SUAS decomposes compound crises for parallel resolution across departments.
+**Plus: Problem Interconnection Analysis** — Sushasan maps hidden causal relationships between problems. "Hinjewadi traffic" isn't one problem — it's 4 sub-problems (missing buses, narrow roads, no metro, no parking) controlled by 4 different authorities. Sushasan decomposes compound crises for parallel resolution across departments.
 
 ---
 
 ## Dual Interface: Citizens + Decision-Makers
 
-SUAS is designed for **both sides** of the governance equation.
+Sushasan is designed for **both sides** of the governance equation.
 
 ### For Citizens
 - Zero-friction contribution in any language (voice, text, images)
 - AI refines casual input into structured intelligence (approve or correct)
 - See how YOUR input shaped the synthesis — contribution attribution
 - Transparent dashboard at every governance level
-- Track whether authorities respond — inaction is publicly timestamped
+- Track progress — see when authorities respond and what actions they take
 
 ### For Decision-Makers (The Authority Dashboard)
 - **Prioritized intelligence queue** — not a pile of complaints, but ranked problems with urgency scores and ready solutions
@@ -70,7 +70,7 @@ SUAS is designed for **both sides** of the governance equation.
 
 ## Governance Hierarchy
 
-SUAS mirrors India's actual governance structure. Geography is the organizer — every node has a real authority on the other end.
+Sushasan mirrors India's actual governance structure. Geography is the organizer — every node has a real authority on the other end.
 
 ```
 INDIA (National)  ← PM, Cabinet, Lok Sabha, Rajya Sabha
@@ -127,18 +127,18 @@ All data verified from PRS Legislative Research, official Lok Sabha/Rajya Sabha 
 - **62% CPGRAMS satisfaction** — 38% find grievances inadequately addressed
 - **State legislatures average 20-22 days/year** — in 2021, 44% of state bills passed same day as introduced
 
-The capability exists — PMC built 400km of roads in 75 days for the Bajaj Grand Tour. What's missing is the infrastructure to channel citizen intelligence to decision-makers. SUAS is that infrastructure.
+The capability exists — PMC built 400km of roads in 75 days for the Bajaj Grand Tour. What's missing is the infrastructure to channel citizen intelligence to decision-makers. Sushasan is that infrastructure.
 
 ---
 
 ## The Vision
 
-**Aadhaar** gave every Indian an identity. **UPI** gave every Indian a payment system. **SUAS** gives every Indian a voice that decision-makers can actually hear.
+**Aadhaar** gave every Indian an identity. **UPI** gave every Indian a payment system. **Sushasan** gives every Indian a voice that decision-makers can actually hear.
 
 ```
 Aadhaar → Identity
 UPI     → Payments
-SUAS    → Participation
+Sushasan    → Participation
 ```
 
 ---
