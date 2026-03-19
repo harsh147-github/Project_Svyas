@@ -22,6 +22,24 @@ PMC built 400km of roads in 75 days for the Bajaj Grand Tour. The capability was
 
 ---
 
+## 🔥 Why Now — The Proof Already Exists
+
+When the Bajaj Grand Tour brought international attention to Pune, the government spent **nearly ₹500 crores** on redevelopment. PMC built 400km of roads in 75 days. Infrastructure upgraded in weeks, not years.
+
+**The capability was always there.** But they had something most governance challenges don't: **a clear plan.** They knew exactly what needed to be done, where, and how much it would cost.
+
+Now imagine that same government trying to solve problems for **1.4 billion people**. Millions of voices, millions of opinions, no structure. Citizens blame the government for not using tax money. Officials are overwhelmed by unstructured noise. Everyone wants change but **nobody has a clear, unified plan.**
+
+**Sushasan eliminates the chaos.** It ends the era of blaming and provides a tool for both sides — citizens get a way to contribute that actually matters, decision-makers get AI-assisted clarity on what the problem is and how to solve it. When the plan is clear, India delivers. **Sushasan makes the plan clear.**
+
+| Evidence | Detail |
+|----------|--------|
+| **₹500 Cr+** | Spent on Pune redevelopment for Bajaj Grand Tour — done in weeks |
+| **400 km** | Roads built in 75 days — speed was never the bottleneck |
+| **1.4B voices** | With zero structure to join them into a plan of action |
+
+---
+
 ## 🤝 The Idea
 
 India is the world's most powerful democracy. Every day, 1.4 billion citizens think about how to make their communities better — but there's no way to bring all those ideas together.
