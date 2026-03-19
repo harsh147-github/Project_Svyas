@@ -4,222 +4,1578 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sushasan — Collective Intelligence for Good Governance</title>
-    <meta name="description" content="Where Citizens and Government Build Solutions Together. AI-powered platform for citizen-led governance solutions.">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/premium.css">
+    <meta name="description" content="Sushasan: AI-powered platform for citizen-led governance in India. Transform your voice into national infrastructure.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* ==================== CSS VARIABLES & RESET ==================== */
+        :root {
+            --primary-dark: #0a0f1a;
+            --secondary-dark: #0f1420;
+            --tertiary-dark: #151b2b;
+            --accent-blue: #0066ff;
+            --accent-orange: #ff6b35;
+            --accent-gold: #ffd700;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --blur-amount: 10px;
+            --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--primary-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--primary-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--accent-blue), var(--accent-orange));
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--accent-orange), var(--accent-blue));
+        }
+
+        /* Text Selection */
+        ::selection {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        /* ==================== GRAIN TEXTURE ==================== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' result='noise' /%3E%3CfeColorMatrix in='noise' type='saturate' values='0' /%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noiseFilter)' /%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1;
+            mix-blend-mode: overlay;
+        }
+
+        /* ==================== CUSTOM CURSOR ==================== */
+        body {
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='4' fill='%230066ff'/%3E%3Ccircle cx='16' cy='16' r='8' fill='none' stroke='%230066ff' stroke-width='1.5' opacity='0.5'/%3E%3C/svg%3E") 16 16, auto;
+        }
+
+        a, button {
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='4' fill='%23ff6b35'/%3E%3Ccircle cx='16' cy='16' r='8' fill='none' stroke='%23ff6b35' stroke-width='1.5' opacity='0.5'/%3E%3C/svg%3E") 16 16, pointer;
+        }
+
+        /* ==================== GRADIENT MESH BACKGROUND ==================== */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 102, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 107, 53, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ==================== CONTENT WRAPPER ==================== */
+        main {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ==================== PRELOADER ==================== */
+        .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .preloader.hidden {
+            pointer-events: none;
+        }
+
+        .preloader-text {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(3rem, 8vw, 8rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-orange), var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 102, 255, 0.4)); }
+            50% { filter: drop-shadow(0 0 40px rgba(255, 107, 53, 0.6)); }
+        }
+
+        /* ==================== NAVIGATION ==================== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 1000;
+            backdrop-filter: blur(var(--blur-amount));
+            background: rgba(10, 15, 26, 0.5);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s var(--transition-smooth);
+        }
+
+        nav.scrolled {
+            background: rgba(10, 15, 26, 0.8);
+            border-bottom: 1px solid rgba(0, 102, 255, 0.2);
+        }
+
+        .logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            letter-spacing: -1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s var(--transition-smooth);
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-orange));
+            transition: width 0.3s var(--transition-smooth);
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* ==================== HERO SECTION ==================== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 40px 40px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(0, 102, 255, 0.15) 0%, transparent 70%);
+            filter: blur(40px);
+            animation: float 6s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-40px); }
+        }
+
+        .hero-content {
+            max-width: 1000px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            padding: 10px 20px;
+            border: 1px solid var(--accent-blue);
+            border-radius: 50px;
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            backdrop-filter: blur(var(--blur-amount));
+            background: rgba(0, 102, 255, 0.1);
+            letter-spacing: 0.5px;
+            animation: slide-in-down 0.8s var(--transition-smooth);
+        }
+
+        @keyframes slide-in-down {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2.5rem, 7vw, 5.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -2px;
+        }
+
+        .hero-title-gradient {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-orange), var(--accent-gold), var(--accent-blue));
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 8s ease infinite;
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 50px;
+            line-height: 1.8;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fade-in 0.8s var(--transition-smooth) 0.3s both;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+            padding-top: 60px;
+            border-top: 1px solid var(--border-color);
+            animation: fade-in 0.8s var(--transition-smooth) 0.6s both;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-orange));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s var(--transition-smooth);
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+            animation: fade-in 0.8s var(--transition-smooth) 0.9s both;
+            box-shadow: 0 20px 40px rgba(0, 102, 255, 0.2);
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 30px 60px rgba(0, 102, 255, 0.4);
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        /* ==================== PROBLEM STATEMENT SECTION ==================== */
+        .problem-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .problem-content {
+            max-width: 900px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .problem-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 30px;
+            letter-spacing: -1px;
+        }
+
+        .problem-highlight {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .problem-description {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+
+        /* ==================== HOW IT WORKS SECTION ==================== */
+        .how-works {
+            min-height: 100vh;
+            padding: 80px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .how-works-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 60px;
+            letter-spacing: -1px;
+        }
+
+        .how-works-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .how-works-scroll {
+            display: flex;
+            gap: 30px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            scroll-snap-type: x mandatory;
+        }
+
+        .how-works-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .how-works-scroll::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+            border-radius: 3px;
+        }
+
+        .step-card {
+            flex: 0 0 calc(50% - 15px);
+            min-height: 500px;
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.1), rgba(255, 107, 53, 0.05));
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 50px 40px;
+            backdrop-filter: blur(var(--blur-amount));
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            scroll-snap-align: start;
+            transition: all 0.4s var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transition: left 0.6s;
+        }
+
+        .step-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0, 102, 255, 0.15);
+        }
+
+        .step-card:hover::before {
+            left: 100%;
+        }
+
+        .step-number {
+            font-family: 'Poppins', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            line-height: 1;
+        }
+
+        .step-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .step-description {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        .step-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .step-card {
+                flex: 0 0 calc(85% - 15px);
+            }
+        }
+
+        /* ==================== IMPACT SECTION ==================== */
+        .impact-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .impact-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 60px;
+            letter-spacing: -1px;
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .impact-card {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.1), rgba(255, 107, 53, 0.05));
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            backdrop-filter: blur(var(--blur-amount));
+            transition: all 0.4s var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .impact-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .impact-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-15px);
+            box-shadow: 0 20px 50px rgba(0, 102, 255, 0.2);
+        }
+
+        .impact-card:hover::before {
+            opacity: 1;
+        }
+
+        .impact-number {
+            font-family: 'Poppins', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            line-height: 1;
+            counter-increment: impact-counter;
+        }
+
+        .impact-label {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        /* ==================== DIFFERENTIATORS SECTION ==================== */
+        .differentiators {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .differentiators-content {
+            max-width: 900px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .differentiators-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 900;
+            margin-bottom: 30px;
+            line-height: 1.2;
+            letter-spacing: -1px;
+        }
+
+        .differentiators-text {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+
+        .differentiators-highlight {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-top: 30px;
+            line-height: 1.3;
+        }
+
+        /* ==================== CTA SECTION ==================== */
+        .cta-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 40px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 0;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.15) 0%, transparent 70%);
+            filter: blur(40px);
+            animation: float-reverse 6s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @keyframes float-reverse {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(40px); }
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+        }
+
+        .cta-section-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 900;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            letter-spacing: -1px;
+        }
+
+        .cta-section-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 50px;
+            line-height: 1.8;
+        }
+
+        /* ==================== FOOTER ==================== */
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 60px 40px;
+            text-align: center;
+            backdrop-filter: blur(var(--blur-amount));
+            background: rgba(10, 15, 26, 0.5);
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+        }
+
+        .footer-nav {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .footer-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s var(--transition-smooth);
+        }
+
+        .footer-nav a:hover {
+            color: var(--accent-blue);
+        }
+
+        .footer-bottom {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-bottom p {
+            margin-bottom: 10px;
+        }
+
+        /* ==================== RESPONSIVE DESIGN ==================== */
+        @media (max-width: 768px) {
+            nav {
+                padding: 0 20px;
+                height: 60px;
+            }
+
+            .nav-links {
+                gap: 20px;
+                font-size: 0.85rem;
+            }
+
+            .hero {
+                padding: 60px 20px 20px;
+            }
+
+            .problem-section,
+            .how-works,
+            .impact-section,
+            .differentiators,
+            .cta-section {
+                padding: 60px 20px;
+            }
+
+            .hero-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .impact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            footer {
+                padding: 40px 20px;
+            }
+
+            .footer-nav {
+                gap: 20px;
+            }
+
+            .problem-title,
+            .how-works-title,
+            .impact-title,
+            .differentiators-title,
+            .cta-section-title {
+                font-size: clamp(1.5rem, 4vw, 2.5rem);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-links {
+                gap: 15px;
+                font-size: 0.75rem;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .problem-description,
+            .cta-section-subtitle {
+                font-size: 1rem;
+            }
+
+            .step-number {
+                font-size: 2.5rem;
+            }
+
+            .step-title {
+                font-size: 1.3rem;
+            }
+
+            .impact-number {
+                font-size: 2rem;
+            }
+        }
+
+        /* ==================== SCROLL ANIMATIONS ==================== */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .scroll-reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.8s var(--transition-smooth);
+        }
+
+        /* ==================== TEXT SPLIT ANIMATION ==================== */
+        .char {
+            display: inline-block;
+            opacity: 0;
+        }
+
+        .char.animate {
+            opacity: 1;
+        }
+
+        /* ==================== UTILITY CLASSES ==================== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 20px;
+            }
+        }
+
+        .mt-large {
+            margin-top: 80px;
+        }
+
+        .mb-large {
+            margin-bottom: 80px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .relative {
+            position: relative;
+        }
+
+        /* ==================== FOCUS STATES ==================== */
+        button:focus,
+        a:focus {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+
+        /* ==================== ANIMATION PERFORMANCE ==================== */
+        .animate-gpu {
+            will-change: transform, opacity;
+        }
+
+        .animate-gpu.done {
+            will-change: auto;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <span class="brand-icon">◆</span>
-                <span class="brand-text">Sushasan</span>
-            </div>
-            <div class="nav-links">
-                <a href="#vision" class="nav-link">Vision</a>
-                <a href="#features" class="nav-link">Features</a>
-                <a href="#impact" class="nav-link">Impact</a>
-                <a href="#cta" class="nav-link nav-link-highlight">Get Started</a>
-            </div>
-        </div>
+    <!-- PRELOADER -->
+    <div class="preloader" id="preloader">
+        <div class="preloader-text">सुशासन</div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav id="navbar">
+        <a href="#" class="logo">सुशासन</a>
+        <ul class="nav-links">
+            <li><a href="#how-works">How It Works</a></li>
+            <li><a href="#impact">Impact</a></li>
+            <li><a href="#cta">Get Started</a></li>
+        </ul>
     </nav>
 
-    <section class="hero">
-        <div class="hero-content">
-            <div class="hero-background">
-                <div class="gradient-blur"></div>
-                <div class="gradient-shape shape-1"></div>
-                <div class="gradient-shape shape-2"></div>
-            </div>
-            <div class="hero-inner">
-                <div class="hero-badge">🇮🇳 National Governance Initiative</div>
+    <!-- MAIN CONTENT -->
+    <main>
+        <!-- HERO SECTION -->
+        <section class="hero" id="home">
+            <div class="hero-content">
+                <div class="hero-tag">Transforming Governance</div>
                 <h1 class="hero-title">
-                    Collective Intelligence<br>
-                    <span class="gradient-text">for Good Governance</span>
+                    <span class="hero-title-gradient">Collective Intelligence for Good Governance</span>
                 </h1>
                 <p class="hero-subtitle">
-                    Where 1.4 billion citizens transform into structured governance solutions.
-                    In 5 seconds, we synthesize what takes bureaucracy 5 months.
+                    Harness the wisdom of 1.4 billion voices. Turn citizen feedback into structured, actionable solutions with AI-powered synthesis.
                 </p>
-                <div class="hero-cta-group">
-                    <button class="btn btn-primary" onclick="scrollToSection('cta')">
-                        Try the MVP
-                        <span class="btn-arrow">→</span>
-                    </button>
-                    <button class="btn btn-secondary" onclick="window.location.href='#manifesto'">
-                        View Manifesto
-                    </button>
-                </div>
+                <button class="cta-button" onclick="document.getElementById('how-works').scrollIntoView({behavior: 'smooth'})">
+                    <span>Explore Sushasan</span>
+                    <span>→</span>
+                </button>
                 <div class="hero-stats">
                     <div class="stat">
-                        <div class="stat-value">1.4B</div>
-                        <div class="stat-label">Citizens</div>
+                        <div class="stat-value" data-count="1400000000">1.4B</div>
+                        <div class="stat-label">Citizens Connected</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-value">5s</div>
-                        <div class="stat-label">Processing</div>
+                        <div class="stat-value" data-count="15">15s</div>
+                        <div class="stat-label">Processing Speed</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-value">10K+</div>
-                        <div class="stat-label">Solutions</div>
+                        <div class="stat-value" data-count="10000">10k+</div>
+                        <div class="stat-label">Solutions Created</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">Transparency</div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="vision" class="vision-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>The Problem We Solve</h2>
-                <p>India votes once every 5 years. Between elections, 1.4 billion citizens have zero structured mechanism to tell decision-makers what they need.</p>
+        <!-- PROBLEM STATEMENT SECTION -->
+        <section class="problem-section scroll-reveal">
+            <div class="problem-content">
+                <h2 class="problem-title">
+                    The Problem
+                </h2>
+                <p class="problem-description">
+                    India votes once every <span class="problem-highlight">5 years</span>. Between elections, <span class="problem-highlight">1.4 billion citizens have zero structured mechanism</span> to voice local problems and influence policy decisions.
+                </p>
+                <p class="problem-description" style="color: var(--accent-blue);">
+                    Without a systematic way to collect and synthesize citizen feedback, local governance remains disconnected from the people it serves.
+                </p>
             </div>
-            <div class="vision-grid">
-                <div class="vision-card">
-                    <div class="card-icon">📊</div>
-                    <h3>Current Reality</h3>
-                    <p>CPGRAMS has 62% satisfaction. PMC Road Mitra died in 6 months. Twitter is noise without synthesis.</p>
-                </div>
-                <div class="vision-card">
-                    <div class="card-icon">🔄</div>
-                    <h3>The Gap</h3>
-                    <p>Citizens contribute but no AI synthesizes them. Government waits for organized petitions that never come.</p>
-                </div>
-                <div class="vision-card">
-                    <div class="card-icon">✨</div>
-                    <h3>Our Solution</h3>
-                    <p>Citizens speak freely. AI synthesizes. Government acts decisively. Transparency at every governance level.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="features" class="features-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>How Sushasan Works</h2>
-                <p>Four simple steps to transform citizen input into governance intelligence</p>
-            </div>
-            <div class="features-timeline">
-                <div class="timeline-item">
-                    <div class="timeline-number">1</div>
-                    <div class="timeline-content">
-                        <h3>Collect "Vibe Answers"</h3>
-                        <p>Citizens contribute casual, low-friction inputs about local problems in any language. No bureaucratic forms.</p>
+        <!-- HOW IT WORKS SECTION -->
+        <section class="how-works" id="how-works">
+            <h2 class="how-works-title">How Sushasan Works</h2>
+            <div class="how-works-container">
+                <div class="how-works-scroll">
+                    <div class="step-card scroll-reveal">
+                        <div>
+                            <div class="step-icon">🗣️</div>
+                            <div class="step-number">01</div>
+                            <h3 class="step-title">Collect Vibe Answers</h3>
+                        </div>
+                        <p class="step-description">
+                            Citizens speak freely in any language. No bureaucratic forms. Just authentic voices sharing what needs to change in their communities.
+                        </p>
                     </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-number">2</div>
-                    <div class="timeline-content">
-                        <h3>AI Synthesizes at Scale</h3>
-                        <p>10,000 citizen opinions become ONE optimal solution with weighted themes, action items, and cost estimates. 15 seconds.</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-number">3</div>
-                    <div class="timeline-content">
-                        <h3>Route Intelligently</h3>
-                        <p>Potholes go to roads team, water policies to state level. Complex issues auto-classify for parallel resolution.</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-number">4</div>
-                    <div class="timeline-content">
-                        <h3>Transparent Dashboard</h3>
-                        <p>Citizens and decision-makers see everything. From housing society secretary to Parliament. Full transparency.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <section id="impact" class="impact-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>What Makes Sushasan Different</h2>
-                <p>Without AI: This is Reddit. With AI: This is National Infrastructure.</p>
+                    <div class="step-card scroll-reveal">
+                        <div>
+                            <div class="step-icon">🧠</div>
+                            <div class="step-number">02</div>
+                            <h3 class="step-title">AI Synthesizes at Scale</h3>
+                        </div>
+                        <p class="step-description">
+                            10,000 opinions get synthesized into 1 structured solution in 15 seconds. Our AI identifies patterns, extracts intent, and creates actionable insights.
+                        </p>
+                    </div>
+
+                    <div class="step-card scroll-reveal">
+                        <div>
+                            <div class="step-icon">🎯</div>
+                            <div class="step-number">03</div>
+                            <h3 class="step-title">Route Intelligently</h3>
+                        </div>
+                        <p class="step-description">
+                            Solutions auto-classify to the right department. Potholes go to PWD. Drainage to Municipal Corporation. Every issue reaches the right hands.
+                        </p>
+                    </div>
+
+                    <div class="step-card scroll-reveal">
+                        <div>
+                            <div class="step-icon">📊</div>
+                            <div class="step-number">04</div>
+                            <h3 class="step-title">Transparent Dashboard</h3>
+                        </div>
+                        <p class="step-description">
+                            Citizens and decision-makers see the same data. Complete visibility. Real-time tracking. No black boxes. Trust through transparency.
+                        </p>
+                    </div>
+                </div>
             </div>
+        </section>
+
+        <!-- IMPACT SECTION -->
+        <section class="impact-section" id="impact">
+            <h2 class="impact-title">The Impact</h2>
             <div class="impact-grid">
-                <div class="impact-card">
-                    <div class="impact-icon">⚡</div>
-                    <h3>Lowers the Bar</h3>
-                    <p>Say "paani nahi aa raha subah se" and AI converts it into structured governance intelligence. Any language. 5 seconds.</p>
-                    <div class="impact-metric">62% satisfaction increase</div>
+                <div class="impact-card scroll-reveal">
+                    <div class="impact-number counter" data-target="1400000000">1.4B</div>
+                    <div class="impact-label">Citizens Can Now Be Heard Continuously, Not Just At Elections</div>
                 </div>
-                <div class="impact-card">
-                    <div class="impact-icon">🧠</div>
-                    <h3>Synthesizes at Scale</h3>
-                    <p>10,000 citizen opinions become ONE optimal solution with confidence scores, action items, cost estimates.</p>
-                    <div class="impact-metric">5 months → 15 seconds</div>
+                <div class="impact-card scroll-reveal">
+                    <div class="impact-number counter" data-target="15">15s</div>
+                    <div class="impact-label">Processing Time: From Chaos to Clarity in Seconds</div>
                 </div>
-                <div class="impact-card">
-                    <div class="impact-icon">🎯</div>
-                    <h3>Routes Intelligently</h3>
-                    <p>Potholes are ward problems. Water policies are state problems. AI auto-classifies across departments.</p>
-                    <div class="impact-metric">4 departments → 1 solution</div>
+                <div class="impact-card scroll-reveal">
+                    <div class="impact-number counter" data-target="10000">10k+</div>
+                    <div class="impact-label">Solutions Already Created and Deployed</div>
                 </div>
-                <div class="impact-card">
-                    <div class="impact-icon">👁️</div>
-                    <h3>Radical Transparency</h3>
-                    <p>Both citizens and decision-makers see the same dashboard. Your housing secretary and Parliament. Total accountability.</p>
-                    <div class="impact-metric">100% visibility</div>
+                <div class="impact-card scroll-reveal">
+                    <div class="impact-number">100%</div>
+                    <div class="impact-label">Transparent: Every Decision, Every Data Point Visible</div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="demo-section">
-        <div class="container">
-            <div class="demo-content">
-                <div class="demo-text">
-                    <h2>See It In Action</h2>
-                    <p>Experience how Sushasan transforms citizen input into structured governance solutions.</p>
+        <!-- DIFFERENTIATORS SECTION -->
+        <section class="differentiators scroll-reveal">
+            <div class="differentiators-content">
+                <h2 class="differentiators-title">Why Sushasan?</h2>
+                <p class="differentiators-text">
+                    This isn't a suggestion box. This isn't social media chaos. This is infrastructure.
+                </p>
+                <div class="differentiators-highlight">
+                    Without AI, this is Reddit.
+                    <br>
+                    With AI, this is National Infrastructure.
                 </div>
-                <button class="btn btn-primary btn-large" onclick="scrollToSection('cta')">
-                    Launch MVP Demo
-                    <span class="btn-arrow">→</span>
-                </button>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="cta" class="cta-section">
-        <div class="cta-container">
-            <div class="cta-background"></div>
+        <!-- CTA SECTION -->
+        <section class="cta-section" id="cta">
             <div class="cta-content">
-                <h2>Ready to Transform Governance?</h2>
-                <p>Join us in building the infrastructure for citizen-led governance at national scale.</p>
-                <div class="cta-buttons">
-                    <button class="btn btn-white">Try MVP</button>
-                    <button class="btn btn-outline">Read Manifesto</button>
-                </div>
+                <h2 class="cta-section-title">Ready to Transform Governance?</h2>
+                <p class="cta-section-subtitle">
+                    Join millions of citizens reshaping how India governs itself. Your voice matters. Let's build collective intelligence together.
+                </p>
+                <button class="cta-button">
+                    <span>Start Contributing Now</span>
+                    <span>→</span>
+                </button>
+                <p class="cta-section-subtitle" style="margin-top: 40px; font-size: 0.95rem; color: var(--text-secondary);">
+                    सुशासन: Good Governance for All
+                </p>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
-    <footer class="footer">
+    <!-- FOOTER -->
+    <footer>
         <div class="footer-content">
-            <div class="footer-section">
-                <h4>Sushasan</h4>
-                <p>Building collective intelligence for good governance.</p>
-            </div>
-            <div class="footer-section">
-                <h4>Links</h4>
-                <a href="#">About</a>
-                <a href="#">Manifesto</a>
-                <a href="#">Team</a>
-            </div>
-            <div class="footer-section">
-                <h4>Legal</h4>
+            <div class="footer-logo">सुशासन</div>
+            <nav class="footer-nav">
+                <a href="#home">Home</a>
+                <a href="#how-works">How It Works</a>
+                <a href="#impact">Impact</a>
+                <a href="#cta">Get Started</a>
                 <a href="#">Privacy</a>
                 <a href="#">Terms</a>
+            </nav>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Sushasan. Building collective intelligence for good governance.</p>
+                <p>सुशासन — Transforming citizenship, one voice at a time.</p>
             </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 Sushasan. For the betterment of the country.</p>
         </div>
     </footer>
 
-    <script src="js/premium.js"></script>
+    <!-- SCRIPTS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.0.42/dist/lenis.min.js"></script>
+
+    <script>
+        // ==================== SMOOTH SCROLL SETUP ====================
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+            infinite: false,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+
+        requestAnimationFrame(raf);
+
+        // ==================== GSAP SETUP ====================
+        gsap.registerPlugin(ScrollTrigger);
+
+        // ==================== PRELOADER ====================
+        window.addEventListener('load', () => {
+            const preloader = document.getElementById('preloader');
+            const preloaderText = preloader.querySelector('.preloader-text');
+
+            gsap.to(preloaderText, {
+                opacity: 0,
+                scale: 0.8,
+                duration: 0.6,
+                delay: 1.2,
+            });
+
+            gsap.to(preloader, {
+                opacity: 0,
+                pointerEvents: 'none',
+                duration: 0.6,
+                delay: 1.5,
+            });
+        });
+
+        // ==================== NAVBAR SCROLL EFFECT ====================
+        const navbar = document.getElementById('navbar');
+        let lastScrollY = 0;
+
+        window.addEventListener('scroll', () => {
+            lastScrollY = window.scrollY;
+            if (lastScrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // ==================== HERO TEXT SPLIT ANIMATION ====================
+        function splitTextIntoChars(selector) {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach((element) => {
+                const text = element.textContent;
+                const chars = text.split('').map((char) => {
+                    const span = document.createElement('span');
+                    span.className = 'char';
+                    span.textContent = char === ' ' ? '\u00A0' : char;
+                    return span;
+                });
+                element.textContent = '';
+                chars.forEach((char) => element.appendChild(char));
+            });
+        }
+
+        splitTextIntoChars('.hero-title');
+
+        gsap.to('.hero-title .char', {
+            opacity: 1,
+            duration: 0.4,
+            stagger: 0.03,
+            delay: 0.2,
+        });
+
+        // ==================== SCROLL REVEAL ANIMATIONS ====================
+        const scrollRevealElements = document.querySelectorAll('.scroll-reveal');
+
+        scrollRevealElements.forEach((element) => {
+            gsap.to(element, {
+                scrollTrigger: {
+                    trigger: element,
+                    start: 'top 80%',
+                    end: 'top 50%',
+                    onEnter: () => {
+                        element.classList.add('active');
+                        animateElementOnReveal(element);
+                    },
+                },
+            });
+        });
+
+        function animateElementOnReveal(element) {
+            if (element.classList.contains('step-card')) {
+                gsap.from(element, {
+                    opacity: 0,
+                    y: 40,
+                    duration: 0.8,
+                    ease: 'power3.out',
+                });
+            } else if (element.classList.contains('impact-card')) {
+                gsap.from(element, {
+                    opacity: 0,
+                    scale: 0.9,
+                    duration: 0.8,
+                    ease: 'back.out(1.2)',
+                });
+            } else {
+                gsap.from(element, {
+                    opacity: 0,
+                    y: 30,
+                    duration: 0.8,
+                    ease: 'power3.out',
+                });
+            }
+        }
+
+        // ==================== COUNTER ANIMATION ====================
+        function animateCounter(element) {
+            const target = parseInt(element.getAttribute('data-target'), 10);
+            let current = 0;
+
+            ScrollTrigger.create({
+                trigger: element.closest('.impact-card') || element.closest('.stat'),
+                onEnter: () => {
+                    const duration = 2;
+                    gsap.to({ value: current }, {
+                        value: target,
+                        duration,
+                        ease: 'power2.out',
+                        onUpdate: function () {
+                            let displayValue = Math.floor(this.targets()[0].value);
+                            if (target >= 1000000000) {
+                                displayValue = (displayValue / 1000000000).toFixed(1) + 'B';
+                            } else if (target >= 1000000) {
+                                displayValue = (displayValue / 1000000).toFixed(1) + 'M';
+                            } else if (target >= 1000) {
+                                displayValue = (displayValue / 1000).toFixed(1) + 'k';
+                            } else if (target === 15) {
+                                displayValue = '15s';
+                            }
+                            element.textContent = displayValue;
+                        },
+                    });
+                },
+                once: true,
+            });
+        }
+
+        document.querySelectorAll('.counter, [data-count]').forEach((element) => {
+            animateCounter(element);
+        });
+
+        // ==================== PARALLAX EFFECT ====================
+        gsap.to('.hero::before', {
+            scrollTrigger: {
+                trigger: '.hero',
+                start: 'top top',
+                end: 'bottom top',
+                scrub: 1,
+            },
+            y: 200,
+        });
+
+        // ==================== STEP CARD STAGGER ANIMATION ====================
+        gsap.to('.step-card', {
+            scrollTrigger: {
+                trigger: '.how-works-scroll',
+                start: 'top center',
+            },
+            stagger: 0.1,
+        });
+
+        // ==================== BUTTON HOVER EFFECTS ====================
+        const buttons = document.querySelectorAll('.cta-button');
+        buttons.forEach((button) => {
+            button.addEventListener('mouseenter', function () {
+                gsap.to(this, {
+                    scale: 1.05,
+                    duration: 0.3,
+                    ease: 'power2.out',
+                });
+            });
+
+            button.addEventListener('mouseleave', function () {
+                gsap.to(this, {
+                    scale: 1,
+                    duration: 0.3,
+                    ease: 'power2.out',
+                });
+            });
+        });
+
+        // ==================== SECTION TITLE ANIMATIONS ====================
+        function animateSectionTitles() {
+            const titles = document.querySelectorAll(
+                '.problem-title, .how-works-title, .impact-title, .differentiators-title, .cta-section-title'
+            );
+
+            titles.forEach((title) => {
+                ScrollTrigger.create({
+                    trigger: title,
+                    onEnter: () => {
+                        const chars = title.querySelectorAll('.char');
+                        if (chars.length > 0) {
+                            gsap.to(chars, {
+                                opacity: 1,
+                                duration: 0.5,
+                                stagger: 0.03,
+                            });
+                        } else {
+                            gsap.from(title, {
+                                opacity: 0,
+                                y: 30,
+                                duration: 0.8,
+                                ease: 'power3.out',
+                            });
+                        }
+                    },
+                    once: true,
+                });
+            });
+        }
+
+        animateSectionTitles();
+
+        // Split section titles into chars
+        document.querySelectorAll(
+            '.problem-title, .how-works-title, .impact-title, .differentiators-title, .cta-section-title'
+        ).forEach((title) => {
+            const text = title.textContent;
+            const chars = text.split('').map((char) => {
+                const span = document.createElement('span');
+                span.className = 'char';
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                span.style.opacity = '0';
+                return span;
+            });
+            title.textContent = '';
+            chars.forEach((char) => title.appendChild(char));
+        });
+
+        // ==================== IMPACT CARDS GRID ANIMATION ====================
+        gsap.from('.impact-card', {
+            scrollTrigger: {
+                trigger: '.impact-grid',
+                start: 'top center',
+            },
+            opacity: 0,
+            scale: 0.8,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: 'back.out(1.5)',
+        });
+
+        // ==================== PROBLEM SECTION TEXT ANIMATION ====================
+        gsap.from('.problem-description', {
+            scrollTrigger: {
+                trigger: '.problem-section',
+                start: 'top center',
+            },
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+            stagger: 0.2,
+        });
+
+        // ==================== DIFFERENTIATORS HIGHLIGHT ANIMATION ====================
+        gsap.from('.differentiators-highlight', {
+            scrollTrigger: {
+                trigger: '.differentiators',
+                start: 'top center',
+            },
+            opacity: 0,
+            scale: 0.9,
+            duration: 0.8,
+            ease: 'back.out(1.2)',
+        });
+
+        // ==================== CTA SECTION CONTENT ANIMATION ====================
+        gsap.from('.cta-content', {
+            scrollTrigger: {
+                trigger: '.cta-section',
+                start: 'top center',
+            },
+            opacity: 0,
+            y: 40,
+            duration: 0.8,
+        });
+
+        gsap.from('.cta-section-title', {
+            scrollTrigger: {
+                trigger: '.cta-section-title',
+                start: 'top 70%',
+            },
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+            ease: 'power3.out',
+        });
+
+        // ==================== FOOTER ANIMATION ====================
+        gsap.from('footer', {
+            scrollTrigger: {
+                trigger: 'footer',
+                start: 'top 80%',
+            },
+            opacity: 0,
+            y: 20,
+            duration: 0.8,
+        });
+
+        // ==================== SMOOTH PAGE LOAD ====================
+        gsap.from('nav', {
+            opacity: 0,
+            y: -20,
+            duration: 0.8,
+            delay: 0.1,
+        });
+
+        // ==================== RESPONSIVE ADJUSTMENTS ====================
+        function adjustForMobile() {
+            const isMobile = window.innerWidth < 768;
+            if (isMobile) {
+                gsap.set('.step-card', { fontSize: '0.9rem' });
+            }
+        }
+
+        window.addEventListener('resize', adjustForMobile);
+        adjustForMobile();
+
+        // ==================== PERFORMANCE OPTIMIZATION ====================
+        ScrollTrigger.addEventListener('refresh', () => {
+            gsap.set('*', { willChange: 'auto' });
+        });
+
+        // Debounce scroll handler
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                ScrollTrigger.refresh();
+            }, 150);
+        });
+
+        // ==================== ACCESSIBILITY: KEYBOARD NAVIGATION ====================
+        document.querySelectorAll('a, button').forEach((element) => {
+            element.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    element.click();
+                }
+            });
+        });
+
+        // ==================== DYNAMIC BACKGROUND ANIMATION ====================
+        function animateBackgroundGradient() {
+            gsap.to('body', {
+                backgroundPosition: '200% 200%',
+                duration: 15,
+                ease: 'none',
+                repeat: -1,
+            });
+        }
+
+        // Initialize on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', animateBackgroundGradient);
+        } else {
+            animateBackgroundGradient();
+        }
+
+        // ==================== PARALLAX TEXT EFFECT ====================
+        gsap.to('.problem-title, .how-works-title, .impact-title', {
+            scrollTrigger: {
+                trigger: 'body',
+                start: 'top top',
+                end: 'bottom bottom',
+                scrub: 1,
+            },
+            yPercent: 50,
+        });
+
+        // ==================== HERO STATS FLOATING ANIMATION ====================
+        gsap.to('.hero-stats', {
+            scrollTrigger: {
+                trigger: '.hero',
+                start: 'center center',
+                end: 'bottom center',
+                scrub: 1,
+            },
+            y: -100,
+            opacity: 0.7,
+        });
+
+        // ==================== NAVBAR ANIMATION ON SCROLL ====================
+        let mm = gsap.matchMedia();
+        mm.add('(min-width: 768px)', () => {
+            gsap.to('nav', {
+                scrollTrigger: {
+                    trigger: 'body',
+                    start: 'top top',
+                    end: 'bottom bottom',
+                    onUpdate: (self) => {
+                        if (self.getVelocity() > 0) {
+                            gsap.to('nav', { y: -80, duration: 0.3 });
+                        } else {
+                            gsap.to('nav', { y: 0, duration: 0.3 });
+                        }
+                    },
+                },
+            });
+        });
+
+        // ==================== PIN ANIMATIONS FOR SECTIONS ====================
+        gsap.to('.impact-section', {
+            scrollTrigger: {
+                trigger: '.impact-section',
+                start: 'top center',
+                end: 'bottom center',
+                markers: false,
+            },
+            opacity: 1,
+            duration: 0.5,
+        });
+
+        // ==================== CLEAN UP ON DESTROY ====================
+        window.addEventListener('beforeunload', () => {
+            ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+            lenis.destroy();
+        });
+    </script>
 </body>
 </html>
