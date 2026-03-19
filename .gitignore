@@ -25,6 +25,7 @@ dist-ssr
 
 # Project-specific ignores
 *.mp4
+!public/assets/hero-video.mp4
 *.zip
 build.html
 proveit_landing_page.jsx

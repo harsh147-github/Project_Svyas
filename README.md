@@ -1,6 +1,6 @@
 # Sushasan (सुशासन) — Collective Intelligence for Good Governance
 
-### Collective Intelligence for Good Governance
+### Where Citizens and Government Build Solutions Together
 
 **[🌐 Live Manifesto](https://harsh147-github.github.io/Project_Svyas/) · [🚀 Try the MVP](https://478421c3-f633-4888-a301-72a61c9235bc-00-3n2i4ddsygvo9.worf.replit.dev/app)**
 
@@ -21,21 +21,14 @@ Citizens contribute "vibe answers" — casual, low-friction inputs about local p
 
 **Without AI, this is Reddit. With AI, this is national infrastructure.**
 
-The AI engine does three things no community platform can:
-
-1. **Lowers the bar** — Say "paani nahi aa raha subah se" and AI converts it into structured governance intelligence. Any language. 5 seconds. No policy papers needed.
-
-2. **Synthesizes at scale** — 10,000 citizen opinions become ONE optimal solution with weighted themes, action items, cost estimates, and responsible authorities. No human moderator team can process this. The AI does it in 15 seconds.
-
-3. **Routes intelligently** — AI knows a pothole is a ward problem and a water policy is a state problem. It auto-classifies governance level and routes to the exact right desk.
-
-**Plus: Problem Interconnection Analysis** — Sushasan maps hidden causal relationships between problems. "Hinjewadi traffic" isn't one problem — it's 4 sub-problems (missing buses, narrow roads, no metro, no parking) controlled by 4 different authorities. Sushasan decomposes compound crises for parallel resolution across departments.
+1. **Lowers the bar** — Say "paani nahi aa raha subah se" and AI converts it into structured governance intelligence. Any language. 5 seconds.
+2. **Synthesizes at scale** — 10,000 citizen opinions become ONE optimal solution with weighted themes, action items, cost estimates, and responsible authorities. 15 seconds.
+3. **Routes intelligently** — AI knows a pothole is a ward problem and a water policy is a state problem. Auto-classifies and routes to the exact right desk.
+4. **Interconnects problems** — "Hinjewadi traffic" isn't one problem — it's 4 sub-problems across 4 departments. Sushasan decomposes compound crises for parallel resolution.
 
 ---
 
 ## Dual Interface: Citizens + Decision-Makers
-
-Sushasan is designed for **both sides** of the governance equation.
 
 ### For Citizens
 - Zero-friction contribution in any language (voice, text, images)
@@ -45,13 +38,13 @@ Sushasan is designed for **both sides** of the governance equation.
 - Track progress — see when authorities respond and what actions they take
 
 ### For Decision-Makers (The Authority Dashboard)
-- **Prioritized intelligence queue** — not a pile of complaints, but ranked problems with urgency scores and ready solutions
-- **AI-synthesized action plans** — each problem comes with action items, responsible department, cost estimate, and timeline
-- **Early warning system** — 5+ wards report the same issue → auto-escalation before it becomes a media headline
-- **Problem decomposition** — compound crises broken into parallel workstreams across departments
-- **One-click response** — respond publicly and get credit for being responsive. Easier than any existing channel.
-- **Performance metrics** — response rates per department for reviews and resource allocation
-- **Budget justification** — "2,341 citizens need water meter replacement, AI estimates ₹45Cr" is stronger than any bureaucratic assessment
+- **Prioritized intelligence queue** — ranked problems with urgency scores and ready solutions
+- **AI-synthesized action plans** — action items, responsible department, cost estimate, and timeline
+- **Early warning system** — 5+ wards report the same issue → auto-escalation
+- **Problem decomposition** — compound crises broken into parallel workstreams
+- **One-click response** — respond publicly and get credit for being responsive
+- **Performance metrics** — response rates per department for reviews
+- **Budget justification** — "2,341 citizens need X, AI estimates ₹45Cr"
 
 ---
 
@@ -70,8 +63,6 @@ Sushasan is designed for **both sides** of the governance equation.
 
 ## Governance Hierarchy
 
-Sushasan mirrors India's actual governance structure. Geography is the organizer — every node has a real authority on the other end.
-
 ```
 INDIA (National)  ← PM, Cabinet, Lok Sabha, Rajya Sabha
   └── MAHARASHTRA (State)  ← CM, State Cabinet, Vidhan Sabha
@@ -87,7 +78,50 @@ Auto-escalation:
 
 ---
 
-## Tech Stack
+## Website Architecture
+
+This manifesto site is built as a high-performance, zero-dependency static site:
+
+```
+Project_Svyas/
+├── index.html              # Main manifesto page
+├── css/
+│   └── main.css            # Full design system (dark theme, glassmorphism, responsive)
+├── js/
+│   └── app.js              # Lenis smooth scroll + GSAP ScrollTrigger animations
+├── public/
+│   └── assets/
+│       ├── hero-video.mp4  # Hero background video (flag placement)
+│       ├── parliament-hero.png
+│       ├── india-network.png
+│       ├── hero.png
+│       ├── problem.png
+│       └── solution.png
+├── netlify/
+│   └── functions/
+│       └── agent.js        # AI agent serverless function (Anthropic API)
+└── README.md
+```
+
+### Design Features
+- **Lenis smooth scrolling** — butter-smooth, lerp-based scroll (1.4s easing)
+- **GSAP ScrollTrigger** — every element animates on scroll (stagger, fade, slide, scale, parallax)
+- **Hero video background** — flag placement video with dark gradient overlay
+- **Parallax images** — Parliament + India network images at different scroll speeds
+- **Counter animations** — stats count up when scrolled into view
+- **Animated bar charts** — evidence bars grow from 0 to target width
+- **Preloader** — spinning Ashoka Chakra with "सुशासन" text
+- **Film grain overlay** — subtle texture for premium feel
+- **Marquee banner** — infinitely scrolling stats with tricolor dots
+- **Custom scrollbar** — styled to match the dark theme
+
+### Libraries (via CDN)
+- [Lenis](https://lenis.darkroom.engineering/) v1.1.18 — smooth scrolling
+- [GSAP](https://gsap.com/) v3.12.7 + ScrollTrigger — scroll animations
+
+---
+
+## Tech Stack (Full Platform)
 
 **Frontend:** React 18 + Vite + TailwindCSS v4 + Framer Motion + wouter + TanStack Query
 
@@ -97,7 +131,7 @@ Auto-escalation:
 
 **Auth:** Phone OTP via Firebase Auth + JWT + Redis-backed sessions
 
-**Deploy:** Cloudflare Pages (frontend) + Railway (backend) + Neon.tech (PostgreSQL)
+**Deploy:** GitHub Pages (manifesto) + Railway (backend) + Neon.tech (PostgreSQL)
 
 **Cost:** $20-35/month runs the entire platform for a city.
 
@@ -116,29 +150,14 @@ Auto-escalation:
 
 ---
 
-## Why This Matters (The Data)
-
-All data verified from PRS Legislative Research, official Lok Sabha/Rajya Sabha records, and DARPG.
-
-- **55 sitting days/year** — the 17th Lok Sabha averaged the lowest of any full-term Lok Sabha (was 135 in the 1950s)
-- **84% of bills** passed without parliamentary committee review (17th Lok Sabha)
-- **35% of bills** passed with less than 1 hour of debate
-- **387 hours** of functioning time lost to disruptions
-- **62% CPGRAMS satisfaction** — 38% find grievances inadequately addressed
-- **State legislatures average 20-22 days/year** — in 2021, 44% of state bills passed same day as introduced
-
-The capability exists — PMC built 400km of roads in 75 days for the Bajaj Grand Tour. What's missing is the infrastructure to channel citizen intelligence to decision-makers. Sushasan is that infrastructure.
-
----
-
 ## The Vision
 
 **Aadhaar** gave every Indian an identity. **UPI** gave every Indian a payment system. **Sushasan** gives every Indian a voice that decision-makers can actually hear.
 
 ```
-Aadhaar → Identity
-UPI     → Payments
-Sushasan    → Participation
+Aadhaar  → Identity
+UPI      → Payments
+Sushasan → Participation
 ```
 
 ---
