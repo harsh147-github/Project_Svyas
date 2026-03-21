@@ -3,1223 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sushasan — Collective Intelligence for Good Governance</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0a0f1a;
-            color: #e0e0e0;
-            overflow-x: hidden;
-        }
-
-        /* Preloader Styles */
-        .preloader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0a0f1a 0%, #1a202c 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            animation: fadeOutPreloader 0.6s ease-out 2.5s forwards;
-        }
-
-        @keyframes fadeOutPreloader {
-            from {
-                opacity: 1;
-                visibility: visible;
-            }
-            to {
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-
-        .preloader-content {
-            text-align: center;
-        }
-
-        .preloader-text {
-            font-size: 4.5rem;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -1px;
-            margin-bottom: 2rem;
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.7;
-            }
-        }
-
-        .preloader-subtext {
-            font-size: 1.1rem;
-            color: #64748b;
-            font-weight: 400;
-        }
-
-        /* Navigation Styles */
-        nav {
-            position: fixed;
-            top: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            padding: 1rem 2rem;
-            background: rgba(10, 15, 26, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 3rem;
-            animation: slideDown 0.8s ease-out 0.3s both;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-
-        .nav-logo {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            white-space: nowrap;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2.5rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #cbd5e1;
-            font-size: 0.95rem;
-            font-weight: 500;
-            position: relative;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links a:after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #1e40af, #ea8d0a);
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            color: #f0f0f0;
-        }
-
-        .nav-links a:hover:after {
-            width: 100%;
-        }
-
-        /* Hero Section */
-        .hero {
-            position: relative;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            margin-top: 0;
-        }
-
-        .hero-video-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-        }
-
-        .hero-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 15, 26, 0.7);
-            z-index: 2;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 3;
-            text-align: center;
-            max-width: 900px;
-            padding: 0 2rem;
-            animation: fadeInUp 1s ease-out 0.8s both;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .hero-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 4.5rem;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
-            letter-spacing: -1px;
-            animation: fadeInUp 1s ease-out 1s both;
-        }
-
-        .hero-title span {
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-subtitle {
-            font-size: 1.3rem;
-            color: #cbd5e1;
-            margin-bottom: 3rem;
-            font-weight: 300;
-            animation: fadeInUp 1s ease-out 1.2s both;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-            margin-bottom: 4rem;
-            animation: fadeInUp 1s ease-out 1.4s both;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
-            color: #ffffff;
-            box-shadow: 0 4px 20px rgba(30, 64, 175, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(30, 64, 175, 0.4);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: #ffffff;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.6);
-            transform: translateY(-2px);
-        }
-
-        .hero-stats {
-            display: flex;
-            gap: 4rem;
-            justify-content: center;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            animation: fadeInUp 1s ease-out 1.6s both;
-            flex-wrap: wrap;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: #94a3b8;
-            margin-top: 0.5rem;
-            font-weight: 500;
-        }
-
-        /* Problem Statement Section */
-        .problem-section {
-            padding: 8rem 2rem;
-            background-color: #0a0f1a;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .problem-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(30, 64, 175, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .problem-content {
-            max-width: 900px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-
-        .section-label {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #ea8d0a;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 1rem;
-        }
-
-        .section-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 2rem;
-            line-height: 1.2;
-            letter-spacing: -1px;
-        }
-
-        .section-title span {
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .problem-text {
-            font-size: 1.25rem;
-            line-height: 1.8;
-            color: #cbd5e1;
-            font-weight: 300;
-        }
-
-        .problem-highlight {
-            color: #ffffff;
-            font-weight: 600;
-        }
-
-        /* How It Works Section */
-        .how-it-works {
-            padding: 8rem 2rem;
-            background: linear-gradient(180deg, #0a0f1a 0%, #0f1419 100%);
-        }
-
-        .how-it-works-grid {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-top: 4rem;
-        }
-
-        .how-card {
-            padding: 2.5rem;
-            background: rgba(30, 40, 60, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .how-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(30, 64, 175, 0.5), transparent);
-        }
-
-        .how-card:hover {
-            background: rgba(30, 40, 60, 0.6);
-            border-color: rgba(30, 64, 175, 0.3);
-            transform: translateY(-5px);
-        }
-
-        .card-number {
-            font-size: 3rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .card-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #f0f0f0;
-        }
-
-        .card-description {
-            font-size: 0.95rem;
-            color: #cbd5e1;
-            line-height: 1.6;
-            flex-grow: 1;
-        }
-
-        /* Impact Section */
-        .impact-section {
-            padding: 8rem 2rem;
-            background-color: #0a0f1a;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .impact-section::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(234, 141, 10, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .impact-grid {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 4rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .impact-card {
-            padding: 3rem 2rem;
-            background: linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(234, 141, 10, 0.05) 100%);
-            border: 1px solid rgba(30, 64, 175, 0.2);
-            border-radius: 16px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .impact-card:hover {
-            background: linear-gradient(135deg, rgba(30, 64, 175, 0.2) 0%, rgba(234, 141, 10, 0.1) 100%);
-            border-color: rgba(30, 64, 175, 0.4);
-            transform: translateY(-5px);
-        }
-
-        .impact-number {
-            font-size: 4rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-        }
-
-        .impact-metric {
-            font-size: 1rem;
-            color: #cbd5e1;
-            font-weight: 500;
-        }
-
-        /* Differentiator Section */
-        .differentiator-section {
-            padding: 8rem 2rem;
-            background: linear-gradient(180deg, #0a0f1a 0%, #0f1419 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .differentiator-content {
-            max-width: 900px;
-            margin: 0 auto;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        .differentiator-statement {
-            font-family: 'Poppins', sans-serif;
-            font-size: 3rem;
-            font-weight: 700;
-            line-height: 1.3;
-            letter-spacing: -1px;
-            margin-bottom: 2rem;
-        }
-
-        .diff-normal {
-            color: #e0e0e0;
-        }
-
-        .diff-highlight {
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .differentiator-subtext {
-            font-size: 1.2rem;
-            color: #94a3b8;
-            font-weight: 300;
-        }
-
-        /* CTA Section */
-        .cta-section {
-            position: relative;
-            height: 600px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            padding: 4rem 2rem;
-        }
-
-        .cta-video-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-        }
-
-        .cta-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 15, 26, 0.75);
-            z-index: 2;
-        }
-
-        .cta-content {
-            position: relative;
-            z-index: 3;
-            text-align: center;
-            max-width: 700px;
-        }
-
-        .cta-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 2rem;
-            line-height: 1.2;
-            letter-spacing: -1px;
-        }
-
-        .cta-title span {
-            background: linear-gradient(135deg, #1e40af 0%, #ea8d0a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .cta-description {
-            font-size: 1.2rem;
-            color: #cbd5e1;
-            margin-bottom: 3rem;
-            font-weight: 300;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        /* Footer */
-        footer {
-            padding: 4rem 2rem;
-            background-color: #050a14;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 3rem;
-            margin-bottom: 3rem;
-        }
-
-        .footer-section h3 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: #f0f0f0;
-        }
-
-        .footer-section p {
-            color: #94a3b8;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 1rem;
-        }
-
-        .footer-section a {
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 0.95rem;
-            display: block;
-            margin-bottom: 0.8rem;
-            transition: color 0.3s ease;
-        }
-
-        .footer-section a:hover {
-            color: #1e40af;
-        }
-
-        .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 2rem;
-            text-align: center;
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-
-        /* Fade in on scroll animation */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2.5rem;
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .differentiator-statement {
-                font-size: 1.8rem;
-            }
-
-            .cta-title {
-                font-size: 2rem;
-            }
-
-            .nav-links {
-                gap: 1.5rem;
-            }
-
-            .nav-links a {
-                font-size: 0.85rem;
-            }
-
-            .hero-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .btn {
-                width: 100%;
-                max-width: 300px;
-            }
-
-            .hero-stats {
-                flex-direction: column;
-                gap: 2rem;
-            }
-
-            .stat-number {
-                font-size: 2rem;
-            }
-
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .cta-buttons .btn {
-                width: 100%;
-                max-width: 300px;
-            }
-        }
-
-        @media (max-width: 640px) {
-            nav {
-                flex-direction: column;
-                gap: 1.5rem;
-                width: 90%;
-                padding: 1rem;
-            }
-
-            .nav-links {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-
-            .hero {
-                padding-top: 6rem;
-            }
-
-            .hero-title {
-                font-size: 2rem;
-            }
-
-            .hero-subtitle {
-                font-size: 1rem;
-            }
-
-            .preloader-text {
-                font-size: 3rem;
-            }
-
-            .section-title {
-                font-size: 1.8rem;
-            }
-
-            .differentiator-statement {
-                font-size: 1.5rem;
-            }
-
-            .cta-title {
-                font-size: 1.8rem;
-            }
-
-            .problem-section,
-            .how-it-works,
-            .impact-section,
-            .differentiator-section,
-            .cta-section {
-                padding: 4rem 1rem;
-            }
-        }
-    </style>
+    <title>SUSHASAN — Citizens & Government Build Together</title>
+    <meta name="description" content="A platform for the world's most powerful democracy to solve problems as one team — powered by AI that joins every voice into considered solutions.">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-    <!-- Preloader -->
-    <div class="preloader">
-        <div class="preloader-content">
-            <div class="preloader-text">सुशासन</div>
-            <div class="preloader-subtext">National Intelligence Engine</div>
-        </div>
+
+    <!-- ── Preloader ── -->
+    <div class="preloader" style="position: fixed; inset: 0; background: #080a0f; z-index: 10000; display: flex; align-items: center; justify-content: center;">
+        <h2 class="serif-italic" style="font-size: 2rem;">Sushasan</h2>
     </div>
 
-    <!-- Navigation -->
-    <nav>
-        <div class="nav-logo">सुशासन</div>
-        <ul class="nav-links">
-            <li><a href="#vision">Vision</a></li>
-            <li><a href="#how-it-works">How It Works</a></li>
-            <li><a href="#impact">Impact</a></li>
-            <li><a href="#cta">Get Started</a></li>
-        </ul>
+    <!-- ── Navigation ── -->
+    <nav class="pill-nav">
+        <a href="#hero" class="nav-link">Home</a>
+        <a href="#infrastructure" class="nav-link">Mission</a>
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+        <a href="#ai-engine" class="nav-link">AI Engine</a>
+        <a href="#footer" class="nav-link">Contact</a>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <video class="hero-video-background" autoplay muted loop playsinline>
-            <source src="public/assets/Placing_Flag_on_Building.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h1 class="hero-title">Collective <span>Intelligence</span> Engine</h1>
-            <p class="hero-subtitle">Transforming how India's 1.4 billion citizens connect with decision-makers through AI-powered synthesis and structured insights.</p>
-            <div class="hero-buttons">
-                <button class="btn btn-primary">Join the Movement</button>
-                <button class="btn btn-secondary">Learn More</button>
+    <main>
+        <!-- ── Hero ── -->
+        <section id="hero" class="hero">
+            <div class="hero-background">
+                <div class="hero-glow"></div>
             </div>
-            <div class="hero-stats">
-                <div class="stat-item">
-                    <div class="stat-number" data-target="1.4">0</div>
-                    <div class="stat-label">Citizens Connected</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" data-target="5">0</div>
-                    <div class="stat-label">Seconds Processing</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" data-target="10000">0</div>
-                    <div class="stat-label">Solutions Processed</div>
+            <div class="container" style="position: relative; z-index: 1;">
+                <h1 class="hero-title reveal-text text-gradient">
+                    Citizens & <span class="serif-italic">Government</span> Build Together
+                </h1>
+                <p class="hero-subtitle reveal-text copper-text" style="font-size: 1.25rem; max-width: 800px; margin: 2rem auto;">
+                    A platform for the world's most powerful democracy to solve problems as one team — powered by AI that joins every voice into considered solutions.
+                </p>
+                <div class="reveal-text" style="margin-top: 3rem;">
+                    <a href="#infrastructure" class="btn-premium">See How We Plan</a>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Problem Statement Section -->
-    <section class="problem-section" id="vision">
-        <div class="problem-content">
-            <div class="section-label">The Challenge</div>
-            <h2 class="section-title">Intelligence at <span>Scale</span></h2>
-            <p class="problem-text">
-                Every single day, <span class="problem-highlight">1.4 billion citizens</span> generate insights, solutions, and community intelligence that rarely reach the right decision-makers in a structured format. Emails overflow. Social media creates noise. Valuable ideas from citizens are lost in the sheer volume of unstructured data.
-            </p>
-            <p class="problem-text" style="margin-top: 2rem;">
-                What if we could harness the collective intelligence of an entire nation? What if every voice could be heard, synthesized, structured, and securely routed to the exact authority handling that domain? <span class="problem-highlight">That's Sushasan.</span>
-            </p>
-        </div>
-    </section>
+        <!-- ── Infrastructure ── -->
+        <section id="infrastructure" class="section">
+            <div class="container">
+                <div class="glass-panel reveal-panel">
+                    <h2 class="section-title text-gradient">
+                        The Capability <span class="serif-italic">Exists.</span> The Infrastructure Doesn't.
+                    </h2>
+                    <p class="reveal-text" style="font-size: 1.25rem; color: var(--text-secondary); max-width: 900px; line-height: 1.8;">
+                        PMC built 400km of roads in 75 days for the Bajaj Grand Tour. The capability is there — always has been. What's missing is the infrastructure to channel citizen intelligence to the right decision-makers, in the right format, at the right time.
+                    </p>
+                    <p class="reveal-text" style="font-size: 1.25rem; color: var(--text-secondary); max-width: 900px; line-height: 1.8; margin-top: 2rem;">
+                        Sushasan is that infrastructure. A platform where every citizen's perspective joins together through AI — not to collect complaints, but to build optimized solutions where every factor is considered. The solutions are ready. <span class="serif-italic">Only execution awaits.</span>
+                    </p>
+                </div>
+            </div>
+        </section>
 
-    <!-- How It Works Section -->
-    <section class="how-it-works" id="how-it-works">
-        <div class="problem-content">
-            <div class="section-label">Our Process</div>
-            <h2 class="section-title">How <span>Sushasan</span> Works</h2>
-        </div>
-        <div class="how-it-works-grid">
-            <div class="how-card fade-in">
-                <div class="card-number">01</div>
-                <h3 class="card-title">Collect Inputs Naturally</h3>
-                <p class="card-description">Citizens contribute hyper-local issues through voice, text, or images in any language. Inputs are logged, structured, and time-stamped instantly.</p>
+        <!-- ── Proof ── -->
+        <section class="section" style="background: var(--bg-dark);">
+            <div class="container">
+                <div class="glass-panel reveal-panel">
+                    <h2 class="section-title reveal-text">
+                        The Proof <span class="serif-italic">Already Exists</span>
+                    </h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem; margin-top: 4rem;">
+                        <div>
+                            <p style="color: var(--text-secondary); line-height: 1.8;">
+                                When the Bajaj Grand Tour brought international attention to Pune, the government spent nearly ₹500 crores on redevelopment. PMC built 400km of roads in 75 days. The capability was always there. But they had a clear plan — they knew exactly what needed to be done.
+                            </p>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-secondary); line-height: 1.8;">
+                                Now imagine solving problems for 1.4 billion people. Millions of voices, no structure. Citizens blame the government. Officials are overwhelmed. Everyone wants change but nobody has a clear, unified plan. <span class="copper-text">That's the chaos.</span>
+                            </p>
+                        </div>
+                        <div>
+                            <p style="color: var(--text-secondary); line-height: 1.8;">
+                                Sushasan eliminates the chaos. It ends the era of blaming and provides a tool for both sides. AI and neural networks join every voice together into a clear understanding of the problem, with optimized solutions ready for execution. <span class="serif-italic">When the plan is clear, India delivers.</span> Sushasan makes the plan clear.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="how-card fade-in">
-                <div class="card-number">02</div>
-                <h3 class="card-title">AI Synthesizes Patterns</h3>
-                <p class="card-description">Advanced neural models (GPT-4o) identify themes, detect systemic consensus, filter noise, and merge thousands of duplicate inputs into one optimal solution.</p>
-            </div>
-            <div class="how-card fade-in">
-                <div class="card-number">03</div>
-                <h3 class="card-title">Route Intelligently</h3>
-                <p class="card-description">Action plans and cost estimates are automatically classified and securely routed to the relevant municipal, state, or central authority dashboard.</p>
-            </div>
-            <div class="how-card fade-in">
-                <div class="card-number">04</div>
-                <h3 class="card-title">Dual Interface Outcomes</h3>
-                <p class="card-description">Decision-makers get a clean, prioritized data queue. Citizens get complete transparency on input processing, attribution, and resolution statuses.</p>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- AI Engine Section -->
-    <section class="impact-section" id="impact">
-        <div class="problem-content">
-            <div class="section-label">Under the Hood</div>
-            <h2 class="section-title">The <span>AI</span> Engine</h2>
-        </div>
-        <div class="impact-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-            <div class="impact-card fade-in" style="text-align: left;">
-                <h3 class="card-title" style="margin-bottom: 0.5rem; color: #ea8d0a;">Refine & Route</h3>
-                <div class="impact-metric" style="color: #64748b; margin-bottom: 1rem;">GPT-4o-mini (&lt; 3s Latency)</div>
-                <p class="card-description">Converts casual vibe input in any language into structured intelligence. Instantly classifies the governance level (Ward, City, State, National) and routes the problem to the exact right dashboard.</p>
+        <!-- ── How It Works ── -->
+        <section id="how-it-works" class="section">
+            <div class="container">
+                <h2 class="section-title reveal-text text-gradient">
+                    How <span class="serif-italic">Sushasan</span> Works
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 6rem;">
+                    <div class="reveal-panel glass-panel">
+                        <h3 class="copper-text" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Citizens Share</h3>
+                        <p style="color: var(--text-secondary); line-height: 1.6;">
+                            Anyone can contribute — voice, text, or images in any language. Say what you see in your community and your perspective joins the bigger picture.
+                        </p>
+                    </div>
+                    <div class="reveal-panel glass-panel">
+                        <h3 class="copper-text" style="font-size: 1.5rem; margin-bottom: 1.5rem;">AI Joins</h3>
+                        <p style="color: var(--text-secondary); line-height: 1.6;">
+                            Deep neural networks connect thousands of voices — understanding root causes, weighing constraints, and building a complete picture no single person could see alone.
+                        </p>
+                    </div>
+                    <div class="reveal-panel glass-panel">
+                        <h3 class="copper-text" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Solutions Flow</h3>
+                        <p style="color: var(--text-secondary); line-height: 1.6;">
+                            Optimized solutions flow to the exact people who can act — across India's governance hierarchy — so citizens and government can solve problems together.
+                        </p>
+                    </div>
+                    <div class="reveal-panel glass-panel">
+                        <h3 class="copper-text" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Transparency</h3>
+                        <p style="color: var(--text-secondary); line-height: 1.6;">
+                            A national dashboard visible to all — citizens, officials, media. Every solution, every status, every outcome. Complete transparency. Only execution awaits.
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div class="impact-card fade-in" style="text-align: left;">
-                <h3 class="card-title" style="margin-bottom: 0.5rem; color: #1e40af;">Synthesize</h3>
-                <div class="impact-metric" style="color: #64748b; margin-bottom: 1rem;">GPT-4o (5-15s Latency)</div>
-                <p class="card-description">Takes 10,000 parallel inputs about the same issue and merges them into a single, highly actionable optimal solution featuring root causes, action items, cost estimates, and ranked citizen consensus.</p>
-            </div>
-            <div class="impact-card fade-in" style="text-align: left;">
-                <h3 class="card-title" style="margin-bottom: 0.5rem; color: #1e40af;">Interconnect</h3>
-                <div class="impact-metric" style="color: #64748b; margin-bottom: 1rem;">GPT-4o (5s Latency)</div>
-                <p class="card-description">Identifies causal relationships between problems across locations. Maps compound systemic crises across overlapping departments for parallel resolution.</p>
-            </div>
-            <div class="impact-card fade-in" style="text-align: left;">
-                <h3 class="card-title" style="margin-bottom: 0.5rem; color: #ea8d0a;">Bubble-Up Escalation</h3>
-                <div class="impact-metric" style="color: #64748b; margin-bottom: 1rem;">Async Polling Engine</div>
-                <p class="card-description">Constant systemic pattern detection. If 5+ dependent locations (Wards) report identical problems, the engine instantly auto-escalates the synthesized brief to the parent location (City Commissioner).</p>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Differentiator Section -->
-    <section class="differentiator-section">
-        <div class="differentiator-content">
-            <p class="differentiator-statement">
-                <span class="diff-normal">Without AI, it's just </span>
-                <span class="diff-highlight">noise.</span>
-                <span class="diff-normal"> With AI, it's </span>
-                <span class="diff-highlight">decision intelligence.</span>
-            </p>
-            <p class="differentiator-subtext">
-                Transforming billions of distinct regional voices into actionable, structured priorities for proactive city, state, and national decision-makers. Built entirely as an open-source, extensible Digital Public Good.
-            </p>
-        </div>
-    </section>
+        <!-- ── AI Engine ── -->
+        <section id="ai-engine" class="section" style="background: var(--bg-dark);">
+            <div class="container">
+                <h2 class="section-title reveal-text">
+                    The AI <span class="serif-italic">Engine</span>
+                </h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 5rem;">
+                    <div class="reveal-panel glass-panel">
+                        <h3 style="margin-bottom: 1.5rem;">Understand & Connect</h3>
+                        <p style="color: var(--text-secondary);">Understands casual input in any language and connects it to the right governance level — Ward, City, State, National — so solutions reach the people who can act.</p>
+                    </div>
+                    <div class="reveal-panel glass-panel">
+                        <h3 style="margin-bottom: 1.5rem;">Synthesize & Optimize</h3>
+                        <p style="color: var(--text-secondary);">Joins 10,000 perspectives into one optimized solution — weighing every factor, every constraint, every community impact. Not majority rules. The most considered answer possible.</p>
+                    </div>
+                    <div class="reveal-panel glass-panel">
+                        <h3 style="margin-bottom: 1.5rem;">See the Whole Picture</h3>
+                        <p style="color: var(--text-secondary);">Maps connections between problems across departments and locations. When the whole country works together, AI sees patterns no single team can — and coordinates solutions across boundaries.</p>
+                    </div>
+                    <div class="reveal-panel glass-panel">
+                        <h3 style="margin-bottom: 1.5rem;">Auto-Escalation</h3>
+                        <p style="color: var(--text-secondary);">When 5+ locations report the same problem, the solution automatically escalates to the parent authority — ensuring systemic issues get the attention they need at the right governance level.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section" id="cta">
-        <video class="cta-video-background" autoplay muted loop playsinline>
-            <source src="public/assets/Website_Aesthetic_GIF_Video_Generation.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-        <div class="cta-overlay"></div>
-        <div class="cta-content">
-            <h2 class="cta-title">Ready to Transform <span>Governance?</span></h2>
-            <p class="cta-description">Join thousands of citizens and government leaders who are building the future of Indian democracy.</p>
-            <div class="cta-buttons">
-                <button class="btn btn-primary">Get Started Today</button>
-                <button class="btn btn-secondary">Schedule a Demo</button>
+        <!-- ── Join Us ── -->
+        <section class="section" style="text-align: center;">
+            <div class="container">
+                <h2 class="section-title reveal-text text-gradient">
+                    Let's Build <span class="serif-italic">This Together</span>
+                </h2>
+                <p class="reveal-text" style="max-width: 600px; margin: 2rem auto; color: var(--text-secondary); font-size: 1.25rem;">
+                    Sushasan is for everyone — citizens, leaders, developers, thinkers. The whole country, working as one team to solve the problems that matter.
+                </p>
+                <div class="reveal-text" style="margin-top: 3rem;">
+                    <a href="#" class="btn-premium">Get Started Now</a>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Footer -->
-    <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Sushasan</h3>
-                <p>Collective intelligence for good governance. Transforming how India participates in democracy.</p>
+    </main>
+
+    <!-- ── Footer ── -->
+    <footer id="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h2 class="serif-italic" style="font-size: 3rem; margin-bottom: 1rem;">Sushasan</h2>
+                    <p style="color: var(--text-dim); max-width: 350px;">
+                        Where Citizens and Government Build Solutions Together. A platform for the world's most powerful democracy.
+                    </p>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-primary);">Product</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <li><a href="#how-it-works" class="nav-link" style="padding: 0;">How It Works</a></li>
+                        <li><a href="#infrastructure" class="nav-link" style="padding: 0;">Infrastructure</a></li>
+                        <li><a href="#ai-engine" class="nav-link" style="padding: 0;">AI Engine</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-primary);">Company</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <li><a href="#" class="nav-link" style="padding: 0;">About Us</a></li>
+                        <li><a href="#" class="nav-link" style="padding: 0;">Blog</a></li>
+                        <li><a href="#" class="nav-link" style="padding: 0;">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-primary);">Legal</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <li><a href="#" class="nav-link" style="padding: 0;">Privacy Policy</a></li>
+                        <li><a href="#" class="nav-link" style="padding: 0;">Terms of Service</a></li>
+                        <li><a href="#" class="nav-link" style="padding: 0;">FAQ</a></li>
+                    </ul>
+                </div>
             </div>
-            <div class="footer-section">
-                <h3>Product</h3>
-                <a href="#how-it-works">How It Works</a>
-                <a href="#impact">Impact</a>
-                <a href="#cta">Get Started</a>
+            
+            <div style="margin-top: 6rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; color: var(--text-dim); font-size: 0.8rem;">
+                <p>&copy; 2026 Sushasan. Built for India, by India. 🇮🇳</p>
+                <p>Premium Redesign by Antigravity</p>
             </div>
-            <div class="footer-section">
-                <h3>Company</h3>
-                <a href="#">About Us</a>
-                <a href="#">Blog</a>
-                <a href="#">Contact</a>
-            </div>
-            <div class="footer-section">
-                <h3>Legal</h3>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-                <a href="#">FAQ</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 Sushasan. All rights reserved. Built for Good Governance.</p>
         </div>
     </footer>
 
-    <script>
-        window.lenisAvailable = false;
-
-        setTimeout(function() {
-            var preloader = document.querySelector('.preloader');
-            if (preloader) {
-                preloader.style.opacity = '0';
-                preloader.style.visibility = 'hidden';
-            }
-        }, 2500);
-
-        try {
-            if (typeof Lenis !== 'undefined') {
-                window.lenisAvailable = true;
-                var lenis = new Lenis({
-                    duration: 1.2,
-                    easing: function(t) {
-                        return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-                    },
-                    direction: 'vertical',
-                    gestureDirection: 'vertical',
-                    smooth: true,
-                    smoothTouch: false,
-                    touchMultiplier: 2
-                });
-
-                function raf(time) {
-                    lenis.raf(time);
-                    requestAnimationFrame(raf);
-                }
-
-                requestAnimationFrame(raf);
-
-                if (typeof gsap !== 'undefined') {
-                    lenis.on('scroll', function(e) {
-                        gsap.ticker.wake();
-                    });
-                }
-            } else {
-                console.warn('Lenis failed to load, smooth scroll disabled');
-                window.lenisAvailable = false;
-            }
-        } catch (error) {
-            console.warn('Lenis initialization failed:', error);
-            window.lenisAvailable = false;
-        }
-
-        try {
-            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
-                gsap.registerPlugin(ScrollTrigger);
-
-                var fadeElements = document.querySelectorAll('.fade-in');
-                fadeElements.forEach(function(element) {
-                    gsap.to(element, {
-                        scrollTrigger: {
-                            trigger: element,
-                            start: 'top 80%',
-                            onEnter: function() {
-                                element.classList.add('visible');
-                            }
-                        }
-                    });
-                });
-
-                var problemText = document.querySelector('.problem-text');
-                if (problemText) {
-                    gsap.from(problemText, {
-                        scrollTrigger: {
-                            trigger: problemText,
-                            start: 'top 70%'
-                        },
-                        opacity: 0,
-                        y: 40,
-                        duration: 1
-                    });
-                }
-
-                var counterElements = document.querySelectorAll('[data-target]');
-                counterElements.forEach(function(element) {
-                    var target = parseFloat(element.getAttribute('data-target'));
-                    var isDecimal = target % 1 !== 0;
-
-                    var obj = {value: 0};
-
-                    gsap.to(obj, {
-                        value: target,
-                        duration: 2.5,
-                        scrollTrigger: {
-                            trigger: element,
-                            start: 'top 80%',
-                            once: true
-                        },
-                        onUpdate: function() {
-                            if (isDecimal) {
-                                element.textContent = obj.value.toFixed(1);
-                            } else if (target > 100) {
-                                element.textContent = Math.floor(obj.value).toLocaleString();
-                            } else {
-                                element.textContent = Math.floor(obj.value);
-                            }
-                        }
-                    });
-                });
-            } else {
-                console.warn('GSAP or ScrollTrigger not available');
-            }
-        } catch (error) {
-            console.warn('GSAP animation initialization failed:', error);
-        }
-
-        if (!window.lenisAvailable) {
-            document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    var target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({behavior: 'smooth'});
-                    }
-                });
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var videos = document.querySelectorAll('video');
-            videos.forEach(function(video) {
-                video.addEventListener('error', function() {
-                    console.warn('Video failed to load:', this.currentSrc);
-                    this.style.display = 'none';
-                });
-            });
-        });
-
-        window.addEventListener('error', function(event) {
-            console.error('Global error caught:', event.error);
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var preloader = document.querySelector('.preloader');
-            if (preloader && !window.lenisAvailable) {
-                setTimeout(function() {
-                    preloader.style.opacity = '0';
-                    preloader.style.visibility = 'hidden';
-                }, 2500);
-            }
-
-            try {
-                var counterElements = document.querySelectorAll('[data-target]');
-                counterElements.forEach(function(element) {
-                    if (!element.textContent || element.textContent === '0') {
-                        var target = parseFloat(element.getAttribute('data-target'));
-                        var isDecimal = target % 1 !== 0;
-
-                        var obj = {value: 0};
-
-                        if (typeof gsap !== 'undefined') {
-                            gsap.to(obj, {
-                                value: target,
-                                duration: 2.5,
-                                onUpdate: function() {
-                                    if (isDecimal) {
-                                        element.textContent = obj.value.toFixed(1);
-                                    } else if (target > 100) {
-                                        element.textContent = Math.floor(obj.value).toLocaleString();
-                                    } else {
-                                        element.textContent = Math.floor(obj.value);
-                                    }
-                                }
-                            });
-                        } else {
-                            element.textContent = isDecimal ? target.toFixed(1) : target > 100 ? target.toLocaleString() : target;
-                        }
-                    }
-                });
-            } catch (error) {
-                console.warn('Counter animation error:', error);
-            }
-        });
-
-        document.querySelectorAll('.btn-primary, .btn-secondary').forEach(function(button) {
-            button.addEventListener('click', function(e) {
-                var originalBackgroundColor = window.getComputedStyle(this).backgroundColor;
-                this.style.opacity = '0.8';
-                setTimeout(function() {
-                    button.style.opacity = '1';
-                }, 200);
-            });
-        });
-
-        if (!window.lenisAvailable || typeof gsap === 'undefined') {
-            var observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -100px 0px'
-            };
-
-            var observer = new IntersectionObserver(function(entries) {
-                entries.forEach(function(entry) {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
-                });
-            }, observerOptions);
-
-            document.querySelectorAll('.fade-in').forEach(function(element) {
-                observer.observe(element);
-            });
-        }
-
-        if (!('scrollBehavior' in document.documentElement.style)) {
-            window.scrollTo = function(options) {
-                if (options.behavior === 'smooth') {
-                    var start = window.pageYOffset;
-                    var target = options.top || 0;
-                    var duration = 1000;
-                    var startTime = null;
-
-                    var easeInOutQuad = function(t) {
-                        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-                    };
-
-                    var scroll = function(currentTime) {
-                        if (startTime === null) startTime = currentTime;
-                        var elapsed = currentTime - startTime;
-                        var progress = Math.min(elapsed / duration, 1);
-                        var ease = easeInOutQuad(progress);
-                        var position = start + (target - start) * ease;
-                        window.pageYOffset = position;
-                        if (progress < 1) {
-                            requestAnimationFrame(scroll);
-                        }
-                    };
-
-                    requestAnimationFrame(scroll);
-                } else {
-                    window.pageYOffset = options.top || 0;
-                }
-            };
-        }
-
-        console.log('Sushasan initialization complete');
-        console.log('Lenis available:', window.lenisAvailable);
-        console.log('GSAP available:', typeof gsap !== 'undefined');
-        console.log('ScrollTrigger available:', typeof ScrollTrigger !== 'undefined');
-    </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-    <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
-
+    <!-- Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
+    
+    <!-- App Script -->
+    <script src="js/app.js"></script>
 </body>
 </html>
