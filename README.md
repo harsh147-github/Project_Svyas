@@ -1,7 +1,5 @@
 
 <div align="center">
-  <img src="https://harsh147-github.github.io/Project_Svyas/public/assets/india-network.png" alt="Sushasan" width="100%" style="border-radius: 12px; margin-bottom: 20px;" />
-
   <h1>सुशासन — Sushasan</h1>
   <p><strong>Where Citizens and Government Build Solutions Together</strong></p>
 
