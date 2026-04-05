@@ -4,11 +4,18 @@
   <p><em>"We're not building an app. We're building infrastructure for how democracy should work in the digital age."</em></p>
 
   <p>
-    <a href="https://sushaasan.in"><b>🌐 Website</b></a> ·
-    <a href="https://sushaasan.framer.website/"><b>📄 Landing Page</b></a> ·
+    <a href="https://sushaasan.framer.website/"><b>🌐 Website</b></a> ·
+    <a href="https://vercel.com/harsh147-githubs-projects/project-svyas"><b>🚀 App (coming soon)</b></a> ·
     <a href="docs/pitch-materials/"><b>📊 Pitch Materials</b></a> ·
     <a href="docs/strategy/sushaasan-executive-brief.md"><b>📋 Executive Brief</b></a>
   </p>
+
+  <p><sub>
+    Marketing site → <a href="https://sushaasan.framer.website/">Framer</a> ·
+    PWA app → <a href="https://vercel.com/harsh147-githubs-projects/project-svyas">Vercel</a> ·
+    Backend → Railway (planned) ·
+    Custom domain → <code>sushaasan.in</code>
+  </sub></p>
 
   <br/>
 
@@ -82,7 +89,8 @@ Citizens discuss naturally  →  AI synthesizes collective voice  →  Leaders g
 | **Frontend** | React PWA, TailwindCSS, Framer Motion |
 | **Backend** | Express.js, PostgreSQL, Drizzle ORM (5-table schema) |
 | **Pipeline** | BullMQ (6-job async AI processing), sub-5s latency |
-| **Infrastructure** | AWS/Railway, Cloudflare, Neon.tech |
+| **Infrastructure** | Vercel (PWA), Railway (backend + workers), Neon.tech (Postgres), Upstash (Redis), Cloudflare (CDN) |
+| **Marketing site** | Framer (`sushaasan.framer.website` → `sushaasan.in`) |
 
 ---
 
