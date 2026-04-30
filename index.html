@@ -1,245 +1,513 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUSHASAN — Citizens & Government Build Together</title>
-    <meta name="description" content="A platform for the world's most powerful democracy to solve problems as one team — powered by AI that joins every voice into considered solutions.">
-    
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/main.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sushaasan — Kondhwa · Wanowrie · NIBM · Salunke Vihar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fafaf7;
+    --paper:#f4f3ee;
+    --ink:#0a0a0a;
+    --ink-2:#3a3a36;
+    --ink-3:#7a766d;
+    --ink-4:#b3b0a8;
+    --road-major:#1a1a1a;
+    --road-arterial:#2a2a2a;
+    --road-local:#5a5a55;
+    --road-fine:#a8a59c;
+    --building:rgba(0,0,0,0.05);
+    --water:#dbe4e9;
+    --green:#e6ead8;
+    --saffron:#FF9933;
+    --saffron-2:#c8741a;
+    --sans:'Inter',-apple-system,system-ui,sans-serif;
+    --serif:'Source Serif 4',Georgia,serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.18);border-radius:3px}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+</style>
 </head>
 <body>
+<div id="root"></div>
 
-    <!-- ── Preloader ── -->
-    <div class="preloader" style="position: fixed; inset: 0; background: #080a0f; z-index: 10000; display: flex; align-items: center; justify-content: center;">
-        <h2 class="serif-italic" style="font-size: 2rem;">Sushasan</h2>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel">
+const { useState, useRef } = React;
+
+// ─────────────────────────────────────────────────────────────
+// WARDS — Kondhwa · Wanowrie · NIBM · Salunke Vihar belt
+// viewBox 0..1400 × 0..900
+// ─────────────────────────────────────────────────────────────
+const WARDS = [
+  { id:'wanowrie',  no:'14', name:'WANOWRIE',          sub:'Cantonment edge',
+    points:'190,140 360,118 470,168 446,256 372,290 246,294 168,238 138,184' },
+  { id:'sopanbaug', no:'15', name:'SOPAN BAUG',         sub:'Hadapsar West',
+    points:'470,168 640,140 760,200 700,280 580,294 446,256' },
+  { id:'salunke',   no:'17', name:'SALUNKE VIHAR',      sub:'Clover · Corinthians',
+    points:'446,256 580,294 600,400 488,440 372,398 372,290' },
+  { id:'kondhwa_kh',no:'29', name:'KONDHWA KHURD',      sub:'Kausarbaug · Parge Nagar',
+    points:'168,238 246,294 372,290 372,398 282,490 168,476 110,398 88,308' },
+  { id:'kondhwa_bk',no:'30', name:'KONDHWA BUDRUK',     sub:'Mithanagar · Devnagar',
+    points:'372,398 488,440 510,540 422,610 282,580 282,490' },
+  { id:'nibm',      no:'31', name:'NIBM ROAD',          sub:'Tribeca · Mohammadwadi',
+    points:'488,440 600,400 720,420 760,540 668,610 510,540' },
+  { id:'undri',     no:'32', name:'UNDRI · PISOLI',     sub:'Bizzbay · Handewadi',
+    points:'282,580 422,610 510,540 668,610 638,720 488,770 320,748 246,652' },
+  { id:'mwadi_e',   no:'33', name:'MOHAMMADWADI EAST',  sub:'Awalwadi · Phursungi link',
+    points:'600,400 700,280 820,308 880,420 820,500 760,540 720,420' },
+];
+
+const CTX = [
+  { name:'PUNE CAMP',     points:'40,210 138,184 168,238 88,308 40,308' },
+  { name:'KALYANI NAGAR', points:'190,140 360,118 380,40 200,30 100,90' },
+  { name:'HADAPSAR',      points:'640,140 820,118 880,80 700,30 540,40 470,90' },
+  { name:'MAGARPATTA',    points:'760,200 900,180 940,278 820,308 700,280' },
+  { name:'PHURSUNGI',     points:'880,420 1000,420 1040,560 940,650 820,500' },
+  { name:'PISOLI SOUTH',  points:'320,748 488,770 638,720 720,810 540,860 360,850 246,810' },
+  { name:'KATRAJ ROPE',   points:'40,308 110,398 168,476 110,540 30,520 18,400' },
+  { name:'MOHITEWADI',    points:'820,118 940,140 980,200 900,180' },
+];
+
+// ─────────────────────────────────────────────────────────────
+// BASE MAP — roads, blocks, etc. drawn densely OSM-style
+// ─────────────────────────────────────────────────────────────
+
+// Highways/arterials (named, thick black)
+const ARTERIALS = [
+  { id:'nibm', name:'NIBM Rd',
+    d:'M 40 200 C 90 218, 140 232, 168 238 L 246 294 L 372 290 L 446 256 L 580 294 L 700 280 L 820 308 L 940 280 L 1080 270', w:5.5 },
+  { id:'salunke', name:'Salunke Vihar Rd',
+    d:'M 380 100 L 410 200 L 446 256 L 488 440 L 510 540 L 488 770 L 460 870', w:5 },
+  { id:'kondhwa', name:'Kondhwa Rd',
+    d:'M 40 280 L 88 308 L 168 476 L 282 580 L 422 610 L 510 540 L 668 610 L 760 540 L 880 420 L 940 380 L 1080 360', w:5 },
+  { id:'mwadi', name:'Mohammadwadi Rd',
+    d:'M 488 440 L 600 400 L 720 420 L 820 500 L 940 540 L 1080 560', w:4 },
+  { id:'undri', name:'Undri-Pisoli Rd',
+    d:'M 282 580 L 320 748 L 488 770 L 638 720 L 760 810', w:3.5 },
+  { id:'sopan', name:'Sopan Baug Rd',
+    d:'M 470 168 L 640 140 L 760 200 L 880 240', w:3.5 },
+  { id:'cantt', name:'Camp-Wanowrie Link',
+    d:'M 138 184 L 246 130 L 380 100', w:3.5 },
+];
+
+// Local roads (medium grey)
+const LOCALS = [
+  'M 168 238 L 282 220 L 360 240',
+  'M 246 294 L 282 220',
+  'M 372 290 L 372 398',
+  'M 446 256 L 488 440',
+  'M 580 294 L 600 400',
+  'M 110 398 L 282 490 L 372 398',
+  'M 282 490 L 422 610',
+  'M 282 490 L 168 476',
+  'M 600 400 L 700 280',
+  'M 720 420 L 760 540',
+  'M 760 540 L 668 610',
+  'M 510 540 L 488 770',
+  'M 422 610 L 510 540',
+  'M 638 720 L 720 720 L 760 810',
+  'M 320 748 L 460 870',
+  'M 168 476 L 110 540 L 246 652',
+  'M 246 652 L 320 748',
+  'M 110 398 L 168 476',
+  'M 88 308 L 110 398',
+  'M 700 280 L 820 308',
+  'M 820 308 L 880 420',
+  'M 820 500 L 940 540',
+  'M 720 420 L 880 420',
+  'M 600 400 L 720 420',
+];
+
+// Capillary streets — fine grid, lots of them, layered like OSM zoom 15
+function buildCapillaries(){
+  const out = [];
+  // Wanowrie/Sopan Baug grid
+  for(let y=140; y<300; y+=14){
+    out.push(`M ${190 + Math.random()*8} ${y} L ${640 + Math.random()*20} ${y - (300-y)*0.05}`);
+  }
+  for(let x=200; x<700; x+=18){
+    out.push(`M ${x} ${130} L ${x + (300-130)*0.04} ${290}`);
+  }
+  // NIBM/Salunke dense grid
+  for(let y=300; y<560; y+=12){
+    out.push(`M ${380 + Math.random()*10} ${y} L ${760 + Math.random()*15} ${y + (Math.random()-0.5)*8}`);
+  }
+  for(let x=380; x<760; x+=14){
+    out.push(`M ${x} ${300} L ${x + (Math.random()-0.5)*6} ${560}`);
+  }
+  // Kondhwa west diagonal
+  for(let i=0; i<26; i++){
+    const y0 = 240 + i*10;
+    out.push(`M ${100 + Math.random()*8} ${y0} L ${380 + Math.random()*10} ${y0 + 30}`);
+  }
+  for(let i=0; i<22; i++){
+    const x0 = 110 + i*12;
+    out.push(`M ${x0} ${260} L ${x0 + 10} ${500}`);
+  }
+  // Undri/Pisoli sparse
+  for(let y=600; y<780; y+=18){
+    out.push(`M ${260 + Math.random()*10} ${y} L ${680 + Math.random()*20} ${y + (Math.random()-0.5)*10}`);
+  }
+  for(let x=280; x<700; x+=22){
+    out.push(`M ${x} ${590} L ${x + (Math.random()-0.5)*8} ${770}`);
+  }
+  // Mohammadwadi East
+  for(let y=320; y<520; y+=14){
+    out.push(`M ${640 + Math.random()*8} ${y} L ${880 + Math.random()*15} ${y + (Math.random()-0.5)*6}`);
+  }
+  for(let x=640; x<880; x+=16){
+    out.push(`M ${x} ${300} L ${x + (Math.random()-0.5)*6} ${520}`);
+  }
+  return out;
+}
+const CAPS = buildCapillaries();
+
+// Building blocks — faint grey rectangles (clusters of buildings)
+function buildBlocks(){
+  const out = [];
+  const seedRand = (s)=>()=>{ s=(s*9301+49297)%233280; return s/233280; };
+  const rnd = seedRand(42);
+  // Within wanowrie/sopan
+  for(let i=0;i<70;i++){
+    const x = 200 + rnd()*460;
+    const y = 130 + rnd()*150;
+    const w = 8 + rnd()*16;
+    const h = 6 + rnd()*10;
+    out.push({x,y,w,h});
+  }
+  // NIBM/salunke commercial
+  for(let i=0;i<90;i++){
+    const x = 390 + rnd()*360;
+    const y = 300 + rnd()*250;
+    const w = 8 + rnd()*18;
+    const h = 6 + rnd()*12;
+    out.push({x,y,w,h});
+  }
+  // Kondhwa dense
+  for(let i=0;i<110;i++){
+    const x = 100 + rnd()*290;
+    const y = 250 + rnd()*240;
+    const w = 6 + rnd()*12;
+    const h = 5 + rnd()*9;
+    out.push({x,y,w,h});
+  }
+  // Undri
+  for(let i=0;i<70;i++){
+    const x = 270 + rnd()*400;
+    const y = 600 + rnd()*160;
+    const w = 7 + rnd()*14;
+    const h = 5 + rnd()*10;
+    out.push({x,y,w,h});
+  }
+  // mwadi east
+  for(let i=0;i<60;i++){
+    const x = 640 + rnd()*230;
+    const y = 310 + rnd()*200;
+    const w = 7 + rnd()*14;
+    const h = 5 + rnd()*10;
+    out.push({x,y,w,h});
+  }
+  // surrounding context (lighter)
+  for(let i=0;i<140;i++){
+    const x = rnd()*1380;
+    const y = rnd()*880;
+    const w = 6 + rnd()*10;
+    const h = 5 + rnd()*8;
+    out.push({x,y,w,h, ctx:true});
+  }
+  return out;
+}
+const BLOCKS = buildBlocks();
+
+// Green patches (parks)
+const GREENS = [
+  { d:'M 60 110 q 40 -20 90 -10 q 30 30 0 70 q -50 20 -90 -10 z' },
+  { d:'M 980 700 q 50 -10 80 30 q 0 50 -50 60 q -50 -20 -30 -90 z' },
+  { d:'M 880 80 q 40 -10 60 20 q 0 30 -40 30 q -30 -10 -20 -50 z' },
+];
+
+// Water (small)
+const WATERS = [
+  { d:'M 1080 50 q 40 30 80 10 q 30 60 -20 100 q -60 -20 -60 -110 z' },
+];
+
+// Hotspot dots
+const SPOTS = [
+  { x:478, y:264, label:'Tribeca' },
+  { x:432, y:236, label:'Konark' },
+  { x:498, y:228, label:'Lunkad' },
+  { x:560, y:400, label:'Mwadi T-Pt' },
+];
+
+// ─────────────────────────────────────────────────────────────
+function MapSurface(props){
+  const { selected, setSelected, hovered, setHovered } = props || {};
+  const wrap = useRef(null);
+  const [view,setView] = useState({ scale:1, x:0, y:0 });
+  const drag = useRef(null);
+
+  function onWheel(e){
+    e.preventDefault();
+    const rect = wrap.current.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    const factor = e.deltaY < 0 ? 1.12 : 0.89;
+    const next = Math.max(0.6, Math.min(4, view.scale * factor));
+    const k = next / view.scale;
+    setView({ scale: next, x: cx - k*(cx - view.x), y: cy - k*(cy - view.y) });
+  }
+  function onDown(e){ drag.current = { sx:e.clientX, sy:e.clientY, vx:view.x, vy:view.y }; }
+  function onMove(e){ if(!drag.current) return; setView(v=>({ ...v, x:drag.current.vx + e.clientX-drag.current.sx, y:drag.current.vy + e.clientY-drag.current.sy })); }
+  function onUp(){ drag.current = null; }
+  function reset(){ setView({scale:1,x:0,y:0}); }
+
+  return (
+    <div ref={wrap} onWheel={onWheel} onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+         style={{position:'absolute',inset:0,overflow:'hidden',cursor:drag.current?'grabbing':'grab',background:'var(--bg)'}}>
+
+      <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid meet"
+           style={{position:'absolute',inset:0,width:'100%',height:'100%',
+             transform:`translate(${view.x}px, ${view.y}px) scale(${view.scale})`,
+             transformOrigin:'0 0',
+             transition:drag.current?'none':'transform 0.18s cubic-bezier(0.22,0.61,0.36,1)'}}>
+
+        {/* Background paper */}
+        <rect width="1400" height="900" fill="#fafaf7"/>
+
+        {/* Greens */}
+        {GREENS.map((g,i)=><path key={i} d={g.d} fill="#e6ead8" opacity="0.7"/>)}
+        {/* Waters */}
+        {WATERS.map((g,i)=><path key={i} d={g.d} fill="#dbe4e9" opacity="0.85"/>)}
+
+        {/* Building blocks (context first, light) */}
+        {BLOCKS.filter(b=>b.ctx).map((b,i)=>(
+          <rect key={'cb'+i} x={b.x} y={b.y} width={b.w} height={b.h} fill="rgba(0,0,0,0.04)"/>
+        ))}
+        {BLOCKS.filter(b=>!b.ctx).map((b,i)=>(
+          <rect key={'b'+i} x={b.x} y={b.y} width={b.w} height={b.h} fill="rgba(0,0,0,0.07)"/>
+        ))}
+
+        {/* Capillary streets — finest, behind */}
+        {CAPS.map((d,i)=>(
+          <path key={'c'+i} d={d} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="0.5" strokeLinecap="round"/>
+        ))}
+
+        {/* Local roads */}
+        {LOCALS.map((d,i)=>(
+          <g key={'l'+i}>
+            <path d={d} fill="none" stroke="rgba(0,0,0,0.85)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </g>
+        ))}
+
+        {/* Arterials with white centerline */}
+        {ARTERIALS.map(r=>(
+          <g key={r.id}>
+            <path d={r.d} fill="none" stroke="#0a0a0a" strokeWidth={r.w} strokeLinecap="round" strokeLinejoin="round"/>
+            <path d={r.d} fill="none" stroke="#fafaf7" strokeWidth={r.w*0.32} strokeLinecap="round" strokeLinejoin="round" strokeDasharray="6 4"/>
+          </g>
+        ))}
+
+        {/* CONTEXT WARDS — drawn after roads with subtle outline */}
+        {CTX.map((w,i) => (
+          <polygon key={'ctx'+i} points={w.points} fill="rgba(0,0,0,0.025)" stroke="rgba(0,0,0,0.18)" strokeWidth="0.6" strokeDasharray="3 3" pointerEvents="none"/>
+        ))}
+
+        {/* CORE WARDS */}
+        {WARDS.map(w => {
+          const isSel = selected === w.id;
+          const isHov = hovered === w.id;
+          const fill = isSel
+            ? 'rgba(255,153,51,0.32)'
+            : isHov
+              ? 'rgba(255,153,51,0.16)'
+              : 'rgba(255,153,51,0.04)';
+          return (
+            <polygon key={w.id} points={w.points}
+              fill={fill}
+              stroke={isSel ? '#c8741a' : isHov ? '#e08624' : 'rgba(200,116,26,0.55)'}
+              strokeWidth={isSel?2.4:isHov?1.8:1.2}
+              strokeLinejoin="round"
+              style={{cursor:'pointer',transition:'fill .18s, stroke .18s, stroke-width .18s'}}
+              onMouseEnter={()=>setHovered(w.id)}
+              onMouseLeave={()=>setHovered(null)}
+              onClick={(e)=>{ e.stopPropagation(); setSelected(isSel ? null : w.id); }}
+            />
+          );
+        })}
+
+        {/* Big region label (faint, centered) */}
+        <g style={{pointerEvents:'none'}}>
+          <text x="500" y="430" textAnchor="middle" fontFamily="var(--serif)" fontSize="62" fontWeight="500" fill="rgba(0,0,0,0.06)" letterSpacing="0.04em">KONDHWA</text>
+          <text x="500" y="488" textAnchor="middle" fontFamily="var(--serif)" fontSize="28" fontWeight="400" fontStyle="italic" fill="rgba(0,0,0,0.05)" letterSpacing="0.06em">NIBM · Salunke Vihar</text>
+        </g>
+
+        {/* Road labels (subtle) */}
+        {ARTERIALS.map(r=>{
+          const m = pathMid(r.d);
+          if(!m) return null;
+          return (
+            <g key={'rn'+r.id} style={{pointerEvents:'none'}}>
+              <text x={m.x} y={m.y-4} textAnchor="middle" fontFamily="var(--sans)" fontSize="8.5" fontStyle="italic" fill="rgba(0,0,0,0.55)">{r.name}</text>
+            </g>
+          );
+        })}
+
+        {/* Ward labels */}
+        {WARDS.map(w => {
+          const c = centroid(w.points);
+          const isSel = selected===w.id;
+          return (
+            <g key={'lbl-'+w.id} style={{pointerEvents:'none'}}>
+              <text x={c.x} y={c.y-2} textAnchor="middle" fontFamily="var(--mono)" fontSize="9" letterSpacing="2"
+                    fontWeight="600"
+                    fill={isSel?'#5a3306':'rgba(0,0,0,0.62)'}>{w.name}</text>
+              <text x={c.x} y={c.y+12} textAnchor="middle" fontFamily="var(--sans)" fontSize="9"
+                    fill={isSel?'rgba(90,51,6,0.85)':'rgba(0,0,0,0.42)'}
+                    fontStyle="italic">{w.sub}</text>
+              <text x={c.x} y={c.y-14} textAnchor="middle" fontFamily="var(--mono)" fontSize="8" letterSpacing="1.5"
+                    fill={isSel?'#c8741a':'rgba(200,116,26,0.7)'} fontWeight="600">WARD {w.no}</text>
+            </g>
+          );
+        })}
+
+        {/* Context labels */}
+        {CTX.map((w,i) => {
+          const c = centroid(w.points);
+          return (
+            <text key={'cl'+i} x={c.x} y={c.y} textAnchor="middle" fontFamily="var(--sans)" fontSize="9"
+                  fill="rgba(0,0,0,0.32)" fontStyle="italic" letterSpacing="0.08em" style={{pointerEvents:'none'}}>{w.name}</text>
+          );
+        })}
+
+        {/* Hotspot dots */}
+        {SPOTS.map((s,i)=>(
+          <g key={i} style={{pointerEvents:'none'}}>
+            <circle cx={s.x} cy={s.y} r="10" fill="#FF9933" opacity="0.18"/>
+            <circle cx={s.x} cy={s.y} r="3.4" fill="#c8741a" stroke="#fff" strokeWidth="1"/>
+          </g>
+        ))}
+
+        {/* Compass + scale */}
+        <g transform="translate(1300, 80)" style={{pointerEvents:'none'}}>
+          <circle r="20" fill="#ffffff" stroke="rgba(0,0,0,0.25)" strokeWidth="0.7"/>
+          <path d="M0,-13 L4,5 L0,1 L-4,5 Z" fill="#0a0a0a"/>
+          <text y="-24" textAnchor="middle" fontFamily="var(--mono)" fontSize="9" fill="rgba(0,0,0,0.55)">N</text>
+        </g>
+        <g transform="translate(1180, 850)" style={{pointerEvents:'none'}}>
+          <line x1="0" y1="0" x2="100" y2="0" stroke="rgba(0,0,0,0.7)" strokeWidth="1"/>
+          <line x1="0" y1="-3" x2="0" y2="3" stroke="rgba(0,0,0,0.7)" strokeWidth="1"/>
+          <line x1="50" y1="-2" x2="50" y2="2" stroke="rgba(0,0,0,0.7)" strokeWidth="1"/>
+          <line x1="100" y1="-3" x2="100" y2="3" stroke="rgba(0,0,0,0.7)" strokeWidth="1"/>
+          <text x="50" y="14" textAnchor="middle" fontFamily="var(--mono)" fontSize="9" fill="rgba(0,0,0,0.55)">1 km</text>
+        </g>
+      </svg>
+
+      <Header selected={WARDS.find(w=>w.id===selected)} hovered={WARDS.find(w=>w.id===hovered)}/>
+      <ZoomControls reset={reset} zoomIn={()=>setView(v=>({...v,scale:Math.min(4,v.scale*1.18)}))} zoomOut={()=>setView(v=>({...v,scale:Math.max(0.6,v.scale*0.85)}))}/>
+      <BottomBar/>
     </div>
+  );
+}
 
-    <!-- ── Navigation ── -->
-    <nav class="pill-nav">
-        <a href="#hero" class="nav-link">Home</a>
-        <a href="#infrastructure" class="nav-link">Mission</a>
-        <a href="#how-it-works" class="nav-link">How It Works</a>
-        <a href="#ai-engine" class="nav-link">AI Engine</a>
-        <a href="#footer" class="nav-link">Contact</a>
-    </nav>
+function centroid(pts){
+  const a = pts.split(' ').map(p=>p.split(',').map(Number));
+  const x = a.reduce((s,p)=>s+p[0],0)/a.length;
+  const y = a.reduce((s,p)=>s+p[1],0)/a.length;
+  return { x, y };
+}
+function pathMid(d){
+  // crude — extract first two M/L coords
+  const nums = d.match(/-?\d+\.?\d*/g);
+  if(!nums || nums.length < 4) return null;
+  const xs = [], ys = [];
+  for(let i=0;i<nums.length;i+=2){ xs.push(+nums[i]); ys.push(+nums[i+1]); }
+  return { x: xs[Math.floor(xs.length/2)], y: ys[Math.floor(ys.length/2)] };
+}
 
-    <main>
-        <!-- ── Hero ── -->
-        <section id="hero" class="hero">
-            <div class="hero-background">
-                <div class="hero-glow"></div>
-            </div>
-            <div class="container" style="position: relative; z-index: 1;">
-                <h1 class="hero-title reveal-text text-gradient">
-                    Citizens & <span class="serif-italic">Government</span> Build Together
-                </h1>
-                <p class="hero-subtitle reveal-text copper-text" style="font-size: 1.25rem; max-width: 800px; margin: 2rem auto;">
-                    A platform for the world's most powerful democracy to solve problems as one team — powered by AI that joins every voice into considered solutions.
-                </p>
-                <div class="reveal-text" style="margin-top: 3rem;">
-                    <a href="#infrastructure" class="btn-premium">See How We Plan</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- ── Infrastructure ── -->
-        <section id="infrastructure" class="section">
-            <div class="container">
-                <div class="glass-panel reveal-panel">
-                    <h2 class="section-title text-gradient">
-                        The Capability <span class="serif-italic">Exists.</span> The Infrastructure Doesn't.
-                    </h2>
-                    <p class="reveal-text" style="font-size: 1.25rem; color: var(--text-secondary); max-width: 900px; line-height: 1.8;">
-                        PMC built 400km of roads in 75 days for the Bajaj Grand Tour. The capability is there — always has been. What's missing is the infrastructure to channel citizen intelligence to the right decision-makers, in the right format, at the right time.
-                    </p>
-                    <p class="reveal-text" style="font-size: 1.25rem; color: var(--text-secondary); max-width: 900px; line-height: 1.8; margin-top: 2rem;">
-                        Sushasan is that infrastructure. A platform where every citizen's perspective joins together through AI — not to collect complaints, but to build optimized solutions where every factor is considered. The solutions are ready. <span class="serif-italic">Only execution awaits.</span>
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ── Proof ── -->
-        <section class="section" style="background: var(--bg-dark);">
-            <div class="container">
-                <div class="glass-panel reveal-panel">
-                    <h2 class="section-title reveal-text">
-                        The Proof <span class="serif-italic">Already Exists</span>
-                    </h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem; margin-top: 4rem;">
-                        <div>
-                            <p style="color: var(--text-secondary); line-height: 1.8;">
-                                When the Bajaj Grand Tour brought international attention to Pune, the government spent nearly ₹500 crores on redevelopment. PMC built 400km of roads in 75 days. The capability was always there. But they had a clear plan — they knew exactly what needed to be done.
-                            </p>
-                        </div>
-                        <div>
-                            <p style="color: var(--text-secondary); line-height: 1.8;">
-                                Now imagine solving problems for 1.4 billion people. Millions of voices, no structure. Citizens blame the government. Officials are overwhelmed. Everyone wants change but nobody has a clear, unified plan. <span class="copper-text">That's the chaos.</span>
-                            </p>
-                        </div>
-                        <div>
-                            <p style="color: var(--text-secondary); line-height: 1.8;">
-                                Sushasan eliminates the chaos. It ends the era of blaming and provides a tool for both sides. AI and neural networks join every voice together into a clear understanding of the problem, with optimized solutions ready for execution. <span class="serif-italic">When the plan is clear, India delivers.</span> Sushasan makes the plan clear.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ── How It Works ── -->
-        <section id="how-it-works" class="section">
-            <div class="container">
-                <h2 class="section-title reveal-text text-gradient">
-                    How <span class="serif-italic">Sushasan</span> Works
-                </h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 6rem;">
-                    <div class="reveal-panel glass-panel">
-                        <h3 class="copper-text" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Citizens Share</h3>
-                        <p style="color: var(--text-secondary); line-height: 1.6;">
-                            Anyone can contribute — voice, text, or images in any language. Say what you see in your community and your perspective joins the bigger picture.
-                        </p>
-                    </div>
-                    <div class="reveal-panel glass-panel">
-                        <h3 class="copper-text" style="font-size: 1.5rem; margin-bottom: 1.5rem;">AI Joins</h3>
-                        <p style="color: var(--text-secondary); line-height: 1.6;">
-                            Deep neural networks connect thousands of voices — understanding root causes, weighing constraints, and building a complete picture no single person could see alone.
-                        </p>
-                    </div>
-                    <div class="reveal-panel glass-panel">
-                        <h3 class="copper-text" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Solutions Flow</h3>
-                        <p style="color: var(--text-secondary); line-height: 1.6;">
-                            Optimized solutions flow to the exact people who can act — across India's governance hierarchy — so citizens and government can solve problems together.
-                        </p>
-                    </div>
-                    <div class="reveal-panel glass-panel">
-                        <h3 class="copper-text" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Transparency</h3>
-                        <p style="color: var(--text-secondary); line-height: 1.6;">
-                            A national dashboard visible to all — citizens, officials, media. Every solution, every status, every outcome. Complete transparency. Only execution awaits.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ── AI Engine ── -->
-        <section id="ai-engine" class="section" style="background: var(--bg-dark);">
-            <div class="container">
-                <h2 class="section-title reveal-text">
-                    The AI <span class="serif-italic">Engine</span>
-                </h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 5rem;">
-                    <div class="reveal-panel glass-panel">
-                        <h3 style="margin-bottom: 1.5rem;">Understand & Connect</h3>
-                        <p style="color: var(--text-secondary);">Understands casual input in any language and connects it to the right governance level — Ward, City, State, National — so solutions reach the people who can act.</p>
-                    </div>
-                    <div class="reveal-panel glass-panel">
-                        <h3 style="margin-bottom: 1.5rem;">Synthesize & Optimize</h3>
-                        <p style="color: var(--text-secondary);">Joins 10,000 perspectives into one optimized solution — weighing every factor, every constraint, every community impact. Not majority rules. The most considered answer possible.</p>
-                    </div>
-                    <div class="reveal-panel glass-panel">
-                        <h3 style="margin-bottom: 1.5rem;">See the Whole Picture</h3>
-                        <p style="color: var(--text-secondary);">Maps connections between problems across departments and locations. When the whole country works together, AI sees patterns no single team can — and coordinates solutions across boundaries.</p>
-                    </div>
-                    <div class="reveal-panel glass-panel">
-                        <h3 style="margin-bottom: 1.5rem;">Auto-Escalation</h3>
-                        <p style="color: var(--text-secondary);">When 5+ locations report the same problem, the solution automatically escalates to the parent authority — ensuring systemic issues get the attention they need at the right governance level.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ── Impact Dashboard ── -->
-        <section id="impact" class="section">
-            <div class="container">
-                <h2 class="section-title reveal-text text-gradient">
-                    Coordination <span class="serif-italic">Impact</span>
-                </h2>
-                <div class="impact-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; margin-top: 5rem;">
-                    <div class="reveal-panel glass-panel" style="text-align: center; padding: 4rem 2rem;">
-                        <h3 class="stat-number text-gradient" style="font-size: 4rem; margin-bottom: 1rem;">1.4B</h3>
-                        <p class="copper-text" style="text-transform: uppercase; letter-spacing: 0.2rem; font-size: 0.8rem;">Lives Empowered</p>
-                    </div>
-                    <div class="reveal-panel glass-panel" style="text-align: center; padding: 4rem 2rem;">
-                        <h3 class="stat-number text-gradient" style="font-size: 4rem; margin-bottom: 1rem;">24/7</h3>
-                        <p class="copper-text" style="text-transform: uppercase; letter-spacing: 0.2rem; font-size: 0.8rem;">AI Vigilance</p>
-                    </div>
-                    <div class="reveal-panel glass-panel" style="text-align: center; padding: 4rem 2rem;">
-                        <h3 class="stat-number text-gradient" style="font-size: 4rem; margin-bottom: 1rem;">0 ms</h3>
-                        <p class="copper-text" style="text-transform: uppercase; letter-spacing: 0.2rem; font-size: 0.8rem;">Latency to Action</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ── Join Us ── -->
-        <section class="section" style="text-align: center;">
-            <div class="container">
-                <h2 class="section-title reveal-text text-gradient">
-                    Let's Build <span class="serif-italic">This Together</span>
-                </h2>
-                <p class="reveal-text" style="max-width: 600px; margin: 2rem auto; color: var(--text-secondary); font-size: 1.25rem;">
-                    Sushasan is for everyone — citizens, leaders, developers, thinkers. The whole country, working as one team to solve the problems that matter.
-                </p>
-                <div class="reveal-text" style="margin-top: 3rem;">
-                    <a href="#" class="btn-premium">Get Started Now</a>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- ── Footer ── -->
-    <footer id="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div>
-                    <h2 class="serif-italic" style="font-size: 3rem; margin-bottom: 1rem;">Sushasan</h2>
-                    <p style="color: var(--text-dim); max-width: 350px;">
-                        Where Citizens and Government Build Solutions Together. A platform for the world's most powerful democracy.
-                    </p>
-                </div>
-                <div>
-                    <h4 style="margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-primary);">Product</h4>
-                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <li><a href="#how-it-works" class="nav-link" style="padding: 0;">How It Works</a></li>
-                        <li><a href="#infrastructure" class="nav-link" style="padding: 0;">Infrastructure</a></li>
-                        <li><a href="#ai-engine" class="nav-link" style="padding: 0;">AI Engine</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 style="margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-primary);">Company</h4>
-                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <li><a href="#" class="nav-link" style="padding: 0;">About Us</a></li>
-                        <li><a href="#" class="nav-link" style="padding: 0;">Blog</a></li>
-                        <li><a href="#" class="nav-link" style="padding: 0;">Contact</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 style="margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-primary);">Legal</h4>
-                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <li><a href="#" class="nav-link" style="padding: 0;">Privacy Policy</a></li>
-                        <li><a href="#" class="nav-link" style="padding: 0;">Terms of Service</a></li>
-                        <li><a href="#" class="nav-link" style="padding: 0;">FAQ</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div style="margin-top: 6rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; color: var(--text-dim); font-size: 0.8rem;">
-                <p>&copy; 2026 Sushasan. Built for India, by India. 🇮🇳</p>
-                <p>Premium Redesign by Antigravity</p>
-            </div>
+function Header(props){
+  const { selected, hovered } = props || {};
+  const w = selected || hovered;
+  return (
+    <div style={{position:'absolute',top:0,left:0,right:0,padding:'18px 24px',display:'flex',alignItems:'flex-start',gap:18,pointerEvents:'none'}}>
+      <div style={{pointerEvents:'auto'}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <div style={{width:30,height:30,borderRadius:6,background:'linear-gradient(135deg,#FF9933,#c8741a)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fafaf7',fontFamily:'var(--serif)',fontStyle:'italic',fontSize:16,fontWeight:600}}>स</div>
+          <div>
+            <div style={{fontFamily:'var(--serif)',fontSize:18,letterSpacing:'-0.01em',color:'var(--ink)'}}>Sushaasan</div>
+            <div style={{fontSize:9,color:'var(--ink-3)',fontFamily:'var(--mono)',letterSpacing:'0.18em',marginTop:1}}>CIVIC SIGNAL · PUNE</div>
+          </div>
         </div>
-    </footer>
+      </div>
+      <div style={{flex:1}}/>
+      <div style={{width:300,pointerEvents:'auto'}}>
+        {w ? (
+          <div style={{background:'#ffffff',border:'1px solid rgba(0,0,0,0.1)',borderRadius:8,padding:'12px 14px',boxShadow:'0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)',animation:'fadeIn .18s ease'}}>
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <span style={{fontSize:9,fontFamily:'var(--mono)',letterSpacing:'0.16em',color:'var(--saffron-2)',fontWeight:600}}>WARD {w.no}</span>
+              <span style={{width:3,height:3,borderRadius:2,background:'var(--ink-4)'}}/>
+              <span style={{fontSize:9,fontFamily:'var(--mono)',letterSpacing:'0.1em',color:selected?'var(--saffron-2)':'var(--ink-3)'}}>
+                {selected?'SELECTED':'HOVER'}
+              </span>
+            </div>
+            <div style={{fontFamily:'var(--serif)',fontSize:18,marginTop:4,letterSpacing:'-0.01em',color:'var(--ink)'}}>{w.name}</div>
+            <div style={{fontSize:11,color:'var(--ink-2)',marginTop:3,lineHeight:1.45,fontStyle:'italic'}}>{w.sub}</div>
+          </div>
+        ) : (
+          <div style={{textAlign:'right',fontSize:10,color:'var(--ink-3)',fontFamily:'var(--mono)',letterSpacing:'0.12em',paddingTop:10}}>
+            HOVER OR CLICK A WARD →
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
-    <!-- Dependencies -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
-    
-    <!-- App Script -->
-    <script src="js/app.js"></script>
+function ZoomControls(props){
+  const { zoomIn, zoomOut, reset } = props || {};
+  const btn={width:34,height:34,background:'#ffffff',border:'1px solid rgba(0,0,0,0.12)',color:'var(--ink-2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16};
+  return (
+    <div style={{position:'absolute',right:24,bottom:96,display:'flex',flexDirection:'column',borderRadius:8,overflow:'hidden',boxShadow:'0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06)'}}>
+      <button onClick={zoomIn} style={{...btn,borderBottom:'none'}}>＋</button>
+      <button onClick={zoomOut} style={{...btn,borderBottom:'none'}}>−</button>
+      <button onClick={reset} style={{...btn,fontSize:10,fontFamily:'var(--mono)',letterSpacing:'0.06em'}}>FIT</button>
+    </div>
+  );
+}
+
+function BottomBar(){
+  return (
+    <div style={{position:'absolute',left:0,right:0,bottom:28,display:'flex',justifyContent:'center',pointerEvents:'none'}}>
+      <button style={{pointerEvents:'auto',padding:'10px 22px',borderRadius:100,background:'#FF9933',color:'#0a0807',fontFamily:'var(--sans)',fontWeight:500,fontSize:13,letterSpacing:'0.02em',display:'flex',alignItems:'center',gap:8,boxShadow:'0 1px 2px rgba(0,0,0,0.08), 0 8px 28px rgba(255,153,51,0.35)'}}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/></svg>
+        Find my ward
+      </button>
+    </div>
+  );
+}
+
+function App(){
+  const [selected,setSelected] = useState(null);
+  const [hovered,setHovered] = useState(null);
+  return (
+    <div style={{position:'fixed',inset:0}}>
+      <MapSurface selected={selected} setSelected={setSelected} hovered={hovered} setHovered={setHovered}/>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
 </body>
 </html>
