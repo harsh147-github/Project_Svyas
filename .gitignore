@@ -1,0 +1,39 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Node / JS
+node_modules/
+.pnpm-store/
+npm-debug.log*
+yarn-error.log*
+
+# Next.js (any depth)
+**/.next/
+**/out/
+dist/
+build/
+
+# Python (NIBM traffic tooling)
+**/__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Vercel / Supabase / Inngest local
+.vercel/
+supabase/.temp/
+.inngest/
+
+# Misc
+*.log
+.cursor/

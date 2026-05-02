@@ -1,0 +1,29 @@
+{
+  "buildCommand": "cd apps/web && npm run build",
+  "outputDirectory": "apps/web/.next",
+  "installCommand": "cd apps/web && npm install --no-audit --no-fund",
+  "framework": "nextjs",
+  "crons": [
+    { "path": "/api/scrape/run", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/daily-pipeline", "schedule": "30 3 * * *" }
+  ],
+  "redirects": [
+    { "source": "/ward/:id", "destination": "/dashboard/ward/:id", "permanent": false },
+    { "source": "/gov", "destination": "/dashboard/gov", "permanent": false }
+  ],
+  "rewrites": [],
+  "headers": [
+    {
+      "source": "/geojson/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "s-maxage=120, stale-while-revalidate=60" }
+      ]
+    }
+  ]
+}
