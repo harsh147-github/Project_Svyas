@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useCallback } from 'react'
 
-// Issue category colors
 const ISSUE_COLORS: Record<string, string> = {
   traffic:     '#EF4444',
   water:       '#3B82F6',
@@ -11,143 +10,182 @@ const ISSUE_COLORS: Record<string, string> = {
   other:       '#8B5CF6',
 }
 
+// Blank style — no tile servers, just cream background + our GeoJSON
+// Glyphs from OpenFreeMap (free, no key)
+const BLANK_STYLE = {
+  version: 8 as const,
+  glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+  sprite: '',
+  sources: {} as Record<string, unknown>,
+  layers: [
+    {
+      id: 'background',
+      type: 'background' as const,
+      paint: { 'background-color': '#F5EDE0' },
+    },
+  ],
+}
+
 export function WardMap() {
   const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<unknown>(null)
+  const mapRef       = useRef<unknown>(null)
+  const popupRef     = useRef<unknown>(null)
 
   const initMap = useCallback(async () => {
     if (!containerRef.current || mapRef.current) return
 
-    // Dynamic import — MapLibre is browser-only
     const maplibregl = (await import('maplibre-gl')).default
     await import('maplibre-gl/dist/maplibre-gl.css')
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      // OpenFreeMap positron: white bg, dark road outlines, no API key
-      style: 'https://tiles.openfreemap.org/styles/positron',
-      center: [73.904, 18.473],   // Tribeca, NIBM Wanowrie
-      zoom: 13.8,
-      minZoom: 11,
-      maxZoom: 18,
+      style: BLANK_STYLE,
+      center: [73.894, 18.458],
+      zoom: 12.2,
+      minZoom: 10,
+      maxZoom: 17,
       attributionControl: false,
     })
 
-    map.addControl(
-      new maplibregl.AttributionControl({ compact: true }),
-      'bottom-right'
-    )
-    map.addControl(
-      new maplibregl.NavigationControl({ showCompass: false }),
-      'bottom-right'
-    )
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right')
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right')
 
     mapRef.current = map
 
     map.on('load', () => {
-      // ── Ward boundary sources ───────────────────────────────────────
+      // ── Ward sources ──────────────────────────────────────────────────────
+      map.addSource('wards-context', {
+        type: 'geojson',
+        data: '/geojson/wards-context.geojson',
+      })
       map.addSource('wards-pilot', {
         type: 'geojson',
         data: '/geojson/wards-pilot.geojson',
         promoteId: 'wardnum',
       })
-      map.addSource('wards-context', {
-        type: 'geojson',
-        data: '/geojson/wards-context.geojson',
-      })
 
-      // Context ward — very subtle
+      // Context wards — neutral fill, gray border
       map.addLayer({
         id: 'context-fill',
         type: 'fill',
         source: 'wards-context',
-        paint: { 'fill-color': '#000000', 'fill-opacity': 0.03 },
+        paint: {
+          'fill-color': '#EDE4D5',
+          'fill-opacity': 0.55,
+        },
       })
       map.addLayer({
-        id: 'context-outline',
+        id: 'context-border',
         type: 'line',
         source: 'wards-context',
-        paint: { 'line-color': '#999', 'line-width': 0.6, 'line-opacity': 0.4, 'line-dasharray': [3, 3] },
+        paint: {
+          'line-color': '#A08060',
+          'line-width': 1,
+          'line-opacity': 0.45,
+          'line-dasharray': [4, 3],
+        },
       })
 
-      // Pilot ward fill — saffron tint, severity-driven
+      // Pilot wards — severity-driven saffron fill
       map.addLayer({
-        id: 'wards-fill',
+        id: 'pilot-fill',
         type: 'fill',
         source: 'wards-pilot',
         paint: {
           'fill-color': [
             'interpolate', ['linear'],
             ['coalesce', ['feature-state', 'severity_avg'], 0],
-            0,   '#fff8f0',
+            0,   '#F5EDE0',
             2,   '#FFE8C2',
             3.5, '#FF9933',
             5,   '#c8741a',
           ],
-          'fill-opacity': 0.38,
-        },
-      })
-      // Pilot ward border — saffron
-      map.addLayer({
-        id: 'wards-border',
-        type: 'line',
-        source: 'wards-pilot',
-        paint: {
-          'line-color': '#c8741a',
-          'line-width': 2,
-          'line-opacity': 0.9,
-        },
-      })
-      // Selected ward highlight
-      map.addLayer({
-        id: 'wards-border-selected',
-        type: 'line',
-        source: 'wards-pilot',
-        paint: {
-          'line-color': '#FF9933',
-          'line-width': [
+          'fill-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false],
-            4, 0,
+            ['boolean', ['feature-state', 'selected'], false], 0.72,
+            0.42,
           ],
         },
       })
 
-      // Ward name labels
+      // Pilot ward borders — saffron, thicker for selected
       map.addLayer({
-        id: 'ward-labels',
-        type: 'symbol',
+        id: 'pilot-border',
+        type: 'line',
         source: 'wards-pilot',
-        layout: {
-          'text-field': ['get', 'Name2'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 12, 0, 13, 9, 15, 12],
-          'text-letter-spacing': 0.06,
-          'text-transform': 'uppercase',
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-        },
         paint: {
-          'text-color': '#4a3000',
-          'text-halo-color': 'rgba(255,255,255,0.85)',
-          'text-halo-width': 1.5,
+          'line-color': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            '#FF9933', '#9B6A30',
+          ],
+          'line-width': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            3.5, 1.8,
+          ],
+          'line-opacity': 1,
         },
       })
 
-      // ── Hotspot cluster source ──────────────────────────────────────
+      // Context ward labels
+      map.addLayer({
+        id: 'context-labels',
+        type: 'symbol',
+        source: 'wards-context',
+        layout: {
+          'text-field': ['get', 'Name2'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 10, 0, 11.5, 8, 14, 10],
+          'text-letter-spacing': 0.04,
+          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-max-width': 8,
+        },
+        paint: {
+          'text-color': '#7A5C3A',
+          'text-opacity': 0.7,
+          'text-halo-color': 'rgba(245,237,224,0.9)',
+          'text-halo-width': 1.2,
+        },
+      })
+
+      // Pilot ward labels — bold, two-line (ward number + name)
+      map.addLayer({
+        id: 'pilot-labels',
+        type: 'symbol',
+        source: 'wards-pilot',
+        layout: {
+          'text-field': [
+            'format',
+            ['concat', 'WARD ', ['to-string', ['get', 'wardnum']]], { 'font-scale': 0.72 },
+            '\n', {},
+            ['get', 'Name2'], { 'font-scale': 1.0 },
+          ],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 11, 9, 13, 12, 15, 14],
+          'text-letter-spacing': 0.03,
+          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-max-width': 9,
+          'text-line-height': 1.3,
+        },
+        paint: {
+          'text-color': '#4A2E0A',
+          'text-halo-color': 'rgba(255,245,230,0.92)',
+          'text-halo-width': 1.8,
+        },
+      })
+
+      // ── Hotspot cluster source ────────────────────────────────────────────
       map.addSource('clusters', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
       })
 
-      // Hotspot glow ring
+      // Glow ring
       map.addLayer({
         id: 'hotspot-glow',
         type: 'circle',
         source: 'clusters',
         paint: {
-          'circle-radius': [
-            'interpolate', ['linear'], ['get', 'post_count'],
-            1, 18, 30, 36,
-          ],
+          'circle-radius': ['interpolate', ['linear'], ['get', 'post_count'], 1, 22, 50, 40],
           'circle-color': [
             'match', ['get', 'issue_tag'],
             'traffic',     ISSUE_COLORS.traffic,
@@ -156,21 +194,18 @@ export function WardMap() {
             'garbage',     ISSUE_COLORS.garbage,
             ISSUE_COLORS.other,
           ],
-          'circle-opacity': 0.12,
-          'circle-blur': 1,
+          'circle-opacity': 0.14,
+          'circle-blur': 0.8,
         },
       })
 
-      // Hotspot solid dot
+      // Solid dot
       map.addLayer({
         id: 'hotspots',
         type: 'circle',
         source: 'clusters',
         paint: {
-          'circle-radius': [
-            'interpolate', ['linear'], ['get', 'post_count'],
-            1, 8, 20, 18, 50, 28,
-          ],
+          'circle-radius': ['interpolate', ['linear'], ['get', 'post_count'], 1, 9, 20, 18, 50, 28],
           'circle-color': [
             'match', ['get', 'issue_tag'],
             'traffic',     ISSUE_COLORS.traffic,
@@ -179,41 +214,52 @@ export function WardMap() {
             'garbage',     ISSUE_COLORS.garbage,
             ISSUE_COLORS.other,
           ],
-          'circle-opacity': 0.92,
+          'circle-opacity': 0.95,
           'circle-stroke-width': 2.5,
           'circle-stroke-color': '#ffffff',
         },
       })
 
-      // ── Interactions ────────────────────────────────────────────────
-      let selectedWardId: number | null = null
+      // ── Interactions ──────────────────────────────────────────────────────
+      let selectedId: number | null = null
 
-      map.on('click', 'wards-fill', (e) => {
-        if (!e.features?.length) return
-        const ward = e.features[0].properties
-        const wardId = ward?.wardnum
-
-        // Deselect previous
-        if (selectedWardId !== null) {
-          map.setFeatureState({ source: 'wards-pilot', id: selectedWardId }, { selected: false })
+      function clearSelected() {
+        if (selectedId !== null) {
+          map.setFeatureState({ source: 'wards-pilot', id: selectedId }, { selected: false })
+          selectedId = null
         }
-        selectedWardId = wardId
-        map.setFeatureState({ source: 'wards-pilot', id: wardId }, { selected: true })
+      }
 
-        const wardName = ward?.Name2 ?? ward?.name ?? `Ward ${wardId}`
+      // Ward click → selection highlight + popup
+      map.on('click', 'pilot-fill', (e) => {
+        if (!e.features?.length) return
+        const props = e.features[0].properties
+        const wardnum = props?.wardnum as number
 
-        new maplibregl.Popup({ offset: 12, maxWidth: '280px', className: 'sushasan-popup' })
+        clearSelected()
+        selectedId = wardnum
+        map.setFeatureState({ source: 'wards-pilot', id: wardnum }, { selected: true })
+
+        const name = props?.Name2 ?? `Ward ${wardnum}`
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(popupRef.current as any)?.remove()
+        const popup = new maplibregl.Popup({
+          offset: 12, maxWidth: '260px', className: 'sushasan-popup',
+        })
           .setLngLat(e.lngLat)
           .setHTML(`
             <div class="popup-inner">
-              <div class="popup-ward-no">WARD ${wardId}</div>
-              <div class="popup-ward-name">${wardName}</div>
-              <a href="/ward/${wardId}" class="popup-cta">View full analysis →</a>
+              <div class="popup-ward-no">WARD ${wardnum}</div>
+              <div class="popup-ward-name">${name}</div>
+              <a href="/ward/${wardnum}" class="popup-cta">View ward analysis →</a>
             </div>
           `)
           .addTo(map)
+        popupRef.current = popup
       })
 
+      // Hotspot click
       map.on('click', 'hotspots', (e) => {
         if (!e.features?.length) return
         const p = e.features[0].properties ?? {}
@@ -221,7 +267,6 @@ export function WardMap() {
         const coords = e.features[0].geometry.coordinates.slice() as [number, number]
         const color = ISSUE_COLORS[p.issue_tag as string] ?? '#FF9933'
 
-        // Parse source_platforms if it's a JSON string
         let platforms: string[] = []
         try {
           const sp = p.source_platforms
@@ -247,7 +292,11 @@ export function WardMap() {
           ? `<div class="popup-solution"><b>Solution →</b> ${p.solution_summary}</div>`
           : ''
 
-        new maplibregl.Popup({ offset: 16, maxWidth: '360px', className: 'sushasan-popup' })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(popupRef.current as any)?.remove()
+        const popup = new maplibregl.Popup({
+          offset: 16, maxWidth: '340px', className: 'sushasan-popup',
+        })
           .setLngLat(coords)
           .setHTML(`
             <div class="popup-inner">
@@ -263,19 +312,33 @@ export function WardMap() {
               ${citizenSection}
               ${govSection}
               ${fallbackSolution}
-              <a href="/dashboard/ward/${p.ward_id}" class="popup-cta">Full analysis →</a>
+              <a href="/dashboard/nibm" class="popup-cta">Full AI solution brief →</a>
             </div>
           `)
           .addTo(map)
+        popupRef.current = popup
+
+        e.stopPropagation()
       })
 
-      // Cursor changes
-      map.on('mouseenter', 'wards-fill', () => { map.getCanvas().style.cursor = 'pointer' })
-      map.on('mouseleave', 'wards-fill', () => { map.getCanvas().style.cursor = '' })
-      map.on('mouseenter', 'hotspots', () => { map.getCanvas().style.cursor = 'pointer' })
-      map.on('mouseleave', 'hotspots', () => { map.getCanvas().style.cursor = '' })
+      // Click outside — deselect
+      map.on('click', (e) => {
+        // @ts-expect-error defaultPrevented not standard on MapLibre events
+        if (e.defaultPrevented) return
+        const features = map.queryRenderedFeatures(e.point, { layers: ['pilot-fill', 'hotspots'] })
+        if (!features.length) {
+          clearSelected()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ;(popupRef.current as any)?.remove()
+        }
+      })
 
-      // Load seed data
+      // Cursors
+      map.on('mouseenter', 'pilot-fill', () => { map.getCanvas().style.cursor = 'pointer' })
+      map.on('mouseleave', 'pilot-fill', () => { map.getCanvas().style.cursor = '' })
+      map.on('mouseenter', 'hotspots',   () => { map.getCanvas().style.cursor = 'pointer' })
+      map.on('mouseleave', 'hotspots',   () => { map.getCanvas().style.cursor = '' })
+
       fetchClusters(map)
     })
   }, [])
@@ -294,7 +357,7 @@ export function WardMap() {
       ref={containerRef}
       className="w-full h-full"
       role="img"
-      aria-label="Pune ward hotspot map showing civic issues in NIBM Wanowrie area"
+      aria-label="Pune ward map showing civic issues in NIBM Kondhwa area"
     />
   )
 }
@@ -306,7 +369,7 @@ async function fetchClusters(map: any) {
     if (!res.ok) return
     const { clusters, wardSeverity } = await res.json()
 
-    const source = map.getSource('clusters') as { setData: (data: unknown) => void } | undefined
+    const source = map.getSource('clusters') as { setData: (d: unknown) => void } | undefined
     source?.setData({
       type: 'FeatureCollection',
       features: (clusters as Array<Record<string, unknown>>).map((c) => ({
@@ -320,6 +383,6 @@ async function fetchClusters(map: any) {
       map.setFeatureState({ source: 'wards-pilot', id: wardnum }, { severity_avg })
     }
   } catch {
-    // Map renders fine without live data
+    // renders fine without live data
   }
 }

@@ -54,26 +54,28 @@ export default function HomePage() {
       <LegendBar />
 
       {/* ── Bottom CTAs ────────────────────────────────────────────── */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40
-                      flex flex-col items-center gap-2">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40
+                      flex flex-col items-center gap-3">
 
-        {/* Primary: NIBM Pilot showcase */}
+        {/* Primary CTA */}
         <a
           href="/dashboard/nibm"
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full
-                     bg-saffron text-white font-semibold text-sm shadow-lg
-                     hover:bg-saffron-dark active:scale-95 transition-all"
+          className="flex items-center gap-2.5 px-6 py-3 rounded-full
+                     bg-saffron text-white font-semibold text-sm tracking-wide
+                     shadow-[0_4px_20px_rgba(255,153,51,0.45)]
+                     hover:bg-[#e8891e] active:scale-95 transition-all duration-150"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse flex-shrink-0" />
           View NIBM Pilot — AI Solution Brief
         </a>
 
-        {/* Secondary row */}
-        <div className="flex items-center gap-2">
+        {/* Secondary links */}
+        <div className="flex items-center gap-3">
           <a
             href="/dashboard"
-            className="text-xs font-medium text-ink-3 hover:text-ink transition-colors
-                       px-4 py-1.5 rounded-full bg-white/80 border border-ink/10 shadow-sm"
+            className="text-[11px] font-medium text-ink/60 hover:text-ink transition-colors
+                       px-4 py-2 rounded-full bg-white/75 border border-ink/10
+                       shadow-sm backdrop-blur-sm"
           >
             Transparency dashboard →
           </a>
@@ -81,8 +83,9 @@ export default function HomePage() {
             href="https://sushaasan.framer.website/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-medium text-ink-3 hover:text-ink transition-colors
-                       px-4 py-1.5 rounded-full bg-white/80 border border-ink/10 shadow-sm"
+            className="text-[11px] font-medium text-ink/60 hover:text-ink transition-colors
+                       px-4 py-2 rounded-full bg-white/75 border border-ink/10
+                       shadow-sm backdrop-blur-sm"
           >
             About Sushasan ↗
           </a>
