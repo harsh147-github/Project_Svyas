@@ -21,7 +21,7 @@ export const run = async (config) => {
 
   console.log(`[${run_id}] Phase 3: Fetching government context...`)
   const govContext = await phase3GovContext(masterSynthesis, run_id)
-  console.log(`[${run_id}] Phase 3 done — dept: ${govContext.department}`)
+  console.log(`[${run_id}] Phase 3 done — dept: ${govContext.department_context?.responsible_dept}`)
 
   console.log(`[${run_id}] Phase 4a: Running research...`)
   const researchData = await phase4Research(govContext, run_id)

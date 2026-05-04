@@ -22,7 +22,12 @@ export async function sonnet(systemPrompt, userContent, { json = false } = {}) {
   if (json) {
     // Strip markdown code fences if present
     const cleaned = text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
-    return JSON.parse(cleaned)
+    try {
+      return JSON.parse(cleaned)
+    } catch (e) {
+      console.error('[anthropic] Failed to parse JSON response:', e.message, { cleaned })
+      throw e
+    }
   }
   return text
 }
@@ -49,5 +54,10 @@ export async function opus(systemPrompt, userContent, { thinkingBudget = 8000 } 
 
   const text = textBlock.text
   const cleaned = text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
-  return JSON.parse(cleaned)
+  try {
+    return JSON.parse(cleaned)
+  } catch (e) {
+    console.error('[anthropic:opus] Failed to parse JSON response:', e.message, { cleaned })
+    throw e
+  }
 }

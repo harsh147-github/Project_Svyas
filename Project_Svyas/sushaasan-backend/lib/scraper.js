@@ -187,7 +187,7 @@ function normalizeInstagramPosts(raw) {
     platform: 'instagram',
     content: p.caption || p.alt || '',
     title: p.caption?.slice(0, 100) || '',
-    url: p.url || p.shortCode ? `https://instagram.com/p/${p.shortCode}` : '',
+    url: p.url || (p.shortCode ? `https://instagram.com/p/${p.shortCode}` : ''),
     timestamp: p.timestamp || new Date().toISOString(),
     engagement: (p.likesCount || 0) + (p.commentsCount || 0) * 2,
     author_hash: hashAuthor(p.ownerUsername || 'unknown'),

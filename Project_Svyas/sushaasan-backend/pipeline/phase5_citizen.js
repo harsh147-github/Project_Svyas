@@ -2,6 +2,13 @@ import { sonnet } from '../lib/anthropic.js'
 import { translateMultilingual } from '../lib/translate.js'
 import { supabase } from '../lib/supabase.js'
 
+/** Ensure a value is always a text[] — handles both array and scalar string responses */
+function toArray(value) {
+  if (Array.isArray(value)) return value
+  if (typeof value === 'string' && value.trim()) return [value]
+  return []
+}
+
 /**
  * Phase 5a: Citizen Display Generator
  *
@@ -31,12 +38,14 @@ Return:
 {
   "headline": "One punchy sentence (max 12 words) describing what will change",
   "problem_simple": "What the problem is in 2 simple sentences a 15-year-old would understand",
-  "what_will_change": "3-4 bullet points of concrete things citizens will see/experience",
+  "what_will_change": ["Concrete change 1 citizens will see/experience", "Concrete change 2", "Concrete change 3"],
   "timeline_explained": "Timeline explained in plain language (e.g., 'By Diwali 2025...')",
-  "how_citizens_can_help": "2-3 specific ways citizens can support or monitor this",
+  "how_citizens_can_help": ["Specific way 1 citizens can support or monitor this", "Specific way 2", "Specific way 3"],
   "transparency_note": "One sentence on how citizens can track progress",
   "citizen_summary": "Full 3-4 sentence summary for the transparency dashboard"
-}`
+}
+
+IMPORTANT: what_will_change and how_citizens_can_help MUST be JSON arrays of strings, not a single string.`
 
   let display
   try {
@@ -63,9 +72,9 @@ Return:
       ward_id: solution.ward_id,
       headline: display.headline,
       problem_simple: display.problem_simple,
-      what_will_change: display.what_will_change,
+      what_will_change: toArray(display.what_will_change),
       timeline_explained: display.timeline_explained,
-      how_citizens_can_help: display.how_citizens_can_help,
+      how_citizens_can_help: toArray(display.how_citizens_can_help),
       transparency_note: display.transparency_note,
       citizen_summary: display.citizen_summary,
       translated_summary: translations.marathi ? {
