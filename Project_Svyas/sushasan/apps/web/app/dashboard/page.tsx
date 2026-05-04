@@ -38,9 +38,19 @@ export default function DashboardPage() {
                             text-white font-serif font-bold text-sm">स</div>
             <span className="font-serif text-lg font-semibold text-ink">Sushasan</span>
           </Link>
-          <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-3">
-            Citizen Transparency Dashboard
-          </span>
+          <div className="flex items-center gap-3">
+            <a
+              href="https://sushaasan.framer.website/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] font-medium text-ink-3 hover:text-saffron transition-colors"
+            >
+              About Sushasan ↗
+            </a>
+            <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-3">
+              Citizen Transparency Dashboard
+            </span>
+          </div>
         </div>
       </header>
 

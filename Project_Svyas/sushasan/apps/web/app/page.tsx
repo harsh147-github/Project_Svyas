@@ -56,29 +56,38 @@ export default function HomePage() {
       {/* ── Bottom CTAs ────────────────────────────────────────────── */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40
                       flex flex-col items-center gap-2">
-        <button
+
+        {/* Primary: NIBM Pilot showcase */}
+        <a
+          href="/dashboard/nibm"
           className="flex items-center gap-2 px-5 py-2.5 rounded-full
                      bg-saffron text-white font-semibold text-sm shadow-lg
                      hover:bg-saffron-dark active:scale-95 transition-all"
         >
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden>
-            <circle cx="8" cy="8" r="3" fill="currentColor"/>
-            <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5"/>
-            <line x1="8" y1="0" x2="8" y2="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            <line x1="8" y1="13" x2="8" y2="16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            <line x1="0" y1="8" x2="3" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            <line x1="13" y1="8" x2="16" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          </svg>
-          Find my ward
-        </button>
-
-        <a
-          href="/dashboard"
-          className="text-xs font-medium text-ink-3 hover:text-ink transition-colors
-                     px-4 py-1.5 rounded-full bg-white/80 border border-ink/10 shadow-sm"
-        >
-          View transparency dashboard →
+          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+          View NIBM Pilot — AI Solution Brief
         </a>
+
+        {/* Secondary row */}
+        <div className="flex items-center gap-2">
+          <a
+            href="/dashboard"
+            className="text-xs font-medium text-ink-3 hover:text-ink transition-colors
+                       px-4 py-1.5 rounded-full bg-white/80 border border-ink/10 shadow-sm"
+          >
+            Transparency dashboard →
+          </a>
+          <a
+            href="https://sushaasan.framer.website/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-medium text-ink-3 hover:text-ink transition-colors
+                       px-4 py-1.5 rounded-full bg-white/80 border border-ink/10 shadow-sm"
+          >
+            About Sushasan ↗
+          </a>
+        </div>
+
       </div>
 
     </main>
