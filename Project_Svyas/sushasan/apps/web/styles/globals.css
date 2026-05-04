@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --saffron: #FF9933;
+    --saffron-light: #FFD699;
+    --saffron-dark: #c8741a;
+    --india-green: #138808;
+    --navy: #0B1F3A;
+    --graphite: #0A0A0A;
+    --ink: #0a0a0a;
+    --ink-2: #3a3a36;
+    --ink-3: #7a766d;
+    --paper: #fafaf7;
+  }
+
+  html { @apply antialiased; font-feature-settings: "cv11", "ss01"; }
+  body { @apply bg-paper text-ink font-sans; }
+}
+
+/* ── MapLibre GL overrides ─────────────────────────────────────── */
+.maplibregl-popup-content {
+  background: #ffffff !important;
+  border: 1px solid rgba(200, 116, 26, 0.25) !important;
+  border-radius: 12px !important;
+  padding: 0 !important;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.10) !important;
+  min-width: 220px;
+}
+.maplibregl-popup-tip { display: none !important; }
+.maplibregl-popup-close-button {
+  color: #7a766d;
+  font-size: 16px;
+  padding: 8px 10px;
+  top: 2px;
+  right: 2px;
+  border-radius: 8px;
+}
+.maplibregl-popup-close-button:hover { background: #f4f3ee; color: #0a0a0a; }
+.maplibregl-ctrl-attrib { background: rgba(255,255,255,0.7) !important; font-size: 10px !important; }
+
+/* Popup inner layout */
+.popup-inner {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.popup-ward-no {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #c8741a;
+}
+.popup-ward-name {
+  font-family: 'Source Serif 4', serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #0a0a0a;
+  line-height: 1.2;
+}
+.popup-cta {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 7px 12px;
+  background: #fff8f0;
+  border: 1px solid #FF993355;
+  border-radius: 8px;
+  color: #c8741a;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.popup-cta:hover { background: #FFE8C2; }
+.popup-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  margin-bottom: 2px;
+}
+.popup-issue-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0a0a0a;
+  line-height: 1.45;
+}
+.popup-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: #7a766d;
+  margin-top: 2px;
+}
+.popup-meta b { color: #0a0a0a; }
+.popup-solution {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: #f4f3ee;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #3a3a36;
+  line-height: 1.45;
+}
+.popup-platforms {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.popup-platform-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: #f4f3ee;
+  color: #7a766d;
+}
+.popup-section-label {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #b0a99a;
+  margin-bottom: 3px;
+  font-weight: 600;
+}
+.popup-citizen {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #fef9f0;
+  border-left: 3px solid #FF9933;
+  border-radius: 0 8px 8px 0;
+}
+.popup-citizen-headline {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0a0a0a;
+  line-height: 1.35;
+}
+.popup-citizen-detail {
+  font-size: 11px;
+  color: #3a3a36;
+  margin-top: 3px;
+  line-height: 1.4;
+}
+.popup-gov {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: #f0f4f8;
+  border-left: 3px solid #0B1F3A;
+  border-radius: 0 8px 8px 0;
+}
+.popup-gov-text {
+  font-size: 11px;
+  color: #3a3a36;
+  line-height: 1.4;
+}
+.popup-cta {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #FF9933;
+  text-decoration: none;
+}
+.popup-cta:hover { text-decoration: underline; }
+
+/* ── Status badge variants ─────────────────────────────────────── */
+.badge-open        { @apply bg-gray-100 text-gray-500 border border-gray-200; }
+.badge-in_progress { @apply bg-amber-50 text-amber-700 border border-amber-200; }
+.badge-resolved    { @apply bg-green-50 text-green-700 border border-green-200; }
