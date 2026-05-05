@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { LegendBar } from '@/components/map/LegendBar'
+import { SelectedWardPanel, FindMyWardButton } from '@/components/map/SelectedWardPanel'
 
 // Map is client-only — no SSR
 const WardMap = dynamic(
@@ -9,8 +10,11 @@ const WardMap = dynamic(
 )
 
 export const metadata: Metadata = {
-  title: 'Sushasan — Civic Intelligence for Pune',
+  title: 'Sushaasan — Civic Intelligence for Pune',
+  description: 'A Government OS. AI turns public chatter into structured, budgeted, actionable governance briefs — in partnership with PMC and citizens.',
 }
+
+const FRAMER_URL = 'https://sushaasan.framer.website/'
 
 export default function HomePage() {
   return (
@@ -31,7 +35,7 @@ export default function HomePage() {
             </div>
             <div>
               <div className="font-serif text-lg font-semibold text-ink leading-none tracking-tight">
-                Sushasan
+                Sushaasan
               </div>
               <div className="text-[9px] font-semibold tracking-[0.18em] text-ink-3 uppercase mt-0.5">
                 Civic Signal · Pune
@@ -50,26 +54,45 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* ── Selected ward floating panel (top-right) ────────────────── */}
+      <SelectedWardPanel />
+
       {/* ── Legend ─────────────────────────────────────────────────── */}
       <LegendBar />
 
       {/* ── Bottom CTAs ────────────────────────────────────────────── */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40
+      <div className="absolute bottom-7 left-1/2 -translate-x-1/2 z-40
                       flex flex-col items-center gap-3">
 
-        {/* Primary CTA */}
-        <a
-          href="/dashboard/nibm"
-          className="flex items-center gap-2.5 px-6 py-3 rounded-full
-                     bg-saffron text-white font-semibold text-sm tracking-wide
-                     shadow-[0_4px_20px_rgba(255,153,51,0.45)]
-                     hover:bg-[#e8891e] active:scale-95 transition-all duration-150"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse flex-shrink-0" />
-          View NIBM Pilot — AI Solution Brief
-        </a>
+        {/* Primary row */}
+        <div className="flex items-center gap-3 flex-wrap justify-center">
+          <FindMyWardButton />
 
-        {/* Secondary links */}
+          <a
+            href="/dashboard/nibm"
+            className="flex items-center gap-2.5 px-5 py-2.5 rounded-full
+                       bg-saffron text-white font-semibold text-xs tracking-wide
+                       shadow-[0_4px_18px_rgba(255,153,51,0.45)]
+                       hover:bg-[#e8891e] active:scale-95 transition-all duration-150"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse flex-shrink-0" />
+            View NIBM Pilot — AI Solution Brief
+          </a>
+
+          <a
+            href={FRAMER_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-5 py-2.5 rounded-full
+                       bg-navy text-white font-semibold text-xs tracking-wide
+                       hover:bg-navy/90 active:scale-95 transition-all duration-150"
+          >
+            Check out the website
+            <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+
+        {/* Secondary row */}
         <div className="flex items-center gap-3">
           <a
             href="/dashboard"
@@ -80,14 +103,12 @@ export default function HomePage() {
             Transparency dashboard →
           </a>
           <a
-            href="https://sushaasan.framer.website/"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/about"
             className="text-[11px] font-medium text-ink/60 hover:text-ink transition-colors
                        px-4 py-2 rounded-full bg-white/75 border border-ink/10
                        shadow-sm backdrop-blur-sm"
           >
-            About Sushasan ↗
+            About Sushaasan
           </a>
         </div>
 

@@ -230,7 +230,7 @@ export function WardMap() {
         }
       }
 
-      // Ward click → selection highlight + popup
+      // Ward click → selection highlight + dispatch event for SelectedWardPanel
       map.on('click', 'pilot-fill', (e) => {
         if (!e.features?.length) return
         const props = e.features[0].properties
@@ -241,22 +241,9 @@ export function WardMap() {
         map.setFeatureState({ source: 'wards-pilot', id: wardnum }, { selected: true })
 
         const name = props?.Name2 ?? `Ward ${wardnum}`
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(popupRef.current as any)?.remove()
-        const popup = new maplibregl.Popup({
-          offset: 12, maxWidth: '260px', className: 'sushasan-popup',
-        })
-          .setLngLat(e.lngLat)
-          .setHTML(`
-            <div class="popup-inner">
-              <div class="popup-ward-no">WARD ${wardnum}</div>
-              <div class="popup-ward-name">${name}</div>
-              <a href="/ward/${wardnum}" class="popup-cta">View ward analysis →</a>
-            </div>
-          `)
-          .addTo(map)
-        popupRef.current = popup
+        window.dispatchEvent(new CustomEvent('sushaasan:ward-selected', {
+          detail: { wardnum, name, tier: props?.tier ?? 'pilot' },
+        }))
       })
 
       // Hotspot click
@@ -328,9 +315,38 @@ export function WardMap() {
         const features = map.queryRenderedFeatures(e.point, { layers: ['pilot-fill', 'hotspots'] })
         if (!features.length) {
           clearSelected()
+          window.dispatchEvent(new CustomEvent('sushaasan:ward-cleared'))
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ;(popupRef.current as any)?.remove()
         }
+      })
+
+      // External deselect (e.g. user closes panel)
+      window.addEventListener('sushaasan:ward-deselect', () => {
+        clearSelected()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(popupRef.current as any)?.remove()
+      })
+
+      // Geolocation: fly to user, find containing pilot ward, select it
+      window.addEventListener('sushaasan:locate', (ev) => {
+        const { lat, lng } = (ev as CustomEvent).detail as { lat: number; lng: number }
+        map.flyTo({ center: [lng, lat], zoom: 14, speed: 1.4 })
+        // small delay so source data is queryable at new viewport
+        setTimeout(() => {
+          const point = map.project([lng, lat])
+          const feats = map.queryRenderedFeatures(point, { layers: ['pilot-fill'] })
+          if (feats.length) {
+            const f = feats[0]
+            const wardnum = f.properties?.wardnum as number
+            clearSelected()
+            selectedId = wardnum
+            map.setFeatureState({ source: 'wards-pilot', id: wardnum }, { selected: true })
+            window.dispatchEvent(new CustomEvent('sushaasan:ward-selected', {
+              detail: { wardnum, name: f.properties?.Name2 ?? `Ward ${wardnum}`, tier: f.properties?.tier ?? 'pilot' },
+            }))
+          }
+        }, 700)
       })
 
       // Cursors
