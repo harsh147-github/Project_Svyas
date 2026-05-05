@@ -4,6 +4,11 @@ import { isGovAuthed, isAdminAuthed } from '@/lib/auth'
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
+  // Allow OG image generation routes through — they're meta assets
+  if (pathname.endsWith('/opengraph-image') || pathname.endsWith('/twitter-image')) {
+    return NextResponse.next()
+  }
+
   // Gov dashboard protection
   if (pathname.startsWith('/gov')) {
     if (!isGovAuthed(req)) {
