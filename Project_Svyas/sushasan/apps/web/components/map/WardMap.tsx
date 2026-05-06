@@ -59,14 +59,14 @@ export function WardMap() {
         promoteId: 'wardnum',
       })
 
-      // Context wards — very subtle tint over OSM tiles
+      // ── Context wards — thin clean black subdivision lines ─────────────
       map.addLayer({
         id: 'context-fill',
         type: 'fill',
         source: 'wards-context',
         paint: {
-          'fill-color': '#0B1F3A',
-          'fill-opacity': 0.04,
+          'fill-color': '#0a0a0a',
+          'fill-opacity': 0.02,
         },
       })
       map.addLayer({
@@ -74,77 +74,91 @@ export function WardMap() {
         type: 'line',
         source: 'wards-context',
         paint: {
-          'line-color': '#0B1F3A',
-          'line-width': 1,
-          'line-opacity': 0.3,
-          'line-dasharray': [4, 3],
+          'line-color': '#0a0a0a',
+          'line-width': 1.2,
+          'line-opacity': 0.55,
         },
       })
 
-      // Pilot wards — saffron tint that lets the OSM roads show through
+      // ── Pilot wards — saffron fill, very subtle baseline, bold on select
       map.addLayer({
         id: 'pilot-fill',
         type: 'fill',
         source: 'wards-pilot',
         paint: {
-          'fill-color': [
-            'interpolate', ['linear'],
-            ['coalesce', ['feature-state', 'severity_avg'], 0],
-            0,   '#FF9933',
-            2,   '#FF9933',
-            3.5, '#FF9933',
-            5,   '#c8741a',
-          ],
+          'fill-color': '#FF9933',
           'fill-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false], 0.30,
-            0.14,
+            ['boolean', ['feature-state', 'selected'], false], 0.55,
+            ['boolean', ['feature-state', 'hover'], false],    0.18,
+            0.06,
           ],
         },
       })
 
-      // Pilot ward borders — bold saffron, thicker for selected
+      // ── Pilot ward "railway-track" double-stripe border ────────────────
+      // Layer 1: thick black baseline line
       map.addLayer({
-        id: 'pilot-border',
+        id: 'pilot-border-base',
         type: 'line',
         source: 'wards-pilot',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false],
-            '#c8741a', '#FF9933',
+            ['boolean', ['feature-state', 'selected'], false], '#c8741a',
+            '#0a0a0a',
           ],
           'line-width': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false],
-            4, 2.4,
+            ['boolean', ['feature-state', 'selected'], false], 7,
+            5,
           ],
           'line-opacity': 0.95,
         },
       })
+      // Layer 2: white dashed line on top — creates the railroad-tracks effect
+      map.addLayer({
+        id: 'pilot-border-dash',
+        type: 'line',
+        source: 'wards-pilot',
+        layout: { 'line-cap': 'butt' },
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false], 2.4,
+            1.6,
+          ],
+          'line-dasharray': [2, 2],
+          'line-opacity': 0.95,
+        },
+      })
 
-      // Context ward labels — only visible at high zoom
+      // Context ward labels — neighbourhood-name hints on outer wards
       map.addLayer({
         id: 'context-labels',
         type: 'symbol',
         source: 'wards-context',
-        minzoom: 12.5,
+        minzoom: 12,
         layout: {
           'text-field': ['get', 'Name2'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 12.5, 9, 15, 11],
-          'text-letter-spacing': 0.04,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 12, 9, 15, 11],
+          'text-letter-spacing': 0.18,
           'text-font': ['Noto Sans Regular'],
+          'text-transform': 'uppercase',
           'text-max-width': 8,
         },
         paint: {
-          'text-color': '#0B1F3A',
-          'text-opacity': 0.55,
+          'text-color': '#0a0a0a',
+          'text-opacity': 0.45,
           'text-halo-color': '#ffffff',
-          'text-halo-width': 1.4,
+          'text-halo-width': 1.6,
         },
       })
 
-      // Pilot ward labels — bold, two-line (ward number + name)
+      // Pilot ward labels — uppercase WARD number (saffron) + serif name
+      // Two-line format mirrors the kondo-city / civic-design reference
       map.addLayer({
         id: 'pilot-labels',
         type: 'symbol',
@@ -152,20 +166,25 @@ export function WardMap() {
         layout: {
           'text-field': [
             'format',
-            ['concat', 'WARD ', ['to-string', ['get', 'wardnum']]], { 'font-scale': 0.7 },
+            ['concat', 'WARD ', ['to-string', ['get', 'wardnum']]],
+            { 'font-scale': 0.62, 'text-color': '#c8741a' },
             '\n', {},
-            ['get', 'Name2'], { 'font-scale': 1.0 },
+            ['get', 'Name2'],
+            { 'font-scale': 1.05 },
           ],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 11, 10, 13, 13, 15, 15],
-          'text-letter-spacing': 0.04,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 11, 11, 13, 14, 15, 16],
+          'text-letter-spacing': 0.06,
           'text-font': ['Noto Sans Bold'],
           'text-max-width': 9,
-          'text-line-height': 1.3,
+          'text-line-height': 1.4,
+          'text-transform': 'uppercase',
+          'text-allow-overlap': false,
         },
         paint: {
-          'text-color': '#4A2E0A',
+          'text-color': '#0a0a0a',
           'text-halo-color': '#ffffff',
-          'text-halo-width': 2,
+          'text-halo-width': 2.4,
+          'text-halo-blur': 0.4,
         },
       })
 
@@ -345,9 +364,25 @@ export function WardMap() {
         }, 700)
       })
 
-      // Cursors
-      map.on('mouseenter', 'pilot-fill', () => { map.getCanvas().style.cursor = 'pointer' })
-      map.on('mouseleave', 'pilot-fill', () => { map.getCanvas().style.cursor = '' })
+      // Cursors + hover state for ward fill
+      let hoverId: number | null = null
+      map.on('mousemove', 'pilot-fill', (e) => {
+        map.getCanvas().style.cursor = 'pointer'
+        const wardnum = e.features?.[0]?.properties?.wardnum as number | undefined
+        if (wardnum == null || wardnum === hoverId) return
+        if (hoverId !== null) {
+          map.setFeatureState({ source: 'wards-pilot', id: hoverId }, { hover: false })
+        }
+        hoverId = wardnum
+        map.setFeatureState({ source: 'wards-pilot', id: hoverId }, { hover: true })
+      })
+      map.on('mouseleave', 'pilot-fill', () => {
+        map.getCanvas().style.cursor = ''
+        if (hoverId !== null) {
+          map.setFeatureState({ source: 'wards-pilot', id: hoverId }, { hover: false })
+          hoverId = null
+        }
+      })
       map.on('mouseenter', 'hotspots',   () => { map.getCanvas().style.cursor = 'pointer' })
       map.on('mouseleave', 'hotspots',   () => { map.getCanvas().style.cursor = '' })
 
