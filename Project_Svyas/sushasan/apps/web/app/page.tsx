@@ -3,9 +3,9 @@ import dynamic from 'next/dynamic'
 import { LegendBar } from '@/components/map/LegendBar'
 import { SelectedWardPanel, FindMyWardButton } from '@/components/map/SelectedWardPanel'
 
-// Map is client-only — no SSR
+// Stylised SVG ward map — client-only (interactive pan/zoom)
 const WardMap = dynamic(
-  () => import('@/components/map/WardMap').then((m) => m.WardMap),
+  () => import('@/components/map/PrototypeMap').then((m) => m.PrototypeMap),
   { ssr: false, loading: () => <div className="w-full h-full bg-paper" /> }
 )
 
