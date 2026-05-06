@@ -10,10 +10,44 @@ const ISSUE_COLORS: Record<string, string> = {
   other:       '#8B5CF6',
 }
 
-// Real OSM tiles via OpenFreeMap (no API key, free).
-// Positron = clean light grey base — like kaun.city but light to match our paper aesthetic.
-// We tint it warmly via a saffron-tinted background showing through low fill opacity.
-const BASEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
+// Hybrid style: CARTO Positron raster tiles (the same basemap kaun.city uses)
+// wrapped in a minimal inline style. Raster tiles are bullet-proof — no glyph,
+// sprite, or vector-source dependencies that can race with our addLayer calls.
+// Glyphs come from OpenFreeMap (free, no key) so symbol labels render.
+const BASEMAP_STYLE = {
+  version: 8 as const,
+  glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+  sources: {
+    'carto-positron': {
+      type: 'raster' as const,
+      tiles: [
+        'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
+        'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
+        'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
+        'https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png',
+      ],
+      tileSize: 256,
+      attribution: '© OpenStreetMap · © CARTO',
+      maxzoom: 19,
+    },
+  },
+  layers: [
+    {
+      id: 'background',
+      type: 'background' as const,
+      paint: { 'background-color': '#FAFAF7' },
+    },
+    {
+      id: 'carto-base',
+      type: 'raster' as const,
+      source: 'carto-positron',
+      paint: {
+        'raster-opacity': 0.95,
+        'raster-saturation': -0.15,
+      },
+    },
+  ],
+}
 
 export function WardMap() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -48,6 +82,7 @@ export function WardMap() {
     mapRef.current = map
 
     map.on('load', () => {
+      if (map.getSource('wards-pilot')) return  // guard against double-mount
       // ── Ward sources ──────────────────────────────────────────────────────
       map.addSource('wards-context', {
         type: 'geojson',
