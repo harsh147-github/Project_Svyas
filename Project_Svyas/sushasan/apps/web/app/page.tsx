@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { LegendBar } from '@/components/map/LegendBar'
-import { SelectedWardPanel, FindMyWardButton } from '@/components/map/SelectedWardPanel'
+import { FindMyWardButton } from '@/components/map/SelectedWardPanel'
+import { SidePanels } from '@/components/map/SidePanels'
 
-// Stylised SVG ward map — client-only (interactive pan/zoom)
+// Real-OSM map with all 58 PMC ward overlays — client-only (MapLibre)
 const WardMap = dynamic(
-  () => import('@/components/map/PrototypeMap').then((m) => m.PrototypeMap),
+  () => import('@/components/map/WardMap').then((m) => m.WardMap),
   { ssr: false, loading: () => <div className="w-full h-full bg-paper" /> }
 )
 
@@ -14,8 +15,6 @@ export const metadata: Metadata = {
   description: 'A Government OS. AI turns public chatter into structured, budgeted, actionable governance briefs — in partnership with PMC and citizens.',
 }
 
-const FRAMER_URL = 'https://sushaasan.framer.website/'
-
 export default function HomePage() {
   return (
     <main className="relative w-full h-screen overflow-hidden bg-paper">
@@ -23,7 +22,7 @@ export default function HomePage() {
       {/* Full-screen map */}
       <WardMap />
 
-      {/* ── Brand mark ─────────────────────────────────────────────── */}
+      {/* Brand mark */}
       <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none">
         <div className="flex items-center justify-between px-5 py-4">
 
@@ -54,23 +53,26 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── Selected ward floating panel (top-right) ────────────────── */}
-      <SelectedWardPanel />
+      {/* Citizen + Government side panels */}
+      <SidePanels />
 
-      {/* ── Legend ─────────────────────────────────────────────────── */}
+      {/* Legend */}
       <LegendBar />
 
-      {/* ── Bottom CTAs ────────────────────────────────────────────── */}
-      <div className="absolute bottom-7 left-1/2 -translate-x-1/2 z-40
-                      flex flex-col items-center gap-3">
+      {/* Bottom CTAs — solid backdrop so map content never bleeds through */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40
+                      flex flex-col items-center gap-4
+                      px-6 py-4 rounded-3xl
+                      bg-white/85 backdrop-blur-md border border-ink/8
+                      shadow-[0_12px_40px_rgba(10,31,58,0.10)]">
 
         {/* Primary row */}
-        <div className="flex items-center gap-3 flex-wrap justify-center">
+        <div className="flex items-center gap-5 flex-wrap justify-center">
           <FindMyWardButton />
 
           <a
             href="/dashboard/nibm"
-            className="flex items-center gap-2.5 px-5 py-2.5 rounded-full
+            className="flex items-center gap-2.5 px-6 py-2.5 rounded-full
                        bg-saffron text-white font-semibold text-xs tracking-wide
                        shadow-[0_4px_18px_rgba(255,153,51,0.45)]
                        hover:bg-[#e8891e] active:scale-95 transition-all duration-150"
@@ -78,35 +80,23 @@ export default function HomePage() {
             <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse flex-shrink-0" />
             View NIBM Pilot — AI Solution Brief
           </a>
-
-          <a
-            href={FRAMER_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-5 py-2.5 rounded-full
-                       bg-navy text-white font-semibold text-xs tracking-wide
-                       hover:bg-navy/90 active:scale-95 transition-all duration-150"
-          >
-            Check out the website
-            <span aria-hidden="true">↗</span>
-          </a>
         </div>
 
         {/* Secondary row */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <a
             href="/dashboard"
             className="text-[11px] font-medium text-ink/60 hover:text-ink transition-colors
-                       px-4 py-2 rounded-full bg-white/75 border border-ink/10
-                       shadow-sm backdrop-blur-sm"
+                       px-4 py-2 rounded-full bg-white border border-ink/10
+                       shadow-sm"
           >
             Transparency dashboard →
           </a>
           <a
             href="/about"
             className="text-[11px] font-medium text-ink/60 hover:text-ink transition-colors
-                       px-4 py-2 rounded-full bg-white/75 border border-ink/10
-                       shadow-sm backdrop-blur-sm"
+                       px-4 py-2 rounded-full bg-white border border-ink/10
+                       shadow-sm"
           >
             About Sushaasan
           </a>

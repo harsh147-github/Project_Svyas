@@ -49,9 +49,12 @@ export function WardMap() {
     map.on('load', () => {
       if (map.getSource('wards-pilot')) return  // guard against double-mount
       // ── Ward sources ──────────────────────────────────────────────────────
+      // Both pilot + context promoted on wardnum so every one of the 58 PMC
+      // electoral wards has its own feature-state for selected/hover.
       map.addSource('wards-context', {
         type: 'geojson',
         data: '/geojson/wards-context.geojson',
+        promoteId: 'wardnum',
       })
       map.addSource('wards-pilot', {
         type: 'geojson',
@@ -59,28 +62,45 @@ export function WardMap() {
         promoteId: 'wardnum',
       })
 
-      // ── Context wards — thin clean black subdivision lines ─────────────
+      // ── Context wards — interactive, near-transparent fill so streets show through
       map.addLayer({
         id: 'context-fill',
         type: 'fill',
         source: 'wards-context',
         paint: {
           'fill-color': '#0a0a0a',
-          'fill-opacity': 0.02,
+          'fill-opacity': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false], 0.08,
+            ['boolean', ['feature-state', 'hover'], false],    0.04,
+            0.0,
+          ],
         },
       })
+      // Single subtle border on every ward — was an overpowering double-stripe before
       map.addLayer({
-        id: 'context-border',
+        id: 'context-border-base',
         type: 'line',
         source: 'wards-context',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': '#0a0a0a',
-          'line-width': 1.2,
-          'line-opacity': 0.55,
+          'line-width': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false], 2.8,
+            ['boolean', ['feature-state', 'hover'], false],    2.0,
+            1.0,
+          ],
+          'line-opacity': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false], 0.85,
+            ['boolean', ['feature-state', 'hover'], false],    0.55,
+            0.28,
+          ],
         },
       })
 
-      // ── Pilot wards — saffron fill, very subtle baseline, bold on select
+      // ── Pilot wards — saffron fill, gentle at rest, lights up on hover/select
       map.addLayer({
         id: 'pilot-fill',
         type: 'fill',
@@ -89,15 +109,13 @@ export function WardMap() {
           'fill-color': '#FF9933',
           'fill-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false], 0.55,
+            ['boolean', ['feature-state', 'selected'], false], 0.42,
             ['boolean', ['feature-state', 'hover'], false],    0.18,
             0.06,
           ],
         },
       })
-
-      // ── Pilot ward "railway-track" double-stripe border ────────────────
-      // Layer 1: thick black baseline line
+      // Single saffron border — bright on selected/hover so the ward "lifts" off the streets
       map.addLayer({
         id: 'pilot-border-base',
         type: 'line',
@@ -107,58 +125,56 @@ export function WardMap() {
           'line-color': [
             'case',
             ['boolean', ['feature-state', 'selected'], false], '#c8741a',
-            '#0a0a0a',
+            ['boolean', ['feature-state', 'hover'], false],    '#FF9933',
+            '#FF9933',
           ],
           'line-width': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false], 7,
-            5,
+            ['boolean', ['feature-state', 'selected'], false], 3.5,
+            ['boolean', ['feature-state', 'hover'], false],    2.5,
+            1.4,
           ],
-          'line-opacity': 0.95,
-        },
-      })
-      // Layer 2: white dashed line on top — creates the railroad-tracks effect
-      map.addLayer({
-        id: 'pilot-border-dash',
-        type: 'line',
-        source: 'wards-pilot',
-        layout: { 'line-cap': 'butt' },
-        paint: {
-          'line-color': '#ffffff',
-          'line-width': [
+          'line-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false], 2.4,
-            1.6,
+            ['boolean', ['feature-state', 'selected'], false], 1.0,
+            ['boolean', ['feature-state', 'hover'], false],    0.85,
+            0.5,
           ],
-          'line-dasharray': [2, 2],
-          'line-opacity': 0.95,
         },
       })
 
-      // Context ward labels — neighbourhood-name hints on outer wards
+      // Context ward labels — every ward shows its name from zoom 12+
       map.addLayer({
         id: 'context-labels',
         type: 'symbol',
         source: 'wards-context',
         minzoom: 12,
         layout: {
-          'text-field': ['get', 'Name2'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 12, 9, 15, 11],
-          'text-letter-spacing': 0.18,
+          'text-field': [
+            'format',
+            ['concat', 'WARD ', ['to-string', ['get', 'wardnum']]],
+            { 'font-scale': 0.6 },
+            '\n', {},
+            ['get', 'Name2'],
+            { 'font-scale': 1.0 },
+          ],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 12, 9, 15, 12],
+          'text-letter-spacing': 0.1,
           'text-font': ['Noto Sans Regular'],
           'text-transform': 'uppercase',
-          'text-max-width': 8,
+          'text-max-width': 9,
+          'text-line-height': 1.4,
+          'text-allow-overlap': false,
         },
         paint: {
           'text-color': '#0a0a0a',
-          'text-opacity': 0.45,
+          'text-opacity': 0.55,
           'text-halo-color': '#ffffff',
-          'text-halo-width': 1.6,
+          'text-halo-width': 1.8,
         },
       })
 
-      // Pilot ward labels — uppercase WARD number (saffron) + serif name
-      // Two-line format mirrors the kondo-city / civic-design reference
+      // Pilot ward labels — bolder, saffron WARD number on top
       map.addLayer({
         id: 'pilot-labels',
         type: 'symbol',
@@ -236,29 +252,44 @@ export function WardMap() {
       })
 
       // ── Interactions ──────────────────────────────────────────────────────
-      let selectedId: number | null = null
+      // Track selection across BOTH sources (pilot or context).
+      let selected: { source: 'wards-pilot' | 'wards-context'; id: number } | null = null
 
       function clearSelected() {
-        if (selectedId !== null) {
-          map.setFeatureState({ source: 'wards-pilot', id: selectedId }, { selected: false })
-          selectedId = null
+        if (selected) {
+          map.setFeatureState({ source: selected.source, id: selected.id }, { selected: false })
+          selected = null
         }
       }
 
-      // Ward click → selection highlight + dispatch event for SelectedWardPanel
+      function selectWard(source: 'wards-pilot' | 'wards-context', props: Record<string, unknown>) {
+        const wardnum = props?.wardnum as number
+        if (wardnum == null) return
+        clearSelected()
+        selected = { source, id: wardnum }
+        map.setFeatureState({ source, id: wardnum }, { selected: true })
+        window.dispatchEvent(new CustomEvent('sushaasan:ward-selected', {
+          detail: {
+            wardnum,
+            name: (props?.Name2 as string) ?? `Ward ${wardnum}`,
+            tier: (props?.tier as string) ?? source.replace('wards-', ''),
+          },
+        }))
+      }
+
+      // Click on any pilot ward
       map.on('click', 'pilot-fill', (e) => {
         if (!e.features?.length) return
-        const props = e.features[0].properties
-        const wardnum = props?.wardnum as number
+        selectWard('wards-pilot', e.features[0].properties as Record<string, unknown>)
+      })
 
-        clearSelected()
-        selectedId = wardnum
-        map.setFeatureState({ source: 'wards-pilot', id: wardnum }, { selected: true })
-
-        const name = props?.Name2 ?? `Ward ${wardnum}`
-        window.dispatchEvent(new CustomEvent('sushaasan:ward-selected', {
-          detail: { wardnum, name, tier: props?.tier ?? 'pilot' },
-        }))
+      // Click on any context ward — every one of the 58 PMC wards is now selectable
+      map.on('click', 'context-fill', (e) => {
+        if (!e.features?.length) return
+        // If the click also hit a pilot ward (overlap), let pilot-fill handle it
+        const pilotHit = map.queryRenderedFeatures(e.point, { layers: ['pilot-fill'] })
+        if (pilotHit.length) return
+        selectWard('wards-context', e.features[0].properties as Record<string, unknown>)
       })
 
       // Hotspot click
@@ -353,35 +384,58 @@ export function WardMap() {
           const feats = map.queryRenderedFeatures(point, { layers: ['pilot-fill'] })
           if (feats.length) {
             const f = feats[0]
-            const wardnum = f.properties?.wardnum as number
-            clearSelected()
-            selectedId = wardnum
-            map.setFeatureState({ source: 'wards-pilot', id: wardnum }, { selected: true })
-            window.dispatchEvent(new CustomEvent('sushaasan:ward-selected', {
-              detail: { wardnum, name: f.properties?.Name2 ?? `Ward ${wardnum}`, tier: f.properties?.tier ?? 'pilot' },
-            }))
+            selectWard('wards-pilot', f.properties as Record<string, unknown>)
           }
         }, 700)
       })
 
-      // Cursors + hover state for ward fill
-      let hoverId: number | null = null
+      // Cursors + hover state — broadcasts to side panels.
+      // Both pilot and context wards hover, with pilot taking precedence on overlap.
+      let hover: { source: 'wards-pilot' | 'wards-context'; id: number } | null = null
+
+      function clearHover() {
+        if (hover) {
+          map.setFeatureState({ source: hover.source, id: hover.id }, { hover: false })
+          hover = null
+        }
+      }
+
+      function setHover(source: 'wards-pilot' | 'wards-context', props: Record<string, unknown>) {
+        const wardnum = props?.wardnum as number
+        if (wardnum == null) return
+        if (hover && hover.source === source && hover.id === wardnum) return
+        clearHover()
+        hover = { source, id: wardnum }
+        map.setFeatureState({ source, id: wardnum }, { hover: true })
+        window.dispatchEvent(new CustomEvent('sushaasan:ward-hovered', {
+          detail: {
+            wardnum,
+            name: (props?.Name2 as string) ?? `Ward ${wardnum}`,
+            tier: (props?.tier as string) ?? source.replace('wards-', ''),
+          },
+        }))
+      }
+
       map.on('mousemove', 'pilot-fill', (e) => {
         map.getCanvas().style.cursor = 'pointer'
-        const wardnum = e.features?.[0]?.properties?.wardnum as number | undefined
-        if (wardnum == null || wardnum === hoverId) return
-        if (hoverId !== null) {
-          map.setFeatureState({ source: 'wards-pilot', id: hoverId }, { hover: false })
-        }
-        hoverId = wardnum
-        map.setFeatureState({ source: 'wards-pilot', id: hoverId }, { hover: true })
+        if (e.features?.[0]) setHover('wards-pilot', e.features[0].properties as Record<string, unknown>)
+      })
+      map.on('mousemove', 'context-fill', (e) => {
+        // If pilot covers this point, let pilot-fill handler run instead
+        const pilotHit = map.queryRenderedFeatures(e.point, { layers: ['pilot-fill'] })
+        if (pilotHit.length) return
+        map.getCanvas().style.cursor = 'pointer'
+        if (e.features?.[0]) setHover('wards-context', e.features[0].properties as Record<string, unknown>)
       })
       map.on('mouseleave', 'pilot-fill', () => {
         map.getCanvas().style.cursor = ''
-        if (hoverId !== null) {
-          map.setFeatureState({ source: 'wards-pilot', id: hoverId }, { hover: false })
-          hoverId = null
-        }
+        clearHover()
+        window.dispatchEvent(new CustomEvent('sushaasan:ward-unhovered'))
+      })
+      map.on('mouseleave', 'context-fill', () => {
+        map.getCanvas().style.cursor = ''
+        clearHover()
+        window.dispatchEvent(new CustomEvent('sushaasan:ward-unhovered'))
       })
       map.on('mouseenter', 'hotspots',   () => { map.getCanvas().style.cursor = 'pointer' })
       map.on('mouseleave', 'hotspots',   () => { map.getCanvas().style.cursor = '' })
@@ -419,14 +473,14 @@ async function fetchClusters(map: any) {
     const source = map.getSource('clusters') as { setData: (d: unknown) => void } | undefined
     source?.setData({
       type: 'FeatureCollection',
-      features: (clusters as Array<Record<string, unknown>>).map((c) => ({
+      features: (clusters as Record<string, unknown>[]).map((c) => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [c.lng, c.lat] },
         properties: c,
       })),
     })
 
-    for (const { wardnum, severity_avg } of (wardSeverity as Array<{ wardnum: number; severity_avg: number }>) ?? []) {
+    for (const { wardnum, severity_avg } of (wardSeverity as { wardnum: number; severity_avg: number }[]) ?? []) {
       map.setFeatureState({ source: 'wards-pilot', id: wardnum }, { severity_avg })
     }
   } catch {
