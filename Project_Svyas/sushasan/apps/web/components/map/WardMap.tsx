@@ -31,8 +31,13 @@ export function WardMap() {
       style: BASEMAP_STYLE,
       // Centre on actual pilot ward bbox (NIBM + Mohammadwadi + Kondhwa belt)
       center: [73.937, 18.466],
-      zoom: 12.2,
-      minZoom: 10,
+      zoom: 13,
+      // Lock to greater Pune so we only fetch Pune-area tiles, not the world
+      maxBounds: [
+        [73.74, 18.38], // SW — Khadakwasla / Sinhgad foothills
+        [74.05, 18.65], // NE — past Wagholi / Lohegaon
+      ],
+      minZoom: 11.5,
       maxZoom: 17,
       attributionControl: false,
     })
