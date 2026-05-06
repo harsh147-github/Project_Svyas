@@ -10,21 +10,10 @@ const ISSUE_COLORS: Record<string, string> = {
   other:       '#8B5CF6',
 }
 
-// Blank style — no tile servers, just cream background + our GeoJSON
-// Glyphs from OpenFreeMap (free, no key)
-const BLANK_STYLE = {
-  version: 8 as const,
-  glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
-  sprite: '',
-  sources: {} as Record<string, unknown>,
-  layers: [
-    {
-      id: 'background',
-      type: 'background' as const,
-      paint: { 'background-color': '#F5EDE0' },
-    },
-  ],
-}
+// Real OSM tiles via OpenFreeMap (no API key, free).
+// Positron = clean light grey base — like kaun.city but light to match our paper aesthetic.
+// We tint it warmly via a saffron-tinted background showing through low fill opacity.
+const BASEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
 
 export function WardMap() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -39,8 +28,9 @@ export function WardMap() {
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: BLANK_STYLE,
-      center: [73.894, 18.458],
+      style: BASEMAP_STYLE,
+      // Centre on actual pilot ward bbox (NIBM + Mohammadwadi + Kondhwa belt)
+      center: [73.937, 18.466],
       zoom: 12.2,
       minZoom: 10,
       maxZoom: 17,
@@ -64,14 +54,14 @@ export function WardMap() {
         promoteId: 'wardnum',
       })
 
-      // Context wards — neutral fill, gray border
+      // Context wards — very subtle tint over OSM tiles
       map.addLayer({
         id: 'context-fill',
         type: 'fill',
         source: 'wards-context',
         paint: {
-          'fill-color': '#EDE4D5',
-          'fill-opacity': 0.55,
+          'fill-color': '#0B1F3A',
+          'fill-opacity': 0.04,
         },
       })
       map.addLayer({
@@ -79,14 +69,14 @@ export function WardMap() {
         type: 'line',
         source: 'wards-context',
         paint: {
-          'line-color': '#A08060',
+          'line-color': '#0B1F3A',
           'line-width': 1,
-          'line-opacity': 0.45,
+          'line-opacity': 0.3,
           'line-dasharray': [4, 3],
         },
       })
 
-      // Pilot wards — severity-driven saffron fill
+      // Pilot wards — saffron tint that lets the OSM roads show through
       map.addLayer({
         id: 'pilot-fill',
         type: 'fill',
@@ -95,20 +85,20 @@ export function WardMap() {
           'fill-color': [
             'interpolate', ['linear'],
             ['coalesce', ['feature-state', 'severity_avg'], 0],
-            0,   '#F5EDE0',
-            2,   '#FFE8C2',
+            0,   '#FF9933',
+            2,   '#FF9933',
             3.5, '#FF9933',
             5,   '#c8741a',
           ],
           'fill-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false], 0.72,
-            0.42,
+            ['boolean', ['feature-state', 'selected'], false], 0.30,
+            0.14,
           ],
         },
       })
 
-      // Pilot ward borders — saffron, thicker for selected
+      // Pilot ward borders — bold saffron, thicker for selected
       map.addLayer({
         id: 'pilot-border',
         type: 'line',
@@ -117,34 +107,35 @@ export function WardMap() {
           'line-color': [
             'case',
             ['boolean', ['feature-state', 'selected'], false],
-            '#FF9933', '#9B6A30',
+            '#c8741a', '#FF9933',
           ],
           'line-width': [
             'case',
             ['boolean', ['feature-state', 'selected'], false],
-            3.5, 1.8,
+            4, 2.4,
           ],
-          'line-opacity': 1,
+          'line-opacity': 0.95,
         },
       })
 
-      // Context ward labels
+      // Context ward labels — only visible at high zoom
       map.addLayer({
         id: 'context-labels',
         type: 'symbol',
         source: 'wards-context',
+        minzoom: 12.5,
         layout: {
           'text-field': ['get', 'Name2'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 10, 0, 11.5, 8, 14, 10],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 12.5, 9, 15, 11],
           'text-letter-spacing': 0.04,
-          'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          'text-font': ['Noto Sans Regular'],
           'text-max-width': 8,
         },
         paint: {
-          'text-color': '#7A5C3A',
-          'text-opacity': 0.7,
-          'text-halo-color': 'rgba(245,237,224,0.9)',
-          'text-halo-width': 1.2,
+          'text-color': '#0B1F3A',
+          'text-opacity': 0.55,
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 1.4,
         },
       })
 
@@ -156,20 +147,20 @@ export function WardMap() {
         layout: {
           'text-field': [
             'format',
-            ['concat', 'WARD ', ['to-string', ['get', 'wardnum']]], { 'font-scale': 0.72 },
+            ['concat', 'WARD ', ['to-string', ['get', 'wardnum']]], { 'font-scale': 0.7 },
             '\n', {},
             ['get', 'Name2'], { 'font-scale': 1.0 },
           ],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 11, 9, 13, 12, 15, 14],
-          'text-letter-spacing': 0.03,
-          'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 11, 10, 13, 13, 15, 15],
+          'text-letter-spacing': 0.04,
+          'text-font': ['Noto Sans Bold'],
           'text-max-width': 9,
           'text-line-height': 1.3,
         },
         paint: {
           'text-color': '#4A2E0A',
-          'text-halo-color': 'rgba(255,245,230,0.92)',
-          'text-halo-width': 1.8,
+          'text-halo-color': '#ffffff',
+          'text-halo-width': 2,
         },
       })
 
