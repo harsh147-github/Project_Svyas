@@ -26,7 +26,7 @@ export default function SalunkeGarbagePage() {
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-3 hidden sm:block">
-              Salunke Vihar Pilot · Ward 47
+              Salunke Vihar Pilot · Ward 43
             </span>
             <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-navy hover:underline hidden sm:inline">
@@ -61,7 +61,7 @@ export default function SalunkeGarbagePage() {
             </span>
             <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
                              bg-ink/5 text-ink-3 rounded-full border border-ink/10">
-              Ward 47 · Salunke Vihar–Wanowrie
+              Ward 43 · Salunke Vihar–Wanowrie
             </span>
             <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
                              bg-india-green/8 text-india-green rounded-full border border-india-green/20">
@@ -244,8 +244,8 @@ export default function SalunkeGarbagePage() {
                 phase: 4,
                 title: 'Public Dashboard + RWA Partnerships',
                 duration: '30 days', budget: '₹12L',
-                gov: 'Public dashboard at ward47sanitation.pmc.gov.in showing daily collection, dump-site clearance photos (before/after), drain-block resolution times, monthly waterlogging incidents.',
-                citizen: '15 RWA reps form the Ward 47 Sanitation Standing Committee — meets the 1st Saturday monthly with corporator + ward officer. Verifies dashboard accuracy.',
+                gov: 'Public dashboard at ward43sanitation.pmc.gov.in showing daily collection, dump-site clearance photos (before/after), drain-block resolution times, monthly waterlogging incidents.',
+                citizen: '15 RWA reps form the Ward 43 Sanitation Standing Committee — meets the 1st Saturday monthly with corporator + ward officer. Verifies dashboard accuracy.',
               },
             ].map((p) => (
               <div key={p.phase} className="bg-white rounded-2xl border border-ink/8 shadow-sm overflow-hidden">
@@ -330,7 +330,7 @@ export default function SalunkeGarbagePage() {
             {[
               { phase: '01', name: 'Listen',  desc: '28 public posts from r/pune, Instagram, Google Maps reviews, RWA forums' },
               { phase: '02', name: 'Read',    desc: 'Claude Sonnet 4.6 classifies, scores severity 1–5, extracts cited locations' },
-              { phase: '03', name: 'Ground',  desc: 'Ward 47 budget ₹2.8 Cr, PMC SWM Zone-IV, ongoing Kondhwa culvert works' },
+              { phase: '03', name: 'Ground',  desc: 'Ward 43 budget ₹2.8 Cr, PMC SWM Zone-IV, ongoing Kondhwa Road culvert works' },
               { phase: '04', name: 'Compare', desc: 'Cross-references Hadapsar 2024 desilting + Aundh composting (2023) DPRs' },
               { phase: '05', name: 'Suggest', desc: 'Claude Opus 4.6 produces the diplomatic, costed brief — gov action paired with citizen role' },
             ].map(p => (
@@ -342,7 +342,7 @@ export default function SalunkeGarbagePage() {
             ))}
           </div>
           <div className="border-t border-white/10 pt-4 text-white/40 text-[10px] font-mono">
-            brief_id: ssn_w47_garbage_2026-05-06 · generated: 06 May 2026
+            brief_id: ssn_w43_garbage_2026-05-06 · generated: 06 May 2026
           </div>
         </section>
 
@@ -369,7 +369,7 @@ export default function SalunkeGarbagePage() {
             All data sourced from public posts only · Authors anonymised · PII stripped before AI processing
           </p>
           <p className="text-[11px] text-ink-3 text-center">
-            Sushaasan Salunke Vihar Pilot · Ward 47, Pune ·{' '}
+            Sushaasan Salunke Vihar Pilot · Ward 43, Pune ·{' '}
             <a href="mailto:sonawaneharsh147@gmail.com" className="underline">Contact</a>
           </p>
         </footer>
