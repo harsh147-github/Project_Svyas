@@ -345,7 +345,9 @@ export function WardMap() {
               ${citizenSection}
               ${govSection}
               ${fallbackSolution}
-              <a href="/dashboard/nibm" class="popup-cta">Full AI solution brief →</a>
+              ${(p.citizen_headline || p.solution_summary)
+                ? `<a href="/dashboard/nibm" class="popup-cta">Full AI solution brief →</a>`
+                : `<div class="popup-ambient-note">Listening signal — full AI brief not yet generated for this ward. Pilot wards: NIBM, Wanowrie, Salunke Vihar.</div>`}
             </div>
           `)
           .addTo(map)
@@ -454,12 +456,47 @@ export function WardMap() {
   }, [initMap])
 
   return (
-    <div
-      ref={containerRef}
-      className="w-full h-full"
-      role="img"
-      aria-label="Pune ward map showing civic issues in NIBM Kondhwa area"
-    />
+    <div className="relative w-full h-full">
+      <div
+        ref={containerRef}
+        className="w-full h-full"
+        role="img"
+        aria-label="Pune ward map showing civic issues across the city"
+      />
+      <MapLegend />
+    </div>
+  )
+}
+
+function MapLegend() {
+  const items: Array<{ tag: string; label: string; color: string }> = [
+    { tag: 'traffic',     label: 'Traffic',     color: ISSUE_COLORS.traffic },
+    { tag: 'water',       label: 'Water',       color: ISSUE_COLORS.water },
+    { tag: 'electricity', label: 'Electricity', color: ISSUE_COLORS.electricity },
+    { tag: 'garbage',     label: 'Garbage',     color: ISSUE_COLORS.garbage },
+    { tag: 'other',       label: 'Other',       color: ISSUE_COLORS.other },
+  ]
+  return (
+    <div className="pointer-events-none absolute bottom-20 left-3 z-[5] sm:bottom-4 sm:left-4">
+      <div className="pointer-events-auto bg-white/95 backdrop-blur-sm rounded-xl
+                      border border-ink/10 shadow-sm px-3 py-2.5">
+        <div className="text-[8.5px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-1.5">
+          Issue legend
+        </div>
+        <div className="flex flex-wrap gap-x-3 gap-y-1.5 max-w-[260px]">
+          {items.map((it) => (
+            <div key={it.tag} className="flex items-center gap-1.5">
+              <span
+                aria-hidden
+                className="w-2.5 h-2.5 rounded-full ring-1 ring-white shadow"
+                style={{ backgroundColor: it.color, boxShadow: `0 0 0 3px ${it.color}22` }}
+              />
+              <span className="text-[10.5px] font-medium text-ink-2">{it.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }
 

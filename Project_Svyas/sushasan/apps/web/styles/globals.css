@@ -78,6 +78,16 @@
   transition: background 0.15s;
 }
 .popup-cta:hover { background: #FFE8C2; }
+.popup-ambient-note {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #fafaf7;
+  border: 1px solid #e8e6e0;
+  border-radius: 8px;
+  color: #66635c;
+  font-size: 11px;
+  line-height: 1.45;
+}
 .popup-tag {
   display: inline-block;
   padding: 2px 8px;
