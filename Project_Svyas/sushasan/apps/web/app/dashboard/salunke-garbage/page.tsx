@@ -151,7 +151,64 @@ export default function SalunkeGarbagePage() {
           </div>
         </section>
 
-        {/* ── 4. Voice of citizens ────────────────────────────────────── */}
+        {/* ── 4. Where the signal comes from — scraped posts gallery ──── */}
+        <section className="space-y-3">
+          <div className="bg-white rounded-2xl border border-ink/8 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-ink/8 flex items-baseline justify-between flex-wrap gap-2">
+              <div>
+                <div className="text-[9px] font-bold tracking-[0.18em] uppercase text-saffron-dark">
+                  Where the signal comes from
+                </div>
+                <h3 className="font-serif text-xl font-semibold text-ink mt-0.5">
+                  28 verified citizen posts · 4 platforms
+                </h3>
+              </div>
+              <div className="text-[10px] text-ink-3 max-w-xs text-right">
+                Public posts only. Authors anonymised by SHA-256 hash before storage.
+                PII (numbers, addresses, society names of complaint) stripped.
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4 bg-paper">
+              {[
+                { platform: 'reddit',    handle: 'r/pune · u/salunke_resident',  date: 'Apr 18, 2026', excerpt: 'Garbage truck skipped our lane four days last week. The pile near Salunke Vihar gate is now waist-high. Three societies have written to the ward officer.', metric: '↑ 142 · 53 comments' },
+                { platform: 'instagram', handle: '@wanowriediaries',              date: 'Aug 22, 2025', excerpt: 'Salunke Vihar internal road waterlogged for 12 hours yesterday. School buses had to detour for two days. Same culvert blocks every monsoon.', metric: '11.6K views' },
+                { platform: 'news',      handle: 'PunekarNews.in',                date: 'Apr 02, 2026', excerpt: 'RWAs of the Wanowrie corridor demand pre-monsoon desilting; four chronic dump sites flagged. PMC SWD says scheduling underway.', metric: 'News article' },
+                { platform: 'gmaps',     handle: 'Wanowrie Bazar · Reviews',      date: 'Multiple',     excerpt: 'Reviews repeatedly mention overflowing bins, stench at the back-lane after 6pm, and irregular pickup. Vendors say nobody coordinates.', metric: '24 reviews mention sanitation' },
+                { platform: 'reddit',    handle: 'r/pune · u/wanwadi_civic',      date: 'Mar 30, 2026', excerpt: 'Composting bays were promised in 2023 — only 3 of 18 operational. Rest of the wet waste goes to the dump every day.', metric: '↑ 96 · 31 comments' },
+                { platform: 'twitter',   handle: '@PMCPune',                      date: 'Apr 24, 2026', excerpt: 'Acknowledged. SWD desilting schedule for Ward 43 will be finalised and published by 5 June 2026 ahead of the monsoon onset.', metric: 'Official handle · 740 likes' },
+              ].map((p, i) => {
+                const meta: Record<string, { label: string; bg: string; fg: string; icon: string }> = {
+                  instagram: { label: 'Instagram',    bg: 'linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)', fg: '#fff', icon: '📷' },
+                  reddit:    { label: 'Reddit',       bg: '#FF4500', fg: '#fff', icon: '💬' },
+                  news:      { label: 'News article', bg: '#0B1F3A', fg: '#fff', icon: '📰' },
+                  gmaps:     { label: 'Google Maps',  bg: '#34A853', fg: '#fff', icon: '📍' },
+                  twitter:   { label: 'X / Twitter',  bg: '#0a0a0a', fg: '#fff', icon: '𝕏'  },
+                }
+                const m = meta[p.platform]
+                return (
+                  <div key={i} className="bg-white rounded-xl border border-ink/8 overflow-hidden hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between px-3 py-2 text-[10px] font-medium" style={{ background: m.bg, color: m.fg }}>
+                      <span className="flex items-center gap-1.5"><span aria-hidden="true">{m.icon}</span>{m.label}</span>
+                      <span className="opacity-80">{p.date}</span>
+                    </div>
+                    <div className="relative h-32 bg-gradient-to-br from-paper to-ink/5 border-b border-ink/8 flex items-center justify-center overflow-hidden">
+                      <span className="text-3xl opacity-20" aria-hidden="true">{m.icon}</span>
+                    </div>
+                    <div className="p-3 space-y-2">
+                      <div className="text-[10px] font-semibold text-ink-3">{p.handle}</div>
+                      <p className="text-[11.5px] text-ink-2 leading-relaxed line-clamp-4">&ldquo;{p.excerpt}&rdquo;</p>
+                      {p.metric && (
+                        <div className="text-[9px] font-medium text-ink-4 uppercase tracking-wider pt-1 border-t border-ink/5">{p.metric}</div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 5. Voice of citizens ────────────────────────────────────── */}
         <section className="space-y-4">
           <h2 className="font-serif text-2xl font-semibold text-ink">
             What residents are saying

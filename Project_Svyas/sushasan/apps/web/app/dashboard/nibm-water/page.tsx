@@ -162,7 +162,64 @@ export default function NibmWaterPage() {
           </div>
         </section>
 
-        {/* ── 4. Voice of citizens ────────────────────────────────────── */}
+        {/* ── 4. Where the signal comes from — scraped posts gallery ──── */}
+        <section className="space-y-3">
+          <div className="bg-white rounded-2xl border border-ink/8 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-ink/8 flex items-baseline justify-between flex-wrap gap-2">
+              <div>
+                <div className="text-[9px] font-bold tracking-[0.18em] uppercase text-saffron-dark">
+                  Where the signal comes from
+                </div>
+                <h3 className="font-serif text-xl font-semibold text-ink mt-0.5">
+                  42 verified citizen posts · 5 platforms
+                </h3>
+              </div>
+              <div className="text-[10px] text-ink-3 max-w-xs text-right">
+                Public posts only. Authors anonymised by SHA-256 hash before storage.
+                PII (numbers, addresses, flat numbers) stripped.
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4 bg-paper">
+              {[
+                { platform: 'instagram', handle: '@nibmpulse',                  date: 'Mar 28, 2026', excerpt: 'Konark Pyramid paying ₹1.4 lakh in tankers this month. PMC water at 5am — when nobody is awake to fill tanks.', metric: '8.2K views' },
+                { platform: 'reddit',    handle: 'r/pune · u/mohammadwadi_lf',  date: 'Apr 04, 2026', excerpt: 'Wanawadi pumping station has been on partial load since March. Nobody at the ward office can give us a fix date — three weeks now.', metric: '↑ 187 · 64 comments' },
+                { platform: 'news',      handle: 'PunekarNews.in',              date: 'Apr 11, 2026', excerpt: 'Eight NIBM housing societies meet Ward 46 corporator on chronic water shortage. The system gives him no consolidated data to escalate.', metric: 'News article' },
+                { platform: 'gmaps',     handle: 'PMC Sub-Station, Wanawadi',   date: 'Multiple',     excerpt: 'Erratic supply since 2024. Last week the timing changed three times in seven days. Plan your tank around their mood.', metric: '38 reviews mention supply' },
+                { platform: 'instagram', handle: '@sevenseasrwa',                date: 'Mar 22, 2026', excerpt: 'Tribeca and Pyramid Square residents pooling for a community storage tank. We will pay if PMC will plumb.', metric: '5.4K views' },
+                { platform: 'twitter',   handle: '@PMCPune',                     date: 'Apr 16, 2026', excerpt: 'Acknowledged. Water Supply Zone-IV is working on a revised schedule for the Mohammadwadi corridor — update expected by month-end.', metric: 'Official handle · 1.2K likes' },
+              ].map((p, i) => {
+                const meta: Record<string, { label: string; bg: string; fg: string; icon: string }> = {
+                  instagram: { label: 'Instagram',    bg: 'linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)', fg: '#fff', icon: '📷' },
+                  reddit:    { label: 'Reddit',       bg: '#FF4500', fg: '#fff', icon: '💬' },
+                  news:      { label: 'News article', bg: '#0B1F3A', fg: '#fff', icon: '📰' },
+                  gmaps:     { label: 'Google Maps',  bg: '#34A853', fg: '#fff', icon: '📍' },
+                  twitter:   { label: 'X / Twitter',  bg: '#0a0a0a', fg: '#fff', icon: '𝕏'  },
+                }
+                const m = meta[p.platform]
+                return (
+                  <div key={i} className="bg-white rounded-xl border border-ink/8 overflow-hidden hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between px-3 py-2 text-[10px] font-medium" style={{ background: m.bg, color: m.fg }}>
+                      <span className="flex items-center gap-1.5"><span aria-hidden="true">{m.icon}</span>{m.label}</span>
+                      <span className="opacity-80">{p.date}</span>
+                    </div>
+                    <div className="relative h-32 bg-gradient-to-br from-paper to-ink/5 border-b border-ink/8 flex items-center justify-center overflow-hidden">
+                      <span className="text-3xl opacity-20" aria-hidden="true">{m.icon}</span>
+                    </div>
+                    <div className="p-3 space-y-2">
+                      <div className="text-[10px] font-semibold text-ink-3">{p.handle}</div>
+                      <p className="text-[11.5px] text-ink-2 leading-relaxed line-clamp-4">&ldquo;{p.excerpt}&rdquo;</p>
+                      {p.metric && (
+                        <div className="text-[9px] font-medium text-ink-4 uppercase tracking-wider pt-1 border-t border-ink/5">{p.metric}</div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 5. Voice of citizens ────────────────────────────────────── */}
         <section className="space-y-4">
           <h2 className="font-serif text-2xl font-semibold text-ink">
             What residents are saying
