@@ -156,8 +156,118 @@ export default async function NIBMPilotPage() {
           </p>
         </section>
 
+        {/* ── 1b. Executive TL;DR — 2-minute read ───────────────────────────── */}
+        <section className="space-y-3">
+          <div className="flex items-baseline gap-3 flex-wrap">
+            <span className="text-[9px] font-bold tracking-[0.2em] uppercase
+                             bg-saffron/10 text-saffron-dark px-2.5 py-1 rounded-full
+                             border border-saffron/25">
+              For the 2-minute reader
+            </span>
+            <span className="text-[10px] text-ink-3">Tap any block to jump to the full section</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              {
+                icon: (
+                  <svg viewBox="0 0 48 48" className="w-9 h-9" aria-hidden="true">
+                    <rect x="3" y="22" width="9" height="14" rx="1.5" fill="#EF4444" opacity="0.65"/>
+                    <rect x="14" y="20" width="11" height="16" rx="1.5" fill="#EF4444"/>
+                    <rect x="27" y="22" width="10" height="14" rx="1.5" fill="#EF4444" opacity="0.65"/>
+                    <rect x="39" y="22" width="6" height="14" rx="1.5" fill="#EF4444" opacity="0.40"/>
+                    <circle cx="7" cy="38" r="2" fill="#0A0A0A"/>
+                    <circle cx="19" cy="38" r="2.2" fill="#0A0A0A"/>
+                    <circle cx="32" cy="38" r="2" fill="#0A0A0A"/>
+                    <circle cx="42" cy="38" r="1.6" fill="#0A0A0A"/>
+                    <path d="M 6 14 L 42 14" stroke="#EF4444" strokeWidth="1.6" strokeDasharray="3 3" opacity="0.5"/>
+                    <text x="24" y="11" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="#EF4444">63K/day</text>
+                  </svg>
+                ),
+                eyebrow: 'Problem',
+                eyebrowColor: '#EF4444',
+                headline: 'NIBM Chowk · 63K vehicles/day · 13 accidents',
+                detail: 'Junction jams, encroachments, no enforcement. #5 globally on TomTom Index 2025.',
+                href: '#corridor',
+              },
+              {
+                icon: (
+                  <svg viewBox="0 0 48 48" className="w-9 h-9" aria-hidden="true">
+                    <circle cx="24" cy="24" r="18" fill="#FF9933" opacity="0.10"/>
+                    <circle cx="24" cy="24" r="18" fill="none" stroke="#FF9933" strokeWidth="1.6"/>
+                    <path d="M 24 8 A 16 16 0 1 1 12 30" fill="none" stroke="#FF9933" strokeWidth="3" strokeLinecap="round"/>
+                    <text x="24" y="22" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#0A0A0A">19</text>
+                    <text x="24" y="32" textAnchor="middle" fontSize="6" fontWeight="600" fill="#7a766d">posts · 4 src</text>
+                  </svg>
+                ),
+                eyebrow: 'Evidence',
+                eyebrowColor: '#FF9933',
+                headline: '19 posts · IG · Reddit · news · GMaps',
+                detail: '8 housing societies organised; tax-paying residents asking for partnership, not protest.',
+                href: '#evidence',
+              },
+              {
+                icon: (
+                  <svg viewBox="0 0 48 48" className="w-9 h-9" aria-hidden="true">
+                    <rect x="4"  y="22" width="8" height="22" rx="1" fill="#0B1F3A" opacity="0.18"/>
+                    <rect x="4"  y="22" width="8" height="22" rx="1" fill="none" stroke="#0B1F3A" strokeWidth="1.4"/>
+                    <rect x="14" y="16" width="8" height="28" rx="1" fill="#0B1F3A" opacity="0.32"/>
+                    <rect x="14" y="16" width="8" height="28" rx="1" fill="none" stroke="#0B1F3A" strokeWidth="1.4"/>
+                    <rect x="24" y="10" width="8" height="34" rx="1" fill="#FF9933" opacity="0.45"/>
+                    <rect x="24" y="10" width="8" height="34" rx="1" fill="none" stroke="#c8741a" strokeWidth="1.4"/>
+                    <rect x="34" y="6"  width="8" height="38" rx="1" fill="#138808" opacity="0.55"/>
+                    <rect x="34" y="6"  width="8" height="38" rx="1" fill="none" stroke="#138808" strokeWidth="1.4"/>
+                  </svg>
+                ),
+                eyebrow: 'Solution',
+                eyebrowColor: '#0B1F3A',
+                headline: '4 phases · ₹2.53 Cr · 165 days',
+                detail: 'Enforcement reset → ANPR + bollards → heavy-vehicle terminal → public dashboard.',
+                href: '#phases',
+              },
+              {
+                icon: (
+                  <svg viewBox="0 0 48 48" className="w-9 h-9" aria-hidden="true">
+                    <path d="M 6 38 L 6 26 L 16 30 L 24 18 L 32 22 L 42 8"
+                          fill="none" stroke="#138808" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="42" cy="8" r="3" fill="#138808"/>
+                    <text x="22" y="46" textAnchor="middle" fontSize="6" fontWeight="600" fill="#138808">−34% peak</text>
+                  </svg>
+                ),
+                eyebrow: 'Outcome',
+                eyebrowColor: '#138808',
+                headline: 'Hadapsar Ward 55 — replicated',
+                detail: 'Joint task-force MoU there cut peak-hour congestion 34% in 90 days. Same template fits NIBM.',
+                href: '#references',
+              },
+            ].map((b) => (
+              <a key={b.eyebrow} href={b.href}
+                 className="bg-white rounded-2xl border border-ink/8 shadow-sm p-5 space-y-3
+                            hover:shadow-md hover:border-ink/15 transition-all">
+                <div className="flex items-start justify-between gap-3">
+                  {b.icon}
+                  <span className="text-[9px] font-bold tracking-[0.16em] uppercase px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: `${b.eyebrowColor}15`, color: b.eyebrowColor,
+                                 border: `1px solid ${b.eyebrowColor}30` }}>
+                    {b.eyebrow}
+                  </span>
+                </div>
+                <div>
+                  <div className="font-serif text-[15.5px] font-semibold text-ink leading-tight">
+                    {b.headline}
+                  </div>
+                  <p className="text-[11.5px] text-ink-3 leading-relaxed mt-1.5">{b.detail}</p>
+                </div>
+                <div className="text-[10px] font-semibold text-ink-3 hover:text-saffron-dark
+                                pt-2 border-t border-ink/6">
+                  Jump to section →
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+
         {/* ── 2. Evidence stats — quick-scan infographic ─────────────────── */}
-        <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <section id="evidence" className="grid grid-cols-2 sm:grid-cols-4 gap-4 scroll-mt-20">
           {[
             { value: '19',     label: 'verified citizen posts',    sub: 'Instagram · Reddit · news · GMaps' },
             { value: '63K',    label: 'vehicles/day at NIBM Chowk', sub: 'PunePulse-verified peak count' },
