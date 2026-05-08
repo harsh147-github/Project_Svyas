@@ -98,6 +98,144 @@ export default function DashboardPage() {
           </p>
         </section>
 
+        {/* ── Pilot solution briefs — 4-card directory ───────────────────── */}
+        <section className="space-y-4">
+          <div className="flex items-baseline gap-3 flex-wrap">
+            <h2 className="font-serif text-2xl font-semibold text-ink">
+              Pilot solution briefs
+            </h2>
+            <div className="flex-1 h-px bg-ink/8 min-w-[40px]" />
+            <span className="text-[9px] font-bold tracking-[0.15em] uppercase text-saffron-dark
+                             bg-saffron/8 border border-saffron/20 px-2 py-1 rounded-full">
+              4 live · diplomatic frame
+            </span>
+          </div>
+
+          {/* Pune Civic Pilots */}
+          <div>
+            <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-2">
+              Pune civic pilots
+            </div>
+            <div className="grid sm:grid-cols-3 gap-3">
+              {[
+                {
+                  href:    '/dashboard/nibm',
+                  tag:     'Traffic',
+                  tagColor:'#EF4444',
+                  ward:    'Ward 46 · NIBM–Mohammadwadi',
+                  title:   'NIBM corridor traffic',
+                  blurb:   '19 verified posts · ₹2.48 Cr · 165d roadmap synthesised from PunePulse, Reddit, Instagram, news, GMaps.',
+                  stats:   ['19 posts', '63K vehicles/day', '13 accidents'],
+                },
+                {
+                  href:    '/dashboard/nibm-water',
+                  tag:     'Water',
+                  tagColor:'#3B82F6',
+                  ward:    'Ward 46 · NIBM–Mohammadwadi',
+                  title:   'NIBM water supply',
+                  blurb:   '42 verified posts · ₹2.63 Cr · 195d. Seven housing societies, ₹250/can tankers, supply rezone proposed.',
+                  stats:   ['42 posts', '7 societies', '5 MLD bay'],
+                },
+                {
+                  href:    '/dashboard/salunke-garbage',
+                  tag:     'Garbage & Drainage',
+                  tagColor:'#10B981',
+                  ward:    'Ward 43 · Salunke Vihar–Wanowrie',
+                  title:   'Salunke Vihar sanitation',
+                  blurb:   '28 verified posts · ₹2.05 Cr · 156d. Four chronic dump sites, 12 drain blocks — pre-monsoon deadline.',
+                  stats:   ['28 posts', '4 dump sites', '12 drain blocks'],
+                },
+              ].map((p) => (
+                <Link key={p.href} href={p.href}
+                      className="group bg-white rounded-2xl border border-ink/8 shadow-sm p-5
+                                 hover:border-saffron/40 hover:shadow-md transition-all
+                                 flex flex-col">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: `${p.tagColor}1A`, color: p.tagColor, border: `1px solid ${p.tagColor}33` }}>
+                      {p.tag}
+                    </span>
+                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-4">
+                      Live brief
+                    </span>
+                  </div>
+                  <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-ink-4 mb-1">
+                    {p.ward}
+                  </div>
+                  <h3 className="font-serif text-xl font-semibold text-ink leading-tight mb-2 group-hover:text-saffron-dark transition-colors">
+                    {p.title}
+                  </h3>
+                  <p className="text-[12.5px] text-ink-2 leading-relaxed mb-3 flex-1">
+                    {p.blurb}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 pt-3 border-t border-ink/6">
+                    {p.stats.map((s) => (
+                      <span key={s} className="text-[10px] px-2 py-0.5 bg-ink/5 text-ink-2 rounded-full font-medium">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-3 text-[11px] font-semibold text-saffron-dark group-hover:underline">
+                    Read full brief →
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* National Policy Pilot — separate group */}
+          <div>
+            <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-2">
+              National policy pilot
+            </div>
+            <Link href="/dashboard/e20-ethanol"
+                  className="group block bg-white rounded-2xl border border-ink/8 shadow-sm p-6
+                             hover:border-saffron/40 hover:shadow-md transition-all">
+              <div className="flex items-start gap-6 flex-wrap">
+                <div className="flex-1 min-w-[280px]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: 'rgba(139,92,246,0.10)', color: '#6d28d9', border: '1px solid rgba(139,92,246,0.25)' }}>
+                      Policy
+                    </span>
+                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full
+                                     bg-ink/5 text-ink-3 border border-ink/10">
+                      Nationwide
+                    </span>
+                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-4">
+                      Live brief
+                    </span>
+                  </div>
+                  <h3 className="font-serif text-2xl font-semibold text-ink leading-tight mb-2 group-hover:text-saffron-dark transition-colors">
+                    E20 ethanol blending — national policy advisory
+                  </h3>
+                  <p className="text-[13px] text-ink-2 leading-relaxed">
+                    Sushaasan extends from civic to national policy. 5,200+ verified citizen posts read by AI,
+                    organised into a four-phase brief the Ministry of Petroleum, BIS, NITI Aayog and OEMs can
+                    act on — together. Two-sided framing: real farmer income alongside legitimate vehicle-mileage concerns.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-1 gap-2 sm:gap-1 sm:w-44">
+                  {[
+                    { v: '5,200+',  l: 'verified posts' },
+                    { v: '4 ministries', l: 'coordination scope' },
+                    { v: '~6%',     l: 'avg mileage drop' },
+                    { v: '₹10K+ Cr',l: 'farmer income FY25' },
+                  ].map((m) => (
+                    <div key={m.l} className="bg-paper rounded-xl border border-ink/6 px-3 py-2">
+                      <div className="font-serif text-lg font-bold text-ink leading-none">{m.v}</div>
+                      <div className="text-[9px] text-ink-3 mt-1">{m.l}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-4 text-[11px] font-semibold text-saffron-dark group-hover:underline">
+                Read full policy brief →
+              </div>
+            </Link>
+          </div>
+        </section>
+
         {/* ── Top metrics ────────────────────────────────────────────────── */}
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
