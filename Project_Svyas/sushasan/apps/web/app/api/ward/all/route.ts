@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { isSupabaseConfigured, createServerClient } from '../../../../lib/supabase'
 
-export const revalidate = 300
+export const revalidate = 30
 
 // Seed data fallback — used when Supabase is not configured
 const SEED_CLUSTERS = [
