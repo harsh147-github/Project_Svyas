@@ -151,7 +151,7 @@ async function fetchFromSupabase() {
     .from('clusters')
     .select(`
       id, ward_id, issue_tag, centroid_text, post_count, severity_avg, status,
-      lng, lat, source_platforms, updated_at
+      lng, lat, source_platforms, sample_urls, sub_location, updated_at
     `)
     .in('status', ['open', 'in_progress'])
     .order('severity_avg', { ascending: false })
