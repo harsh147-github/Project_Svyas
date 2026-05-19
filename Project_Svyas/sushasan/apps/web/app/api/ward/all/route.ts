@@ -359,47 +359,81 @@ async function fetchFromSupabase() {
   if (clusterErr || !clusters || clusters.length === 0) return null
 
   const clusterIds = clusters.map((c: { id: string }) => c.id)
+  const wardIds = [...new Set(clusters.map((c: { ward_id: string }) => c.ward_id))]
 
-  const { data: solutions } = await supabase
-    .from('solutions')
-    .select('id, cluster_id, summary, citizen_benefit, government_benefit')
-    .in('cluster_id', clusterIds)
-    .in('status', ['published', 'actioned'])
+  // Canonical solution tables (populated once AI synthesis runs)
+  const [
+    { data: solutions },
+    { data: citizenDisplays },
+    { data: govDisplays },
+    // sushaasan_phase* tables — populated by the AI backend pipeline
+    { data: sushaSols },
+    { data: sushaCitizen },
+    { data: sushaGov },
+  ] = await Promise.all([
+    supabase.from('solutions')
+      .select('id, cluster_id, summary')
+      .in('cluster_id', clusterIds)
+      .in('status', ['published', 'actioned']),
+    supabase.from('citizen_displays')
+      .select('solution_id, headline, problem_simple'),
+    supabase.from('government_displays')
+      .select('solution_id, executive_summary'),
+    // Phase-3 optimized solutions keyed by (ward_id, governance_sector=issue_tag)
+    supabase.from('sushaasan_phase3_optimized_solutions')
+      .select('solution_id, ward_id, governance_sector, citizen_benefit_statement, government_benefit_statement, feasibility_score, priority_level')
+      .in('ward_id', wardIds),
+    supabase.from('sushaasan_phase4_citizen_display')
+      .select('solution_id, ward_id, headline, problem_simple, citizen_summary'),
+    supabase.from('sushaasan_phase4_government_display')
+      .select('solution_id, ward_id, executive_summary, technical_brief'),
+  ])
 
-  const { data: citizenDisplays } = await supabase
-    .from('citizen_displays')
-    .select('solution_id, headline, problem_simple')
-
-  const { data: govDisplays } = await supabase
-    .from('government_displays')
-    .select('solution_id, executive_summary')
-
-  const solutionMap = new Map<string, { summary: string; id: string; citizen_benefit: string; government_benefit: string }>()
+  // Canonical solution maps (cluster_id → solution)
+  const solutionMap = new Map<string, { summary: string; id: string }>()
   for (const s of solutions ?? []) {
     if (s.cluster_id) solutionMap.set(s.cluster_id, s)
   }
-
   const citizenMap = new Map<string, { headline: string; problem_simple: string }>()
   for (const cd of citizenDisplays ?? []) {
     if (cd.solution_id) citizenMap.set(cd.solution_id, cd)
   }
-
   const govMap = new Map<string, { executive_summary: string }>()
   for (const gd of govDisplays ?? []) {
     if (gd.solution_id) govMap.set(gd.solution_id, gd)
   }
 
+  // sushaasan_phase maps (ward_id|issue_tag → display data)
+  const sushaKey = (wardId: string, issue: string) => `${wardId}|${issue}`
+  const sushaSolMap = new Map<string, { solution_id: string; citizen_benefit_statement: string; government_benefit_statement: string }>()
+  for (const s of sushaSols ?? []) {
+    sushaSolMap.set(sushaKey(s.ward_id, s.governance_sector), s)
+  }
+  const sushaCitizenMap = new Map<string, { headline: string; problem_simple: string; citizen_summary: string }>()
+  for (const c of sushaCitizen ?? []) {
+    sushaCitizenMap.set(c.solution_id, c)
+  }
+  const sushaGovMap = new Map<string, { executive_summary: string }>()
+  for (const g of sushaGov ?? []) {
+    sushaGovMap.set(g.solution_id, g)
+  }
+
   const enrichedClusters = clusters.map((c: Record<string, unknown>) => {
+    // Try canonical tables first, fall back to sushaasan_phase tables
     const sol = solutionMap.get(c.id as string)
     const citizen = sol ? citizenMap.get(sol.id) : undefined
     const gov = sol ? govMap.get(sol.id) : undefined
 
+    const sushaSol = sushaSolMap.get(sushaKey(c.ward_id as string, c.issue_tag as string))
+    const sushaCit = sushaSol ? sushaCitizenMap.get(sushaSol.solution_id) : undefined
+    const sushaG   = sushaSol ? sushaGovMap.get(sushaSol.solution_id) : undefined
+
     return {
       ...c,
-      solution_summary: sol?.summary ?? null,
-      citizen_headline: citizen?.headline ?? null,
-      problem_simple: citizen?.problem_simple ?? null,
-      gov_summary: gov?.executive_summary ?? null,
+      solution_summary:  sol?.summary                      ?? sushaSol?.citizen_benefit_statement ?? null,
+      citizen_headline:  citizen?.headline                  ?? sushaCit?.headline                  ?? null,
+      problem_simple:    citizen?.problem_simple            ?? sushaCit?.problem_simple             ?? null,
+      gov_summary:       gov?.executive_summary             ?? sushaG?.executive_summary            ?? null,
     }
   })
 
