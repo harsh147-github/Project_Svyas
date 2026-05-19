@@ -3,8 +3,10 @@ import { isSupabaseConfigured, createServerClient } from '../../../../lib/supaba
 
 export const revalidate = 30
 
-// Seed data fallback — used when Supabase is not configured
+// Seed data fallback — used when Supabase is not configured.
+// Covers all 58 PMC electoral wards so the city-wide map looks populated.
 const SEED_CLUSTERS = [
+  // ── NIBM / Mohammadwadi pilot belt (full briefs) ───────────────────────────
   {
     id: 'c1', ward_id: '46', issue_tag: 'traffic',
     centroid_text: 'Severe congestion at NIBM–Mohammadwadi junction during peak hours, ambulances blocked multiple times this week.',
@@ -28,7 +30,7 @@ const SEED_CLUSTERS = [
   {
     id: 'c3', ward_id: '47', issue_tag: 'garbage',
     centroid_text: 'Overflow at 3 collection points near Bliss Bakery and NIBM Road service lane for 4+ days.',
-    post_count: 19, severity_avg: 3.8, status: 'open', lng: 73.9015, lat: 18.4729,
+    post_count: 19, severity_avg: 3.8, status: 'open', lng: 73.9015, lat: 18.4438,
     solution_summary: 'Emergency clearance + shift schedule fix for NIBM lane collection. Est. ₹25,000.',
     source_platforms: ['reddit'],
     citizen_headline: 'Garbage overflow near Bliss Bakery to be cleared',
@@ -48,7 +50,7 @@ const SEED_CLUSTERS = [
   {
     id: 'c5', ward_id: '43', issue_tag: 'electricity',
     centroid_text: 'Streetlights out on Wanowrie-Salunke Vihar stretch for 6 days; residents report safety concerns at night.',
-    post_count: 14, severity_avg: 3.2, status: 'open', lng: 73.8985, lat: 18.4793,
+    post_count: 14, severity_avg: 3.2, status: 'open', lng: 73.8985, lat: 18.4868,
     solution_summary: 'MSEDCL fault repair + lamp replacement. Est. ₹35,000 over 5 days.',
     source_platforms: ['reddit'],
     citizen_headline: 'Streetlights on Wanowrie stretch being fixed',
@@ -68,7 +70,7 @@ const SEED_CLUSTERS = [
   {
     id: 'c7', ward_id: '43', issue_tag: 'water',
     centroid_text: 'Drain blockage on Wanowrie main road causing backflow into residential basements after light rain.',
-    post_count: 11, severity_avg: 3.5, status: 'open', lng: 73.8978, lat: 18.4807,
+    post_count: 11, severity_avg: 3.5, status: 'open', lng: 73.8978, lat: 18.4903,
     solution_summary: 'Storm drain desilting by PMC Roads team. Est. ₹55,000 over 10 days.',
     source_platforms: ['reddit'],
     citizen_headline: 'Blocked drains on Wanowrie main road being cleared',
@@ -76,72 +78,92 @@ const SEED_CLUSTERS = [
     gov_summary: 'PMC Roads: storm drain desilting operation. Budget: ₹55,000, timeline: 10 days.',
   },
 
-  // ── Ambient signal across the rest of Pune ─────────────────────────────────
-  // Lighter-weight clusters showing the AI is listening city-wide, even where
-  // we haven't yet generated a full solution brief. Each renders as a coloured
-  // hotspot dot on the homepage map; clicking shows the centroid + severity.
-  // No solution_summary / citizen_headline / gov_summary on these — the popup
-  // gracefully skips those sections and the "view brief" CTA is hidden.
+  // ── City-wide ambient signal — AI listening across all 58 wards ────────────
+  // These render as hotspot dots; popup shows centroid + severity.
+  // No full solution brief yet — brief is generated once 10+ reports confirm the cluster.
 
-  // Hadapsar — Magarpatta — Amanora corridor
-  { id: 'a01', ward_id: '23', issue_tag: 'traffic',     centroid_text: 'Magarpatta City gate bottleneck during evening peak; office traffic + Hadapsar shoppers compounding.', post_count: 18, severity_avg: 3.6, status: 'open', lng: 73.9265, lat: 18.5082, source_platforms: ['reddit', 'instagram'] },
-  { id: 'a02', ward_id: '24', issue_tag: 'water',       centroid_text: 'Amanora Park Town residents flag erratic supply pressure on weekends; lift-pump complaints.',          post_count: 9,  severity_avg: 2.8, status: 'open', lng: 73.9402, lat: 18.5167, source_platforms: ['reddit'] },
-  { id: 'a03', ward_id: '25', issue_tag: 'garbage',     centroid_text: 'Hadapsar Gaothan inner lanes — irregular wet-waste pickup, three sites flagged this fortnight.',         post_count: 7,  severity_avg: 2.5, status: 'open', lng: 73.9385, lat: 18.5028, source_platforms: ['reddit'] },
+  // North Pune — Dhanori / Vishrantwadi / Lohegaon
+  { id: 'b01', ward_id: '1',  issue_tag: 'garbage',     centroid_text: 'Dhanori market-side bins overflowing — irregular wet-waste pickup, three sites flagged this fortnight.',   post_count: 9,  severity_avg: 2.8, status: 'open', lng: 73.8938, lat: 18.5872, source_platforms: ['reddit'] },
+  { id: 'b02', ward_id: '2',  issue_tag: 'traffic',     centroid_text: 'Vishrantwadi junction — peak-hour snarl from Pune airport road merge; auto-rickshaws blocking filter lane.', post_count: 14, severity_avg: 3.3, status: 'open', lng: 73.8972, lat: 18.5748, source_platforms: ['instagram', 'reddit'] },
+  { id: 'b03', ward_id: '3',  issue_tag: 'electricity', centroid_text: 'Viman Nagar Phase-2 load-shedding episodes — 2-hour cuts on two consecutive days, MSEDCL fault suspected.', post_count: 11, severity_avg: 3.1, status: 'open', lng: 73.9245, lat: 18.5882, source_platforms: ['reddit'] },
+  { id: 'b04', ward_id: '3',  issue_tag: 'traffic',     centroid_text: 'Lohegaon Chowk signal timing misaligned with airport-road traffic — airline crew report 25-min queues.', post_count: 16, severity_avg: 3.4, status: 'open', lng: 73.9188, lat: 18.5802, source_platforms: ['instagram', 'twitter'] },
 
-  // Kharadi — Wagholi belt
-  { id: 'a04', ward_id: '15', issue_tag: 'traffic',     centroid_text: 'Kharadi bypass merge near EON IT Park causing 40-min delays at shift change; flyover work spillover.',  post_count: 24, severity_avg: 4.0, status: 'open', lng: 73.9558, lat: 18.5512, source_platforms: ['instagram', 'reddit'] },
-  { id: 'a05', ward_id: '14', issue_tag: 'electricity', centroid_text: 'Kharadi Phase-3 outages reported across three societies — MSEDCL transformer load issue mentioned.',     post_count: 12, severity_avg: 3.3, status: 'open', lng: 73.9645, lat: 18.5578, source_platforms: ['reddit'] },
+  // East Pune — Kharadi / Wagholi / Mundhwa
+  { id: 'b05', ward_id: '4',  issue_tag: 'traffic',     centroid_text: 'East Kharadi bypass merge near EON IT Park — 40-min delays at shift change, flyover construction spillover.',  post_count: 29, severity_avg: 4.1, status: 'open', lng: 73.9568, lat: 18.5618, source_platforms: ['instagram', 'reddit', 'twitter'] },
+  { id: 'b06', ward_id: '5',  issue_tag: 'water',       centroid_text: 'West Kharadi societies on PMC tail-end supply — pressure drops to zero by 8am on weekdays.',                   post_count: 12, severity_avg: 3.2, status: 'open', lng: 73.9412, lat: 18.5488, source_platforms: ['reddit'] },
+  { id: 'b07', ward_id: '5',  issue_tag: 'electricity', centroid_text: 'Kharadi Phase-3 transformer overload — MSEDCL load-shedding reports across three residential societies.',       post_count: 10, severity_avg: 3.0, status: 'open', lng: 73.9492, lat: 18.5438, source_platforms: ['reddit', 'instagram'] },
+  { id: 'b08', ward_id: '22', issue_tag: 'garbage',     centroid_text: 'Manjari Budruk inner lanes — PMC collection skipping Tuesday route; residents composting on street.',           post_count: 7,  severity_avg: 2.5, status: 'open', lng: 73.9638, lat: 18.5102, source_platforms: ['reddit'] },
+  { id: 'b09', ward_id: '21', issue_tag: 'traffic',     centroid_text: 'Koregaon Park – Mundhwa bridge peak hour: opposite flows competing, no marshalling from signal side.',         post_count: 18, severity_avg: 3.6, status: 'open', lng: 73.9018, lat: 18.5292, source_platforms: ['instagram', 'reddit'] },
 
-  // Viman Nagar — Yerwada
-  { id: 'a06', ward_id: '8',  issue_tag: 'traffic',     centroid_text: 'Viman Nagar Phoenix Marketcity exit clogging Nagar Road on weekends, ambulances rerouted twice in April.', post_count: 21, severity_avg: 3.9, status: 'open', lng: 73.9194, lat: 18.5651, source_platforms: ['instagram', 'twitter'] },
-  { id: 'a07', ward_id: '7',  issue_tag: 'water',       centroid_text: 'Yerwada inner lanes around Bharat-Petrol pump report supply gaps post 6pm; tankers being called daily.',  post_count: 14, severity_avg: 3.4, status: 'open', lng: 73.8918, lat: 18.5495, source_platforms: ['reddit'] },
-  { id: 'a08', ward_id: '7',  issue_tag: 'garbage',     centroid_text: 'Yerwada community-bin overflow at three points — RWAs request twice-daily lift schedule.',                post_count: 8,  severity_avg: 2.9, status: 'open', lng: 73.8856, lat: 18.5462, source_platforms: ['reddit'] },
+  // Airport / Viman Nagar / Kalyani Nagar
+  { id: 'b10', ward_id: '6',  issue_tag: 'traffic',     centroid_text: 'Ramwadi–Viman Nagar corridor peak clog — Phoenix mall exit traffic backing onto Nagar Road.',                  post_count: 23, severity_avg: 3.9, status: 'open', lng: 73.9168, lat: 18.5502, source_platforms: ['instagram', 'twitter'] },
+  { id: 'b11', ward_id: '6',  issue_tag: 'water',       centroid_text: 'Kalyani Nagar Lane 7 — building-level supply complaints, possibly old pipeline corrosion at junction.',         post_count: 10, severity_avg: 3.1, status: 'open', lng: 73.9055, lat: 18.5468, source_platforms: ['reddit', 'instagram'] },
+  { id: 'b12', ward_id: '7',  issue_tag: 'water',       centroid_text: 'Yerwada inner lanes around Bharat-Petrol pump — supply gaps post 6pm, tankers called daily by three societies.', post_count: 14, severity_avg: 3.4, status: 'open', lng: 73.8918, lat: 18.5495, source_platforms: ['reddit'] },
+  { id: 'b13', ward_id: '7',  issue_tag: 'garbage',     centroid_text: 'Yerwada community-bin overflow at three junctions — RWAs requesting twice-daily PMC lift schedule.',             post_count: 8,  severity_avg: 2.9, status: 'open', lng: 73.8842, lat: 18.5448, source_platforms: ['reddit'] },
+  { id: 'b14', ward_id: '8',  issue_tag: 'garbage',     centroid_text: 'Lohegaon market-edge informal dumping — daily pickup misses, vendors cite no coordination after 7pm.',           post_count: 7,  severity_avg: 2.6, status: 'open', lng: 73.9312, lat: 18.5752, source_platforms: ['reddit'] },
 
-  // Koregaon Park — Camp
-  { id: 'a09', ward_id: '6',  issue_tag: 'electricity', centroid_text: 'Koregaon Park Lane 7 streetlights out for 4+ days; pedestrian-safety complaints from late commuters.',    post_count: 11, severity_avg: 3.1, status: 'open', lng: 73.8946, lat: 18.5365, source_platforms: ['instagram'] },
-  { id: 'a10', ward_id: '5',  issue_tag: 'traffic',     centroid_text: 'M.G. Road Camp — illegal parking + vendor encroachment narrowing the carriageway near East Street.',     post_count: 17, severity_avg: 3.5, status: 'open', lng: 73.8788, lat: 18.5176, source_platforms: ['reddit', 'instagram'] },
-  { id: 'a11', ward_id: '4',  issue_tag: 'other',       centroid_text: 'Camp area stray-dog packs near schools — parents request joint PMC + BSA sterilisation drive.',           post_count: 6,  severity_avg: 2.4, status: 'open', lng: 73.8842, lat: 18.5118, source_platforms: ['reddit'] },
+  // Shivajinagar / Deccan / FC Road
+  { id: 'b15', ward_id: '9',  issue_tag: 'traffic',     centroid_text: 'Shivajinagar station circle — auto-rick stand encroachment halving carriageway during peak commute.',           post_count: 21, severity_avg: 3.8, status: 'open', lng: 73.8532, lat: 18.5392, source_platforms: ['instagram', 'reddit', 'twitter'] },
+  { id: 'b16', ward_id: '10', issue_tag: 'electricity', centroid_text: 'Sangamwadi MSEDCL pole lean flagged — storm risk identified by residents after May rains.',                     post_count: 6,  severity_avg: 2.3, status: 'open', lng: 73.8618, lat: 18.5368, source_platforms: ['reddit'] },
+  { id: 'b17', ward_id: '11', issue_tag: 'garbage',     centroid_text: 'Bopodi Gaothan market overfill — SWM truck route does not cover Nal Stop back lanes.',                         post_count: 9,  severity_avg: 2.7, status: 'open', lng: 73.8342, lat: 18.5562, source_platforms: ['reddit'] },
+  { id: 'b18', ward_id: '16', issue_tag: 'traffic',     centroid_text: 'FC Road–Garware College choke point — student pedestrian spillover blocking MSRTC bus lane in morning.',        post_count: 17, severity_avg: 3.5, status: 'open', lng: 73.8352, lat: 18.5098, source_platforms: ['instagram', 'reddit'] },
 
-  // Kothrud — Karve Nagar — Erandwane
-  { id: 'a12', ward_id: '34', issue_tag: 'traffic',     centroid_text: 'Kothrud Depot junction — bus-rapid lane crossover causes peak gridlock toward Paud Road.',                post_count: 19, severity_avg: 3.7, status: 'open', lng: 73.8083, lat: 18.5072, source_platforms: ['instagram', 'reddit'] },
-  { id: 'a13', ward_id: '35', issue_tag: 'water',       centroid_text: 'Karve Nagar high-rise residents flag low pressure on upper floors — common in summer load months.',       post_count: 10, severity_avg: 3.0, status: 'open', lng: 73.8218, lat: 18.4988, source_platforms: ['reddit'] },
-  { id: 'a14', ward_id: '34', issue_tag: 'garbage',     centroid_text: 'Erandwane back-lane bins overflow weekends — vendor-cluster waste not on PMC route map.',                  post_count: 7,  severity_avg: 2.6, status: 'open', lng: 73.8302, lat: 18.5132, source_platforms: ['reddit'] },
+  // Koregaon Park / Camp / Boat Club
+  { id: 'b19', ward_id: '17', issue_tag: 'electricity', centroid_text: 'Shaniwar Peth heritage lanes — aged transformer, outage clusters every 3rd week through April 2026.',          post_count: 9,  severity_avg: 2.9, status: 'open', lng: 73.8468, lat: 18.5128, source_platforms: ['reddit'] },
+  { id: 'b20', ward_id: '19', issue_tag: 'other',       centroid_text: 'CSMS area stray-dog packs near three schools — parents submit joint petition to PMC and BSA.',                  post_count: 7,  severity_avg: 2.4, status: 'open', lng: 73.8638, lat: 18.5248, source_platforms: ['reddit'] },
+  { id: 'b21', ward_id: '20', issue_tag: 'traffic',     centroid_text: 'Pune station forecourt — auto and cab encroachment creating a permanent bottleneck at north gate.',              post_count: 25, severity_avg: 4.0, status: 'open', lng: 73.8742, lat: 18.5242, source_platforms: ['instagram', 'twitter', 'reddit'] },
 
-  // Aundh — Baner — Pashan
-  { id: 'a15', ward_id: '37', issue_tag: 'traffic',     centroid_text: 'Aundh-Baner link road — heavy vehicle bypass clogging the Sakal Nagar entry; school-pickup hazard.',     post_count: 22, severity_avg: 3.8, status: 'open', lng: 73.8082, lat: 18.5612, source_platforms: ['instagram', 'twitter'] },
-  { id: 'a16', ward_id: '37', issue_tag: 'electricity', centroid_text: 'Baner Pashan link load-shedding episodes — twice in April, transformer-protection trips suspected.',     post_count: 13, severity_avg: 3.2, status: 'open', lng: 73.7872, lat: 18.5482, source_platforms: ['reddit'] },
-  { id: 'a17', ward_id: '38', issue_tag: 'water',       centroid_text: 'Pashan-Sus Road residents — irregular tanker delivery for societies on PMC waiting list.',                post_count: 8,  severity_avg: 2.7, status: 'open', lng: 73.7775, lat: 18.5408, source_platforms: ['reddit'] },
+  // Hadapsar / Magarpatta / Amanora
+  { id: 'b22', ward_id: '23', issue_tag: 'traffic',     centroid_text: 'Magarpatta City gate bottleneck during evening peak — office + Hadapsar shoppers compounding congestion.',     post_count: 18, severity_avg: 3.6, status: 'open', lng: 73.9228, lat: 18.5075, source_platforms: ['reddit', 'instagram'] },
+  { id: 'b23', ward_id: '24', issue_tag: 'water',       centroid_text: 'Magarpatta-Sadhana area societies flag erratic supply pressure on weekends; lift-pump failure reported.',      post_count: 9,  severity_avg: 2.8, status: 'open', lng: 73.9312, lat: 18.5122, source_platforms: ['reddit'] },
+  { id: 'b24', ward_id: '25', issue_tag: 'garbage',     centroid_text: 'Hadapsar Gaothan inner lanes — irregular wet-waste pickup, three overfill sites flagged this fortnight.',      post_count: 7,  severity_avg: 2.5, status: 'open', lng: 73.9385, lat: 18.4988, source_platforms: ['reddit'] },
+  { id: 'b25', ward_id: '44', issue_tag: 'water',       centroid_text: 'Fursungi tail-end supply — only 20-minute morning supply, residents collecting manually from tanker.',          post_count: 13, severity_avg: 3.4, status: 'open', lng: 73.9372, lat: 18.4818, source_platforms: ['reddit', 'instagram'] },
+  { id: 'b26', ward_id: '45', issue_tag: 'garbage',     centroid_text: 'Fursungi-Guni belt — recently added layouts have no PMC collection route, residents burning waste.',           post_count: 10, severity_avg: 3.1, status: 'open', lng: 73.9558, lat: 18.4782, source_platforms: ['reddit'] },
 
-  // Hinjawadi — Wakad — Pimple Saudagar (PCMC fringe but visible on map)
-  { id: 'a18', ward_id: '54', issue_tag: 'traffic',     centroid_text: 'Hinjawadi Phase-1 entry queue at IT-park shift change — 50-min commutes reported on Monday peak.',      post_count: 28, severity_avg: 4.1, status: 'open', lng: 73.7252, lat: 18.5912, source_platforms: ['instagram', 'reddit', 'twitter'] },
-  { id: 'a19', ward_id: '55', issue_tag: 'water',       centroid_text: 'Wakad PCMC supply timing variance — RWAs publishing crowdsourced timing sheets.',                          post_count: 11, severity_avg: 3.0, status: 'open', lng: 73.7642, lat: 18.5985, source_platforms: ['reddit'] },
-  { id: 'a20', ward_id: '53', issue_tag: 'garbage',     centroid_text: 'Pimple Saudagar Rahatani-side lanes — wet-waste pickup skipped repeatedly during festival week.',          post_count: 9,  severity_avg: 2.8, status: 'open', lng: 73.8035, lat: 18.6005, source_platforms: ['reddit'] },
+  // South Pune — Kondhwa / Wanowrie / Salunke Vihar belt
+  { id: 'b27', ward_id: '41', issue_tag: 'water',       centroid_text: 'Kondhwa Khurd Mithanagar supply timing erratic — RWA-led documentation effort under way.',                    post_count: 13, severity_avg: 3.3, status: 'open', lng: 73.8762, lat: 18.4712, source_platforms: ['reddit', 'instagram'] },
+  { id: 'b28', ward_id: '42', issue_tag: 'traffic',     centroid_text: 'Ramtekdi–Hadapsar link: heavy-vehicle night movement disturbing residents, no enforcement after 10pm.',        post_count: 11, severity_avg: 3.0, status: 'open', lng: 73.9128, lat: 18.4785, source_platforms: ['reddit'] },
+  { id: 'b29', ward_id: '48', issue_tag: 'electricity', centroid_text: 'Upper Indiranagar feeder issue — 3 consecutive Monday outages, MSEDCL citing cable age.',                     post_count: 12, severity_avg: 3.2, status: 'open', lng: 73.8712, lat: 18.4645, source_platforms: ['reddit', 'instagram'] },
+  { id: 'b30', ward_id: '49', issue_tag: 'garbage',     centroid_text: 'Balajinagar–Shankar Math area bins overflow long weekends — PMC holiday-schedule gap.',                        post_count: 8,  severity_avg: 2.7, status: 'open', lng: 73.8618, lat: 18.4692, source_platforms: ['reddit'] },
+  { id: 'b31', ward_id: '50', issue_tag: 'water',       centroid_text: 'Sahakarnagar–Taljai supply variance — morning pressure normal but zero by 10am on hot days.',                  post_count: 11, severity_avg: 3.0, status: 'open', lng: 73.8488, lat: 18.4812, source_platforms: ['reddit'] },
 
-  // Sinhagad Road — Dhayari — Warje
-  { id: 'a21', ward_id: '40', issue_tag: 'traffic',     centroid_text: 'Sinhagad Road school-zone choke at 8:30am — auto-rickshaws double-parked at three spots.',                post_count: 14, severity_avg: 3.3, status: 'open', lng: 73.8202, lat: 18.4732, source_platforms: ['instagram', 'reddit'] },
-  { id: 'a22', ward_id: '39', issue_tag: 'water',       centroid_text: 'Warje-Malwadi residents on PMC supply tail-end report fluctuating pressure, especially weekends.',         post_count: 9,  severity_avg: 2.9, status: 'open', lng: 73.7918, lat: 18.4795, source_platforms: ['reddit'] },
-  { id: 'a23', ward_id: '40', issue_tag: 'electricity', centroid_text: 'Dhayari main-road streetlights on a 3-day rotation cycle out — residents flag night-time risk to women.',  post_count: 12, severity_avg: 3.4, status: 'open', lng: 73.8088, lat: 18.4612, source_platforms: ['instagram'] },
+  // Katraj / Bibwewadi / Dhankawadi
+  { id: 'b32', ward_id: '58', issue_tag: 'traffic',     centroid_text: 'Katraj Chowk peak congestion — Pune-Satara highway merge vs city traffic, ambulance corridor disruption.',    post_count: 26, severity_avg: 4.0, status: 'open', lng: 73.8578, lat: 18.4428, source_platforms: ['instagram', 'reddit', 'twitter'] },
+  { id: 'b33', ward_id: '58', issue_tag: 'garbage',     centroid_text: 'Katraj-Gokulnagar back lanes — chronic open dumping near BRT corridor, flagged three times in 2026.',         post_count: 10, severity_avg: 3.0, status: 'open', lng: 73.8638, lat: 18.4368, source_platforms: ['reddit'] },
+  { id: 'b34', ward_id: '57', issue_tag: 'water',       centroid_text: 'Sukhsagarnagar supply disruption — pipeline repair left without restoration for 9 days and counting.',         post_count: 16, severity_avg: 3.7, status: 'open', lng: 73.8652, lat: 18.4518, source_platforms: ['reddit', 'instagram'] },
+  { id: 'b35', ward_id: '55', issue_tag: 'electricity', centroid_text: 'Dhankawadi–Ambegaon stretch: three consecutive streetlight failures, new RWAs not on PMC maintenance list.',  post_count: 9,  severity_avg: 2.8, status: 'open', lng: 73.8408, lat: 18.4618, source_platforms: ['reddit'] },
+  { id: 'b36', ward_id: '56', issue_tag: 'traffic',     centroid_text: 'Bharati Vidyapeeth junction school-rush choke — no signal, four-way free-for-all every morning.',             post_count: 19, severity_avg: 3.7, status: 'open', lng: 73.8528, lat: 18.4588, source_platforms: ['instagram', 'reddit'] },
+  { id: 'b37', ward_id: '54', issue_tag: 'garbage',     centroid_text: 'Dhayari Gaothan market strip — vendors spilling organic waste after 8pm, no night-time pickup slot.',        post_count: 8,  severity_avg: 2.6, status: 'open', lng: 73.8292, lat: 18.4378, source_platforms: ['reddit'] },
+  { id: 'b38', ward_id: '53', issue_tag: 'water',       centroid_text: 'Narhe–Khadakwasla new layouts on tail-end supply; 0 pressure mornings reported by 4 new RWAs.',              post_count: 12, severity_avg: 3.2, status: 'open', lng: 73.8008, lat: 18.4372, source_platforms: ['reddit'] },
 
-  // Bibwewadi — Katraj — Kondhwa Khurd
-  { id: 'a24', ward_id: '42', issue_tag: 'traffic',     centroid_text: 'Katraj Chowk peak-hour congestion — Pune-Satara highway merge vs city traffic, ambulance corridor issue.', post_count: 26, severity_avg: 4.0, status: 'open', lng: 73.8568, lat: 18.4488, source_platforms: ['instagram', 'reddit', 'twitter'] },
-  { id: 'a25', ward_id: '42', issue_tag: 'garbage',     centroid_text: 'Bibwewadi Diamond Park lanes — chronic dump near the BRT corridor, residents flagged March 2026.',         post_count: 10, severity_avg: 3.0, status: 'open', lng: 73.8628, lat: 18.4715, source_platforms: ['reddit'] },
-  { id: 'a26', ward_id: '41', issue_tag: 'water',       centroid_text: 'Kondhwa Khurd Mithanagar supply timing erratic — RWA-led documentation effort under way.',                  post_count: 13, severity_avg: 3.3, status: 'open', lng: 73.8762, lat: 18.4642, source_platforms: ['reddit', 'instagram'] },
+  // West Pune — Warje / Sinhagad / Karvenagar
+  { id: 'b39', ward_id: '34', issue_tag: 'traffic',     centroid_text: 'Warje–Kondhave Dhavde junction: bus-rapid lane crossover causes peak gridlock toward Sinhagad Road.',         post_count: 16, severity_avg: 3.4, status: 'open', lng: 73.7822, lat: 18.4712, source_platforms: ['instagram', 'reddit'] },
+  { id: 'b40', ward_id: '35', issue_tag: 'water',       centroid_text: 'Ramnagar–Uttamnagar high-rise residents flag low water pressure on upper floors in summer.',                   post_count: 10, severity_avg: 3.0, status: 'open', lng: 73.7918, lat: 18.4738, source_platforms: ['reddit'] },
+  { id: 'b41', ward_id: '36', issue_tag: 'electricity', centroid_text: 'Karvenagar heritage-area transformer aged — outage clusters reported every third week through April.',         post_count: 9,  severity_avg: 2.9, status: 'open', lng: 73.8162, lat: 18.4858, source_platforms: ['reddit'] },
+  { id: 'b42', ward_id: '37', issue_tag: 'garbage',     centroid_text: 'Janata Vasahat–Dattawadi vendor-cluster waste not on PMC route map; bins overflow by Tuesday midweek.',       post_count: 7,  severity_avg: 2.5, status: 'open', lng: 73.8378, lat: 18.4962, source_platforms: ['reddit'] },
+  { id: 'b43', ward_id: '38', issue_tag: 'traffic',     centroid_text: 'Shivdarshan–Padmavati school zone choke at 8:30am — auto-rickshaws double-parked at three spots.',           post_count: 14, severity_avg: 3.3, status: 'open', lng: 73.8522, lat: 18.4938, source_platforms: ['instagram', 'reddit'] },
+  { id: 'b44', ward_id: '39', issue_tag: 'water',       centroid_text: 'Market Yard–Bibwewadi tail-end residents report fluctuating pressure on weekends.',                           post_count: 9,  severity_avg: 2.9, status: 'open', lng: 73.8638, lat: 18.4882, source_platforms: ['reddit'] },
+  { id: 'b45', ward_id: '40', issue_tag: 'electricity', centroid_text: 'Bibwewadi–Gangadham streetlights on rotation cycle out — residents flag night-time safety risk.',             post_count: 12, severity_avg: 3.4, status: 'open', lng: 73.8758, lat: 18.4832, source_platforms: ['instagram'] },
 
-  // Pisoli — Undri — NIBM extension
-  { id: 'a27', ward_id: '46', issue_tag: 'electricity', centroid_text: 'Undri-Pisoli stretch streetlight gaps at three intersections — newer layouts not yet on PMC schedule.',   post_count: 8,  severity_avg: 2.7, status: 'open', lng: 73.9105, lat: 18.4368, source_platforms: ['reddit'] },
-  { id: 'a28', ward_id: '46', issue_tag: 'other',       centroid_text: 'Undri school-zone safety — illegal U-turns near new schools, flagged by parents three times this month.',  post_count: 6,  severity_avg: 2.4, status: 'open', lng: 73.9182, lat: 18.4422, source_platforms: ['instagram'] },
+  // Kothrud / Erandwane / Bavdhan
+  { id: 'b46', ward_id: '31', issue_tag: 'traffic',     centroid_text: 'Kothrud Depot junction — bus-rapid lane crossover causes peak gridlock toward Paud Road.',                    post_count: 19, severity_avg: 3.7, status: 'open', lng: 73.8082, lat: 18.5042, source_platforms: ['instagram', 'reddit'] },
+  { id: 'b47', ward_id: '30', issue_tag: 'water',       centroid_text: 'Jai Bhavaninagar–Kelewadi — water supply schedule mismatch, residents getting supply at 4am.',               post_count: 10, severity_avg: 3.0, status: 'open', lng: 73.8162, lat: 18.5168, source_platforms: ['reddit'] },
+  { id: 'b48', ward_id: '32', issue_tag: 'garbage',     centroid_text: 'Bhusari Colony–Bavdhan Khurd back lanes — informal dumping point near school compound.',                      post_count: 8,  severity_avg: 2.6, status: 'open', lng: 73.7918, lat: 18.5102, source_platforms: ['reddit'] },
+  { id: 'b49', ward_id: '33', issue_tag: 'electricity', centroid_text: 'Ideal Colony–Mahatma Society feeder: two Thursday outages in April, MSEDCL yet to acknowledge.',             post_count: 7,  severity_avg: 2.5, status: 'open', lng: 73.7978, lat: 18.5022, source_platforms: ['reddit'] },
+  { id: 'b50', ward_id: '51', issue_tag: 'water',       centroid_text: 'Vadgaon Budruk–Manikbaug summer shortage — borewell water turning saline, PMC tankers insufficient.',        post_count: 14, severity_avg: 3.5, status: 'open', lng: 73.8322, lat: 18.4738, source_platforms: ['reddit', 'instagram'] },
+  { id: 'b51', ward_id: '52', issue_tag: 'garbage',     centroid_text: 'Nanded City–Sun City gated community: contractor changed mid-season, pickup gaps of 3+ days.',               post_count: 9,  severity_avg: 2.8, status: 'open', lng: 73.8188, lat: 18.4738, source_platforms: ['reddit'] },
 
-  // Sopan Baug — Salunke Vihar overflow
-  { id: 'a29', ward_id: '15', issue_tag: 'traffic',     centroid_text: 'Sopan Baug — Hadapsar West merge, school-bus + corporate-shuttle clash at 8:45–9:15am.',                  post_count: 15, severity_avg: 3.2, status: 'open', lng: 73.9028, lat: 18.5202, source_platforms: ['reddit'] },
+  // North-West — Aundh / Baner / Pashan / Sus
+  { id: 'b52', ward_id: '12', issue_tag: 'traffic',     centroid_text: 'Aundh–Baner link road heavy vehicle bypass clogging Sakal Nagar entry — school-pickup hour hazard.',         post_count: 22, severity_avg: 3.8, status: 'open', lng: 73.8082, lat: 18.5588, source_platforms: ['instagram', 'twitter'] },
+  { id: 'b53', ward_id: '12', issue_tag: 'electricity', centroid_text: 'Baner–Pashan link load-shedding twice in April — transformer-protection trips suspected.',                    post_count: 13, severity_avg: 3.2, status: 'open', lng: 73.7898, lat: 18.5552, source_platforms: ['reddit'] },
+  { id: 'b54', ward_id: '13', issue_tag: 'water',       centroid_text: 'Baner–Sus fringe societies on PMC waiting list — irregular tanker delivery, no fixed schedule.',              post_count: 8,  severity_avg: 2.7, status: 'open', lng: 73.7712, lat: 18.5598, source_platforms: ['reddit'] },
+  { id: 'b55', ward_id: '14', issue_tag: 'garbage',     centroid_text: 'Pashan–Bawdhan layouts: SWM truck route misses newly occupied towers, residents citing no PMC coverage.',    post_count: 7,  severity_avg: 2.5, status: 'open', lng: 73.7798, lat: 18.5262, source_platforms: ['reddit'] },
+  { id: 'b56', ward_id: '15', issue_tag: 'traffic',     centroid_text: 'Gokhalenagar–Vadarwadi link to Mumbai highway — peak-hour merge with construction vehicles causing chaos.',  post_count: 18, severity_avg: 3.6, status: 'open', lng: 73.8238, lat: 18.5308, source_platforms: ['instagram', 'reddit'] },
+  { id: 'b57', ward_id: '11', issue_tag: 'water',       centroid_text: 'Bopodi–Savitribai Phule University area: summer supply pressure drop — high-density buildings affected.',    post_count: 11, severity_avg: 3.1, status: 'open', lng: 73.8312, lat: 18.5542, source_platforms: ['reddit'] },
 
-  // Kalyani Nagar — Ramwadi
-  { id: 'a30', ward_id: '8',  issue_tag: 'water',       centroid_text: 'Kalyani Nagar Lane 7 — building-level supply complaints, possibly old pipeline corrosion at junction.',   post_count: 10, severity_avg: 3.1, status: 'open', lng: 73.9055, lat: 18.5489, source_platforms: ['reddit', 'instagram'] },
-
-  // Karve Nagar — Erandwane fringe
-  { id: 'a31', ward_id: '36', issue_tag: 'electricity', centroid_text: 'Erandwane heritage-area transformer aged — outage clusters reported every 3rd week through April.',       post_count: 9,  severity_avg: 2.9, status: 'open', lng: 73.8348, lat: 18.5052, source_platforms: ['reddit'] },
-
-  // Lohegaon — airport edge
-  { id: 'a32', ward_id: '12', issue_tag: 'garbage',     centroid_text: 'Lohegaon market-edge dumping — daily pickup misses, vendors cite no SWM coordination after 7pm.',         post_count: 7,  severity_avg: 2.6, status: 'open', lng: 73.9492, lat: 18.5825, source_platforms: ['reddit'] },
+  // Pisoli / Undri — NIBM extension
+  { id: 'b58', ward_id: '46', issue_tag: 'electricity', centroid_text: 'Undri–Pisoli stretch streetlight gaps at three intersections — newer layouts not yet on PMC schedule.',      post_count: 8,  severity_avg: 2.7, status: 'open', lng: 73.9105, lat: 18.4368, source_platforms: ['reddit'] },
+  { id: 'b59', ward_id: '46', issue_tag: 'other',       centroid_text: 'Undri school-zone safety — illegal U-turns near new schools, flagged by parents three times this month.',    post_count: 6,  severity_avg: 2.4, status: 'open', lng: 73.9182, lat: 18.4422, source_platforms: ['instagram'] },
 ]
 
 async function fetchFromSupabase() {

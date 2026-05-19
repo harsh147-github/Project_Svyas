@@ -28,15 +28,15 @@ export function WardMap() {
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: BASEMAP_STYLE,
-      // Centre on actual pilot ward bbox (NIBM + Mohammadwadi + Kondhwa belt)
-      center: [73.937, 18.466],
-      zoom: 13,
+      // Centre on all of Pune so the full city + all wards are visible at startup
+      center: [73.856, 18.524],
+      zoom: 11.8,
       // Lock to greater Pune so we only fetch Pune-area tiles, not the world
       maxBounds: [
-        [73.74, 18.38], // SW — Khadakwasla / Sinhgad foothills
-        [74.05, 18.65], // NE — past Wagholi / Lohegaon
+        [73.68, 18.35], // SW — Hinjawadi / Mulshi foothills
+        [74.10, 18.68], // NE — past Wagholi / Alandi
       ],
-      minZoom: 11.5,
+      minZoom: 11,
       maxZoom: 17,
       attributionControl: false,
     })
@@ -95,7 +95,7 @@ export function WardMap() {
             'case',
             ['boolean', ['feature-state', 'selected'], false], 0.85,
             ['boolean', ['feature-state', 'hover'], false],    0.55,
-            0.28,
+            0.42,
           ],
         },
       })
