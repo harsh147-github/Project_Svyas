@@ -10,6 +10,12 @@ const WardMap = dynamic(
   { ssr: false, loading: () => <div className="w-full h-full bg-paper" /> }
 )
 
+// Onboarding hint card — sessionStorage so no server side needed
+const MapHint = dynamic(
+  () => import('@/components/map/MapHint').then((m) => m.MapHint),
+  { ssr: false }
+)
+
 export const metadata: Metadata = {
   title: 'Sushaasan — Civic Intelligence for Pune',
   description: 'A Government OS. AI turns public chatter into structured, budgeted, actionable governance briefs — in partnership with PMC and citizens.',
@@ -56,12 +62,15 @@ export default function HomePage() {
       {/* Citizen + Government side panels */}
       <SidePanels />
 
+      {/* Onboarding hint card — top-center, dismisses on first ward interaction */}
+      <MapHint />
+
       {/* Legend */}
       <LegendBar />
 
-      {/* Bottom CTAs — solid backdrop so map content never bleeds through */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40
-                      flex flex-col items-center gap-4
+      {/* Bottom CTAs — desktop only (mobile uses MobilePanel from SidePanels) */}
+      <div className="hidden md:flex absolute bottom-6 left-1/2 -translate-x-1/2 z-40
+                      flex-col items-center gap-4
                       px-6 py-4 rounded-3xl
                       bg-white/85 backdrop-blur-md border border-ink/8
                       shadow-[0_12px_40px_rgba(10,31,58,0.10)]">
@@ -117,6 +126,31 @@ export default function HomePage() {
           </a>
         </div>
 
+      </div>
+
+      {/* Mobile CTA strip — sits above the MobilePanel bottom sheet */}
+      <div className="md:hidden absolute bottom-[9.5rem] left-1/2 -translate-x-1/2 z-50
+                      flex items-center gap-2 px-3 py-2 rounded-2xl
+                      bg-white/85 backdrop-blur-md border border-ink/8
+                      shadow-[0_8px_24px_rgba(10,31,58,0.10)]">
+        <a
+          href="/dashboard/nibm"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-full
+                     bg-saffron text-white font-semibold text-[11px] tracking-wide
+                     shadow-[0_4px_14px_rgba(255,153,51,0.40)]
+                     active:scale-95 transition-all duration-150"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse flex-shrink-0" />
+          NIBM AI Brief
+        </a>
+        <a
+          href="/dashboard"
+          className="px-4 py-2 rounded-full text-[11px] font-medium text-ink/70
+                     bg-white border border-ink/10 shadow-sm
+                     active:scale-95 transition-all duration-150"
+        >
+          Dashboard
+        </a>
       </div>
 
     </main>
