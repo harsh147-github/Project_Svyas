@@ -2,22 +2,10 @@
 
 /**
  * SidePanels — left (citizen) + right (government) analysis panels
- * that update as the user hovers wards on the map.
+ * that update as the user hovers / taps wards on the map.
  *
- * Behaviour:
- *  - On `sushaasan:ward-hovered`  → swap to that ward (if no current selection)
- *  - On `sushaasan:ward-unhovered` → revert to selection or empty state
- *  - On `sushaasan:ward-selected` → pin to that ward (sticky over hover)
- *  - On `sushaasan:ward-cleared`   → return to empty state
- *
- * Data flow:
- *  - `/api/ward/all` is fetched once on mount → indexed by ward_id for instant
- *    citizen / gov text on hover (zero-latency display).
- *  - `/api/ward/[wardnum]` is fetched per-ward when active → provides the full
- *    `solutions[]` with engineered steps for the government panel.
- *
- * Pilot wards (with seeded data) light up fully. Context wards show a graceful
- * 'no live signal yet' state with the same shell so the layout doesn't lurch.
+ * Desktop:  two fixed side panels (hidden on mobile via md:flex)
+ * Mobile:   MobilePanel — a bottom sheet anchored above the bottom CTA bar
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -98,11 +86,12 @@ const ISSUE_LABEL: Record<string, string> = {
   other: 'Other',
 }
 
-const PLATFORM_ICON: Record<string, string> = {
-  instagram: '📷',
-  reddit: '💬',
-  twitter: '𝕏',
-  facebook: '📘',
+const ISSUE_EMOJI: Record<string, string> = {
+  traffic: '🚗',
+  water: '💧',
+  electricity: '⚡',
+  garbage: '🗑️',
+  other: '📌',
 }
 
 function formatINR(v: number) {
@@ -113,9 +102,7 @@ function formatINR(v: number) {
 }
 
 function severityBar(value: number) {
-  // 0..5 → 0..100 percent
-  const pct = Math.max(0, Math.min(100, (value / 5) * 100))
-  return pct
+  return Math.max(0, Math.min(100, (value / 5) * 100))
 }
 
 // ─── Hook: shared active ward + cached data ───────────────────────────────
@@ -125,28 +112,27 @@ function useActiveWard() {
   const [selected, setSelected] = useState<WardRef>(null)
 
   useEffect(() => {
-    const onHover = (e: Event) => setHovered((e as CustomEvent).detail as WardRef)
+    const onHover   = (e: Event) => setHovered((e as CustomEvent).detail as WardRef)
     const onUnhover = () => setHovered(null)
-    const onSelect = (e: Event) => setSelected((e as CustomEvent).detail as WardRef)
-    const onClear = () => setSelected(null)
-    window.addEventListener('sushaasan:ward-hovered', onHover)
+    const onSelect  = (e: Event) => setSelected((e as CustomEvent).detail as WardRef)
+    const onClear   = () => setSelected(null)
+    window.addEventListener('sushaasan:ward-hovered',   onHover)
     window.addEventListener('sushaasan:ward-unhovered', onUnhover)
-    window.addEventListener('sushaasan:ward-selected', onSelect)
-    window.addEventListener('sushaasan:ward-cleared', onClear)
+    window.addEventListener('sushaasan:ward-selected',  onSelect)
+    window.addEventListener('sushaasan:ward-cleared',   onClear)
     return () => {
-      window.removeEventListener('sushaasan:ward-hovered', onHover)
+      window.removeEventListener('sushaasan:ward-hovered',   onHover)
       window.removeEventListener('sushaasan:ward-unhovered', onUnhover)
-      window.removeEventListener('sushaasan:ward-selected', onSelect)
-      window.removeEventListener('sushaasan:ward-cleared', onClear)
+      window.removeEventListener('sushaasan:ward-selected',  onSelect)
+      window.removeEventListener('sushaasan:ward-cleared',   onClear)
     }
   }, [])
 
-  // Selected wins over hovered. If nothing selected, hover drives.
   const active = selected ?? hovered
   return { active, hasSelection: !!selected }
 }
 
-// Cache for /api/ward/all — indexed by ward_id (string)
+// Cache for /api/ward/all
 type AllCache = {
   byWardId: Map<string, Cluster[]>
   totalPosts: number
@@ -184,7 +170,6 @@ function useAllClustersIndex() {
   return cache
 }
 
-// Per-ward full fetch (with cluster + solutions) — cached in module scope
 const wardFullCache = new Map<string, Promise<WardFull | null>>()
 function fetchWardFull(wardnum: string | number): Promise<WardFull | null> {
   const key = String(wardnum)
@@ -210,7 +195,7 @@ function useWardFull(wardnum: string | number | undefined) {
   return data
 }
 
-// ─── Citizen Panel (LEFT) ─────────────────────────────────────────────────
+// ─── Citizen Panel (LEFT — desktop only) ─────────────────────────────────
 
 export function CitizenPanel() {
   const { active } = useActiveWard()
@@ -257,31 +242,87 @@ export function CitizenPanel() {
 
 function CitizenEmpty({ totalPosts, totalSources }: { totalPosts: number; totalSources: number }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div>
         <div className="font-serif text-xl font-semibold text-ink leading-tight">
-          What is Pune saying about your ward?
+          What&apos;s happening in your Pune ward?
         </div>
         <p className="text-[12px] leading-relaxed text-ink-2 mt-2">
-          Sushaasan listens to public conversations on Twitter, Reddit, Instagram and
-          Facebook — and turns them into structured civic intelligence.
+          Sushaasan reads public posts from Twitter, Reddit, Instagram and Facebook —
+          and pins every civic problem to the exact ward it happened in.
         </p>
       </div>
-      <div className="space-y-2 pt-2 border-t border-ink/8">
+
+      {/* How to use */}
+      <div className="pt-3 border-t border-ink/8 space-y-2">
         <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">
-          This week
+          How to use this map
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Stat label="Reports synthesized" value={totalPosts > 0 ? totalPosts.toLocaleString('en-IN') : '—'} />
-          <Stat label="Sources" value={totalSources > 0 ? String(totalSources) : '—'} />
+        <ul className="space-y-1.5 text-[11.5px] text-ink-2">
+          <li className="flex items-start gap-2">
+            <span className="text-saffron-dark mt-0.5 flex-shrink-0">→</span>
+            <span>Tap or hover any <strong>coloured dot</strong> to see what citizens are reporting in that area</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-saffron-dark mt-0.5 flex-shrink-0">→</span>
+            <span>Tap a <strong>saffron-shaded ward</strong> to see the AI-generated action brief for that area</span>
+          </li>
+        </ul>
+      </div>
+
+      {/* Dot legend explanation */}
+      <div className="pt-3 border-t border-ink/8 space-y-2">
+        <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">
+          What each dot means
+        </div>
+        <p className="text-[11px] text-ink-3 leading-relaxed">
+          Each dot is a <strong>cluster of real citizen reports</strong> about the same issue in the same area —
+          gathered from social media this week.
+          Bigger dot = more reports.
+        </p>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mt-2">
+          {[
+            { tag: 'traffic',     label: 'Traffic & roads' },
+            { tag: 'water',       label: 'Water supply' },
+            { tag: 'electricity', label: 'Power / lights' },
+            { tag: 'garbage',     label: 'Garbage & drains' },
+          ].map(({ tag, label }) => (
+            <div key={tag} className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: ISSUE_COLOR[tag] }} />
+              <span className="text-[11px] text-ink-2">{label}</span>
+            </div>
+          ))}
         </div>
       </div>
-      <div className="pt-3 border-t border-ink/8">
-        <div className="text-[11px] font-medium text-ink-2 leading-relaxed">
-          ← Hover any ward on the map to see what citizens are reporting and how
-          civic sense closes the loop alongside government action.
+
+      {/* Coverage area */}
+      <div className="pt-3 border-t border-ink/8 space-y-2">
+        <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">
+          Areas covered right now
         </div>
+        <div className="flex flex-wrap gap-1.5">
+          {['NIBM Road', 'Salunke Vihar', 'Kondhwa', 'Wanowrie', 'Mohammadwadi'].map((area) => (
+            <span key={area}
+              className="px-2 py-0.5 rounded-full text-[10px] font-medium
+                         bg-saffron/10 text-saffron-dark border border-saffron/20">
+              {area}
+            </span>
+          ))}
+        </div>
+        <p className="text-[10px] text-ink-3">More areas added every week as citizens post online.</p>
       </div>
+
+      {totalPosts > 0 && (
+        <div className="pt-3 border-t border-ink/8">
+          <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase mb-2">
+            This week
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Stat label="Reports collected" value={totalPosts.toLocaleString('en-IN')} />
+            <Stat label="Sources" value={String(totalSources)} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -294,16 +335,19 @@ function CitizenNoSignal({ name }: { name: string }) {
           {name}
         </div>
         <div className="font-serif text-lg font-semibold text-ink mt-1 leading-tight">
-          No live signal yet for this ward
+          No reports yet for this ward
         </div>
       </div>
       <p className="text-[12px] leading-relaxed text-ink-2">
-        Sushaasan has indexed conversations across the NIBM · Wanowrie · Mohammadwadi
-        pilot zone. This ward is in our context map — coverage expands every week as
-        more citizens discuss issues online.
+        Sushaasan is currently tracking conversations across the NIBM · Wanowrie ·
+        Mohammadwadi belt. This ward is shown for context — coverage expands
+        every week as more citizens post about local issues online.
       </p>
       <div className="pt-2 text-[11px] text-ink-3">
-        Want this ward in the next pilot? <a href="/about" className="text-saffron-dark hover:underline font-medium">Reach out →</a>
+        Want this ward covered sooner?{' '}
+        <a href="/about" className="text-saffron-dark hover:underline font-medium">
+          Reach out →
+        </a>
       </div>
     </div>
   )
@@ -320,11 +364,13 @@ function CitizenContent({
           {name}
         </div>
         <div className="font-serif text-lg font-semibold text-ink mt-1 leading-tight">
-          {clusters.length} live issue{clusters.length === 1 ? '' : 's'} this week
+          {clusters.length} active issue{clusters.length === 1 ? '' : 's'} this week
         </div>
-        <div className="text-[10px] text-ink-3 mt-1">
-          {tier === 'pilot' ? '🟢 Pilot ward · live AI signal' : 'Context ward'}
-        </div>
+        {tier === 'pilot' && (
+          <div className="text-[10px] text-india-green mt-1 font-medium">
+            🟢 Pilot ward · live AI tracking
+          </div>
+        )}
       </div>
 
       {top.map((c) => (
@@ -337,7 +383,7 @@ function CitizenContent({
                 color: ISSUE_COLOR[c.issue_tag] ?? ISSUE_COLOR.other,
               }}
             >
-              {ISSUE_LABEL[c.issue_tag] ?? c.issue_tag}
+              {ISSUE_EMOJI[c.issue_tag] ?? '📌'} {ISSUE_LABEL[c.issue_tag] ?? c.issue_tag}
             </span>
             <span className="text-[10px] font-medium text-ink-3">
               {c.post_count ?? 0} reports
@@ -351,16 +397,11 @@ function CitizenContent({
           ) : null}
 
           {c.problem_simple ? (
-            <p className="text-[12px] leading-relaxed text-ink-2">
-              {c.problem_simple}
-            </p>
+            <p className="text-[12px] leading-relaxed text-ink-2">{c.problem_simple}</p>
           ) : c.centroid_text ? (
-            <p className="text-[12px] leading-relaxed text-ink-2">
-              {c.centroid_text}
-            </p>
+            <p className="text-[12px] leading-relaxed text-ink-2">{c.centroid_text}</p>
           ) : null}
 
-          {/* Severity bar */}
           {c.severity_avg ? (
             <div className="flex items-center gap-2 mt-1.5">
               <div className="flex-1 h-1 rounded-full bg-ink/8 overflow-hidden">
@@ -373,40 +414,39 @@ function CitizenContent({
                 />
               </div>
               <span className="text-[9px] font-semibold text-ink-3 tabular-nums">
-                {c.severity_avg.toFixed(1)}/5
+                Severity {c.severity_avg.toFixed(1)}/5
               </span>
             </div>
           ) : null}
 
-          <CitizenContribution issueTag={c.issue_tag} />
+          <CitizenTip issueTag={c.issue_tag} />
         </article>
       ))}
     </div>
   )
 }
 
-/** The civic-sense branch: never preachy, always practical. */
-function CitizenContribution({ issueTag }: { issueTag: string }) {
+function CitizenTip({ issueTag }: { issueTag: string }) {
   const TIPS: Record<string, { title: string; body: string }> = {
     traffic: {
-      title: 'How citizens close the loop',
-      body: 'Park 5m clear of junctions. Use the lane farthest from the signal until traffic stabilises. If you see ambulances stuck, share location with @PuneTrafficPolice — it routes faster than a complaint.',
+      title: 'What you can do',
+      body: 'Park 5m clear of junctions. If you see an ambulance stuck, share location with @PuneTrafficPolice — it routes faster than a complaint.',
     },
     water: {
-      title: 'How citizens close the loop',
-      body: 'If tanker prices triple overnight in your society, that\'s a cartel signal — flag it to PMC Water Helpline (1800-1030-022). Sushaasan tracks tanker price spikes weekly.',
+      title: 'What you can do',
+      body: 'If tanker prices suddenly spike in your society, flag it to PMC Water Helpline (1800-1030-022). Sushaasan tracks tanker price patterns weekly.',
     },
     electricity: {
-      title: 'How citizens close the loop',
-      body: 'Streetlight outages can be reported via the MSEDCL app with a photo and pole number. Multiple reports in 24 hours move the SLA from 96 hours to 48.',
+      title: 'What you can do',
+      body: 'Report streetlight outages via the MSEDCL app with a photo and pole number. Multiple reports in 24 hours cut the response time from 96h to 48h.',
     },
     garbage: {
-      title: 'How citizens close the loop',
-      body: 'PMC Solid Waste runs separate dry/wet routes. Mixed bags are why pickups skip. Segregating dry from wet at source restores route efficiency within a fortnight.',
+      title: 'What you can do',
+      body: 'PMC runs separate dry/wet pickup routes. Segregating waste at home keeps the schedule on track — mixed bags are the top reason pickups get skipped.',
     },
     other: {
-      title: 'How citizens close the loop',
-      body: 'Reporting through PMC\'s helpline + tagging Sushaasan in posts builds the structured signal that reaches the corporator\'s desk.',
+      title: 'What you can do',
+      body: 'Reporting via PMC\'s helpline and tagging Sushaasan in posts builds the structured signal that reaches the corporator\'s desk.',
     },
   }
   const tip = TIPS[issueTag] ?? TIPS.other
@@ -415,14 +455,12 @@ function CitizenContribution({ issueTag }: { issueTag: string }) {
       <div className="text-[9px] font-bold tracking-[0.16em] text-india-green uppercase mb-1">
         {tip.title}
       </div>
-      <div className="text-[11.5px] leading-relaxed text-ink-2">
-        {tip.body}
-      </div>
+      <div className="text-[11.5px] leading-relaxed text-ink-2">{tip.body}</div>
     </div>
   )
 }
 
-// ─── Government Panel (RIGHT) ─────────────────────────────────────────────
+// ─── Government Panel (RIGHT — desktop only) ──────────────────────────────
 
 export function GovernmentPanel() {
   const { active } = useActiveWard()
@@ -463,31 +501,72 @@ export function GovernmentPanel() {
 
 function GovEmpty() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div>
         <div className="font-serif text-xl font-semibold text-ink leading-tight">
-          Engineered civic action briefs
+          From complaints to ready-to-act plans
         </div>
         <p className="text-[12px] leading-relaxed text-ink-2 mt-2">
-          Every issue cluster Sushaasan synthesizes is paired with a step-by-step
-          solution — named department, named action, timeline in days, cost in rupees.
-          No generic asks.
+          Sushaasan doesn&apos;t just collect complaints — it turns them into
+          engineered action briefs. Each brief names the responsible department,
+          lists exact steps, and estimates the cost in ₹ and time in days.
+          <strong className="text-ink"> No vague asks.</strong>
         </p>
       </div>
-      <div className="space-y-2 pt-2 border-t border-ink/8">
+
+      {/* How it works */}
+      <div className="pt-3 border-t border-ink/8 space-y-2">
         <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">
-          What you'll see
+          How it works
+        </div>
+        <ol className="space-y-2 text-[11.5px] text-ink-2">
+          <li className="flex items-start gap-2">
+            <span className="font-bold text-saffron-dark w-4 flex-shrink-0">1.</span>
+            <span>Citizens post about civic problems on Twitter, Reddit, Instagram</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="font-bold text-saffron-dark w-4 flex-shrink-0">2.</span>
+            <span>AI clusters similar reports by ward and issue type</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="font-bold text-saffron-dark w-4 flex-shrink-0">3.</span>
+            <span>A step-by-step solution is generated with department, cost &amp; timeline</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="font-bold text-saffron-dark w-4 flex-shrink-0">4.</span>
+            <span>Corporator acts → citizens see the resolution on this very map</span>
+          </li>
+        </ol>
+      </div>
+
+      {/* What you see when you tap */}
+      <div className="pt-3 border-t border-ink/8 space-y-2">
+        <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">
+          Tap a ward to see
         </div>
         <ul className="space-y-1.5 text-[11.5px] text-ink-2">
-          <li className="flex items-start gap-2"><span className="text-india-green mt-0.5">✓</span> Ward incharge + party + contact</li>
-          <li className="flex items-start gap-2"><span className="text-india-green mt-0.5">✓</span> Annual budget vs. estimated solution cost</li>
-          <li className="flex items-start gap-2"><span className="text-india-green mt-0.5">✓</span> Concrete steps with department + cost + days</li>
-          <li className="flex items-start gap-2"><span className="text-india-green mt-0.5">✓</span> Priority score + budget feasibility flag</li>
+          <li className="flex items-start gap-2">
+            <span className="text-india-green mt-0.5 flex-shrink-0">✓</span>
+            <span>Top issue this week + how many reports back it up</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-india-green mt-0.5 flex-shrink-0">✓</span>
+            <span>Step-by-step fix: who does what, by when, at what cost</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-india-green mt-0.5 flex-shrink-0">✓</span>
+            <span>Total cost vs. ward annual budget — instantly</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-india-green mt-0.5 flex-shrink-0">✓</span>
+            <span>Whether the fix is feasible within available budget</span>
+          </li>
         </ul>
       </div>
+
       <div className="pt-3 border-t border-ink/8">
         <div className="text-[11px] font-medium text-ink-2 leading-relaxed">
-          Hover any saffron-tinted ward to see its full action brief →
+          → Tap any <strong>saffron-shaded ward</strong> to see its full action brief
         </div>
       </div>
     </div>
@@ -506,12 +585,13 @@ function GovNoSignal({ name }: { name: string }) {
         </div>
       </div>
       <p className="text-[12px] leading-relaxed text-ink-2">
-        Sushaasan generates engineered briefs only when the underlying signal
-        crosses a confidence threshold (≥10 corroborating reports across ≥2
-        platforms). This ward hasn't crossed it yet.
+        Sushaasan generates briefs only when a cluster has enough signal —
+        at least 10 corroborating reports across 2+ platforms. This ward hasn&apos;t
+        crossed that threshold yet.
       </p>
       <div className="pt-2 text-[11px] text-ink-3">
-        Pilot wards: <span className="font-semibold text-ink-2">Mohammadwadi · Kondhwa Budruk · Wanawadi</span>
+        Pilot wards with live briefs:{' '}
+        <span className="font-semibold text-ink-2">Mohammadwadi · Kondhwa Budruk · Wanawadi</span>
       </div>
     </div>
   )
@@ -529,7 +609,6 @@ function GovContent({ full }: { full: WardFull }) {
 
   return (
     <div className="space-y-4">
-      {/* Ward header */}
       <div>
         <div className="text-[10px] font-bold tracking-[0.18em] text-ink-3 uppercase">
           Ward {ward.ward_number}
@@ -539,10 +618,9 @@ function GovContent({ full }: { full: WardFull }) {
         </div>
       </div>
 
-      {/* Incharge */}
       <div className="pt-3 border-t border-ink/8">
         <div className="text-[9px] font-bold tracking-[0.18em] text-ink-3 uppercase mb-1.5">
-          Area incharge
+          Ward Incharge
         </div>
         <div className="text-[12.5px] font-semibold text-ink">
           {ward.corporator_name || '— · contact Sushaasan'}
@@ -552,17 +630,16 @@ function GovContent({ full }: { full: WardFull }) {
         ) : null}
       </div>
 
-      {/* Budget bar */}
       <div className="pt-3 border-t border-ink/8">
         <div className="text-[9px] font-bold tracking-[0.18em] text-ink-3 uppercase mb-2">
-          Budget pressure
+          Budget at a glance
         </div>
         <div className="flex items-baseline justify-between text-[11px]">
-          <span className="text-ink-3">Active solutions</span>
+          <span className="text-ink-3">Solution cost estimate</span>
           <span className="font-semibold text-ink tabular-nums">{formatINR(totalEstCost)}</span>
         </div>
         <div className="flex items-baseline justify-between text-[11px] mt-1">
-          <span className="text-ink-3">Annual allocation</span>
+          <span className="text-ink-3">Annual ward allocation</span>
           <span className="font-semibold text-ink tabular-nums">{formatINR(ward.annual_budget_inr)}</span>
         </div>
         <div className="h-1.5 rounded-full bg-ink/8 overflow-hidden mt-2">
@@ -572,11 +649,10 @@ function GovContent({ full }: { full: WardFull }) {
           />
         </div>
         <div className="text-[10px] text-ink-3 mt-1">
-          {budgetUsedPct.toFixed(2)}% of annual ward budget
+          {budgetUsedPct.toFixed(1)}% of annual ward budget
         </div>
       </div>
 
-      {/* Top engineered solution */}
       {top ? (
         <article className="pt-3 border-t border-ink/8 space-y-2.5">
           <div className="flex items-center justify-between">
@@ -587,12 +663,9 @@ function GovContent({ full }: { full: WardFull }) {
                 color: ISSUE_COLOR[top.issue_tag] ?? ISSUE_COLOR.other,
               }}
             >
-              {ISSUE_LABEL[top.issue_tag] ?? top.issue_tag}
+              {ISSUE_EMOJI[top.issue_tag] ?? '📌'} {ISSUE_LABEL[top.issue_tag] ?? top.issue_tag}
             </span>
-            <span
-              className="text-[9px] font-bold tracking-wider uppercase tabular-nums"
-              title="AI-ranked priority score"
-            >
+            <span className="text-[9px] font-bold tracking-wider uppercase tabular-nums">
               <span className="text-ink-3">Priority </span>
               <span className="text-ink">{top.priority_score?.toFixed(0) ?? '—'}</span>
             </span>
@@ -602,7 +675,6 @@ function GovContent({ full }: { full: WardFull }) {
             {top.summary?.split('.')[0]}.
           </div>
 
-          {/* First 2 steps */}
           <ol className="space-y-2 mt-1">
             {top.steps.slice(0, 2).map((s) => (
               <li key={s.step} className="text-[11.5px] leading-relaxed text-ink-2">
@@ -624,10 +696,12 @@ function GovContent({ full }: { full: WardFull }) {
             ) : null}
           </ol>
 
-          {/* Totals row */}
           <div className="flex items-center justify-between pt-1 mt-1 border-t border-ink/5">
             <div className="text-[10px] text-ink-3">
-              Total · <span className="font-semibold text-ink-2 tabular-nums">{formatINR(top.total_cost_est_inr)}</span> over <span className="font-semibold text-ink-2 tabular-nums">{top.timeline_days}d</span>
+              Total ·{' '}
+              <span className="font-semibold text-ink-2 tabular-nums">{formatINR(top.total_cost_est_inr)}</span>
+              {' '}over{' '}
+              <span className="font-semibold text-ink-2 tabular-nums">{top.timeline_days}d</span>
             </div>
             {top.budget_feasible ? (
               <span className="text-[9px] font-bold tracking-wider uppercase text-india-green">
@@ -654,6 +728,277 @@ function GovContent({ full }: { full: WardFull }) {
   )
 }
 
+// ─── Mobile Panel (bottom sheet — visible only on mobile) ─────────────────
+
+export function MobilePanel() {
+  const { active } = useActiveWard()
+  const all = useAllClustersIndex()
+  const wardId = active ? String(active.wardnum) : undefined
+  const clusters = useMemo(() => {
+    if (!all || !wardId) return []
+    return (all.byWardId.get(wardId) ?? []).slice().sort(
+      (a, b) => (b.severity_avg ?? 0) - (a.severity_avg ?? 0),
+    )
+  }, [all, wardId])
+  const full = useWardFull(active?.wardnum)
+
+  const [expanded, setExpanded] = useState(false)
+
+  // Auto-expand when a ward is selected
+  useEffect(() => {
+    if (active) setExpanded(true)
+  }, [active?.wardnum])
+
+  return (
+    <div
+      className="md:hidden absolute bottom-0 left-0 right-0 z-40
+                 pointer-events-auto"
+    >
+      {/* Slide-up sheet */}
+      <div
+        className={`bg-white/96 backdrop-blur-md border-t border-ink/10
+                    shadow-[0_-8px_30px_rgba(10,31,58,0.12)]
+                    transition-all duration-300 ease-out
+                    ${expanded ? 'rounded-t-2xl' : 'rounded-t-xl'}`}
+      >
+        {/* Handle + header row — always visible, tap to toggle */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full flex flex-col items-center pt-2 pb-2 px-5"
+          aria-label={expanded ? 'Collapse panel' : 'Expand panel'}
+        >
+          {/* Drag handle */}
+          <div className="w-9 h-1 rounded-full bg-ink/15 mb-2" />
+
+          <div className="w-full flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md flex items-center justify-center bg-saffron text-white font-serif font-bold text-xs">
+                स
+              </div>
+              <div className="text-left">
+                {active ? (
+                  <>
+                    <div className="text-[12px] font-semibold text-ink leading-none">
+                      {active.name}
+                    </div>
+                    <div className="text-[10px] text-ink-3 mt-0.5">
+                      {clusters.length > 0
+                        ? `${clusters.length} active issue${clusters.length === 1 ? '' : 's'} this week`
+                        : 'No reports yet'}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-[12px] font-semibold text-ink leading-none">
+                      Sushaasan · Civic Intelligence
+                    </div>
+                    <div className="text-[10px] text-ink-3 mt-0.5">
+                      Tap a dot on the map to explore
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="text-ink-3 text-xs">
+              {expanded ? '▾' : '▴'}
+            </div>
+          </div>
+        </button>
+
+        {/* Expanded content */}
+        {expanded && (
+          <div className="px-5 pb-4 max-h-[55vh] overflow-y-auto space-y-4">
+            {!active ? (
+              <MobileEmptyContent totalPosts={all?.totalPosts ?? 0} />
+            ) : clusters.length === 0 ? (
+              <MobileNoSignal name={active.name} />
+            ) : (
+              <MobileWardContent
+                name={active.name}
+                tier={active.tier}
+                clusters={clusters}
+                full={full}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Safe area spacer for phones with home bar */}
+        <div className="h-safe-area-inset-bottom h-2" />
+      </div>
+    </div>
+  )
+}
+
+function MobileEmptyContent({ totalPosts }: { totalPosts: number }) {
+  return (
+    <div className="space-y-4">
+      <p className="text-[13px] leading-relaxed text-ink-2">
+        Sushaasan reads public posts from Twitter, Reddit and Instagram —
+        and maps every civic problem to the exact ward it happened in.
+        <strong className="text-ink"> Each coloured dot is a cluster of real citizen reports.</strong>
+      </p>
+
+      <div className="space-y-2">
+        <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">
+          What the dots mean
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { tag: 'traffic',     label: 'Traffic & roads' },
+            { tag: 'water',       label: 'Water supply' },
+            { tag: 'electricity', label: 'Power / lights' },
+            { tag: 'garbage',     label: 'Garbage & drains' },
+          ].map(({ tag, label }) => (
+            <div key={tag} className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: ISSUE_COLOR[tag] }} />
+              <span className="text-[12px] text-ink-2">{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">
+          Areas covered
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {['NIBM Road', 'Salunke Vihar', 'Kondhwa', 'Wanowrie', 'Mohammadwadi'].map((area) => (
+            <span key={area}
+              className="px-2 py-0.5 rounded-full text-[11px] font-medium
+                         bg-saffron/10 text-saffron-dark border border-saffron/20">
+              {area}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {totalPosts > 0 && (
+        <div className="text-[11px] text-ink-3">
+          <span className="font-semibold text-ink">{totalPosts.toLocaleString('en-IN')}</span> reports collected this week
+        </div>
+      )}
+
+      <div className="pt-2 border-t border-ink/8 text-[11px] font-medium text-saffron-dark">
+        ↑ Tap any coloured dot on the map to see what&apos;s being reported
+      </div>
+    </div>
+  )
+}
+
+function MobileNoSignal({ name }: { name: string }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-[13px] leading-relaxed text-ink-2">
+        No reports yet for <strong>{name}</strong>. Sushaasan is currently
+        tracking the NIBM · Wanowrie · Mohammadwadi belt — coverage
+        expands weekly.
+      </p>
+      <a href="/about" className="text-[12px] text-saffron-dark font-medium">
+        Want this ward covered? Reach out →
+      </a>
+    </div>
+  )
+}
+
+function MobileWardContent({
+  name, tier, clusters, full,
+}: { name: string; tier?: string; clusters: Cluster[]; full: WardFull | null }) {
+  const top = clusters[0]
+  const topSolution = full?.solutions?.slice().sort(
+    (a, b) => (b.priority_score ?? 0) - (a.priority_score ?? 0),
+  )[0]
+
+  return (
+    <div className="space-y-4">
+      {/* Ward summary */}
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="font-serif text-base font-semibold text-ink">{name}</div>
+          {tier === 'pilot' && (
+            <div className="text-[11px] text-india-green font-medium mt-0.5">🟢 Live AI tracking</div>
+          )}
+        </div>
+        <div className="text-right">
+          <div className="text-[13px] font-semibold text-ink tabular-nums">{clusters.length}</div>
+          <div className="text-[10px] text-ink-3">issue{clusters.length === 1 ? '' : 's'}</div>
+        </div>
+      </div>
+
+      {/* Top issue */}
+      {top && (
+        <div className="p-3 rounded-xl bg-ink/[0.03] border border-ink/8 space-y-2">
+          <div className="flex items-center justify-between">
+            <span
+              className="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase"
+              style={{
+                backgroundColor: `${ISSUE_COLOR[top.issue_tag] ?? ISSUE_COLOR.other}1F`,
+                color: ISSUE_COLOR[top.issue_tag] ?? ISSUE_COLOR.other,
+              }}
+            >
+              {ISSUE_EMOJI[top.issue_tag] ?? '📌'} {ISSUE_LABEL[top.issue_tag] ?? top.issue_tag}
+            </span>
+            <span className="text-[11px] text-ink-3">{top.post_count ?? 0} reports</span>
+          </div>
+          {(top.citizen_headline || top.problem_simple || top.centroid_text) && (
+            <p className="text-[13px] leading-snug text-ink font-medium">
+              {top.citizen_headline || top.problem_simple || top.centroid_text}
+            </p>
+          )}
+          {top.severity_avg ? (
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-1 rounded-full bg-ink/8 overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${severityBar(top.severity_avg)}%`,
+                    backgroundColor: ISSUE_COLOR[top.issue_tag] ?? ISSUE_COLOR.other,
+                  }}
+                />
+              </div>
+              <span className="text-[10px] text-ink-3 tabular-nums">
+                {top.severity_avg.toFixed(1)}/5
+              </span>
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      {/* AI solution preview */}
+      {topSolution && (
+        <div className="p-3 rounded-xl bg-navy/[0.04] border border-navy/10 space-y-1.5">
+          <div className="text-[10px] font-bold tracking-[0.16em] text-navy uppercase">
+            AI Action Brief
+          </div>
+          <p className="text-[12px] leading-snug text-ink-2">
+            {topSolution.summary?.split('.')[0]}.
+          </p>
+          <div className="flex items-center gap-3 text-[10px] text-ink-3">
+            <span>💰 {formatINR(topSolution.total_cost_est_inr)}</span>
+            <span>⏱ {topSolution.timeline_days}d</span>
+            {topSolution.budget_feasible ? (
+              <span className="text-india-green font-semibold">✓ Within budget</span>
+            ) : (
+              <span className="text-saffron-dark font-semibold">⚠ Budget review</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* CTA */}
+      <a
+        href={`/ward/${full?.ward?.id ?? ''}`}
+        className="block text-center px-4 py-3 rounded-xl
+                   bg-saffron text-white font-semibold text-[13px] tracking-wide
+                   shadow-[0_4px_18px_rgba(255,153,51,0.35)]
+                   active:scale-95 transition-all"
+      >
+        See full ward brief →
+      </a>
+    </div>
+  )
+}
+
 // ─── Shared shells ────────────────────────────────────────────────────────
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -669,10 +1014,6 @@ function Stat({ label, value }: { label: string; value: string }) {
   )
 }
 
-/**
- * Lightweight crossfade — no Framer Motion dep needed.
- * Re-mounts children on key change with a tiny opacity transition.
- */
 function PanelSwap({ activeKey, children }: { activeKey: string; children: React.ReactNode }) {
   const [renderKey, setRenderKey] = useState(activeKey)
   const [renderChildren, setRenderChildren] = useState(children)
@@ -681,7 +1022,6 @@ function PanelSwap({ activeKey, children }: { activeKey: string; children: React
 
   useEffect(() => {
     if (activeKey === renderKey) {
-      // Same key — just refresh children silently
       setRenderChildren(children)
       return
     }
@@ -712,6 +1052,7 @@ export function SidePanels() {
     <>
       <CitizenPanel />
       <GovernmentPanel />
+      <MobilePanel />
     </>
   )
 }

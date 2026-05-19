@@ -11,10 +11,13 @@ const CATEGORIES = [
 export function LegendBar() {
   return (
     <div
-      className="absolute bottom-20 left-1/2 -translate-x-1/2 z-40
+      className="absolute z-40
+                 left-1/2 -translate-x-1/2
+                 bottom-[13.5rem] md:bottom-20
                  flex items-center gap-1
                  bg-white border border-ink/10 rounded-full
-                 px-3 py-1.5 shadow-sm"
+                 px-3 py-1.5 shadow-sm
+                 max-w-[96vw] overflow-x-auto"
       role="list"
       aria-label="Issue category legend"
     >
@@ -22,7 +25,7 @@ export function LegendBar() {
         <div
           key={c.key}
           className="flex items-center gap-1.5 px-2 py-1
-                     text-[10px] font-semibold text-ink-2 tracking-wide uppercase"
+                     text-[10px] font-semibold text-ink-2 tracking-wide uppercase whitespace-nowrap"
           role="listitem"
         >
           <span
