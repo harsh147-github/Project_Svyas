@@ -10,6 +10,12 @@ const WardMap = dynamic(
   { ssr: false, loading: () => <div className="w-full h-full bg-paper" /> }
 )
 
+// Onboarding hint card — sessionStorage so no server side needed
+const MapHint = dynamic(
+  () => import('@/components/map/MapHint').then((m) => m.MapHint),
+  { ssr: false }
+)
+
 export const metadata: Metadata = {
   title: 'Sushaasan — Civic Intelligence for Pune',
   description: 'A Government OS. AI turns public chatter into structured, budgeted, actionable governance briefs — in partnership with PMC and citizens.',
@@ -55,6 +61,9 @@ export default function HomePage() {
 
       {/* Citizen + Government side panels */}
       <SidePanels />
+
+      {/* Onboarding hint card — top-center, dismisses on first ward interaction */}
+      <MapHint />
 
       {/* Legend */}
       <LegendBar />
