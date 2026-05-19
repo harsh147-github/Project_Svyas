@@ -109,22 +109,36 @@ type NormPost = {
   ward_lat: number
 }
 
+// ── helpers ───────────────────────────────────────────────────────────────────
+function apifyUrl(actor: string, token: string, timeoutSec: number) {
+  return `https://api.apify.com/v2/acts/${actor}/run-sync-get-dataset-items?token=${token}&timeout=${timeoutSec}`
+}
+
+async function apifyPost(actor: string, token: string, body: unknown, timeoutSec: number): Promise<Array<Record<string, unknown>>> {
+  try {
+    const res = await fetch(apifyUrl(actor, token, timeoutSec), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout((timeoutSec + 20) * 1000),
+    })
+    if (!res.ok) { console.error(`[${actor}] ${res.status}: ${await res.text().catch(() => '')}`); return [] }
+    return await res.json()
+  } catch (e) { console.error(`[${actor}] failed:`, e); return [] }
+}
+
+// ── Instagram ─────────────────────────────────────────────────────────────────
 const IG_HASHTAGS = [
   'punenews', 'punecity', 'pmcpune', 'punetraffic', 'punewatercrisis', 'punepotholes',
-  'mohammadwadi', 'nibmpune', 'kondhwapune', 'hadapsar', 'kothrud', 'baner', 'aundh',
-  'vimannagar', 'hinjewadi', 'kharadi', 'magarpatta', 'wakad', 'pashanpune', 'wanowrie',
+  'mohammadwadi', 'nibmpune', 'nibmroad', 'kondhwapune', 'kondhwa', 'wanowrie',
+  'hadapsar', 'kothrud', 'baner', 'aundh', 'vimannagar', 'kharadi', 'magarpatta',
+  'punecitizens', 'puneroads', 'pmcpunecity', 'nibmlife', 'kondhwalife',
 ]
 
 async function scrapeInstagram(token: string): Promise<NormPost[]> {
   const directUrls = IG_HASHTAGS.map((h) => `https://www.instagram.com/explore/tags/${h}/`)
-  const body = { directUrls, resultsType: 'posts', resultsLimit: 40, addParentData: false }
-
-  const res = await fetch(
-    `https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token=${token}&timeout=240`,
-    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(260_000) },
-  )
-  if (!res.ok) { console.error(`[ig] ${res.status}: ${await res.text().catch(() => '')}`); return [] }
-  const items: Array<Record<string, unknown>> = await res.json()
+  const items = await apifyPost('apify~instagram-scraper', token,
+    { directUrls, resultsType: 'posts', resultsLimit: 50, addParentData: false }, 200)
 
   const out: NormPost[] = []
   for (const p of items) {
@@ -133,15 +147,143 @@ async function scrapeInstagram(token: string): Promise<NormPost[]> {
     if (!isPuneCivic(caption)) continue
     const issue = classifyIssue(caption); if (!issue) continue
     const ward = detectWard(caption); if (!ward) continue
-    const shortCode = (p.shortCode as string | undefined) ?? (p.id as string | undefined) ?? `t${Date.now()}`
+    const shortCode = (p.shortCode as string | undefined) ?? (p.id as string | undefined) ?? `ig${Date.now()}`
     out.push({
-      source: 'instagram',
-      source_post_id: `ig_${shortCode}`,
+      source: 'instagram', source_post_id: `ig_${shortCode}`,
       raw_text: caption.slice(0, 4000),
       author_hash: hashAuthor((p.ownerUsername as string | undefined) ?? 'unknown'),
       posted_at: (p.timestamp as string | undefined) ?? null,
       geo_hint: (p.locationName as string | undefined) ?? ward.name,
       ward_id: ward.id, issue_tag: issue, severity: severityFor(caption),
+      ward_lng: ward.lng, ward_lat: ward.lat,
+    })
+  }
+  return out
+}
+
+// ── Twitter / X ───────────────────────────────────────────────────────────────
+const TWITTER_QUERIES = [
+  '#PMCPune water', '#PMCPune pothole', '#PMCPune garbage',
+  'NIBM Road traffic Pune', 'Kondhwa water shortage Pune',
+  'Mohammadwadi Pune complaint', 'Hadapsar pothole signal',
+  'Wanowrie water supply', 'Salunke Vihar water',
+  'Pune PMC garbage pickup', '#PunePotholes', '#PuneTraffic',
+]
+
+async function scrapeTwitter(token: string): Promise<NormPost[]> {
+  const items = await apifyPost('apidojo~tweet-scraper', token, {
+    searchTerms: TWITTER_QUERIES,
+    maxItems: 30,
+    tweetLanguage: 'en',
+    searchMode: 'live',
+    addUserInfo: false,
+  }, 180)
+
+  const out: NormPost[] = []
+  for (const p of items) {
+    const text = ((p.full_text ?? p.text ?? p.rawContent ?? '') as string)
+    if (text.length < 20) continue
+    if (!isPuneCivic(text)) continue
+    const issue = classifyIssue(text); if (!issue) continue
+    const ward = detectWard(text); if (!ward) continue
+    const id = (p.id_str ?? p.id ?? `tw${Date.now()}`) as string
+    out.push({
+      source: 'twitter', source_post_id: `tw_${id}`,
+      raw_text: text.slice(0, 4000),
+      author_hash: hashAuthor(((p.user as Record<string,unknown>)?.screen_name as string | undefined) ?? 'unknown'),
+      posted_at: (p.created_at as string | undefined) ?? null,
+      geo_hint: (p.place as string | undefined) ?? ward.name,
+      ward_id: ward.id, issue_tag: issue, severity: severityFor(text),
+      ward_lng: ward.lng, ward_lat: ward.lat,
+    })
+  }
+  return out
+}
+
+// ── Google Maps Reviews ───────────────────────────────────────────────────────
+// High-signal: 1-star reviews at PMC offices + local landmarks mention real civic problems
+const GMAPS_SEARCHES = [
+  'PMC ward office Kondhwa Pune',
+  'PMC ward office NIBM Pune',
+  'PMC ward office Hadapsar Pune',
+  'PMC Pune water supply office',
+  'Kondhwa market Pune',
+  'NIBM Road Pune',
+  'Salunke Vihar Pune',
+  'Mohammadwadi Pune',
+]
+
+async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
+  const items = await apifyPost('compass~crawler-google-places', token, {
+    searchStringsArray: GMAPS_SEARCHES,
+    maxCrawledPlaces: 3,
+    reviewsCount: 30,
+    reviewsSort: 'newest',
+    language: 'en',
+    countryCode: 'in',
+    scrapeReviewerInfo: false,
+  }, 200)
+
+  const out: NormPost[] = []
+  for (const place of items) {
+    const reviews = (place.reviews as Array<Record<string, unknown>> | undefined) ?? []
+    const placeName = (place.title as string | undefined) ?? ''
+    for (const r of reviews) {
+      const text = ((r.text ?? r.textTranslated ?? '') as string)
+      if (text.length < 15) continue
+      // Google Maps reviews are location-specific — relax the Pune gate a bit
+      const combined = `${text} ${placeName} pune`
+      if (!isPuneCivic(combined)) continue
+      const issue = classifyIssue(combined); if (!issue) continue
+      const ward = detectWard(`${text} ${placeName}`) ?? detectWard(placeName)
+      if (!ward) continue
+      const rId = (r.reviewId ?? r.id ?? `gm${Date.now()}${Math.random()}`) as string
+      out.push({
+        source: 'gmaps', source_post_id: `gm_${rId}`,
+        raw_text: `[${placeName}] ${text}`.slice(0, 4000),
+        author_hash: hashAuthor((r.reviewerNumberOfReviews ?? rId) as string),
+        posted_at: (r.publishedAtDate as string | undefined) ?? null,
+        geo_hint: placeName,
+        ward_id: ward.id, issue_tag: issue, severity: severityFor(text),
+        ward_lng: ward.lng, ward_lat: ward.lat,
+      })
+    }
+  }
+  return out
+}
+
+// ── Facebook ──────────────────────────────────────────────────────────────────
+// Public civic pages — PMC Pune, Times of India Pune, local news
+const FB_URLS = [
+  'https://www.facebook.com/PMCPUNE/',
+  'https://www.facebook.com/punemirror/',
+  'https://www.facebook.com/TimesofIndiaPune/',
+  'https://www.facebook.com/NibmLife/',
+]
+
+async function scrapeFacebook(token: string): Promise<NormPost[]> {
+  const items = await apifyPost('apify~facebook-posts-scraper', token, {
+    startUrls: FB_URLS.map((url) => ({ url })),
+    resultsLimit: 40,
+    commentsMode: 'RANKED_THREADED',
+    maxComments: 10,
+  }, 180)
+
+  const out: NormPost[] = []
+  for (const p of items) {
+    const text = ((p.text ?? p.message ?? '') as string)
+    if (text.length < 20) continue
+    if (!isPuneCivic(text)) continue
+    const issue = classifyIssue(text); if (!issue) continue
+    const ward = detectWard(text); if (!ward) continue
+    const id = (p.postId ?? p.id ?? `fb${Date.now()}`) as string
+    out.push({
+      source: 'facebook', source_post_id: `fb_${id}`,
+      raw_text: text.slice(0, 4000),
+      author_hash: hashAuthor(id),
+      posted_at: (p.time ?? p.timestamp ?? null) as string | null,
+      geo_hint: (p.locationName as string | undefined) ?? ward.name,
+      ward_id: ward.id, issue_tag: issue, severity: severityFor(text),
       ward_lng: ward.lng, ward_lat: ward.lat,
     })
   }
@@ -220,14 +362,23 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   const { data: run } = await supabase.from('pipeline_runs').insert({ trigger_type: triggerType, status: 'running' }).select('id').single()
   const runId = (run as { id: string } | null)?.id
 
-  const [ig, rd] = await Promise.all([scrapeInstagram(token), scrapeReddit()])
-  const all: NormPost[] = [...ig, ...rd]
+  // All 5 scrapers in parallel — each returns [] on failure, never throws
+  const [ig, rd, tw, gm, fb] = await Promise.all([
+    scrapeInstagram(token),
+    scrapeReddit(),
+    scrapeTwitter(token),
+    scrapeGoogleMaps(token),
+    scrapeFacebook(token),
+  ])
+  console.log(`[pipeline] raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length}`)
 
-  // Dedup
+  const all: NormPost[] = [...ig, ...rd, ...tw, ...gm, ...fb]
+
+  // Dedup by source_post_id
   const seen = new Set<string>()
   const unique = all.filter((p) => (seen.has(p.source_post_id) ? false : (seen.add(p.source_post_id), true)))
 
-  // Write raw_posts
+  // Write raw_posts (upsert — safe to re-run)
   if (unique.length > 0) {
     const rows = unique.map((p) => ({
       source: p.source, source_post_id: p.source_post_id, raw_text: p.raw_text,
@@ -237,12 +388,13 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
     if (error) console.error('[raw_posts]', error.message)
   }
 
-  // Upsert clusters
+  // Upsert clusters — unique constraint on (ward_id, issue_tag) handles conflicts
   const aggregates = aggregate(unique)
   let clustersWritten = 0
   for (const c of aggregates) {
     const sev_avg = c.severities.reduce((a, b) => a + b, 0) / c.severities.length
-    const centroid = `Citizen reports from ${[...c.sources].join(', ')} mentioning ${c.issue_tag} issues in this ward (last 24h). Severity ${sev_avg.toFixed(1)}/5.`
+    const sources = [...c.sources].join(', ')
+    const centroid = `${c.severities.length} reports via ${sources} about ${c.issue_tag} issues in this area (last 24h). Avg severity ${sev_avg.toFixed(1)}/5.`
     const { error } = await supabase.from('clusters').upsert({
       ward_id: c.ward_id, issue_tag: c.issue_tag, centroid_text: centroid,
       post_count: c.severities.length, severity_avg: sev_avg, status: 'open',
@@ -262,7 +414,7 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   return {
     runId, postsScraped: unique.length, clustersWritten,
     durationMs: Date.now() - startedAt,
-    bySource: { instagram: ig.length, reddit: rd.length },
+    bySource: { instagram: ig.length, reddit: rd.length, twitter: tw.length, gmaps: gm.length, facebook: fb.length },
   }
 }
 
