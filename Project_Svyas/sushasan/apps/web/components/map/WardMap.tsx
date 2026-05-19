@@ -345,9 +345,16 @@ export function WardMap() {
               ${citizenSection}
               ${govSection}
               ${fallbackSolution}
-              ${(p.citizen_headline || p.solution_summary)
-                ? `<a href="/dashboard/nibm" class="popup-cta">Full AI solution brief →</a>`
-                : `<div class="popup-ambient-note">Listening signal — full AI brief not yet generated for this ward. Pilot wards: NIBM, Wanowrie, Salunke Vihar.</div>`}
+              ${(p.citizen_headline || p.solution_summary || p.gov_summary)
+                ? `<div class="popup-cta-row">
+                     <button class="popup-btn-citizen" onclick="window.dispatchEvent(new CustomEvent('sushaasan:citizen-sheet-open',{detail:{wardId:'${p.ward_id ?? ''}',issueTag:'${p.issue_tag ?? ''}'}}))">
+                       👥 What&apos;s happening?
+                     </button>
+                     <button class="popup-btn-gov" onclick="window.dispatchEvent(new CustomEvent('sushaasan:gov-sheet-open',{detail:{wardId:'${p.ward_id ?? ''}'}}))">
+                       📋 Action Brief
+                     </button>
+                   </div>`
+                : `<div class="popup-ambient-note">Signal detected — action brief generated when 10+ reports confirmed. Tap the ward area for context.</div>`}
             </div>
           `)
           .addTo(map)

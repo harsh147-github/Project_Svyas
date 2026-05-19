@@ -124,14 +124,36 @@ export default function WardPage({ params }: Props) {
           </section>
         )}
 
+        {/* ── Lane tabs ──────────────────────────────────────────────────── */}
+        <div className="flex gap-2 flex-wrap">
+          <a href="#citizens"
+             className="flex items-center gap-2 px-4 py-2.5 rounded-full
+                        bg-saffron/10 border-2 border-saffron/40 text-saffron-dark
+                        font-semibold text-[13px] hover:bg-saffron/20 transition-colors">
+            👥 For Citizens
+          </a>
+          <a href="#officials"
+             className="flex items-center gap-2 px-4 py-2.5 rounded-full
+                        bg-navy/8 border-2 border-navy/25 text-navy
+                        font-semibold text-[13px] hover:bg-navy/15 transition-colors">
+            📋 For the Corporator&apos;s Office
+          </a>
+        </div>
+
         {/* ── Active issues ──────────────────────────────────────────────── */}
-        <section className="space-y-4">
+        <section id="citizens" className="space-y-4 scroll-mt-24">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-saffron/10 border border-saffron/30">
+              <span className="text-base">👥</span>
+              <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-saffron-dark">For Citizens</span>
+            </div>
+          </div>
           <div className="flex items-baseline gap-3">
             <h2 className="font-serif text-xl font-semibold text-ink">
-              Active issue clusters
+              What&apos;s happening in this ward
             </h2>
             <span className="text-[10px] text-ink-3">
-              {clusters.length} cluster{clusters.length !== 1 ? 's' : ''} this cycle
+              {clusters.length} issue{clusters.length !== 1 ? 's' : ''} reported this week
             </span>
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -160,20 +182,25 @@ export default function WardPage({ params }: Props) {
 
         {/* ── Sushaasan solutions ────────────────────────────────────────── */}
         {solutions.length > 0 && (
-          <section className="space-y-4">
-            <div className="flex items-baseline gap-3 flex-wrap">
-              <h2 className="font-serif text-xl font-semibold text-ink">
-                Sushaasan solutions
-              </h2>
-              <span className="text-[9px] font-bold tracking-[0.15em] uppercase text-saffron-dark
-                               bg-saffron/8 border border-saffron/20 px-2 py-1 rounded-full">
+          <section id="officials" className="space-y-4 scroll-mt-24">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-navy/8 border border-navy/25">
+                <span className="text-base">📋</span>
+                <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-navy">For the Corporator&apos;s Office</span>
+              </div>
+              <span className="text-[9px] font-bold tracking-[0.15em] uppercase text-saffron-dark bg-saffron/8 border border-saffron/20 px-2 py-1 rounded-full">
                 AI-synthesised brief
               </span>
             </div>
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <h2 className="font-serif text-xl font-semibold text-ink">
+                Ready-to-act solution plan
+              </h2>
+            </div>
 
-            <p className="text-[12.5px] text-ink-3 max-w-2xl">
-              Each brief pairs concrete government action with a clear citizen role.
-              The corporator&rsquo;s office decides; we keep the brief honest and the loop visible.
+            <p className="text-[13px] text-ink-3 max-w-2xl">
+              Data-backed. Budget-checked. Steps named by department.
+              The corporator&rsquo;s office decides — Sushaasan just does the groundwork.
             </p>
 
             <div className="space-y-5">

@@ -4,6 +4,16 @@ import { LegendBar } from '@/components/map/LegendBar'
 import { FindMyWardButton } from '@/components/map/SelectedWardPanel'
 import { SidePanels } from '@/components/map/SidePanels'
 
+// Citizen and Government sheets — bottom-sheet modals triggered from hotspot popups
+const CitizenSheet = dynamic(
+  () => import('@/components/map/CitizenSheet').then((m) => m.CitizenSheet),
+  { ssr: false }
+)
+const GovSheet = dynamic(
+  () => import('@/components/map/GovSheet').then((m) => m.GovSheet),
+  { ssr: false }
+)
+
 // Real-OSM map with all 58 PMC ward overlays — client-only (MapLibre)
 const WardMap = dynamic(
   () => import('@/components/map/WardMap').then((m) => m.WardMap),
@@ -64,6 +74,10 @@ export default function HomePage() {
 
       {/* Onboarding hint card — top-center, dismisses on first ward interaction */}
       <MapHint />
+
+      {/* Citizen and gov sheets — rendered at page level so they overlay the map */}
+      <CitizenSheet />
+      <GovSheet />
 
       {/* Legend */}
       <LegendBar />

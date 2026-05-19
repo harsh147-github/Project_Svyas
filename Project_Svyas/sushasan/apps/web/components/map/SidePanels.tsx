@@ -247,7 +247,7 @@ function CitizenEmpty({ totalPosts, totalSources }: { totalPosts: number; totalS
         <div className="font-serif text-xl font-semibold text-ink leading-tight">
           What&apos;s happening in your Pune ward?
         </div>
-        <p className="text-[12px] leading-relaxed text-ink-2 mt-2">
+        <p className="text-[13px] leading-relaxed text-ink-2 mt-2">
           Sushaasan reads public posts from Twitter, Reddit, Instagram and Facebook —
           and pins every civic problem to the exact ward it happened in.
         </p>
@@ -258,14 +258,14 @@ function CitizenEmpty({ totalPosts, totalSources }: { totalPosts: number; totalS
         <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">
           How to use this map
         </div>
-        <ul className="space-y-1.5 text-[11.5px] text-ink-2">
+        <ul className="space-y-2 text-[13px] text-ink-2">
           <li className="flex items-start gap-2">
-            <span className="text-saffron-dark mt-0.5 flex-shrink-0">→</span>
-            <span>Tap or hover any <strong>coloured dot</strong> to see what citizens are reporting in that area</span>
+            <span className="text-saffron-dark mt-0.5 flex-shrink-0 font-bold">→</span>
+            <span>Tap any <strong>coloured dot</strong> to see what citizens are reporting — two views open (citizen + official)</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-saffron-dark mt-0.5 flex-shrink-0">→</span>
-            <span>Tap a <strong>saffron-shaded ward</strong> to see the AI-generated action brief for that area</span>
+            <span className="text-saffron-dark mt-0.5 flex-shrink-0 font-bold">→</span>
+            <span>Tap a <strong>saffron-shaded ward area</strong> to see the full AI action brief</span>
           </li>
         </ul>
       </div>
@@ -480,7 +480,7 @@ export function GovernmentPanel() {
           Sushaasan Brief
         </div>
         <div className="text-[8px] font-semibold tracking-[0.18em] text-ink-3 uppercase mt-1">
-          For Government
+          Decision Support · Ward Officials
         </div>
       </header>
 
@@ -504,13 +504,12 @@ function GovEmpty() {
     <div className="space-y-5">
       <div>
         <div className="font-serif text-xl font-semibold text-ink leading-tight">
-          From complaints to ready-to-act plans
+          Your ward&apos;s problems. Solved on paper, ready to act.
         </div>
-        <p className="text-[12px] leading-relaxed text-ink-2 mt-2">
-          Sushaasan doesn&apos;t just collect complaints — it turns them into
-          engineered action briefs. Each brief names the responsible department,
-          lists exact steps, and estimates the cost in ₹ and time in days.
-          <strong className="text-ink"> No vague asks.</strong>
+        <p className="text-[13px] leading-relaxed text-ink-2 mt-2">
+          This is not a complaint box. Sushaasan turns citizen reports into a
+          ready-to-use brief — department named, steps numbered, cost in ₹,
+          timeline in days. <strong className="text-ink">You decide. We just do the groundwork.</strong>
         </p>
       </div>
 
@@ -544,22 +543,22 @@ function GovEmpty() {
         <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">
           Tap a ward to see
         </div>
-        <ul className="space-y-1.5 text-[11.5px] text-ink-2">
+        <ul className="space-y-2 text-[13px] text-ink-2">
           <li className="flex items-start gap-2">
-            <span className="text-india-green mt-0.5 flex-shrink-0">✓</span>
-            <span>Top issue this week + how many reports back it up</span>
+            <span className="text-india-green mt-0.5 flex-shrink-0 font-bold">✓</span>
+            <span>Top issue this week + how many citizen reports back it up</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-india-green mt-0.5 flex-shrink-0">✓</span>
-            <span>Step-by-step fix: who does what, by when, at what cost</span>
+            <span className="text-india-green mt-0.5 flex-shrink-0 font-bold">✓</span>
+            <span>Step-by-step fix: which department, what action, in how many days</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-india-green mt-0.5 flex-shrink-0">✓</span>
-            <span>Total cost vs. ward annual budget — instantly</span>
+            <span className="text-india-green mt-0.5 flex-shrink-0 font-bold">✓</span>
+            <span>Cost estimate vs. your ward&apos;s annual allocation — right here</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-india-green mt-0.5 flex-shrink-0">✓</span>
-            <span>Whether the fix is feasible within available budget</span>
+            <span className="text-india-green mt-0.5 flex-shrink-0 font-bold">✓</span>
+            <span>Budget feasibility flag — green means you can act immediately</span>
           </li>
         </ul>
       </div>
