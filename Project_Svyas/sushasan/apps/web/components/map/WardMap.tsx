@@ -531,41 +531,6 @@ export function WardMap() {
         role="img"
         aria-label="Pune ward map showing civic issues across the city"
       />
-      <MapLegend />
-    </div>
-  )
-}
-
-function MapLegend() {
-  const items = [
-    { tag: 'traffic',     label: 'Traffic',     icon: ISSUE_ICONS.traffic,     color: ISSUE_COLORS.traffic },
-    { tag: 'water',       label: 'Water',       icon: ISSUE_ICONS.water,       color: ISSUE_COLORS.water },
-    { tag: 'electricity', label: 'Electricity', icon: ISSUE_ICONS.electricity, color: ISSUE_COLORS.electricity },
-    { tag: 'garbage',     label: 'Garbage',     icon: ISSUE_ICONS.garbage,     color: ISSUE_COLORS.garbage },
-    { tag: 'other',       label: 'Other',       icon: ISSUE_ICONS.other,       color: ISSUE_COLORS.other },
-  ]
-  return (
-    <div className="pointer-events-none absolute bottom-20 left-3 z-[5] sm:bottom-4 sm:left-4">
-      <div className="pointer-events-auto bg-white/95 backdrop-blur-sm rounded-xl
-                      border border-ink/10 shadow-sm px-3 py-2.5">
-        <div className="text-[8.5px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-1.5">
-          Issue legend
-        </div>
-        <div className="flex flex-wrap gap-x-3 gap-y-1.5 max-w-[280px]">
-          {items.map((it) => (
-            <div key={it.tag} className="flex items-center gap-1.5">
-              <span
-                aria-hidden
-                className="w-5 h-5 rounded-full flex items-center justify-center text-[12px] leading-none flex-shrink-0"
-                style={{ backgroundColor: it.color }}
-              >
-                {it.icon}
-              </span>
-              <span className="text-[10.5px] font-medium text-ink-2">{it.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }

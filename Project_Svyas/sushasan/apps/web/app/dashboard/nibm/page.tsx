@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { NibmCorridorMap } from '@/components/nibm/NibmCorridorMap'
 import { ScrapedPostsGallery } from '@/components/nibm/ScrapedPostsGallery'
 import { ReferenceCases } from '@/components/nibm/ReferenceCases'
+import { FadeUp } from '@/components/ui/FadeUp'
 
 export const metadata: Metadata = {
   title: 'NIBM Traffic Pilot — Sushaasan Solution Brief',
@@ -151,7 +152,7 @@ export default async function NIBMPilotPage() {
           </h1>
           <p className="text-ink-2 text-base leading-relaxed max-w-2xl">
             19 public posts from residents and journalists, read by AI, organised into a brief
-            the Ward 46 corporator&rsquo;s office and Pune Traffic Police can act on — alongside
+            the Ward 46 corporator's office and Pune Traffic Police can act on — alongside
             citizens whose civic care makes any infrastructure last.
           </p>
         </section>
@@ -198,7 +199,7 @@ export default async function NIBMPilotPage() {
           <div className="grid sm:grid-cols-2 gap-3">
             {[
               { q: 'Traffic came to a halt for hours. Local residents had to step in to clear it themselves.', src: 'Instagram reel · Mar 2026' },
-              { q: '13 accidents, 4 fatalities since 2022 — and we&rsquo;re still waiting for someone to act.', src: 'PunePulse · resident quote' },
+              { q: '13 accidents, 4 fatalities since 2022 — and we\'re still waiting for someone to act.', src: 'PunePulse · resident quote' },
               { q: 'Drainage pipes blocking the road for weeks. PMC says no project planned.', src: 'PunekarNews · Jul 2025' },
               { q: '8 societies gathered to ask for action. Tax-paying residents, not protesters.', src: 'Local meeting · Jul 2025' },
             ].map((q, i) => (
@@ -214,148 +215,248 @@ export default async function NIBMPilotPage() {
         </section>
 
         {/* ── 6. Sushaasan Solution — diplomat tone, gov + citizen split ──── */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="font-serif text-2xl font-semibold text-ink">
-              Sushaasan Solution
-            </h2>
-            <div className="flex-1 h-px bg-ink/8 min-w-[40px]" />
-            <span className="text-[9px] font-bold tracking-[0.15em] uppercase text-saffron-dark
-                             bg-saffron/8 border border-saffron/20 px-2 py-1 rounded-full">
-              AI-synthesised brief
-            </span>
-          </div>
+        <section className="space-y-6">
+          <FadeUp>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="font-serif text-2xl font-semibold text-ink">
+                Sushaasan Solution
+              </h2>
+              <div className="flex-1 h-px bg-ink/8 min-w-[40px]" />
+              <span className="text-[9px] font-bold tracking-[0.15em] uppercase text-saffron-dark
+                               bg-saffron/8 border border-saffron/20 px-2 py-1 rounded-full">
+                AI-synthesised brief
+              </span>
+            </div>
+          </FadeUp>
 
           {/* Diplomat opener */}
-          <div className="bg-white rounded-2xl border border-saffron/20 shadow-sm p-6 space-y-4">
-            <div className="text-[9px] font-bold tracking-[0.16em] uppercase text-saffron-dark">
-              A note from Sushaasan
-            </div>
-            <p className="text-ink leading-relaxed text-[14.5px]">
-              The NIBM–Kondhwa–Mohammadwadi corridor is one of Pune&rsquo;s fastest-growing zones,
-              and the strain shows. We don&rsquo;t see this as a failure of any one office —
-              we see a coordination gap that the right framework can close. What follows is a
-              <span className="font-semibold text-ink"> respectful suggestion</span>, drawing on
-              what already worked in Hadapsar (Ward 55) and Kothrud (Ward 32). The corporator&rsquo;s
-              office, PMC departments, and residents each have a clear role — and Sushaasan
-              simply makes them legible to each other.
-            </p>
-            {hasRealData && solution.optimized_solution_plan && (
-              <details className="group">
-                <summary className="cursor-pointer text-[11px] font-semibold text-saffron-dark hover:underline">
-                  Read the full AI narrative ↓
-                </summary>
-                <p className="mt-3 text-[13px] text-ink-2 leading-relaxed whitespace-pre-line">
-                  {solution.optimized_solution_plan}
-                </p>
-              </details>
-            )}
+          <FadeUp delay={60}>
+            <div className="bg-white rounded-2xl border border-saffron/20 shadow-sm p-6 space-y-4">
+              <div className="text-[9px] font-bold tracking-[0.16em] uppercase text-saffron-dark">
+                A note from Sushaasan
+              </div>
+              <p className="text-ink leading-relaxed text-[14.5px]">
+                The NIBM–Kondhwa–Mohammadwadi corridor is one of Pune's fastest-growing zones,
+                and the strain shows. We don't see this as a failure of any one office —
+                we see a coordination gap that the right framework can close. What follows is a
+                <span className="font-semibold text-ink"> respectful suggestion</span>, drawing on
+                what already worked in Hadapsar (Ward 55) and Kothrud (Ward 32). The corporator's
+                office, PMC departments, and residents each have a clear role — and Sushaasan
+                simply makes them legible to each other.
+              </p>
+              {hasRealData && solution.optimized_solution_plan && (
+                <details className="group">
+                  <summary className="cursor-pointer text-[11px] font-semibold text-saffron-dark hover:underline">
+                    Read the full AI narrative ↓
+                  </summary>
+                  <p className="mt-3 text-[13px] text-ink-2 leading-relaxed whitespace-pre-line">
+                    {solution.optimized_solution_plan}
+                  </p>
+                </details>
+              )}
 
-            {/* Key numbers band */}
-            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-ink/6">
-              <div>
-                <div className="font-serif text-2xl font-bold text-saffron leading-none">
-                  {fmt(solution?.total_budget_used) ?? '₹2.48 Cr'}
+              {/* Key numbers band */}
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-ink/6">
+                <div>
+                  <div className="font-serif text-2xl font-bold text-saffron leading-none">
+                    {fmt(solution?.total_budget_used) ?? '₹2.48 Cr'}
+                  </div>
+                  <div className="text-[10px] text-ink-3 mt-1">Total estimate, within ward budget</div>
                 </div>
-                <div className="text-[10px] text-ink-3 mt-1">Total estimate, within ward budget</div>
-              </div>
-              <div>
-                <div className="font-serif text-2xl font-bold text-saffron leading-none">
-                  {solution?.total_timeline_days ?? 165}d
+                <div>
+                  <div className="font-serif text-2xl font-bold text-saffron leading-none">
+                    {solution?.total_timeline_days ?? 165}d
+                  </div>
+                  <div className="text-[10px] text-ink-3 mt-1">From phase 1 to public dashboard</div>
                 </div>
-                <div className="text-[10px] text-ink-3 mt-1">From phase 1 to public dashboard</div>
-              </div>
-              <div>
-                <div className="font-serif text-2xl font-bold text-saffron leading-none">
-                  {solution?.feasibility_score ?? 8.7}/10
+                <div>
+                  <div className="font-serif text-2xl font-bold text-saffron leading-none">
+                    {solution?.feasibility_score ?? 8.7}/10
+                  </div>
+                  <div className="text-[10px] text-ink-3 mt-1">Feasibility score</div>
                 </div>
-                <div className="text-[10px] text-ink-3 mt-1">Feasibility score</div>
               </div>
             </div>
-          </div>
+          </FadeUp>
 
-          {/* 4-phase split: government action ↔ citizen role */}
-          <div className="grid gap-4">
+          {/* Phase timeline flow bar */}
+          <FadeUp delay={100}>
+            <div className="bg-white rounded-2xl border border-ink/8 shadow-sm px-5 py-4">
+              <div className="text-[9px] font-bold tracking-[0.16em] uppercase text-ink-4 mb-4">
+                4-phase plan at a glance
+              </div>
+              <div className="flex items-stretch gap-0 overflow-x-auto pb-1">
+                {[
+                  { num: 1, title: 'Enforcement Reset',       cost: '₹12L',    days: '30d',  color: 'bg-red-50 border-red-200' },
+                  { num: 2, title: 'Surveillance & Bollards', cost: '₹1.3 Cr', days: '45d',  color: 'bg-amber-50 border-amber-200' },
+                  { num: 3, title: 'Heavy-Vehicle Terminal',  cost: '₹80L',    days: '60d',  color: 'bg-blue-50 border-blue-200' },
+                  { num: 4, title: 'Transparency Layer',      cost: '₹31L',    days: '30d',  color: 'bg-green-50 border-green-200' },
+                ].map((phase, idx) => (
+                  <div key={phase.num} className="flex items-center flex-shrink-0">
+                    <div className={`rounded-xl border px-3 py-2.5 space-y-1 min-w-[120px] ${phase.color}`}>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-5 h-5 rounded-full bg-saffron flex items-center justify-center
+                                         text-[10px] font-bold text-white flex-shrink-0">
+                          {phase.num}
+                        </span>
+                        <span className="text-[10px] font-bold text-ink leading-tight">{phase.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2 pl-6">
+                        <span className="text-[9px] text-saffron-dark font-semibold">{phase.cost}</span>
+                        <span className="text-[9px] text-ink-3">·</span>
+                        <span className="text-[9px] text-ink-3">{phase.days}</span>
+                      </div>
+                    </div>
+                    {idx < 3 && (
+                      <div className="flex items-center px-1 flex-shrink-0">
+                        <svg width="20" height="12" viewBox="0 0 20 12" fill="none" aria-hidden>
+                          <path d="M1 6 H16 M11 1 L16 6 L11 11" stroke="#FF9933" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </FadeUp>
+
+          {/* 4-phase cards: government action ↔ citizen role */}
+          <div className="grid gap-5">
             {[
               {
                 phase: 1,
                 title: 'Emergency Enforcement Reset',
                 duration: '30 days', budget: '₹12L',
-                gov: 'Joint task-force MoU with Traffic Police (Kondhwa Division), PMC Roads, and RTO Pune. Deploy 4 mobile CCTV units. ~50 challans/day at chronic spots, with public disclosure for accountability.',
-                citizen: 'Use the WhatsApp rapid-response group to flag specific violations. RWAs from 15 housing societies appoint one liaison each. Civic care + system signal = compounding effect.',
+                tldr: 'Flood the corridor with enforcement signal in the first 30 days — make unsafe behaviour costly and visible.',
+                govItems: [
+                  'Sign joint task-force MoU with Traffic Police (Kondhwa Division), PMC Roads, and RTO Pune',
+                  'Deploy 4 mobile CCTV units at the 3 most chronic choke points on NIBM Road',
+                  'Issue ~50 challans/day with public disclosure for accountability',
+                ],
+                citizenItems: [
+                  'Flag specific violations (not general complaints) via the WhatsApp rapid-response group',
+                  'Each RWA from the 15 affected housing societies appoints one named liaison',
+                  'Civic consistency + system signal compound — inconsistency cancels both',
+                ],
               },
               {
                 phase: 2,
                 title: 'Permanent Surveillance & Bollards',
                 duration: '45 days', budget: '₹1.3 Cr',
-                gov: '24 ANPR cameras integrated with Pune Traffic Police e-Challan backend. 47 crash-rated bollards (IS 14458) at chronic encroachment points. VMS boards, reflective signage, control room at the ward office.',
-                citizen: 'Once parking zones and bollards are visible, respecting them keeps them effective. Encourage neighbours and shopfront tenants to do the same — infrastructure works only when norms reinforce it.',
+                tldr: 'Permanently harden the most chronic spots with cameras, bollards, and signage that outlast any single enforcement drive.',
+                govItems: [
+                  'Install 24 ANPR cameras integrated with Pune Traffic Police e-Challan backend',
+                  'Place 47 crash-rated bollards (IS 14458) at encroachment hotspots',
+                  'Erect VMS boards + reflective signage; commission control room at ward office',
+                ],
+                citizenItems: [
+                  'Respect parking zones and bollard boundaries once they appear',
+                  'Remind neighbours and shopfront tenants — infrastructure holds only when norms reinforce it',
+                  'Report tampering via ward WhatsApp group; photo evidence carries weight',
+                ],
               },
               {
                 phase: 3,
                 title: 'Heavy-Vehicle Terminal & Alternatives',
                 duration: '60 days', budget: '₹80L',
-                gov: '3-acre designated terminal at PMC parcel near Mohammadwadi Industrial Zone (Survey 47/2). Loading bays with 30-min QR-enforced limits. PMPML stop optimisation to reduce walk distance.',
-                citizen: 'Adopt the new bus stops, share routes with neighbours, choose safer pedestrian crossings once they open. Word-of-mouth adoption is what makes the alternatives reach critical mass.',
+                tldr: 'Reroute heavy vehicles off NIBM Road entirely and give residents bus stops they'll actually use.',
+                govItems: [
+                  'Acquire and develop 3-acre terminal at PMC parcel near Mohammadwadi Industrial Zone (Survey 47/2)',
+                  'Fit loading bays with 30-minute QR-enforced time limits, CCTV',
+                  'Optimise 4 PMPML stops to reduce pedestrian walk distance to <150m',
+                ],
+                citizenItems: [
+                  'Adopt the new bus stops; share routes with WhatsApp groups and apartment notice boards',
+                  'Use new pedestrian crossings once they open — visible foot traffic validates the investment',
+                  'Word-of-mouth adoption is what gets alternatives to critical mass',
+                ],
               },
               {
                 phase: 4,
                 title: 'Transparency & Long-Term Accountability',
                 duration: '30 days', budget: '₹31L',
-                gov: 'Public dashboard at ward46traffic.pmc.gov.in showing live cameras, monthly challan stats, encroachment clearance logs (before/after photos). Independent third-party traffic-flow audit.',
-                citizen: '15 local youth trained as PMC-certified Traffic Wardens at school zones. RWAs nominate one rep each for the monthly Ward Traffic Coordination Committee. Verify the dashboard.',
+                tldr: 'Lock in accountability — a public dashboard and citizen wardens turn this from a project into a system.',
+                govItems: [
+                  'Launch ward46traffic.pmc.gov.in: live camera feeds, monthly challan stats, encroachment before/after photos',
+                  'Commission independent third-party traffic-flow audit (quarterly cadence)',
+                ],
+                citizenItems: [
+                  'Nominate 15 local youth as PMC-certified Traffic Wardens for school zones',
+                  'Each RWA sends one rep to the monthly Ward Traffic Coordination Committee',
+                  'Check the public dashboard — verified public attention deters backsliding',
+                ],
               },
-            ].map((p) => (
-              <div key={p.phase} className="bg-white rounded-2xl border border-ink/8 shadow-sm overflow-hidden">
-                {/* Phase header */}
-                <div className="px-5 py-3 border-b border-ink/8 flex items-center justify-between flex-wrap gap-2
-                                bg-gradient-to-r from-saffron/4 to-transparent">
-                  <div className="flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-full bg-saffron/12 border border-saffron/30
-                                     flex items-center justify-center font-bold text-saffron-dark text-sm">
-                      {p.phase}
-                    </span>
-                    <div>
-                      <div className="text-[9px] font-bold tracking-[0.16em] uppercase text-ink-4">
-                        Phase {p.phase}
-                      </div>
-                      <div className="font-serif text-base font-semibold text-ink leading-tight">
-                        {p.title}
+            ].map((p, idx) => (
+              <FadeUp key={p.phase} delay={idx * 80}>
+                <div className="bg-white rounded-2xl border border-ink/8 shadow-sm overflow-hidden">
+                  {/* Phase header */}
+                  <div className="px-5 py-4 border-b border-ink/8 flex items-start justify-between flex-wrap gap-3
+                                  bg-gradient-to-r from-saffron/4 to-transparent">
+                    <div className="flex items-start gap-3">
+                      <span className="w-9 h-9 rounded-full bg-saffron/12 border border-saffron/30
+                                       flex items-center justify-center font-bold text-saffron-dark text-sm flex-shrink-0 mt-0.5">
+                        {p.phase}
+                      </span>
+                      <div className="space-y-1">
+                        <div className="text-[9px] font-bold tracking-[0.16em] uppercase text-ink-4">
+                          Phase {p.phase}
+                        </div>
+                        <div className="font-serif text-lg font-semibold text-ink leading-tight">
+                          {p.title}
+                        </div>
+                        <p className="text-[13px] text-ink-2 leading-snug max-w-xl">{p.tldr}</p>
                       </div>
                     </div>
+                    <div className="flex items-center gap-2 text-[10px] flex-shrink-0">
+                      <span className="px-2.5 py-1 bg-ink/5 rounded-full text-ink-2 font-medium">
+                        {p.duration}
+                      </span>
+                      <span className="px-2.5 py-1 bg-saffron/10 rounded-full text-saffron-dark font-semibold">
+                        {p.budget}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-[10px]">
-                    <span className="px-2 py-1 bg-ink/5 rounded-full text-ink-2 font-medium">
-                      {p.duration}
-                    </span>
-                    <span className="px-2 py-1 bg-saffron/10 rounded-full text-saffron-dark font-medium">
-                      {p.budget}
-                    </span>
-                  </div>
-                </div>
 
-                {/* Two-column split */}
-                <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-ink/6">
-                  <div className="p-5 space-y-2 bg-navy/3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-navy">
-                        What government can do
-                      </span>
-                      <span className="text-navy text-base">⚙</span>
+                  {/* Two-column split */}
+                  <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-ink/6">
+                    <div className="p-5 space-y-3 bg-navy/[0.03]">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-navy">
+                          What government does
+                        </span>
+                        <span className="text-navy" aria-hidden>⚙</span>
+                      </div>
+                      <ul className="space-y-2.5">
+                        {p.govItems.map((item, i) => (
+                          <li key={i} className="flex items-start gap-2.5">
+                            <span className="w-4 h-4 rounded bg-navy/10 flex items-center justify-center
+                                             text-[8px] font-bold text-navy flex-shrink-0 mt-0.5">
+                              {i + 1}
+                            </span>
+                            <span className="text-[13.5px] text-ink-2 leading-snug">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <p className="text-[12.5px] text-ink-2 leading-relaxed">{p.gov}</p>
-                  </div>
-                  <div className="p-5 space-y-2 bg-india-green/4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-india-green">
-                        How citizens can help
-                      </span>
-                      <span className="text-india-green text-base">⚘</span>
+                    <div className="p-5 space-y-3 bg-india-green/[0.04]">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-india-green">
+                          How citizens help
+                        </span>
+                        <span className="text-india-green" aria-hidden>⚘</span>
+                      </div>
+                      <ul className="space-y-2.5">
+                        {p.citizenItems.map((item, i) => (
+                          <li key={i} className="flex items-start gap-2.5">
+                            <span className="text-india-green font-bold text-sm flex-shrink-0 mt-0.5">✓</span>
+                            <span className="text-[13.5px] text-ink-2 leading-snug">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <p className="text-[12.5px] text-ink-2 leading-relaxed">{p.citizen}</p>
                   </div>
                 </div>
-              </div>
+              </FadeUp>
             ))}
           </div>
         </section>
@@ -414,7 +515,7 @@ export default async function NIBMPilotPage() {
           <section className="space-y-4">
             <div className="flex items-center gap-3">
               <h2 className="font-serif text-2xl font-semibold text-ink">
-                For the corporator&rsquo;s office
+                For the corporator's office
               </h2>
               <span className="text-[9px] font-bold tracking-wide uppercase text-navy
                                bg-navy/8 border border-navy/20 px-2 py-1 rounded-full">

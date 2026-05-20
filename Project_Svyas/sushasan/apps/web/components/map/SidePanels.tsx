@@ -832,79 +832,35 @@ export function MobilePanel() {
 
 function MobileEmptyContent({ totalPosts }: { totalPosts: number }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 pb-1">
       <p className="text-[13px] leading-relaxed text-ink-2">
-        Sushaasan reads public posts from Twitter, Reddit and Instagram —
-        and maps every civic problem to the exact ward it happened in.
-        <strong className="text-ink"> Each coloured dot is a cluster of real citizen reports.</strong>
+        Tap any icon on the map to see what citizens are reporting in that area.
       </p>
 
-      <div className="space-y-2">
-        <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">
-          What the dots mean
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            { tag: 'traffic',     label: 'Traffic & roads' },
-            { tag: 'water',       label: 'Water supply' },
-            { tag: 'electricity', label: 'Power / lights' },
-            { tag: 'garbage',     label: 'Garbage & drains' },
-          ].map(({ tag, label }) => (
-            <div key={tag} className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: ISSUE_COLOR[tag] }} />
-              <span className="text-[12px] text-ink-2">{label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-1.5">
-        <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">
-          Areas covered
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {['NIBM Road', 'Salunke Vihar', 'Kondhwa', 'Wanowrie', 'Mohammadwadi'].map((area) => (
-            <span key={area}
-              className="px-2 py-0.5 rounded-full text-[11px] font-medium
-                         bg-saffron/10 text-saffron-dark border border-saffron/20">
-              {area}
-            </span>
-          ))}
-        </div>
+      {/* Compact inline legend */}
+      <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+        {[
+          { tag: 'traffic',     label: 'Traffic',    icon: '🚗' },
+          { tag: 'water',       label: 'Water',      icon: '💧' },
+          { tag: 'electricity', label: 'Power',      icon: '⚡' },
+          { tag: 'garbage',     label: 'Garbage',    icon: '🗑️' },
+          { tag: 'other',       label: 'Other',      icon: '📌' },
+        ].map(({ tag, label, icon }) => (
+          <div key={tag} className="flex items-center gap-1.5">
+            <span
+              className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] flex-shrink-0"
+              style={{ backgroundColor: ISSUE_COLOR[tag] }}
+            >{icon}</span>
+            <span className="text-[11px] text-ink-2 font-medium">{label}</span>
+          </div>
+        ))}
       </div>
 
       {totalPosts > 0 && (
         <div className="text-[11px] text-ink-3">
-          <span className="font-semibold text-ink">{totalPosts.toLocaleString('en-IN')}</span> reports collected this week
+          <span className="font-semibold text-ink">{totalPosts.toLocaleString('en-IN')}</span> reports tracked this week
         </div>
       )}
-
-      <div className="pt-2 border-t border-ink/8 text-[11px] font-medium text-saffron-dark">
-        ↑ Tap any coloured dot on the map to see what&apos;s being reported
-      </div>
-
-      {/* Quick access CTAs */}
-      <div className="flex items-center gap-2 pt-1">
-        <a
-          href="/dashboard/nibm"
-          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl
-                     bg-saffron text-white font-semibold text-[11px] tracking-wide
-                     shadow-[0_4px_14px_rgba(255,153,51,0.40)]
-                     active:scale-95 transition-all duration-150"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse flex-shrink-0" />
-          NIBM AI Brief
-        </a>
-        <a
-          href="/dashboard"
-          className="flex-1 flex items-center justify-center px-3 py-2.5 rounded-xl
-                     text-[11px] font-medium text-ink/70
-                     bg-white border border-ink/10 shadow-sm
-                     active:scale-95 transition-all duration-150"
-        >
-          Dashboard
-        </a>
-      </div>
     </div>
   )
 }

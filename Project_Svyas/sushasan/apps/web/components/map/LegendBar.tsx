@@ -11,10 +11,10 @@ const CATEGORIES = [
 export function LegendBar() {
   return (
     <div
-      className="absolute z-40
+      className="hidden md:flex absolute z-40
                  left-1/2 -translate-x-1/2
-                 bottom-[5.5rem] md:bottom-20
-                 flex items-center gap-0.5
+                 bottom-20
+                 items-center gap-0.5
                  bg-white border border-ink/10 rounded-full
                  px-2.5 py-1.5 shadow-sm
                  max-w-[96vw] overflow-x-auto"

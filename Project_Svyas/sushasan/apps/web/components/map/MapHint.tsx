@@ -38,27 +38,7 @@ export function MapHint() {
 
   return (
     <>
-      {/* ── Mobile: slim chip hint ─────────────────────────────── */}
-      <div className="md:hidden absolute top-[4.5rem] left-1/2 -translate-x-1/2 z-30 pointer-events-auto w-[min(92vw,340px)] animate-hint-rise">
-        <div className="flex items-center gap-3 bg-white/95 backdrop-blur-md border border-saffron/30 rounded-2xl shadow-[0_8px_24px_rgba(10,31,58,0.14)] px-4 py-3">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-saffron text-white font-serif font-bold text-sm flex-shrink-0">स</div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[12px] font-semibold text-ink leading-snug">
-              Tap a coloured dot to explore
-            </div>
-            <div className="text-[10px] text-ink-3 mt-0.5">
-              Each dot = real citizen reports · saffron wards have AI briefs
-            </div>
-          </div>
-          <button
-            onClick={dismiss}
-            className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-ink-3 hover:bg-ink/8 text-xs font-bold transition-colors"
-            aria-label="Dismiss"
-          >✕</button>
-        </div>
-      </div>
-
-      {/* ── Desktop: full card ─────────────────────────────────── */}
+      {/* ── Desktop only: full card ────────────────────────────── */}
       <div className="hidden md:block absolute top-20 left-1/2 -translate-x-1/2 z-30 pointer-events-auto w-[360px] animate-hint-rise">
         <div className="relative bg-white border-2 border-saffron/30 rounded-2xl shadow-[0_12px_40px_rgba(10,31,58,0.18)] px-5 py-5">
 
@@ -90,6 +70,7 @@ export function MapHint() {
     </>
   )
 }
+
 
 function Step({ num, headline, detail }: { num: string; headline: string; detail: string }) {
   return (

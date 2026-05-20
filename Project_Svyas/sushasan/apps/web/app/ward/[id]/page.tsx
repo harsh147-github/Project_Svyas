@@ -25,7 +25,7 @@ const ISSUE_LABEL: Record<string, string> = {
 
 const CITIZEN_ROLE: Record<string, string> = {
   traffic: 'Respect new lane markings once they appear · RWA liaisons coordinate with Traffic Police rapid-response group · share specific evidence, not generalised complaints.',
-  water:   'Society facility managers share corrected supply schedules on resident WhatsApp groups · report tanker price gouging via PMC&rsquo;s consumer cell · maintain society storage discipline.',
+  water:   'Society facility managers share corrected supply schedules on resident WhatsApp groups · report tanker price gouging via PMC\'s consumer cell · maintain society storage discipline.',
   electricity: 'RWAs photo-log streetlight outages weekly · residents avoid junction-box tampering · use the MSEDCL fault-number helpline for evidence trail.',
   garbage: 'Households segregate at source · shopfronts use new covered bins · RWAs verify collection-day adherence and escalate misses through ward office.',
   other:   'Residents document evidence specifically · verify resolution claims on the public dashboard · partner with the ward office rather than petitioning around it.',
@@ -119,7 +119,7 @@ export default function WardPage({ params }: Props) {
             <p className="text-[11px] text-ink-3 mt-2">
               {budgetPct > 100
                 ? 'Combined estimate exceeds annual allocation — phase rollout suggested.'
-                : `Resolving every active brief uses ${budgetPct}% of the ward&rsquo;s annual budget.`}
+                : `Resolving every active brief uses ${budgetPct}% of the ward's annual budget.`}
             </p>
           </section>
         )}
@@ -200,7 +200,7 @@ export default function WardPage({ params }: Props) {
 
             <p className="text-[13px] text-ink-3 max-w-2xl">
               Data-backed. Budget-checked. Steps named by department.
-              The corporator&rsquo;s office decides — Sushaasan just does the groundwork.
+              The corporator's office decides — Sushaasan just does the groundwork.
             </p>
 
             <div className="space-y-5">
