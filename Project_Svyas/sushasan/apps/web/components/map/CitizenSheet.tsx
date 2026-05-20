@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import { SheetScroller } from './SheetScroller'
 
 type SheetData = {
   wardId: string
@@ -147,7 +148,7 @@ export function CitizenSheet() {
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
+        <SheetScroller className="flex-1 px-5 py-5 space-y-6">
           {loading ? (
             <div className="text-center py-10 text-ink-3 text-sm">Loading…</div>
           ) : (
@@ -228,7 +229,7 @@ export function CitizenSheet() {
               </a>
             </>
           )}
-        </div>
+        </SheetScroller>
 
         {/* Safe area */}
         <div className="h-4 flex-shrink-0" />

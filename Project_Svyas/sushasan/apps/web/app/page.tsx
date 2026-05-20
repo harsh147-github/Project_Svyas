@@ -59,11 +59,11 @@ export default function HomePage() {
           </div>
 
           {/* Pilot badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full
                           bg-white border border-ink/10 shadow-sm
-                          text-[9px] font-bold tracking-[0.16em] uppercase text-ink-3">
-            <span className="w-1.5 h-1.5 rounded-full bg-india-green animate-pulse" />
-            Pilot · NIBM · Wanowrie
+                          text-[9px] font-bold tracking-[0.12em] uppercase text-ink-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-india-green animate-pulse flex-shrink-0" />
+            <span className="hidden xs:inline">Pilot · </span>NIBM · Wanowrie
           </div>
 
         </div>
@@ -142,30 +142,6 @@ export default function HomePage() {
 
       </div>
 
-      {/* Mobile CTA strip — sits above the MobilePanel bottom sheet */}
-      <div className="md:hidden absolute bottom-[9.5rem] left-1/2 -translate-x-1/2 z-50
-                      flex items-center gap-2 px-3 py-2 rounded-2xl
-                      bg-white/85 backdrop-blur-md border border-ink/8
-                      shadow-[0_8px_24px_rgba(10,31,58,0.10)]">
-        <a
-          href="/dashboard/nibm"
-          className="flex items-center gap-1.5 px-4 py-2 rounded-full
-                     bg-saffron text-white font-semibold text-[11px] tracking-wide
-                     shadow-[0_4px_14px_rgba(255,153,51,0.40)]
-                     active:scale-95 transition-all duration-150"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse flex-shrink-0" />
-          NIBM AI Brief
-        </a>
-        <a
-          href="/dashboard"
-          className="px-4 py-2 rounded-full text-[11px] font-medium text-ink/70
-                     bg-white border border-ink/10 shadow-sm
-                     active:scale-95 transition-all duration-150"
-        >
-          Dashboard
-        </a>
-      </div>
 
     </main>
   )

@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { SheetScroller } from './SheetScroller'
 
 // ─── Types matching /api/ward/all + /api/ward/[id] ────────────────────────
 
@@ -806,7 +807,7 @@ export function MobilePanel() {
 
         {/* Expanded content */}
         {expanded && (
-          <div className="px-5 pb-4 max-h-[55vh] overflow-y-auto space-y-4">
+          <SheetScroller className="px-5 pb-4 max-h-[55vh] space-y-4">
             {!active ? (
               <MobileEmptyContent totalPosts={all?.totalPosts ?? 0} />
             ) : clusters.length === 0 ? (
@@ -819,7 +820,7 @@ export function MobilePanel() {
                 full={full}
               />
             )}
-          </div>
+          </SheetScroller>
         )}
 
         {/* Safe area spacer for phones with home bar */}
@@ -880,6 +881,29 @@ function MobileEmptyContent({ totalPosts }: { totalPosts: number }) {
 
       <div className="pt-2 border-t border-ink/8 text-[11px] font-medium text-saffron-dark">
         ↑ Tap any coloured dot on the map to see what&apos;s being reported
+      </div>
+
+      {/* Quick access CTAs */}
+      <div className="flex items-center gap-2 pt-1">
+        <a
+          href="/dashboard/nibm"
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl
+                     bg-saffron text-white font-semibold text-[11px] tracking-wide
+                     shadow-[0_4px_14px_rgba(255,153,51,0.40)]
+                     active:scale-95 transition-all duration-150"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse flex-shrink-0" />
+          NIBM AI Brief
+        </a>
+        <a
+          href="/dashboard"
+          className="flex-1 flex items-center justify-center px-3 py-2.5 rounded-xl
+                     text-[11px] font-medium text-ink/70
+                     bg-white border border-ink/10 shadow-sm
+                     active:scale-95 transition-all duration-150"
+        >
+          Dashboard
+        </a>
       </div>
     </div>
   )

@@ -13,7 +13,7 @@ export function LegendBar() {
     <div
       className="absolute z-40
                  left-1/2 -translate-x-1/2
-                 bottom-[13.5rem] md:bottom-20
+                 bottom-[5.5rem] md:bottom-20
                  flex items-center gap-1
                  bg-white border border-ink/10 rounded-full
                  px-3 py-1.5 shadow-sm
