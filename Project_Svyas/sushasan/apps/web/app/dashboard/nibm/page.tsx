@@ -359,11 +359,11 @@ export default async function NIBMPilotPage() {
                 phase: 3,
                 title: 'Heavy-Vehicle Terminal & Alternatives',
                 duration: '60 days', budget: '₹80L',
-                tldr: 'Reroute heavy vehicles off NIBM Road entirely and give residents bus stops they'll actually use.',
+                tldr: "Reroute heavy vehicles off NIBM Road entirely and give residents bus stops they'll actually use.",
                 govItems: [
                   'Acquire and develop 3-acre terminal at PMC parcel near Mohammadwadi Industrial Zone (Survey 47/2)',
                   'Fit loading bays with 30-minute QR-enforced time limits, CCTV',
-                  'Optimise 4 PMPML stops to reduce pedestrian walk distance to <150m',
+                  'Optimise 4 PMPML stops to reduce pedestrian walk distance to under 150m',
                 ],
                 citizenItems: [
                   'Adopt the new bus stops; share routes with WhatsApp groups and apartment notice boards',
