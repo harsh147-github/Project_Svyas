@@ -74,9 +74,9 @@ export function MapHint() {
           </div>
 
           <ol className="space-y-3.5">
-            <Step num="1" color="#EF4444" headline="Each dot = real citizen complaints" detail="Collected from Twitter, Reddit & Instagram this week. Bigger dot = more people reported the same problem." />
-            <Step num="2" color="#FF9933" headline="Saffron-shaded wards are live" detail="These wards have an AI-generated action plan ready. The darker the shade, the more urgent the issue." />
-            <Step num="3" color="#138808" headline="Tap any dot — two views open" detail="A plain-language view for citizens, and a decision brief for the ward corporator's office." />
+            <Step num="1" headline="Each icon = real citizen complaints" detail="Collected from Twitter, Reddit & Instagram this week. Bigger icon = more people reported the same problem." />
+            <Step num="2" headline="Saffron-shaded wards are live" detail="These wards have an AI-generated action plan ready. The darker the shade, the more urgent the issue." />
+            <Step num="3" headline="Tap any icon — two views open" detail="A plain-language view for citizens, and a decision brief for the ward corporator's office." />
           </ol>
 
           <div className="flex flex-col items-center mt-4 gap-1">
@@ -91,10 +91,10 @@ export function MapHint() {
   )
 }
 
-function Step({ num, color, headline, detail }: { num: string; color: string; headline: string; detail: string }) {
+function Step({ num, headline, detail }: { num: string; headline: string; detail: string }) {
   return (
     <li className="flex items-start gap-3">
-      <span className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[12px] font-bold text-white mt-0.5" style={{ backgroundColor: color }}>{num}</span>
+      <span className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold text-ink/60 mt-0.5 border border-ink/20 bg-ink/[0.04]">{num}</span>
       <div>
         <div className="text-[13px] font-semibold text-ink leading-snug">{headline}</div>
         <div className="text-[12px] leading-relaxed text-ink-3 mt-0.5">{detail}</div>

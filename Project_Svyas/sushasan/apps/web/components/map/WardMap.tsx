@@ -10,6 +10,51 @@ const ISSUE_COLORS: Record<string, string> = {
   other:       '#8B5CF6',
 }
 
+const ISSUE_ICONS: Record<string, string> = {
+  traffic:     '🚗',
+  water:       '💧',
+  electricity: '⚡',
+  garbage:     '🗑️',
+  other:       '📌',
+}
+
+function makeIconImageData(
+  emoji: string,
+  bgColor: string,
+  size = 48,
+): { width: number; height: number; data: Uint8Array } {
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext('2d')!
+
+  // Soft drop shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.28)'
+  ctx.shadowBlur = 4
+  ctx.shadowOffsetY = 1.5
+
+  // Filled circle background
+  ctx.beginPath()
+  ctx.arc(size / 2, size / 2, size / 2 - 3, 0, Math.PI * 2)
+  ctx.fillStyle = bgColor
+  ctx.fill()
+
+  // White border ring
+  ctx.shadowColor = 'transparent'
+  ctx.strokeStyle = '#ffffff'
+  ctx.lineWidth = 2.5
+  ctx.stroke()
+
+  // Emoji centred
+  ctx.font = `${Math.round(size * 0.44)}px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',serif`
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(emoji, size / 2, size / 2 + 1)
+
+  const raw = ctx.getImageData(0, 0, size, size)
+  return { width: size, height: size, data: new Uint8Array(raw.data.buffer) }
+}
+
 // Real OSM vector tiles via OpenFreeMap (no API key, free).
 // Positron = clean light style with full road network + buildings + lakes.
 const BASEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
@@ -210,13 +255,27 @@ export function WardMap() {
         data: { type: 'FeatureCollection', features: [] },
       })
 
-      // Glow ring
+      // Pre-render emoji icons onto canvas and register with the map
+      const iconDefs = [
+        { name: 'icon-traffic',     emoji: ISSUE_ICONS.traffic,     color: ISSUE_COLORS.traffic },
+        { name: 'icon-water',       emoji: ISSUE_ICONS.water,       color: ISSUE_COLORS.water },
+        { name: 'icon-electricity', emoji: ISSUE_ICONS.electricity, color: ISSUE_COLORS.electricity },
+        { name: 'icon-garbage',     emoji: ISSUE_ICONS.garbage,     color: ISSUE_COLORS.garbage },
+        { name: 'icon-other',       emoji: ISSUE_ICONS.other,       color: ISSUE_COLORS.other },
+      ]
+      for (const { name, emoji, color } of iconDefs) {
+        if (!map.hasImage(name)) {
+          map.addImage(name, makeIconImageData(emoji, color, 48))
+        }
+      }
+
+      // Soft glow ring behind each icon
       map.addLayer({
         id: 'hotspot-glow',
         type: 'circle',
         source: 'clusters',
         paint: {
-          'circle-radius': ['interpolate', ['linear'], ['get', 'post_count'], 1, 22, 50, 40],
+          'circle-radius': ['interpolate', ['linear'], ['get', 'post_count'], 1, 26, 50, 44],
           'circle-color': [
             'match', ['get', 'issue_tag'],
             'traffic',     ISSUE_COLORS.traffic,
@@ -225,29 +284,33 @@ export function WardMap() {
             'garbage',     ISSUE_COLORS.garbage,
             ISSUE_COLORS.other,
           ],
-          'circle-opacity': 0.14,
-          'circle-blur': 0.8,
+          'circle-opacity': 0.13,
+          'circle-blur': 0.9,
         },
       })
 
-      // Solid dot
+      // Emoji icon markers (replaces plain coloured dots)
       map.addLayer({
-        id: 'hotspots',
-        type: 'circle',
+        id: 'hotspot-icons',
+        type: 'symbol',
         source: 'clusters',
-        paint: {
-          'circle-radius': ['interpolate', ['linear'], ['get', 'post_count'], 1, 9, 20, 18, 50, 28],
-          'circle-color': [
+        layout: {
+          'icon-image': [
             'match', ['get', 'issue_tag'],
-            'traffic',     ISSUE_COLORS.traffic,
-            'water',       ISSUE_COLORS.water,
-            'electricity', ISSUE_COLORS.electricity,
-            'garbage',     ISSUE_COLORS.garbage,
-            ISSUE_COLORS.other,
+            'traffic',     'icon-traffic',
+            'water',       'icon-water',
+            'electricity', 'icon-electricity',
+            'garbage',     'icon-garbage',
+            'icon-other',
           ],
-          'circle-opacity': 0.95,
-          'circle-stroke-width': 2.5,
-          'circle-stroke-color': '#ffffff',
+          'icon-size': [
+            'interpolate', ['linear'], ['get', 'post_count'],
+            1, 0.65,   20, 0.85,   50, 1.1,
+          ],
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+          'icon-pitch-alignment': 'viewport',
+          'icon-rotation-alignment': 'viewport',
         },
       })
 
@@ -293,7 +356,7 @@ export function WardMap() {
       })
 
       // Hotspot click
-      map.on('click', 'hotspots', (e) => {
+      map.on('click', 'hotspot-icons', (e) => {
         if (!e.features?.length) return
         const p = e.features[0].properties ?? {}
         // @ts-expect-error geojson coords
@@ -345,16 +408,14 @@ export function WardMap() {
               ${citizenSection}
               ${govSection}
               ${fallbackSolution}
-              ${(p.citizen_headline || p.solution_summary || p.gov_summary)
-                ? `<div class="popup-cta-row">
+              <div class="popup-cta-row">
                      <button class="popup-btn-citizen" onclick="window.dispatchEvent(new CustomEvent('sushaasan:citizen-sheet-open',{detail:{wardId:'${p.ward_id ?? ''}',issueTag:'${p.issue_tag ?? ''}'}}))">
-                       👥 What&apos;s happening?
+                       \u{1F465} What's happening?
                      </button>
                      <button class="popup-btn-gov" onclick="window.dispatchEvent(new CustomEvent('sushaasan:gov-sheet-open',{detail:{wardId:'${p.ward_id ?? ''}'}}))">
-                       📋 Action Brief
+                       \u{1F4CB} Action Brief
                      </button>
-                   </div>`
-                : `<div class="popup-ambient-note">Signal detected — action brief generated when 10+ reports confirmed. Tap the ward area for context.</div>`}
+                   </div>
             </div>
           `)
           .addTo(map)
@@ -367,7 +428,7 @@ export function WardMap() {
       map.on('click', (e) => {
         // @ts-expect-error defaultPrevented not standard on MapLibre events
         if (e.defaultPrevented) return
-        const features = map.queryRenderedFeatures(e.point, { layers: ['pilot-fill', 'hotspots'] })
+        const features = map.queryRenderedFeatures(e.point, { layers: ['pilot-fill', 'hotspot-icons'] })
         if (!features.length) {
           clearSelected()
           window.dispatchEvent(new CustomEvent('sushaasan:ward-cleared'))
@@ -446,8 +507,8 @@ export function WardMap() {
         clearHover()
         window.dispatchEvent(new CustomEvent('sushaasan:ward-unhovered'))
       })
-      map.on('mouseenter', 'hotspots',   () => { map.getCanvas().style.cursor = 'pointer' })
-      map.on('mouseleave', 'hotspots',   () => { map.getCanvas().style.cursor = '' })
+      map.on('mouseenter', 'hotspot-icons', () => { map.getCanvas().style.cursor = 'pointer' })
+      map.on('mouseleave', 'hotspot-icons', () => { map.getCanvas().style.cursor = '' })
 
       fetchClusters(map)
     })
@@ -476,12 +537,12 @@ export function WardMap() {
 }
 
 function MapLegend() {
-  const items: Array<{ tag: string; label: string; color: string }> = [
-    { tag: 'traffic',     label: 'Traffic',     color: ISSUE_COLORS.traffic },
-    { tag: 'water',       label: 'Water',       color: ISSUE_COLORS.water },
-    { tag: 'electricity', label: 'Electricity', color: ISSUE_COLORS.electricity },
-    { tag: 'garbage',     label: 'Garbage',     color: ISSUE_COLORS.garbage },
-    { tag: 'other',       label: 'Other',       color: ISSUE_COLORS.other },
+  const items = [
+    { tag: 'traffic',     label: 'Traffic',     icon: ISSUE_ICONS.traffic,     color: ISSUE_COLORS.traffic },
+    { tag: 'water',       label: 'Water',       icon: ISSUE_ICONS.water,       color: ISSUE_COLORS.water },
+    { tag: 'electricity', label: 'Electricity', icon: ISSUE_ICONS.electricity, color: ISSUE_COLORS.electricity },
+    { tag: 'garbage',     label: 'Garbage',     icon: ISSUE_ICONS.garbage,     color: ISSUE_COLORS.garbage },
+    { tag: 'other',       label: 'Other',       icon: ISSUE_ICONS.other,       color: ISSUE_COLORS.other },
   ]
   return (
     <div className="pointer-events-none absolute bottom-20 left-3 z-[5] sm:bottom-4 sm:left-4">
@@ -490,14 +551,16 @@ function MapLegend() {
         <div className="text-[8.5px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-1.5">
           Issue legend
         </div>
-        <div className="flex flex-wrap gap-x-3 gap-y-1.5 max-w-[260px]">
+        <div className="flex flex-wrap gap-x-3 gap-y-1.5 max-w-[280px]">
           {items.map((it) => (
             <div key={it.tag} className="flex items-center gap-1.5">
               <span
                 aria-hidden
-                className="w-2.5 h-2.5 rounded-full ring-1 ring-white shadow"
-                style={{ backgroundColor: it.color, boxShadow: `0 0 0 3px ${it.color}22` }}
-              />
+                className="w-5 h-5 rounded-full flex items-center justify-center text-[12px] leading-none flex-shrink-0"
+                style={{ backgroundColor: it.color }}
+              >
+                {it.icon}
+              </span>
               <span className="text-[10.5px] font-medium text-ink-2">{it.label}</span>
             </div>
           ))}
