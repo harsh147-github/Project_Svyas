@@ -1,0 +1,249 @@
+{
+  "demo_name": "Sushaasan NIBM Digital Twin Demo",
+  "region": "NIBM Traffic Management Region",
+  "canonical_statements": [
+    "Sushaasan is not a grievance platform.",
+    "Sushaasan is not a complaint dashboard.",
+    "Sushaasan is not a passive data presenter for government.",
+    "Sushaasan is a governance intelligence engine."
+  ],
+  "source_evidence": [
+    {
+      "id": "src_01",
+      "source_type": "instagram_reel",
+      "title": "Kausarbaug evening choke reel",
+      "summary": "Residents clear traffic themselves while vehicles are double parked outside the commercial strip.",
+      "timestamp": "2026-03-08T19:40:00+05:30",
+      "confidence": 0.97,
+      "geo_relevance": "Kausarbaug junction"
+    },
+    {
+      "id": "src_02",
+      "source_type": "local_news",
+      "title": "Illegal parking near Tribeca",
+      "summary": "Repeated reporting around roadside parking outside Tribeca High Street narrowing the carriageway.",
+      "timestamp": "2025-03-15T10:00:00+05:30",
+      "confidence": 0.92,
+      "geo_relevance": "Tribeca High Street gate"
+    },
+    {
+      "id": "src_03",
+      "source_type": "gmaps_review",
+      "title": "Roadside entrance drainage issue",
+      "summary": "Sewage smell and degraded edge conditions reduce pedestrian comfort and keep people spilling into the roadway.",
+      "timestamp": "2026-04-04T15:14:30+05:30",
+      "confidence": 0.8,
+      "geo_relevance": "Tribeca roadside entrance"
+    },
+    {
+      "id": "src_04",
+      "source_type": "resident_forum",
+      "title": "Mass society meeting",
+      "summary": "Multiple societies report that heavy vehicles, restaurant spillover, and unmanaged curb use are compounding each other.",
+      "timestamp": "2025-07-21T09:00:00+05:30",
+      "confidence": 0.9,
+      "geo_relevance": "Kausarbaug / Parge Nagar"
+    },
+    {
+      "id": "src_05",
+      "source_type": "manual_intelligence",
+      "title": "NIBM junction operating stress",
+      "summary": "Intersection already handles 63,000 vehicles per day, so small curbside disruptions cascade quickly into corridor-wide spillback.",
+      "timestamp": "2025-02-10T00:00:00+05:30",
+      "confidence": 1.0,
+      "geo_relevance": "NIBM-Kondhwa Junction"
+    },
+    {
+      "id": "src_06",
+      "source_type": "traffic_reading",
+      "title": "Corridor slowdown snapshot",
+      "summary": "Live speed snapshots show peak-hour spillback concentrating near the Tribeca / Kausarbaug turn movement.",
+      "timestamp": "2026-04-20T18:05:00+05:30",
+      "confidence": 0.76,
+      "geo_relevance": "Tribeca -> Kausarbaug corridor"
+    }
+  ],
+  "issue_clusters": [
+    {
+      "id": "cluster_01",
+      "title": "Illegal curb capture near the commercial edge",
+      "severity": "critical",
+      "affected_zone": "Tribeca High Street -> Kausarbaug stretch",
+      "summary": "Short-duration curb misuse near Tribeca and Kausarbaug removes a usable lane and triggers manual weaving that quickly turns into stoppage.",
+      "contributing_sources": ["src_01", "src_02", "src_04"]
+    },
+    {
+      "id": "cluster_02",
+      "title": "Construction logistics spilling into public movement",
+      "severity": "high",
+      "affected_zone": "Mohamadwadi approach",
+      "summary": "Heavy vehicles and tanker parking convert the approach into a conflict zone before traffic even reaches the commercial bottleneck.",
+      "contributing_sources": ["src_02", "src_04", "src_05"]
+    },
+    {
+      "id": "cluster_03",
+      "title": "Encroachment and informal market spillback",
+      "severity": "high",
+      "affected_zone": "Kausarbaug / Parge Nagar edge",
+      "summary": "Temporary stalls, festival-period spillover, and unmanaged frontage shrink walking space and push people, carts, and vehicles into the same narrow envelope.",
+      "contributing_sources": ["src_01", "src_04"]
+    },
+    {
+      "id": "cluster_04",
+      "title": "Pedestrian edge failure",
+      "severity": "medium",
+      "affected_zone": "Tribeca roadside entrance",
+      "summary": "Drainage, smell, and edge discomfort reduce footpath usability, so pedestrian movements bleed onto the roadway exactly where lane width is already collapsing.",
+      "contributing_sources": ["src_02", "src_03"]
+    },
+    {
+      "id": "cluster_05",
+      "title": "Enforcement timing mismatch",
+      "severity": "critical",
+      "affected_zone": "Whole NIBM corridor",
+      "summary": "The corridor fails because intervention does not appear at the exact hours and nodes where the cascade starts.",
+      "contributing_sources": ["src_01", "src_05", "src_06"]
+    }
+  ],
+  "causal_links": [
+    {
+      "id": "link_01",
+      "cause_node": "Illegal parking outside commercial frontage",
+      "effect_node": "Lane narrowing at Tribeca / Kausarbaug edge",
+      "confidence": 0.94,
+      "explanation": "Vehicles occupying the curb remove a through movement lane and create immediate merge friction."
+    },
+    {
+      "id": "link_02",
+      "cause_node": "Lane narrowing at Tribeca / Kausarbaug edge",
+      "effect_node": "Manual weaving and blocked turning pockets",
+      "confidence": 0.91,
+      "explanation": "Once lane width collapses, right-turn and through movements compete inside the same envelope."
+    },
+    {
+      "id": "link_03",
+      "cause_node": "Construction / tanker vehicles on Mohamadwadi approach",
+      "effect_node": "Delayed clearance into the main corridor",
+      "confidence": 0.84,
+      "explanation": "Approach-side delays reduce downstream recovery and feed extra backlog into the NIBM stretch."
+    },
+    {
+      "id": "link_04",
+      "cause_node": "Pedestrian spillover from unusable edge conditions",
+      "effect_node": "More defensive driving and slower throughput",
+      "confidence": 0.73,
+      "explanation": "When footpaths fail, vehicle speed drops and effective lane capacity drops with it."
+    },
+    {
+      "id": "link_05",
+      "cause_node": "Enforcement appears after the buildup",
+      "effect_node": "Peak-hour spillback reaches NIBM junction",
+      "confidence": 0.89,
+      "explanation": "The cascade becomes corridor-wide because intervention is reactive, not timed to trigger nodes."
+    }
+  ],
+  "execution_actors": [
+    {
+      "id": "actor_01",
+      "name": "Kondhwa Traffic Division",
+      "governance_level": "traffic_police",
+      "action_responsibility": "Peak-hour curb control, tow action, turning discipline, constable deployment"
+    },
+    {
+      "id": "actor_02",
+      "name": "Ward 19 Office",
+      "governance_level": "ward",
+      "action_responsibility": "Vendor regulation, frontage cleanup, resident coordination, volunteer roster"
+    },
+    {
+      "id": "actor_03",
+      "name": "PMC Road / Drainage",
+      "governance_level": "municipal",
+      "action_responsibility": "Drainage fixes, footpath usability, obstruction removal"
+    },
+    {
+      "id": "actor_04",
+      "name": "Tribeca High Street Operations",
+      "governance_level": "citizen",
+      "action_responsibility": "Parking marshals, loading windows, entry discipline, event-day lane protection"
+    },
+    {
+      "id": "actor_05",
+      "name": "Kausarbaug Residents Forum",
+      "governance_level": "rwa",
+      "action_responsibility": "Volunteer marshals, incident logging, society gate compliance"
+    },
+    {
+      "id": "actor_06",
+      "name": "Builders / tanker operators",
+      "governance_level": "citizen",
+      "action_responsibility": "Time-window compliance and off-road holding adherence"
+    },
+    {
+      "id": "actor_07",
+      "name": "City Traffic Engineering",
+      "governance_level": "city",
+      "action_responsibility": "Signal retiming, turning pocket review, corridor engineering changes"
+    }
+  ],
+  "intervention_options": [
+    {
+      "id": "int_01",
+      "rank": 1,
+      "title": "Peak-hour managed curb zone with immediate tow discipline",
+      "owner_authority": "Kondhwa Traffic Division",
+      "required_coordination": ["Ward 19 Office", "Tribeca High Street Operations", "Kausarbaug Residents Forum"],
+      "citizen_role": "Resident volunteers and shop staff help maintain gate clearance and direct vehicles to legal holding.",
+      "feasibility": "high",
+      "expected_impact": "38-45% reduction in corridor spillback during evening peak",
+      "execution_horizon": "0-14 days"
+    },
+    {
+      "id": "int_02",
+      "rank": 2,
+      "title": "Heavy-vehicle holding zone and timed entry window for Mohamadwadi side",
+      "owner_authority": "Ward 19 Office + Traffic Police",
+      "required_coordination": ["Builders / tanker operators", "PMC Ward Engineering"],
+      "citizen_role": "RWAs submit repeat violator timings and help verify whether the window is being followed.",
+      "feasibility": "medium",
+      "expected_impact": "22-28% reduction in approach-side friction",
+      "execution_horizon": "7-21 days"
+    },
+    {
+      "id": "int_03",
+      "rank": 3,
+      "title": "Festival / high-footfall circulation protocol for Kausarbaug edge",
+      "owner_authority": "Ward Office",
+      "required_coordination": ["Encroachment Dept", "Traffic Police", "Local business operators"],
+      "citizen_role": "Volunteer marshals and resident groups support temporary walking channels and vending boundaries.",
+      "feasibility": "medium",
+      "expected_impact": "Stabilizes footfall-driven shocks before they become jams",
+      "execution_horizon": "14-30 days"
+    },
+    {
+      "id": "int_04",
+      "rank": 4,
+      "title": "Signal / turning movement retiming based on corridor trigger windows",
+      "owner_authority": "City Traffic Engineering",
+      "required_coordination": ["Kondhwa Traffic Division"],
+      "citizen_role": "Citizens continue feeding structured evidence on exact failure windows to refine timing changes.",
+      "feasibility": "medium",
+      "expected_impact": "Improves recovery once curbside triggers are suppressed",
+      "execution_horizon": "21-45 days"
+    }
+  ],
+  "optimized_solution": {
+    "title": "NIBM coordinated decongestion strategy",
+    "primary_strategy": "Treat NIBM as a linked operating system, not a single traffic spot. Remove curb capture first, regulate heavy-vehicle spillover second, stabilize pedestrian and event-period movement third, then tune signals on the cleaned corridor.",
+    "supporting_actions": [
+      "Protect the Tribeca / Kausarbaug edge during retail peaks",
+      "Move heavy vehicle waiting behavior off the public lane",
+      "Create a temporary circulation playbook for high-footfall days",
+      "Use timed signal changes only after curbside friction reduces"
+    ],
+    "routing_path": ["citizen", "rwa", "ward", "traffic_police", "municipal", "city"],
+    "why_best": "This is the highest-feasibility path because it begins with operational interventions already available to local authorities and citizens, while keeping larger municipal and city actions in sequence rather than acting blindly.",
+    "citizen_role": "Citizens become gate-clearance stewards, volunteer marshals, repeat-violation reporters, and compliance partners during pilot windows.",
+    "confidence": 0.88
+  }
+}

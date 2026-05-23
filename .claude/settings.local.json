@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__supabase__list_tables",
+      "Bash(git ls-remote *)",
+      "Bash(git fetch *)",
+      "Bash(git stash *)",
+      "Bash(git checkout *)",
+      "Bash(git switch *)",
+      "Bash(git ls-tree *)",
+      "PowerShell(Get-Process *)",
+      "Bash(pnpm install *)",
+      "PowerShell(Get-Command *)",
+      "PowerShell(Test-Path *)",
+      "PowerShell(Test-Path \"F:\\\\Project_Sushaasan\"; if \\(Test-Path \"F:\\\\Project_Sushaasan\"\\) { Get-ChildItem \"F:\\\\Project_Sushaasan\" -Force -Depth 1 -ErrorAction SilentlyContinue | Where-Object { $_.Name -notmatch \"node_modules\" } | Select-Object FullName, @{n='Type';e={if\\($_.PSIsContainer\\){'DIR'}else{'FILE'}}} })",
+      "PowerShell(Get-ChildItem *)",
+      "Bash(git check-ignore *)",
+      "PowerShell(npm install *)",
+      "PowerShell(vercel *)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Harsh\\\\OneDrive\\\\Documents\\\\Claude\\\\Projects\\\\Project-Svyas\" -Force -Filter \".vercel\" -Recurse -Depth 5 -ErrorAction SilentlyContinue | Where-Object { $_.PSIsContainer -and $_.FullName -notmatch \"node_modules\" } | Select-Object FullName)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Harsh\\\\OneDrive\\\\Documents\\\\Claude\\\\Projects\\\\Project-Svyas\" -Force -Filter \".vercel\" -Recurse -Depth 5 -ErrorAction SilentlyContinue | Where-Object { $_.PSIsContainer -and $_.FullName -notmatch \"node_modules\" } | ForEach-Object { $_.FullName })",
+      "Bash(git pull *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
+}

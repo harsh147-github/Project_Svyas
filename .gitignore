@@ -12,6 +12,8 @@ build/
 .env
 .env.local
 .env.*.local
+kimi.env
+.kimi.env
 
 # OS files
 .DS_Store
@@ -20,6 +22,10 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+.cursor/mcp.json
+
+# Local secrets backup
+.secrets/
 
 # Logs
 *.log
@@ -28,3 +34,4 @@ npm-debug.log*
 # Temp
 *.tmp
 *.bak
+.vercel

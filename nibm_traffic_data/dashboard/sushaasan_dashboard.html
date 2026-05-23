@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sushaasan — NIBM Governance Digital Twin Demo</title>
+<style>
+  :root {
+    --bg: #07111f;
+    --bg2: #0e1a2d;
+    --bg3: #12223b;
+    --panel: rgba(14, 26, 45, 0.84);
+    --panel-strong: rgba(7, 17, 31, 0.92);
+    --line: rgba(126, 177, 255, 0.18);
+    --text: #edf4ff;
+    --muted: #93a8c6;
+    --soft: #6580a7;
+    --primary: #7eb1ff;
+    --primary-2: #53e0ff;
+    --alert: #ff6b6b;
+    --warn: #ffbd59;
+    --good: #5ff0b3;
+    --violet: #b388ff;
+    --shadow: 0 18px 60px rgba(0, 0, 0, 0.38);
+    --radius: 22px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(83, 224, 255, 0.16), transparent 28%),
+      radial-gradient(circle at top right, rgba(179, 136, 255, 0.14), transparent 22%),
+      linear-gradient(180deg, #081120 0%, #050a12 100%);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(126, 177, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(126, 177, 255, 0.04) 1px, transparent 1px);
+    background-size: 88px 88px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .shell {
+    position: relative;
+    z-index: 1;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 28px;
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: 1.4fr 0.9fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .glass {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    backdrop-filter: blur(18px);
+    box-shadow: var(--shadow);
+  }
+
+  .hero-main {
+    padding: 28px 30px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-main::after {
+    content: "";
+    position: absolute;
+    right: -30px;
+    top: -30px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(83, 224, 255, 0.22), transparent 70%);
+    filter: blur(8px);
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(95, 240, 179, 0.12);
+    color: var(--good);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .pulse {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--good);
+    box-shadow: 0 0 0 0 rgba(95, 240, 179, 0.5);
+    animation: pulse 1.8s infinite;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(95, 240, 179, 0.55); }
+    70% { box-shadow: 0 0 0 12px rgba(95, 240, 179, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(95, 240, 179, 0); }
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 4vw, 3.7rem);
+    line-height: 1.02;
+    letter-spacing: -0.05em;
+    max-width: 900px;
+    margin-bottom: 14px;
+  }
+
+  .gradient {
+    background: linear-gradient(90deg, var(--primary), var(--primary-2), #b388ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero-subtitle {
+    max-width: 930px;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .tag {
+    padding: 7px 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(126, 177, 255, 0.18);
+    background: rgba(126, 177, 255, 0.08);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .hero-hook {
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(126, 177, 255, 0.14), rgba(83, 224, 255, 0.08));
+    border: 1px solid rgba(126, 177, 255, 0.18);
+  }
+
+  .hero-hook .label {
+    display: block;
+    color: var(--primary-2);
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+
+  .hero-hook p {
+    font-size: 1.08rem;
+    line-height: 1.55;
+  }
+
+  .hero-side {
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .side-card {
+    border-radius: 18px;
+    padding: 16px;
+    border: 1px solid rgba(126, 177, 255, 0.12);
+    background: rgba(7, 17, 31, 0.55);
+  }
+
+  .side-label {
+    color: var(--soft);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .side-value {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .metric {
+    padding: 18px;
+    border-radius: 18px;
+    background: rgba(7, 17, 31, 0.58);
+    border: 1px solid var(--line);
+  }
+
+  .metric-label {
+    color: var(--soft);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .metric-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .metric-note {
+    color: var(--muted);
+    line-height: 1.5;
+    font-size: 12px;
+  }
+
+  .metric.primary .metric-value { color: var(--primary-2); }
+  .metric.accent .metric-value { color: var(--violet); }
+  .metric.warning .metric-value { color: var(--warn); }
+  .metric.success .metric-value { color: var(--good); }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1.45fr 0.92fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .stack {
+    display: grid;
+    gap: 18px;
+  }
+
+  .panel {
+    padding: 22px;
+  }
+
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .panel-title {
+    font-size: 1.02rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .panel-kicker {
+    color: var(--soft);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .panel-desc {
+    color: var(--muted);
+    line-height: 1.55;
+    font-size: 13px;
+    max-width: 620px;
+  }
+
+  .badge {
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: rgba(126, 177, 255, 0.08);
+    border: 1px solid rgba(126, 177, 255, 0.16);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary);
+    white-space: nowrap;
+  }
+
+  .map-shell {
+    display: grid;
+    grid-template-columns: 1.18fr 0.82fr;
+    gap: 16px;
+  }
+
+  .map-board {
+    min-height: 430px;
+    border-radius: 22px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(126, 177, 255, 0.12);
+    background:
+      linear-gradient(180deg, rgba(15, 30, 52, 0.96), rgba(7, 17, 31, 0.94)),
+      linear-gradient(90deg, rgba(126, 177, 255, 0.05), transparent);
+  }
+
+  .map-board::before,
+  .map-board::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .map-board::before {
+    background-image:
+      radial-gradient(circle at 30% 22%, rgba(126, 177, 255, 0.18), transparent 18%),
+      radial-gradient(circle at 72% 60%, rgba(83, 224, 255, 0.18), transparent 22%),
+      radial-gradient(circle at 68% 34%, rgba(255, 189, 89, 0.16), transparent 14%);
+  }
+
+  .map-board::after {
+    background-image:
+      linear-gradient(rgba(126, 177, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(126, 177, 255, 0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.6;
+  }
+
+  .map-label {
+    position: absolute;
+    padding: 9px 12px;
+    border-radius: 14px;
+    background: rgba(7, 17, 31, 0.82);
+    border: 1px solid rgba(126, 177, 255, 0.16);
+    box-shadow: 0 14px 24px rgba(0, 0, 0, 0.18);
+    min-width: 170px;
+  }
+
+  .map-label strong {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+
+  .map-label span {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .road {
+    position: absolute;
+    background: linear-gradient(90deg, rgba(83, 224, 255, 0.1), rgba(126, 177, 255, 0.52), rgba(83, 224, 255, 0.1));
+    border-radius: 999px;
+    transform-origin: center;
+  }
+
+  .road-core {
+    position: absolute;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.05));
+    border-radius: 999px;
+  }
+
+  .road-1 { width: 430px; height: 10px; left: 100px; top: 215px; transform: rotate(-29deg); }
+  .road-1 .road-core { inset: 2px 22px; }
+  .road-2 { width: 270px; height: 8px; left: 240px; top: 112px; transform: rotate(8deg); }
+  .road-2 .road-core { inset: 2px 18px; }
+  .road-3 { width: 180px; height: 8px; left: 272px; top: 292px; transform: rotate(18deg); }
+  .road-3 .road-core { inset: 2px 16px; }
+
+  .hotspot {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    background: rgba(255, 107, 107, 0.78);
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.5);
+    animation: hotspotPulse 2s infinite;
+    cursor: pointer;
+  }
+
+  .hotspot.medium { background: rgba(255, 189, 89, 0.85); }
+  .hotspot.low { background: rgba(95, 240, 179, 0.8); }
+
+  @keyframes hotspotPulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.5); }
+    100% { box-shadow: 0 0 0 24px rgba(255, 107, 107, 0); }
+  }
+
+  .hotspot.active {
+    background: var(--primary-2);
+    box-shadow: 0 0 0 10px rgba(83, 224, 255, 0.16);
+  }
+
+  .hotspot-tooltip {
+    position: absolute;
+    transform: translate(-50%, calc(-100% - 18px));
+    width: 220px;
+    padding: 12px 13px;
+    border-radius: 14px;
+    background: rgba(7, 17, 31, 0.92);
+    border: 1px solid rgba(126, 177, 255, 0.15);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .hotspot.active .hotspot-tooltip,
+  .hotspot:hover .hotspot-tooltip {
+    opacity: 1;
+  }
+
+  .hotspot-tooltip strong {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .hotspot-tooltip span {
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .mini-card {
+    border-radius: 18px;
+    padding: 14px;
+    border: 1px solid rgba(126, 177, 255, 0.1);
+    background: rgba(7, 17, 31, 0.62);
+    margin-bottom: 12px;
+  }
+
+  .mini-card:last-child { margin-bottom: 0; }
+
+  .mini-label {
+    color: var(--soft);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 7px;
+  }
+
+  .mini-value {
+    font-size: 1.04rem;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .mini-copy {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.55;
+    margin-top: 7px;
+  }
+
+  .evidence-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .evidence-card {
+    border-radius: 18px;
+    padding: 16px;
+    background: rgba(7, 17, 31, 0.62);
+    border: 1px solid rgba(126, 177, 255, 0.1);
+    transition: transform 0.22s ease, border-color 0.22s ease;
+  }
+
+  .evidence-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(126, 177, 255, 0.3);
+  }
+
+  .evidence-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .source-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: rgba(126, 177, 255, 0.08);
+    color: var(--primary-2);
+  }
+
+  .confidence {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .evidence-card h3 {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+
+  .evidence-card p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .evidence-foot {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--soft);
+    font-size: 11px;
+  }
+
+  .split-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .cluster-list,
+  .chain-list,
+  .intervention-list,
+  .role-list,
+  .scene-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .cluster-card,
+  .chain-card,
+  .intervention-card,
+  .role-card,
+  .scene-card {
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(7, 17, 31, 0.6);
+    border: 1px solid rgba(126, 177, 255, 0.1);
+  }
+
+  .cluster-top,
+  .intervention-top,
+  .scene-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .cluster-card h3,
+  .intervention-card h3,
+  .role-card h3,
+  .scene-card h3 {
+    font-size: 0.98rem;
+  }
+
+  .severity {
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+
+  .severity.critical { background: rgba(255, 107, 107, 0.14); color: var(--alert); }
+  .severity.high { background: rgba(255, 189, 89, 0.14); color: var(--warn); }
+  .severity.medium { background: rgba(126, 177, 255, 0.14); color: var(--primary); }
+
+  .cluster-copy,
+  .intervention-copy,
+  .role-copy,
+  .scene-copy {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .inline-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .chip {
+    padding: 6px 8px;
+    border-radius: 10px;
+    background: rgba(126, 177, 255, 0.08);
+    border: 1px solid rgba(126, 177, 255, 0.12);
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .cause-list {
+    display: grid;
+    gap: 7px;
+    margin-top: 12px;
+  }
+
+  .cause-list li {
+    list-style: none;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .cause-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--primary-2);
+  }
+
+  .chain-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .chain-card::after {
+    content: "";
+    position: absolute;
+    left: 21px;
+    top: 54px;
+    bottom: 18px;
+    width: 1px;
+    background: linear-gradient(180deg, rgba(126, 177, 255, 0.3), rgba(126, 177, 255, 0));
+  }
+
+  .chain-step {
+    display: flex;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .chain-dot {
+    flex: 0 0 18px;
+    height: 18px;
+    border-radius: 50%;
+    margin-top: 2px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  }
+
+  .chain-step strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.95rem;
+  }
+
+  .chain-step p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .route-ladder {
+    display: grid;
+    gap: 10px;
+  }
+
+  .route-step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    padding: 13px 14px;
+    border-radius: 16px;
+    background: rgba(7, 17, 31, 0.6);
+    border: 1px solid rgba(126, 177, 255, 0.08);
+  }
+
+  .route-step.inactive {
+    opacity: 0.52;
+  }
+
+  .route-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(126, 177, 255, 0.16);
+    color: var(--primary-2);
+    font-weight: 800;
+    font-size: 12px;
+  }
+
+  .route-step strong {
+    display: block;
+    font-size: 0.94rem;
+    margin-bottom: 4px;
+  }
+
+  .route-step p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .intervention-rank {
+    color: var(--primary-2);
+    font-size: 0.92rem;
+    font-weight: 800;
+  }
+
+  .deliverable-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .footer-cta {
+    padding: 22px 24px;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+    background:
+      linear-gradient(135deg, rgba(126, 177, 255, 0.14), rgba(179, 136, 255, 0.14)),
+      rgba(7, 17, 31, 0.78);
+  }
+
+  .footer-cta h2 {
+    font-size: 1.28rem;
+    margin-bottom: 8px;
+  }
+
+  .footer-cta p {
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 900px;
+  }
+
+  .cta-badge {
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(7, 17, 31, 0.82);
+    border: 1px solid rgba(126, 177, 255, 0.16);
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--text);
+    min-width: 250px;
+  }
+
+  .scene-card.active {
+    border-color: rgba(83, 224, 255, 0.36);
+    box-shadow: 0 0 0 1px rgba(83, 224, 255, 0.16);
+  }
+
+  @media (max-width: 1260px) {
+    .hero,
+    .main-grid,
+    .split-grid,
+    .deliverable-grid,
+    .map-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .metric-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .shell {
+      padding: 16px;
+    }
+
+    .hero-main,
+    .hero-side,
+    .panel,
+    .footer-cta {
+      padding: 18px;
+    }
+
+    .metric-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .footer-cta {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="glass hero-main">
+        <div class="eyebrow"><span class="pulse"></span><span id="status-label">Believable MVP Demo</span></div>
+        <h1 class="hero-title">
+          Sushaasan is a <span class="gradient">governance digital twin</span>, not a grievance dashboard.
+        </h1>
+        <p class="hero-subtitle" id="hero-thesis"></p>
+        <div class="tag-row">
+          <div class="tag">Not a grievance app</div>
+          <div class="tag">Not a passive government dashboard</div>
+          <div class="tag">Scattered-source intelligence from across the internet</div>
+          <div class="tag">NIBM proof case for a national system</div>
+        </div>
+        <div class="hero-hook">
+          <span class="label">Launch Hook</span>
+          <p id="hero-hook"></p>
+        </div>
+      </div>
+
+      <aside class="glass hero-side">
+        <div class="side-card">
+          <div class="side-label">Demo Geography</div>
+          <div class="side-value" id="region-line"></div>
+        </div>
+        <div class="side-card">
+          <div class="side-label">Live Pulse</div>
+          <div class="side-value" id="live-pulse"></div>
+        </div>
+        <div class="side-card">
+          <div class="side-label">What This Screen Proves</div>
+          <div class="side-value">
+            One traffic problem is never just traffic. Sushaasan reveals the hidden failures underneath it and ranks the best coordinated response.
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="metric-grid" id="metric-grid"></section>
+
+    <section class="main-grid">
+      <div class="stack">
+        <div class="glass panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Scene 03 · Live Ops Map</div>
+              <div class="panel-title">NIBM as a living governance system</div>
+              <p class="panel-desc">
+                This view is built for the demo video: hotspots are clustered causes, not complaint pins. The corridor is shown as a linked operating system under stress.
+              </p>
+            </div>
+            <div class="badge">Live digital twin demo</div>
+          </div>
+
+          <div class="map-shell">
+            <div class="map-board" id="map-board">
+              <div class="road road-1"><div class="road-core"></div></div>
+              <div class="road road-2"><div class="road-core"></div></div>
+              <div class="road road-3"><div class="road-core"></div></div>
+
+              <div class="map-label" style="left: 36px; top: 24px;">
+                <strong>NIBM Junction</strong>
+                <span>Already overloaded upstream node. Small downstream frictions quickly become corridor-wide spillback.</span>
+              </div>
+              <div class="map-label" style="right: 28px; top: 18px;">
+                <strong>Tribeca / commercial edge</strong>
+                <span>Retail and parking pressure meets weak frontage control.</span>
+              </div>
+              <div class="map-label" style="right: 40px; bottom: 24px;">
+                <strong>Mohamadwadi approach</strong>
+                <span>Heavy vehicle entry and approach-side conflict reduce downstream recovery.</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="mini-card">
+                <div class="mini-label">Primary Insight</div>
+                <div class="mini-value">The visible jam is a system failure, not a single-event failure.</div>
+                <div class="mini-copy">
+                  Curb capture, construction spillover, pedestrian edge failure, and mistimed enforcement compound each other. Sushaasan treats them as one coordinated operating problem.
+                </div>
+              </div>
+              <div class="mini-card">
+                <div class="mini-label">Current Active Cluster</div>
+                <div class="mini-value" id="active-cluster-title">Illegal curb capture near the commercial edge</div>
+                <div class="mini-copy" id="active-cluster-copy"></div>
+              </div>
+              <div class="mini-card">
+                <div class="mini-label">Authority Hint</div>
+                <div class="mini-value" id="active-cluster-authorities"></div>
+                <div class="mini-copy">Escalate only when ward + traffic police actions are insufficient. Start at the lowest executable level first.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Scene 04 · Root Cause Reveal</div>
+              <div class="panel-title">Small causes creating the big traffic crisis</div>
+              <p class="panel-desc">
+                This is the core proof of the MVP. The system is not showing “traffic is bad.” It is showing which hidden failures actually create the bottleneck.
+              </p>
+            </div>
+            <div class="badge">Causal synthesis</div>
+          </div>
+
+          <div class="split-grid">
+            <div>
+              <div class="cluster-list" id="cluster-list"></div>
+            </div>
+            <div>
+              <div class="chain-list" id="chain-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="glass panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Scene 02 · Scattered-Source Montage</div>
+              <div class="panel-title">Evidence coming from all over the internet</div>
+              <p class="panel-desc">
+                Reels, local news, resident forums, maps reviews, field notes, and traffic APIs all become one structured intelligence layer.
+              </p>
+            </div>
+            <div class="badge">Multi-source proof</div>
+          </div>
+          <div class="evidence-grid" id="evidence-grid"></div>
+        </div>
+
+        <div class="glass panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Scene 05 · Optimized Action Output</div>
+              <div class="panel-title">Ranked interventions with authority routing and citizen roles</div>
+              <p class="panel-desc">
+                The output is not a pile of complaints. It is a ranked action brief showing what to do first, who owns it, and how citizens help execute it.
+              </p>
+            </div>
+            <div class="badge">Action layer</div>
+          </div>
+
+          <div class="mini-card" style="margin-bottom: 14px;">
+            <div class="mini-label">Primary Strategy</div>
+            <div class="mini-value" id="solution-title"></div>
+            <div class="mini-copy" id="solution-copy"></div>
+          </div>
+
+          <div class="intervention-list" id="intervention-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="deliverable-grid">
+      <div class="glass panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-kicker">Authority Routing Layer</div>
+            <div class="panel-title">Start at the lowest executable governance level</div>
+            <p class="panel-desc">
+              Sushaasan is designed to route action first to the level that can realistically handle it. Escalation happens only when the lower layer cannot solve the problem.
+            </p>
+          </div>
+          <div class="badge">Procedure-aware</div>
+        </div>
+        <div class="route-ladder" id="route-ladder"></div>
+      </div>
+
+      <div class="glass panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-kicker">Citizen Role Layer</div>
+            <div class="panel-title">Citizens are not just signal generators</div>
+            <p class="panel-desc">
+              The best solution is shared execution. Residents, RWAs, businesses, and volunteers all have roles in making the corridor recover.
+            </p>
+          </div>
+          <div class="badge">Citizen + state</div>
+        </div>
+        <div class="role-list" id="role-list"></div>
+      </div>
+    </section>
+
+    <section class="glass panel" style="margin-bottom: 18px;">
+      <div class="panel-head">
+        <div>
+          <div class="panel-kicker">Scene Rail · For Screen Recording</div>
+          <div class="panel-title">75-90 second demo structure</div>
+          <p class="panel-desc">
+            This scene rail mirrors the launch video flow. It gives you a clean screen-recording path through the product story while keeping the interface grounded in the NIBM proof case.
+          </p>
+        </div>
+        <div class="badge">Founder-video ready</div>
+      </div>
+      <div class="scene-list" id="scene-list"></div>
+    </section>
+
+    <section class="glass footer-cta">
+      <div>
+        <h2>Today NIBM. Tomorrow every ward, city, and state.</h2>
+        <p>
+          Sushaasan is being built as India’s governance intelligence engine — a system that converts scattered public reality into optimized civic action. If you believe India needs a better way to turn informal discourse into solutions, share this, support this, and help Sushaasan reach the whole nation.
+        </p>
+      </div>
+      <div class="cta-badge">
+        <strong>Soft launch CTA</strong><br>
+        Share it. Support it. Reach out if you can help with product, policy, civic pilots, or amplification.
+      </div>
+    </section>
+  </div>
+
+  <script src="generated_mvp_data.js"></script>
+  <script src="demo_seed.js"></script>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const APP_DATA = window.SUSHAASAN_MVP_DATA || DEMO_SEED;
+
+    function formatConfidence(value) {
+      return Math.round(value * 100) + "%";
+    }
+
+    function severityClass(value) {
+      if (value === "critical") return "critical";
+      if (value === "high") return "high";
+      return "medium";
+    }
+
+    function renderOverview() {
+      $("#status-label").textContent = APP_DATA.overview.status;
+      $("#hero-thesis").textContent = APP_DATA.overview.thesis;
+      $("#hero-hook").textContent = APP_DATA.overview.hook;
+      $("#region-line").textContent = APP_DATA.overview.locationLine;
+      $("#live-pulse").textContent = APP_DATA.overview.livePulse;
+      $("#solution-title").textContent = APP_DATA.optimizedSolution.title;
+      $("#solution-copy").textContent = APP_DATA.optimizedSolution.primaryStrategy;
+    }
+
+    function renderMetrics() {
+      const wrap = $("#metric-grid");
+      wrap.innerHTML = APP_DATA.metrics.map((metric) => `
+        <div class="glass metric ${metric.tone}">
+          <div class="metric-label">${metric.label}</div>
+          <div class="metric-value">${metric.value}</div>
+          <div class="metric-note">${metric.note}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderMap() {
+      const board = $("#map-board");
+      APP_DATA.hotspots.forEach((hotspot, index) => {
+        const cluster = APP_DATA.clusters.find((entry) => entry.id === hotspot.clusterIds[0]);
+        const el = document.createElement("button");
+        el.className = `hotspot ${hotspot.intensity < 0.78 ? "low" : hotspot.intensity < 0.9 ? "medium" : ""}`;
+        el.style.left = hotspot.x + "%";
+        el.style.top = hotspot.y + "%";
+        el.innerHTML = `
+          <div class="hotspot-tooltip">
+            <strong>${hotspot.label}</strong>
+            <span>${hotspot.blurb}</span>
+          </div>
+        `;
+        el.type = "button";
+        el.addEventListener("click", () => setActiveCluster(cluster.id));
+        if (index === 0) el.classList.add("active");
+        board.appendChild(el);
+      });
+    }
+
+    function renderEvidence() {
+      $("#evidence-grid").innerHTML = APP_DATA.sources.map((source) => `
+        <article class="evidence-card">
+          <div class="evidence-top">
+            <span class="source-pill">${source.sourceType}</span>
+            <span class="confidence">${formatConfidence(source.confidence)} confidence</span>
+          </div>
+          <h3>${source.title}</h3>
+          <p>${source.summary}</p>
+          <div class="inline-meta">
+            <span class="chip">${source.handle}</span>
+            <span class="chip">${source.geoRelevance}</span>
+          </div>
+          <div class="evidence-foot">
+            <span>${new Date(source.timestamp).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+            <span>${source.excerpt.slice(0, 78)}...</span>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderClusters() {
+      $("#cluster-list").innerHTML = APP_DATA.clusters.map((cluster) => `
+        <article class="cluster-card" id="cluster-card-${cluster.id}">
+          <div class="cluster-top">
+            <div>
+              <h3>${cluster.title}</h3>
+              <div class="inline-meta">
+                <span class="chip">${cluster.affectedZone}</span>
+                <span class="chip">${cluster.signalShare} of corridor signals</span>
+              </div>
+            </div>
+            <span class="severity ${severityClass(cluster.severity)}">${cluster.severity}</span>
+          </div>
+          <p class="cluster-copy">${cluster.summary}</p>
+          <ul class="cause-list">
+            ${cluster.causes.map((cause) => `<li>${cause}</li>`).join("")}
+          </ul>
+        </article>
+      `).join("");
+    }
+
+    function renderCausalLinks() {
+      $("#chain-list").innerHTML = APP_DATA.causalLinks.map((link) => `
+        <article class="chain-card">
+          <div class="chain-step">
+            <span class="chain-dot"></span>
+            <div>
+              <strong>${link.causeNode}</strong>
+              <p>${link.explanation}</p>
+              <div class="inline-meta" style="margin-top: 8px;">
+                <span class="chip">Leads to: ${link.effectNode}</span>
+                <span class="chip">${formatConfidence(link.confidence)} confidence</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderInterventions() {
+      $("#intervention-list").innerHTML = APP_DATA.interventions.map((item) => `
+        <article class="intervention-card">
+          <div class="intervention-top">
+            <div>
+              <div class="intervention-rank">Rank ${item.rank}</div>
+              <h3>${item.title}</h3>
+            </div>
+            <span class="severity ${item.feasibility === "high" ? "critical" : "high"}">${item.executionHorizon}</span>
+          </div>
+          <p class="intervention-copy">${item.procedureAware}</p>
+          <div class="inline-meta">
+            <span class="chip">Owner: ${item.ownerAuthority}</span>
+            <span class="chip">Expected impact: ${item.expectedImpact}</span>
+            <span class="chip">Feasibility: ${item.feasibility}</span>
+          </div>
+          <div class="mini-copy" style="margin-top: 10px;"><strong>Citizen role:</strong> ${item.citizenRole}</div>
+        </article>
+      `).join("");
+    }
+
+    function renderRouting() {
+      $("#route-ladder").innerHTML = APP_DATA.routing.map((step, index) => `
+        <article class="route-step ${step.active ? "" : "inactive"}">
+          <div class="route-num">${index + 1}</div>
+          <div>
+            <strong>${step.level}</strong>
+            <p>${step.purpose}</p>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderCitizenRoles() {
+      $("#role-list").innerHTML = APP_DATA.citizenRoles.map((role) => `
+        <article class="role-card">
+          <h3>${role.title}</h3>
+          <p class="role-copy">${role.detail}</p>
+        </article>
+      `).join("");
+    }
+
+    function renderScenes() {
+      $("#scene-list").innerHTML = APP_DATA.videoScenes.map((scene) => `
+        <article class="scene-card" id="scene-card-${scene.id}">
+          <div class="scene-top">
+            <div>
+              <h3>${scene.title}</h3>
+              <div class="inline-meta">
+                <span class="chip">${scene.time}</span>
+              </div>
+            </div>
+          </div>
+          <p class="scene-copy">${scene.caption}</p>
+        </article>
+      `).join("");
+    }
+
+    function setActiveCluster(clusterId) {
+      const cluster = APP_DATA.clusters.find((entry) => entry.id === clusterId) || APP_DATA.clusters[0];
+      $("#active-cluster-title").textContent = cluster.title;
+      $("#active-cluster-copy").textContent = cluster.summary;
+      $("#active-cluster-authorities").textContent = cluster.authorities.join(" -> ");
+
+      document.querySelectorAll(".cluster-card").forEach((card) => {
+        card.style.borderColor = "rgba(126, 177, 255, 0.1)";
+        card.style.boxShadow = "none";
+      });
+      const card = document.getElementById("cluster-card-" + cluster.id);
+      if (card) {
+        card.style.borderColor = "rgba(83, 224, 255, 0.35)";
+        card.style.boxShadow = "0 0 0 1px rgba(83, 224, 255, 0.14)";
+      }
+
+      document.querySelectorAll(".hotspot").forEach((spot) => spot.classList.remove("active"));
+      const match = APP_DATA.hotspots.find((spot) => spot.clusterIds.includes(cluster.id));
+      if (match) {
+        const index = APP_DATA.hotspots.findIndex((spot) => spot.id === match.id);
+        const node = document.querySelectorAll(".hotspot")[index];
+        if (node) node.classList.add("active");
+      }
+    }
+
+    function autoplayScenes() {
+      let index = 0;
+      const cards = APP_DATA.videoScenes.map((scene) => document.getElementById("scene-card-" + scene.id));
+      function tick() {
+        cards.forEach((card) => card && card.classList.remove("active"));
+        const card = cards[index];
+        if (card) card.classList.add("active");
+        index = (index + 1) % cards.length;
+      }
+      tick();
+      setInterval(tick, 3600);
+    }
+
+    renderOverview();
+    renderMetrics();
+    renderMap();
+    renderEvidence();
+    renderClusters();
+    renderCausalLinks();
+    renderInterventions();
+    renderRouting();
+    renderCitizenRoles();
+    renderScenes();
+    setActiveCluster(APP_DATA.clusters[0].id);
+    autoplayScenes();
+  </script>
+</body>
+</html>

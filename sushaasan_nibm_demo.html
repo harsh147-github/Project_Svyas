@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sushaasan — NIBM Traffic Intelligence</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0F0F14;
+      color: #FFFFFF;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .logo-area { display: flex; align-items: center; gap: 14px; }
+    .logo-icon {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, #6C5CE7, #E17055);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; color: #fff;
+    }
+    .logo-text h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo-text p { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+    .location-badge {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 8px 16px; border-radius: 20px;
+      font-size: 13px; color: rgba(255,255,255,0.8);
+    }
+    .location-badge .dot { width: 8px; height: 8px; background: #E17055; border-radius: 50%; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+    .live-counter {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(0,184,148,0.12);
+      border: 1px solid rgba(0,184,148,0.3);
+      padding: 8px 16px; border-radius: 20px;
+    }
+    .live-counter .live-dot { width: 8px; height: 8px; background: #00B894; border-radius: 50%; animation: pulse 1s infinite; }
+    .live-counter span { font-size: 13px; color: #00B894; font-weight: 600; }
+    .counter-num { font-size: 16px; font-weight: 800; color: #00B894; }
+
+    /* ── TAGLINE STRIP ── */
+    .tagline-strip {
+      background: linear-gradient(90deg, #E17055, #6C5CE7, #00B894);
+      padding: 10px 32px;
+      text-align: center;
+      font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
+      color: #fff;
+    }
+
+    /* ── MAIN GRID ── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+      height: calc(100vh - 130px);
+    }
+
+    .panel {
+      border-right: 1px solid rgba(255,255,255,0.06);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .panel:last-child { border-right: none; }
+
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .panel-header .panel-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .panel-header h2 { font-size: 14px; font-weight: 700; letter-spacing: 0.3px; }
+    .panel-header p { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+    .panel-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+    .panel-body::-webkit-scrollbar { width: 4px; }
+    .panel-body::-webkit-scrollbar-track { background: transparent; }
+    .panel-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+    /* ── PANEL 1: CITIZEN VOICE ── */
+    .panel-1 .panel-header { background: rgba(225,112,85,0.08); }
+    .panel-1 .panel-icon { background: rgba(225,112,85,0.2); }
+
+    .complaint-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+      animation: slideIn 0.4s ease forwards;
+    }
+    .complaint-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(225,112,85,0.3); }
+    @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+    .complaint-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .source-tag {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+    .src-instagram { background: rgba(225,112,85,0.2); color: #E17055; }
+    .src-twitter { background: rgba(108,92,231,0.2); color: #A29BFE; }
+    .src-whatsapp { background: rgba(0,184,148,0.2); color: #00B894; }
+    .src-news { background: rgba(253,203,110,0.2); color: #FDCB6E; }
+
+    .time-ago { font-size: 10px; color: rgba(255,255,255,0.3); }
+    .complaint-text { font-size: 13px; line-height: 1.55; color: rgba(255,255,255,0.82); }
+    .complaint-footer {
+      display: flex; gap: 12px; margin-top: 10px;
+    }
+    .engagement {
+      font-size: 11px; color: rgba(255,255,255,0.3);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .priority-chip {
+      font-size: 10px; font-weight: 700; padding: 2px 8px;
+      border-radius: 10px; margin-left: auto;
+    }
+    .p-critical { background: rgba(214,48,49,0.2); color: #FF7675; }
+    .p-high { background: rgba(225,112,85,0.2); color: #E17055; }
+    .p-medium { background: rgba(253,203,110,0.2); color: #FDCB6E; }
+
+    /* ── PANEL 2: AI SYNTHESIS ── */
+    .panel-2 .panel-header { background: rgba(108,92,231,0.08); }
+    .panel-2 .panel-icon { background: rgba(108,92,231,0.2); }
+
+    .synthesis-card {
+      background: rgba(108,92,231,0.06);
+      border: 1px solid rgba(108,92,231,0.2);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .synthesis-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .theme-label { font-size: 13px; font-weight: 700; }
+    .mention-count {
+      font-size: 11px; color: #A29BFE; font-weight: 600;
+      background: rgba(108,92,231,0.15); padding: 2px 8px; border-radius: 10px;
+    }
+    .progress-bar-wrap { background: rgba(255,255,255,0.06); border-radius: 4px; height: 6px; margin-bottom: 8px; }
+    .progress-bar-fill { height: 6px; border-radius: 4px; }
+    .theme-keywords { display: flex; flex-wrap: wrap; gap: 4px; }
+    .keyword-chip {
+      font-size: 10px; padding: 2px 7px; border-radius: 8px;
+      background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5);
+    }
+
+    .ai-insight-box {
+      background: linear-gradient(135deg, rgba(108,92,231,0.12), rgba(162,155,254,0.08));
+      border: 1px solid rgba(108,92,231,0.3);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .ai-insight-box h4 { font-size: 12px; font-weight: 700; color: #A29BFE; margin-bottom: 8px; letter-spacing: 0.3px; }
+    .ai-insight-box p { font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.7); }
+
+    .sentiment-row {
+      display: flex; gap: 8px; margin-bottom: 14px;
+    }
+    .sentiment-block {
+      flex: 1; background: rgba(255,255,255,0.04); border-radius: 10px;
+      padding: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.07);
+    }
+    .sentiment-block .s-num { font-size: 22px; font-weight: 800; }
+    .sentiment-block .s-label { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .s-angry { color: #FF7675; }
+    .s-neutral { color: #FDCB6E; }
+    .s-positive { color: #55EFC4; }
+
+    /* ── PANEL 3: GOVERNMENT ACTION ── */
+    .panel-3 .panel-header { background: rgba(0,184,148,0.08); }
+    .panel-3 .panel-icon { background: rgba(0,184,148,0.2); }
+
+    .action-card {
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      border-left: 4px solid;
+    }
+    .action-immediate { background: rgba(214,48,49,0.06); border-left-color: #FF7675; }
+    .action-short { background: rgba(225,112,85,0.06); border-left-color: #E17055; }
+    .action-medium { background: rgba(253,203,110,0.06); border-left-color: #FDCB6E; }
+    .action-long { background: rgba(0,184,148,0.06); border-left-color: #00B894; }
+
+    .action-timeline-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 8px;
+      padding: 3px 10px; border-radius: 20px;
+    }
+    .badge-immediate { background: rgba(214,48,49,0.2); color: #FF7675; }
+    .badge-short { background: rgba(225,112,85,0.2); color: #E17055; }
+    .badge-medium { background: rgba(253,203,110,0.2); color: #FDCB6E; }
+    .badge-long { background: rgba(0,184,148,0.2); color: #00B894; }
+
+    .action-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; line-height: 1.35; }
+    .action-desc { font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.55; }
+    .action-owner {
+      display: flex; align-items: center; gap: 5px;
+      margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.35);
+    }
+    .impact-score {
+      display: flex; align-items: center; gap: 6px; margin-top: 8px;
+    }
+    .impact-label { font-size: 10px; color: rgba(255,255,255,0.35); }
+    .impact-stars { color: #FDCB6E; font-size: 11px; }
+
+    .differentiator-strip {
+      background: linear-gradient(135deg, rgba(0,184,148,0.1), rgba(108,92,231,0.1));
+      border: 1px solid rgba(0,184,148,0.2);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .differentiator-strip h4 { font-size: 11px; font-weight: 700; color: #00B894; margin-bottom: 5px; }
+    .differentiator-strip p { font-size: 11px; color: rgba(255,255,255,0.55); line-height: 1.5; }
+
+    /* ── BOTTOM BAR ── */
+    .bottom-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(15,15,20,0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11px; color: rgba(255,255,255,0.3);
+    }
+    .bottom-bar .cta {
+      background: linear-gradient(135deg, #6C5CE7, #E17055);
+      color: #fff; font-size: 12px; font-weight: 700;
+      padding: 8px 20px; border-radius: 20px;
+      border: none; cursor: pointer; letter-spacing: 0.3px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo-area">
+    <div class="logo-icon">S</div>
+    <div class="logo-text">
+      <h1>Sushaasan</h1>
+      <p>NextGen Civic Intelligence Platform</p>
+    </div>
+  </div>
+  <div class="location-badge">
+    <div class="dot"></div>
+    NIBM Road / Tribeca High Street, Pune
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <div class="live-counter">
+      <div class="live-dot"></div>
+      <span>LIVE &nbsp; <span class="counter-num" id="complaint-counter">182</span> complaints tracked</span>
+    </div>
+  </div>
+</div>
+
+<!-- TAGLINE -->
+<div class="tagline-strip">
+  Citizens speak. AI listens. Government acts. &nbsp;|&nbsp; Not just dashboards — optimized solutions for Pune's real problems.
+</div>
+
+<!-- MAIN GRID -->
+<div class="main-grid" style="margin-bottom:42px;">
+
+  <!-- PANEL 1: CITIZEN VOICE -->
+  <div class="panel panel-1">
+    <div class="panel-header">
+      <div class="panel-icon">&#128483;</div>
+      <div>
+        <h2>Citizen Voice</h2>
+        <p>Live from Instagram, Twitter, WhatsApp, News</p>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <div class="complaint-card" style="animation-delay:0.0s">
+        <div class="complaint-meta">
+          <span class="source-tag src-instagram">&#128247; Instagram</span>
+          <span class="time-ago">2 min ago</span>
+        </div>
+        <div class="complaint-text">"Stuck at Tribeca High Street for 35 mins. Entire road blocked by illegally parked cars. No traffic cop in sight. This is DAILY. PMC please wake up. #NIBMTraffic #PunePMC"</div>
+        <div class="complaint-footer">
+          <span class="engagement">&#128077; 214</span>
+          <span class="engagement">&#128172; 67</span>
+          <span class="priority-chip p-critical">CRITICAL</span>
+        </div>
+      </div>
+
+      <div class="complaint-card" style="animation-delay:0.1s">
+        <div class="complaint-meta">
+          <span class="source-tag src-twitter">&#128038; Twitter/X</span>
+          <span class="time-ago">8 min ago</span>
+        </div>
+        <div class="complaint-text">"Heavy construction trucks from Lodha blocked NIBM Annexe since 6am. People missing trains &amp; buses. @PuneTrafficPolice @PMCPune #PuneTrafficChaos"</div>
+        <div class="complaint-footer">
+          <span class="engagement">&#128077; 892</span>
+          <span class="engagement">&#128172; 231</span>
+          <span class="priority-chip p-high">HIGH</span>
+        </div>
+      </div>
+
+      <div class="complaint-card" style="animation-delay:0.2s">
+        <div class="complaint-meta">
+          <span class="source-tag src-whatsapp">&#128241; WhatsApp Group</span>
+          <span class="time-ago">15 min ago</span>
+        </div>
+        <div class="complaint-text">"Kya bata yaar NIBM road pe aaj 45 minute jam. Sirf 2km jayenge toh 45 minute. Kondhwa traffic police kahan hai? Yeh toh roz ki problem ho gayi hai"</div>
+        <div class="complaint-footer">
+          <span class="engagement">&#128077; 43</span>
+          <span class="engagement">&#128172; 18</span>
+          <span class="priority-chip p-high">HIGH</span>
+        </div>
+      </div>
+
+      <div class="complaint-card" style="animation-delay:0.3s">
+        <div class="complaint-meta">
+          <span class="source-tag src-news">&#128240; PunePulse</span>
+          <span class="time-ago">1 hr ago</span>
+        </div>
+        <div class="complaint-text">"3rd road accident near Tribeca this month. Kids cannot walk on the footpath — cars are parked on pavements. NIBM-Mohamadwadi residents demand immediate PMC intervention."</div>
+        <div class="complaint-footer">
+          <span class="engagement">&#128077; 1.2k</span>
+          <span class="engagement">&#128172; 88</span>
+          <span class="priority-chip p-critical">CRITICAL</span>
+        </div>
+      </div>
+
+      <div class="complaint-card" style="animation-delay:0.4s">
+        <div class="complaint-meta">
+          <span class="source-tag src-instagram">&#128247; Instagram</span>
+          <span class="time-ago">2 hrs ago</span>
+        </div>
+        <div class="complaint-text">"Tribeca High Street food stalls have taken over half the road. Gas cylinders on the road is a SAFETY HAZARD. @PMCPune @MayorPune someone needs to act NOW"</div>
+        <div class="complaint-footer">
+          <span class="engagement">&#128077; 567</span>
+          <span class="engagement">&#128172; 104</span>
+          <span class="priority-chip p-high">HIGH</span>
+        </div>
+      </div>
+
+      <div class="complaint-card" style="animation-delay:0.5s">
+        <div class="complaint-meta">
+          <span class="source-tag src-whatsapp">&#128241; RWA Forum</span>
+          <span class="time-ago">3 hrs ago</span>
+        </div>
+        <div class="complaint-text">"Water tankers parked outside Mohamadwadi for 4 days now. Entire lane blocked. Residents have complained to ward office multiple times — zero response. Is anyone listening?"</div>
+        <div class="complaint-footer">
+          <span class="engagement">&#128077; 89</span>
+          <span class="engagement">&#128172; 34</span>
+          <span class="priority-chip p-medium">MEDIUM</span>
+        </div>
+      </div>
+
+      <div class="complaint-card" style="animation-delay:0.6s">
+        <div class="complaint-meta">
+          <span class="source-tag src-news">&#128240; PunekarNews</span>
+          <span class="time-ago">5 hrs ago</span>
+        </div>
+        <div class="complaint-text">"Peak hour at NIBM-Kondhwa junction is absolute chaos. Signal timing hasn't been updated since 2019. Area now has 3x the residential density. Needs signal optimization or flyover urgently."</div>
+        <div class="complaint-footer">
+          <span class="engagement">&#128077; 2.1k</span>
+          <span class="engagement">&#128172; 156</span>
+          <span class="priority-chip p-critical">CRITICAL</span>
+        </div>
+      </div>
+
+      <div class="complaint-card" style="animation-delay:0.7s">
+        <div class="complaint-meta">
+          <span class="source-tag src-twitter">&#128038; Twitter/X</span>
+          <span class="time-ago">6 hrs ago</span>
+        </div>
+        <div class="complaint-text">"Road not resurfaced near Tribeca in 3 years. Potholes narrow the lane further. PMC spent Rs 500Cr in 75 days for Bajaj Grand Tour but can't fix 2km of NIBM road? #PunePMC"</div>
+        <div class="complaint-footer">
+          <span class="engagement">&#128077; 3.4k</span>
+          <span class="engagement">&#128172; 412</span>
+          <span class="priority-chip p-high">HIGH</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PANEL 2: AI SYNTHESIS -->
+  <div class="panel panel-2">
+    <div class="panel-header">
+      <div class="panel-icon">&#129504;</div>
+      <div>
+        <h2>AI Synthesis</h2>
+        <p>Patterns extracted from 182 citizen inputs</p>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <!-- Sentiment row -->
+      <div class="sentiment-row">
+        <div class="sentiment-block">
+          <div class="s-num s-angry">74%</div>
+          <div class="s-label">Frustrated</div>
+        </div>
+        <div class="sentiment-block">
+          <div class="s-num s-neutral">19%</div>
+          <div class="s-label">Neutral</div>
+        </div>
+        <div class="sentiment-block">
+          <div class="s-num s-positive">7%</div>
+          <div class="s-label">Positive</div>
+        </div>
+      </div>
+
+      <!-- AI Insight box -->
+      <div class="ai-insight-box">
+        <h4>&#128161; AI SYNTHESIS SUMMARY</h4>
+        <p>NIBM-Tribeca corridor faces a multi-layered traffic crisis: illegal parking by residents and commercial establishments (47%), construction vehicle encroachment (31%), inadequate enforcement (28%), and outdated signal infrastructure (22%). The problem has worsened 3x since Tribeca High Street opened. Citizens are angry and demand systemic intervention, not one-time crackdowns.</p>
+      </div>
+
+      <!-- Themes -->
+      <div class="synthesis-card">
+        <div class="synthesis-header">
+          <span class="theme-label">&#128308; Illegal Parking</span>
+          <span class="mention-count">47 mentions</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" style="width:82%;background:linear-gradient(90deg,#FF7675,#E17055)"></div>
+        </div>
+        <div class="theme-keywords">
+          <span class="keyword-chip">pavements blocked</span>
+          <span class="keyword-chip">double parking</span>
+          <span class="keyword-chip">shoppers stop</span>
+          <span class="keyword-chip">Tribeca entry</span>
+        </div>
+      </div>
+
+      <div class="synthesis-card">
+        <div class="synthesis-header">
+          <span class="theme-label">&#128308; Peak Hour Gridlock</span>
+          <span class="mention-count">35 mentions</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" style="width:67%;background:linear-gradient(90deg,#FF7675,#E17055)"></div>
+        </div>
+        <div class="theme-keywords">
+          <span class="keyword-chip">7am-9am</span>
+          <span class="keyword-chip">5pm-9pm</span>
+          <span class="keyword-chip">NIBM junction</span>
+          <span class="keyword-chip">30-45 min delay</span>
+        </div>
+      </div>
+
+      <div class="synthesis-card">
+        <div class="synthesis-header">
+          <span class="theme-label">&#128992; Construction Vehicles</span>
+          <span class="mention-count">31 mentions</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" style="width:59%;background:linear-gradient(90deg,#FDCB6E,#E17055)"></div>
+        </div>
+        <div class="theme-keywords">
+          <span class="keyword-chip">Lodha trucks</span>
+          <span class="keyword-chip">Mohamadwadi</span>
+          <span class="keyword-chip">6am blocking</span>
+        </div>
+      </div>
+
+      <div class="synthesis-card">
+        <div class="synthesis-header">
+          <span class="theme-label">&#128992; No Enforcement</span>
+          <span class="mention-count">28 mentions</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" style="width:53%;background:linear-gradient(90deg,#FDCB6E,#F39C12)"></div>
+        </div>
+        <div class="theme-keywords">
+          <span class="keyword-chip">no traffic police</span>
+          <span class="keyword-chip">no action</span>
+          <span class="keyword-chip">Kondhwa div</span>
+        </div>
+      </div>
+
+      <div class="synthesis-card">
+        <div class="synthesis-header">
+          <span class="theme-label">&#128308; Safety Hazards</span>
+          <span class="mention-count">19 mentions</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" style="width:36%;background:#FF7675"></div>
+        </div>
+        <div class="theme-keywords">
+          <span class="keyword-chip">3 accidents</span>
+          <span class="keyword-chip">gas cylinders</span>
+          <span class="keyword-chip">no footpath</span>
+        </div>
+      </div>
+
+      <div class="synthesis-card">
+        <div class="synthesis-header">
+          <span class="theme-label">&#128994; Infrastructure Gap</span>
+          <span class="mention-count">22 mentions</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" style="width:42%;background:linear-gradient(90deg,#55EFC4,#00B894)"></div>
+        </div>
+        <div class="theme-keywords">
+          <span class="keyword-chip">potholes</span>
+          <span class="keyword-chip">old signal timing</span>
+          <span class="keyword-chip">no parking lot</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PANEL 3: GOVERNMENT ACTION PLAN -->
+  <div class="panel panel-3">
+    <div class="panel-header">
+      <div class="panel-icon">&#9874;</div>
+      <div>
+        <h2>AI-Optimized Action Plan</h2>
+        <p>For: PMC Kondhwa Ward + Pune Traffic Police</p>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <div class="differentiator-strip">
+        <h4>&#127919; WHY SUSHAASAN IS DIFFERENT</h4>
+        <p>Others build dashboards that show problems. We generate ranked, resource-aware action plans that government officers can implement TODAY — closing the loop between citizen frustration and state action.</p>
+      </div>
+
+      <!-- Action 1: Immediate -->
+      <div class="action-card action-immediate">
+        <div class="action-timeline-badge badge-immediate">&#128308; Immediate &mdash; 0 to 7 Days</div>
+        <div class="action-title">Deploy 3 dedicated traffic constables at Tribeca HS junction</div>
+        <div class="action-desc">Station constables at peak hours (7–9am and 5–9pm daily). Focus: clear double parking on 300m stretch from Tribeca main gate to Shoppers Stop. Immediate challan drive — minimum 50/day for first week to create deterrence.</div>
+        <div class="action-owner">&#127970; Owner: Kondhwa Traffic Division &nbsp;|&nbsp; Cost: ~Rs 0 (redeployment)</div>
+        <div class="impact-score">
+          <span class="impact-label">Congestion Reduction:</span>
+          <span class="impact-stars">&#11088;&#11088;&#11088;&#11088;&#11088; HIGH (est. 40% drop)</span>
+        </div>
+      </div>
+
+      <!-- Action 2: Short term -->
+      <div class="action-card action-short">
+        <div class="action-timeline-badge badge-short">&#128992; Short-term &mdash; 8 to 30 Days</div>
+        <div class="action-title">Install ANPR cameras + automated tow-zone at 4 entry points</div>
+        <div class="action-desc">ANPR at Tribeca Gate 1, Gate 2, NIBM-Kondhwa junction, and Mohamadwadi T-point. Any vehicle parked 10+ min in no-parking zone gets auto-challan via Vahan DB. Tow trucks on call during peak hours.</div>
+        <div class="action-owner">&#127970; Owner: PMC Smart City + Traffic Police &nbsp;|&nbsp; Cost: ~Rs 8L</div>
+        <div class="impact-score">
+          <span class="impact-label">Recidivism Reduction:</span>
+          <span class="impact-stars">&#11088;&#11088;&#11088;&#11088; HIGH (est. 65%)</span>
+        </div>
+      </div>
+
+      <!-- Action 3: Medium term -->
+      <div class="action-card action-medium">
+        <div class="action-timeline-badge badge-medium">&#128993; Medium-term &mdash; 30 to 90 Days</div>
+        <div class="action-title">Designate & build multilevel parking facility (500 cars) within 500m</div>
+        <div class="action-desc">Survey 3 candidate plots within 500m of Tribeca identified via GIS. Commercial parking PPP model — Rs 20/hr, self-sustaining revenue. Mandate Tribeca commercial tenants to validate parking. Removes 80% of on-street parking demand.</div>
+        <div class="action-owner">&#127970; Owner: PMC Property Dept + Tribeca Developer &nbsp;|&nbsp; Cost: Rs 1.5–2.5 Cr (PPP)</div>
+        <div class="impact-score">
+          <span class="impact-label">Long-term Impact:</span>
+          <span class="impact-stars">&#11088;&#11088;&#11088;&#11088;&#11088; TRANSFORMATIVE</span>
+        </div>
+      </div>
+
+      <!-- Action 4: Long term -->
+      <div class="action-card action-long">
+        <div class="action-timeline-badge badge-long">&#128994; Long-term &mdash; 90+ Days</div>
+        <div class="action-title">One-way traffic system + AI signal optimization on NIBM Road stretch</div>
+        <div class="action-desc">Convert NIBM Road (Tribeca to NIBM junction, ~2km) to one-way. Design alternate return route via Kausarbaug Road. Upgrade signal timing on 6 junctions using adaptive AI signals (vendor: Siemens/Kapsch) — model trained on Pune peak-hour patterns.</div>
+        <div class="action-owner">&#127970; Owner: PMC Traffic Engineering + ITS Cell &nbsp;|&nbsp; Cost: Rs 45L</div>
+        <div class="impact-score">
+          <span class="impact-label">System-wide Impact:</span>
+          <span class="impact-stars">&#11088;&#11088;&#11088;&#11088;&#11088; SYSTEMIC CHANGE</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <span>sushaasan.in &nbsp;|&nbsp; Civic Intelligence Platform for India &nbsp;|&nbsp; Built for 700M citizens, 4500 cities</span>
+  <span>Data sourced from Instagram, Twitter/X, WhatsApp, PunePulse, PunekarNews &nbsp;|&nbsp; AI synthesis via Claude + BHASHINI</span>
+  <button class="cta" onclick="alert('Sushaasan — coming soon to a city near you. Contact: sushaasan.in')">Get Early Access</button>
+</div>
+
+<script>
+  // Animate complaint counter going up
+  let count = 182;
+  setInterval(() => {
+    if (Math.random() > 0.6) {
+      count += Math.floor(Math.random() * 3) + 1;
+      document.getElementById('complaint-counter').textContent = count;
+    }
+  }, 4000);
+</script>
+
+</body>
+</html>

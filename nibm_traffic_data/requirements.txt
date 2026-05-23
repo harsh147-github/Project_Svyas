@@ -1,0 +1,31 @@
+# Sushaasan — NIBM Traffic Data Collector
+# Install: pip install -r requirements.txt --break-system-packages
+
+# Web scraping
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Reddit
+praw>=7.7.0
+
+# Google Maps
+googlemaps>=4.10.0
+
+# Data handling
+pandas>=2.0.0
+python-dotenv>=1.0.0
+
+# NLP (lightweight, no GPU needed)
+langdetect>=1.0.9
+
+# Utilities
+jsonlines>=4.0.0
+tqdm>=4.66.0
+
+# For Twitter/X scraping (no API key needed)
+# snscrape is not on PyPI, install via:
+# pip install git+https://github.com/JustAnotherArchivist/snscrape.git
+
+# For Apify-based Instagram scraping (optional, uses Apify cloud)
+# apify-client>=1.6.0

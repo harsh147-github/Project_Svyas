@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "updateXmlForNode",
+    "arguments": {
+      "nodeId": "K3Uqep_c9",
+      "xml": "<Stack nodeId=\"K3Uqep_c9\" gap=\"24px\" padding=\"16px 28px\" />"
+    }
+  }
+}

@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sushaasan Flow Frame Preview</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300;9..144,400;9..144,500&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap");
+
+    :root {
+      --bg: #07101c;
+      --bg-2: #0b1322;
+      --panel: rgba(12, 18, 32, 0.82);
+      --panel-soft: rgba(255, 255, 255, 0.03);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f4f1ea;
+      --muted: rgba(220, 227, 239, 0.72);
+      --saffron: #ea8d0a;
+      --sky: #60a5fa;
+      --green: #34c759;
+      --violet: #9b7dff;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #02060d; }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+    }
+
+    .frame {
+      width: min(1440px, 100%);
+      min-height: 900px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 8%, rgba(234, 141, 10, 0.14), transparent 26%),
+        radial-gradient(circle at 16% 70%, rgba(96, 165, 250, 0.08), transparent 26%),
+        radial-gradient(circle at 84% 80%, rgba(52, 199, 89, 0.08), transparent 26%),
+        linear-gradient(180deg, var(--bg) 0%, #060b14 100%);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 30px 90px rgba(0,0,0,0.4);
+      padding: 72px 56px 48px;
+    }
+
+    .frame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: radial-gradient(ellipse at center, black 35%, transparent 80%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--saffron);
+      margin-bottom: 18px;
+    }
+
+    .eyebrow::before,
+    .eyebrow::after {
+      content: "";
+      width: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(234,141,10,0.9));
+    }
+
+    .eyebrow::after {
+      background: linear-gradient(90deg, rgba(234,141,10,0.9), transparent);
+    }
+
+    .hero {
+      position: relative;
+      z-index: 1;
+      max-width: 1020px;
+      margin: 0 auto 34px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Fraunces", serif;
+      font-size: clamp(42px, 5.4vw, 78px);
+      line-height: 1.04;
+      letter-spacing: -0.035em;
+      font-weight: 400;
+    }
+
+    .lede {
+      max-width: 900px;
+      margin: 18px auto 0;
+      font-size: 20px;
+      line-height: 1.75;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .journey {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1.15fr 0.82fr 1.15fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-top: 34px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 24px;
+      backdrop-filter: blur(16px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+      min-height: 500px;
+    }
+
+    .panel-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(226, 232, 240, 0.66);
+      margin-bottom: 18px;
+    }
+
+    .noise-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-content: flex-start;
+    }
+
+    .chip {
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      line-height: 1.3;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+      color: rgba(244, 241, 234, 0.9);
+      white-space: nowrap;
+    }
+
+    .chip.saffron { border-color: rgba(234,141,10,0.24); background: rgba(234,141,10,0.1); }
+    .chip.sky { border-color: rgba(96,165,250,0.24); background: rgba(96,165,250,0.1); }
+    .chip.green { border-color: rgba(52,199,89,0.24); background: rgba(52,199,89,0.1); }
+    .chip.violet { border-color: rgba(155,125,255,0.24); background: rgba(155,125,255,0.1); }
+
+    .noise-note {
+      margin-top: 22px;
+      padding: 18px 18px 20px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .engine {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 16px;
+      overflow: hidden;
+    }
+
+    .engine::before {
+      content: "";
+      position: absolute;
+      top: 30px;
+      bottom: 30px;
+      left: 50%;
+      width: 1px;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, rgba(234,141,10,0.28), rgba(96,165,250,0.2), rgba(52,199,89,0.28));
+    }
+
+    .stage {
+      position: relative;
+      padding: 18px 18px 18px 22px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      width: 100%;
+    }
+
+    .stage::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 24px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--sky);
+      box-shadow: 0 0 0 6px rgba(96,165,250,0.12);
+    }
+
+    .stage:nth-child(2)::before { background: var(--saffron); box-shadow: 0 0 0 6px rgba(234,141,10,0.12); }
+    .stage:nth-child(3)::before { background: var(--violet); box-shadow: 0 0 0 6px rgba(155,125,255,0.12); }
+    .stage:nth-child(4)::before { background: var(--green); box-shadow: 0 0 0 6px rgba(52,199,89,0.12); }
+
+    .stage-num {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(226,232,240,0.6);
+      margin-bottom: 8px;
+    }
+
+    .stage-title {
+      font-family: "Poppins", sans-serif;
+      font-size: 22px;
+      line-height: 1.15;
+      margin: 0 0 8px;
+    }
+
+    .stage-copy {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .outcomes {
+      display: grid;
+      gap: 14px;
+      align-content: flex-start;
+    }
+
+    .outcome-card {
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .outcome-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(226,232,240,0.6);
+      margin-bottom: 10px;
+    }
+
+    .outcome-value {
+      font-family: "Poppins", sans-serif;
+      font-size: 24px;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .outcome-copy {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .bottom-line {
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      margin: 30px auto 0;
+      text-align: center;
+      padding: 22px 24px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.06);
+      font-family: "Fraunces", serif;
+      font-size: 30px;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+    }
+
+    .bottom-line .warm { color: var(--saffron); }
+    .bottom-line .cool { color: var(--green); }
+
+    @media (max-width: 1100px) {
+      .journey { grid-template-columns: 1fr; }
+      .panel { min-height: auto; }
+      .engine::before { left: 18px; transform: none; }
+      .stage::before { left: 11px; }
+      .stage { padding-left: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <div class="eyebrow">The Translation Layer</div>
+
+    <section class="hero">
+      <h1>India is already speaking. Sushaasan shows how that voice becomes a plan.</h1>
+      <p class="lede">
+        Not a new app. Not a new habit. A system that listens to public discourse, organizes it,
+        weighs it, and returns a clear path both citizens and government can see.
+      </p>
+    </section>
+
+    <section class="journey">
+      <div class="panel">
+        <div class="panel-title">What India Already Says</div>
+        <div class="noise-cloud">
+          <div class="chip saffron">paani nahi aa raha subah se</div>
+          <div class="chip sky">Ward 12 pipeline issue</div>
+          <div class="chip green">garbage not cleared for 4 days</div>
+          <div class="chip violet">traffic jam near Hinjewadi phase 2</div>
+          <div class="chip saffron">voice note · Marathi</div>
+          <div class="chip sky">Reddit thread · Pune</div>
+          <div class="chip green">Instagram post · location tagged</div>
+          <div class="chip violet">WhatsApp complaint · image attached</div>
+          <div class="chip saffron">batti phir gayi</div>
+          <div class="chip sky">school sanitation concern</div>
+          <div class="chip green">citizens angry but fragmented</div>
+        </div>
+        <div class="noise-note">
+          Every day, millions of civic signals already exist across WhatsApp, X, Instagram, Reddit,
+          and direct citizen input. The problem is not absence of voice. The problem is that voice
+          remains raw, scattered, emotional, and structurally unusable.
+        </div>
+      </div>
+
+      <div class="panel engine">
+        <div class="stage">
+          <div class="stage-num">Step 01</div>
+          <div class="stage-title">Listen</div>
+          <div class="stage-copy">Capture multilingual public input without forcing citizens into a new workflow.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-num">Step 02</div>
+          <div class="stage-title">Structure</div>
+          <div class="stage-copy">Translate, geotag, classify, and connect signals to places, departments, and issue clusters.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-num">Step 03</div>
+          <div class="stage-title">Synthesize</div>
+          <div class="stage-copy">Use AI and deep neural analysis to find the real pattern inside thousands of fragmented perspectives.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-num">Step 04</div>
+          <div class="stage-title">Optimize</div>
+          <div class="stage-copy">Return a governance-ready path: root cause, urgency, tradeoffs, routing, and public visibility.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">What Comes Back Out</div>
+        <div class="outcomes">
+          <div class="outcome-card">
+            <div class="outcome-label">Issue Graph</div>
+            <div class="outcome-value">10,000 voices become one ranked public problem.</div>
+            <div class="outcome-copy">Scattered complaints collapse into a shared issue map instead of competing for attention.</div>
+          </div>
+          <div class="outcome-card">
+            <div class="outcome-label">Governance Routing</div>
+            <div class="outcome-value">Ward -> City -> State responsibility becomes legible.</div>
+            <div class="outcome-copy">The system identifies which department, level, and sequence of action actually fits the problem.</div>
+          </div>
+          <div class="outcome-card">
+            <div class="outcome-label">Public Clarity</div>
+            <div class="outcome-value">Citizens see what matters, what it costs, and what should happen next.</div>
+            <div class="outcome-copy">Less outrage theatre. Less blame without structure. More visible reasoning and cleaner execution.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="bottom-line">
+      Less internet chaos. <span class="warm">More shared clarity.</span> <span class="cool">More work done for India.</span>
+    </div>
+  </main>
+</body>
+</html>
