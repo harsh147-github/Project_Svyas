@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getWardData } from '@/lib/data'
+import { getWardFull } from '@/lib/supabase-data'
+
+export const revalidate = 120
 
 interface Props { params: { id: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const data = getWardData(params.id)
+  const data = await getWardFull(params.id)
   if (!data) return { title: 'Ward not found' }
   return {
     title: `${data.ward.name} — Ward ${data.ward.ward_number} · Sushaasan`,
@@ -41,10 +43,10 @@ function fmt(n: number) {
   return `₹${n}`
 }
 
-export default function WardPage({ params }: Props) {
-  const data = getWardData(params.id)
+export default async function WardPage({ params }: Props) {
+  const data = await getWardFull(params.id)
   if (!data) notFound()
-  const { ward, clusters, solutions } = data
+  const { ward, clusters, solutions, hasRealSolutions } = data
 
   const totalCost = solutions.reduce((s, x) => s + x.total_cost_est_inr, 0)
   const budgetPct = ward.annual_budget_inr
@@ -189,7 +191,7 @@ export default function WardPage({ params }: Props) {
                 <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-navy">For the Corporator&apos;s Office</span>
               </div>
               <span className="text-[9px] font-bold tracking-[0.15em] uppercase text-saffron-dark bg-saffron/8 border border-saffron/20 px-2 py-1 rounded-full">
-                AI-synthesised brief
+                {hasRealSolutions ? 'AI-synthesised brief' : 'Preview · awaiting next AI run'}
               </span>
             </div>
             <div className="flex items-baseline gap-3 flex-wrap">

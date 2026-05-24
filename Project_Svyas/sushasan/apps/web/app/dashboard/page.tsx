@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getAllWards, getAllClusters, getAllSolutions } from '@/lib/data'
+import { getDashboardSnapshot } from '@/lib/supabase-data'
+
+export const revalidate = 120
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Transparency Dashboard — Sushaasan',
@@ -18,6 +21,17 @@ const ISSUE_LABEL: Record<string, string> = {
   garbage: 'Garbage', other: 'Other',
 }
 
+function formatRefreshed(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime()
+  if (ms < 60_000) return 'just now'
+  const mins = Math.floor(ms / 60_000)
+  if (mins < 60) return `${mins} min ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  return `${days}d ago`
+}
+
 function fmt(n: number) {
   if (!n) return '₹0'
   if (n >= 1_00_00_000) return `₹${(n / 1_00_00_000).toFixed(1)} Cr`
@@ -32,12 +46,10 @@ const STATUS_META: Record<string, { label: string; cls: string; dot: string }> =
   resolved:    { label: '✓ Resolved',   cls: 'bg-india-green/8 text-india-green border-india-green/30', dot: '#138808' },
 }
 
-export default function DashboardPage() {
-  const wards = getAllWards()
-  const clusters = getAllClusters()
-  const solutions = getAllSolutions()
+export default async function DashboardPage() {
+  const snap = await getDashboardSnapshot()
+  const { wards, clusters, solutions, source, lastUpdated, totalReports } = snap
 
-  const totalReports = clusters.reduce((s, c) => s + c.post_count, 0)
   const openIssues = clusters.filter((c) => c.status === 'open').length
   const inProgress = clusters.filter((c) => c.status === 'in_progress').length
   const resolved   = clusters.filter((c) => c.status === 'resolved').length
@@ -67,8 +79,13 @@ export default function DashboardPage() {
             <span className="hidden sm:inline-flex items-center gap-1.5 text-[9px] font-bold tracking-[0.18em]
                              uppercase px-2.5 py-1 rounded-full bg-india-green/8 text-india-green border border-india-green/20">
               <span className="w-1.5 h-1.5 rounded-full bg-india-green animate-pulse" />
-              Citizen view
+              {source === 'supabase' ? 'Live · auto-updated' : 'Pilot view'}
             </span>
+            {lastUpdated && (
+              <span className="hidden md:inline-flex text-[10px] font-medium text-ink-3">
+                Refreshed {formatRefreshed(lastUpdated)}
+              </span>
+            )}
             <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
               About ↗

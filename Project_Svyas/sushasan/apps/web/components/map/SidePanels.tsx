@@ -53,6 +53,7 @@ type Solution = {
   timeline_days: number
   priority_score: number
   budget_feasible: boolean
+  status?: string
 }
 
 type WardFull = {
@@ -67,6 +68,8 @@ type WardFull = {
   }
   clusters: Cluster[]
   solutions: Solution[]
+  hasRealClusters?: boolean
+  hasRealSolutions?: boolean
 }
 
 // ─── Display helpers ──────────────────────────────────────────────────────
@@ -490,13 +493,32 @@ export function GovernmentPanel() {
           {!active ? (
             <GovEmpty />
           ) : !full ? (
-            <GovNoSignal name={active.name} />
+            <GovLoading name={active.name} />
           ) : (
             <GovContent full={full} />
           )}
         </PanelSwap>
       </div>
     </aside>
+  )
+}
+
+function GovLoading({ name }: { name: string }) {
+  return (
+    <div className="space-y-3 animate-pulse">
+      <div>
+        <div className="text-[10px] font-bold tracking-[0.18em] text-ink-3 uppercase">{name}</div>
+        <div className="font-serif text-lg font-semibold text-ink mt-1 leading-tight">
+          Loading ward brief…
+        </div>
+      </div>
+      <div className="space-y-2 pt-3 border-t border-ink/8">
+        <div className="h-2 bg-ink/8 rounded w-3/4" />
+        <div className="h-2 bg-ink/8 rounded w-1/2" />
+        <div className="h-2 bg-ink/8 rounded w-2/3" />
+      </div>
+      <div className="h-12 bg-ink/8 rounded-lg mt-3" />
+    </div>
   )
 }
 
@@ -598,7 +620,7 @@ function GovNoSignal({ name }: { name: string }) {
 }
 
 function GovContent({ full }: { full: WardFull }) {
-  const { ward, solutions } = full
+  const { ward, solutions, clusters, hasRealSolutions } = full
   const top = solutions
     .slice()
     .sort((a, b) => (b.priority_score ?? 0) - (a.priority_score ?? 0))[0]
@@ -606,16 +628,34 @@ function GovContent({ full }: { full: WardFull }) {
   const budgetUsedPct = ward.annual_budget_inr > 0
     ? Math.min(100, (totalEstCost / ward.annual_budget_inr) * 100)
     : 0
+  const totalReports = clusters.reduce((sum, c) => sum + (c.post_count ?? 0), 0)
+  const isPreview = !hasRealSolutions || (top?.status === 'preview')
 
   return (
     <div className="space-y-4">
       <div>
-        <div className="text-[10px] font-bold tracking-[0.18em] text-ink-3 uppercase">
-          Ward {ward.ward_number}
+        <div className="text-[10px] font-bold tracking-[0.18em] text-ink-3 uppercase flex items-center gap-2">
+          <span>Ward {ward.ward_number}</span>
+          {isPreview ? (
+            <span className="text-[8px] font-bold tracking-[0.16em] uppercase
+                             px-1.5 py-0.5 rounded bg-saffron/15 text-saffron-dark">
+              Preview brief
+            </span>
+          ) : (
+            <span className="text-[8px] font-bold tracking-[0.16em] uppercase
+                             px-1.5 py-0.5 rounded bg-india-green/15 text-india-green">
+              AI brief
+            </span>
+          )}
         </div>
         <div className="font-serif text-lg font-semibold text-ink mt-1 leading-tight">
           {ward.name}
         </div>
+        {totalReports > 0 && (
+          <div className="text-[10px] text-ink-3 mt-1">
+            {totalReports} citizen reports · {clusters.length} issue cluster{clusters.length === 1 ? '' : 's'}
+          </div>
+        )}
       </div>
 
       <div className="pt-3 border-t border-ink/8">

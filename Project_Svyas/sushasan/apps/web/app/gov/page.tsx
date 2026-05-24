@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getAllWards, getAllSolutions, getAllClusters } from '@/lib/data'
+import { getDashboardSnapshot } from '@/lib/supabase-data'
+
+export const revalidate = 120
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Corporator Command Centre — Sushaasan',
@@ -54,16 +57,23 @@ const STATUS_STYLE: Record<string, string> = {
 }
 
 // ── page ────────────────────────────────────────────────────────────────────
-export default function GovPage() {
-  const wards = getAllWards().filter((w) => w.tier === 'pilot')
-  const solutions = getAllSolutions()
-  const clusters = getAllClusters()
+export default async function GovPage() {
+  const snap = await getDashboardSnapshot()
+  // Show pilot wards first, then any other ward with at least one cluster
+  const wards = snap.wards
+    .filter((w) => w.tier === 'pilot' || snap.clusters.some((c) => c.ward_id === w.id))
+    .sort((a, b) => {
+      if (a.tier === 'pilot' && b.tier !== 'pilot') return -1
+      if (b.tier === 'pilot' && a.tier !== 'pilot') return 1
+      return a.ward_number - b.ward_number
+    })
+  const { solutions, clusters } = snap
 
   // Top-line metrics
   const totalSolutions = solutions.length
   const totalCost = solutions.reduce((s, x) => s + x.total_cost_est_inr, 0)
   const inProgress = solutions.filter((s) => s.status === 'actioned' || s.status === 'in_progress').length
-  const ready = solutions.filter((s) => s.status === 'published' || s.status === 'draft').length
+  const ready = solutions.filter((s) => s.status === 'published' || s.status === 'draft' || s.status === 'preview').length
 
   return (
     <div className="min-h-screen bg-paper text-ink">

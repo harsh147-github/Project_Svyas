@@ -1,71 +1,126 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isGovAuthed } from '@/lib/auth'
+import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 /**
  * POST /api/gov/action
- * Loop-closure endpoint — corporator marks a solution actioned or resolved.
+ * Loop-closure endpoint — corporator marks a solution acknowledged / in_progress / completed.
  *
- * Body: { solution_id: string, status: 'in_progress' | 'completed', action_desc: string }
+ * Persists to `official_actions` table; updates the linked solution + cluster
+ * status so the citizen `/dashboard` reflects resolution.
  *
- * MVP: stores in-memory (no Supabase). Real pipeline wires to official_actions table.
+ * Body: { solution_id?: string, cluster_id?: string, ward_id?: string,
+ *         status: 'acknowledged' | 'in_progress' | 'completed',
+ *         action_desc: string, evidence_url?: string }
  */
 
-// In-memory action log for MVP (resets on server restart)
-const ACTION_LOG: Array<{
-  solution_id: string
-  status: string
-  action_desc: string
-  updated_by: string
-  created_at: string
-}> = []
+type Body = {
+  solution_id?: string
+  cluster_id?: string
+  ward_id?: string
+  status?: string
+  action_desc?: string
+  evidence_url?: string
+}
 
 export async function POST(req: NextRequest) {
   if (!isGovAuthed(req)) {
     return new NextResponse('Unauthorized', { status: 401 })
   }
 
-  let body: { solution_id?: string; status?: string; action_desc?: string }
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  let body: Body
+  try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
+
+  const { solution_id, cluster_id, ward_id, status, action_desc, evidence_url } = body
+  if (!status || !action_desc) {
+    return NextResponse.json({ error: 'Missing status or action_desc' }, { status: 400 })
   }
-
-  const { solution_id, status, action_desc } = body
-
-  if (!solution_id || !status || !action_desc) {
-    return NextResponse.json(
-      { error: 'Missing required fields: solution_id, status, action_desc' },
-      { status: 400 }
-    )
-  }
-
-  const validStatuses = ['in_progress', 'completed', 'acknowledged']
+  const validStatuses = ['acknowledged', 'in_progress', 'completed']
   if (!validStatuses.includes(status)) {
-    return NextResponse.json(
-      { error: `Status must be one of: ${validStatuses.join(', ')}` },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: `Status must be one of: ${validStatuses.join(', ')}` }, { status: 400 })
   }
 
-  const action = {
-    solution_id,
-    status,
-    action_desc,
-    updated_by: 'gov-user',
-    created_at: new Date().toISOString(),
+  // If Supabase is not configured we still succeed (degrades gracefully)
+  if (!isSupabaseConfigured()) {
+    console.warn('[gov/action] Supabase not configured — action not persisted')
+    return NextResponse.json({ ok: true, persisted: false, action: { solution_id, status, action_desc } })
   }
 
-  ACTION_LOG.push(action)
+  try {
+    const supabase = createServerClient()
 
-  console.log('[gov/action]', action)
+    // 1. Insert the action record
+    const { data: action, error: insertErr } = await supabase
+      .from('official_actions')
+      .insert({
+        ward_id: ward_id ?? null,
+        solution_id: solution_id ?? null,
+        cluster_id: cluster_id ?? null,
+        action_desc,
+        status,
+        evidence_url: evidence_url ?? null,
+        updated_by: 'gov-dashboard',
+      })
+      .select('*')
+      .single()
 
-  return NextResponse.json({ ok: true, action }, { status: 200 })
+    if (insertErr) {
+      console.error('[gov/action] insert failed:', insertErr)
+      return NextResponse.json({ error: insertErr.message }, { status: 500 })
+    }
+
+    // 2. Mirror status onto solutions + clusters (so citizen dashboard updates immediately)
+    if (solution_id && !solution_id.startsWith('synth-')) {
+      const update: Record<string, unknown> = {}
+      if (status === 'in_progress' || status === 'acknowledged') {
+        update.status = 'actioned'
+        update.actioned_at = new Date().toISOString()
+      } else if (status === 'completed') {
+        update.status = 'resolved'
+        update.actioned_at = new Date().toISOString()
+        update.resolved_at = new Date().toISOString()
+      }
+      await supabase.from('solutions').update(update).eq('id', solution_id)
+    }
+
+    if (cluster_id) {
+      const clusterStatus = status === 'completed' ? 'resolved'
+        : status === 'in_progress' ? 'in_progress'
+        : 'open'
+      await supabase.from('clusters').update({
+        status: clusterStatus,
+        updated_at: new Date().toISOString(),
+      }).eq('id', cluster_id)
+    }
+
+    return NextResponse.json({ ok: true, persisted: true, action })
+  } catch (err) {
+    console.error('[gov/action]', err)
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
 }
 
 export async function GET(req: NextRequest) {
   if (!isGovAuthed(req)) {
     return new NextResponse('Unauthorized', { status: 401 })
   }
-  return NextResponse.json({ actions: ACTION_LOG })
+
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ actions: [] })
+  }
+
+  try {
+    const supabase = createServerClient()
+    const { data } = await supabase
+      .from('official_actions')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100)
+    return NextResponse.json({ actions: data ?? [] })
+  } catch {
+    return NextResponse.json({ actions: [] })
+  }
 }
