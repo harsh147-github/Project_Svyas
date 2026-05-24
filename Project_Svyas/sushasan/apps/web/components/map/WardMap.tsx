@@ -55,9 +55,8 @@ function makeIconImageData(
   return { width: size, height: size, data: new Uint8Array(raw.data.buffer) }
 }
 
-// Real OSM vector tiles via OpenFreeMap (no API key, free).
-// Positron = clean light style with full road network + buildings + lakes.
-const BASEMAP_STYLE = 'https://tiles.openfreemap.org/styles/positron'
+// CartoDB Positron — free, no API key, CDN-backed, light style with full road network.
+const BASEMAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
 export function WardMap() {
   const containerRef = useRef<HTMLDivElement>(null)
