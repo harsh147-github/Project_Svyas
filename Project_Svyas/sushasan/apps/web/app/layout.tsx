@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/next'
 import '../styles/globals.css'
+import 'maplibre-gl/dist/maplibre-gl.css'
 
 export const metadata: Metadata = {
   title: { default: 'Sushasan — Civic Intelligence for Pune', template: '%s | Sushasan' },

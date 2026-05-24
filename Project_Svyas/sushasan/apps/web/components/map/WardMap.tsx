@@ -68,7 +68,6 @@ export function WardMap() {
     if (!containerRef.current || mapRef.current) return
 
     const maplibregl = (await import('maplibre-gl')).default
-    await import('maplibre-gl/dist/maplibre-gl.css')
 
     const map = new maplibregl.Map({
       container: containerRef.current,
