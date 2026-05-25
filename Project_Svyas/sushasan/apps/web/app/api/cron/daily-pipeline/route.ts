@@ -162,18 +162,21 @@ async function scrapeInstagram(token: string): Promise<NormPost[]> {
 }
 
 // ── Twitter / X ───────────────────────────────────────────────────────────────
+// Multi-word queries like "NIBM Road traffic Pune" AND every term — Twitter
+// returns ~0. Single hashtags + short OR phrases yield far more, then the
+// isPuneCivic + classifyIssue + detectWard chain filters down to civic signal.
 const TWITTER_QUERIES = [
-  '#PMCPune water', '#PMCPune pothole', '#PMCPune garbage',
-  'NIBM Road traffic Pune', 'Kondhwa water shortage Pune',
-  'Mohammadwadi Pune complaint', 'Hadapsar pothole signal',
-  'Wanowrie water supply', 'Salunke Vihar water',
-  'Pune PMC garbage pickup', '#PunePotholes', '#PuneTraffic',
+  '#PMCPune', '#PuneTraffic', '#PunePotholes', '#PuneWater', '#PuneRoads', '#PuneCity',
+  'NIBM Pune', 'Kondhwa Pune', 'Wanowrie Pune', 'Hadapsar Pune', 'Mohammadwadi Pune',
+  'Salunke Vihar', 'Kothrud Pune', 'Baner Pune', 'Aundh Pune',
+  '"PMC Pune" pothole', '"PMC Pune" water', '"PMC Pune" garbage',
+  'Pune water shortage', 'Pune traffic jam', 'Pune streetlight',
 ]
 
 async function scrapeTwitter(token: string): Promise<NormPost[]> {
   const items = await apifyPost('apidojo~tweet-scraper', token, {
     searchTerms: TWITTER_QUERIES,
-    maxItems: 30,
+    maxItems: 20,
     tweetLanguage: 'en',
     searchMode: 'live',
     addUserInfo: false,
@@ -291,43 +294,145 @@ async function scrapeFacebook(token: string): Promise<NormPost[]> {
 }
 
 async function scrapeReddit(): Promise<NormPost[]> {
-  const queries = [
-    ['pune', 'NIBM Mohammadwadi water traffic'],
-    ['pune', 'Kondhwa road drain garbage'],
-    ['pune', 'Hadapsar Magarpatta traffic'],
-    ['pune', 'pothole streetlight Pune'],
-    ['Pune_City', 'traffic water garbage'],
-    ['pune', 'PMC water supply tanker'],
+  // Narrow multi-word queries return ~0 results from Reddit search. Switch to
+  // single high-signal keywords + r/pune /new sweep. Cross-subreddit search
+  // catches Pune posts in r/india, r/IndianInfra, etc.
+  const targeted: Array<[string, string]> = [
+    ['pune', 'traffic'],   ['pune', 'water'],   ['pune', 'PMC'],
+    ['pune', 'pothole'],   ['pune', 'garbage'], ['pune', 'streetlight'],
+    ['pune', 'tanker'],    ['pune', 'drain'],   ['pune', 'electricity'],
+    ['Pune_City', 'PMC'],
   ]
+  const crossSub: string[] = ['pune+pothole', 'pune+water+supply', 'pune+traffic+jam']
+
+  const headers = { 'User-Agent': 'Sushasan/1.0 (+https://sushaasan.in; civic-monitor)' }
   const out: NormPost[] = []
-  for (const [sub, q] of queries) {
+
+  const ingest = (raw: { data: Record<string, unknown> }, sourceTag: string) => {
+    const d = raw.data
+    const title = (d.title as string) ?? ''
+    const body = (d.selftext as string) ?? ''
+    const text = `${title} ${body}`.trim()
+    if (text.length < 20) return
+    if (!isPuneCivic(text)) return
+    const issue = classifyIssue(text); if (!issue) return
+    const ward = detectWard(text); if (!ward) return
+    out.push({
+      source: 'reddit',
+      source_post_id: `reddit_${d.id as string}`,
+      raw_text: text.slice(0, 4000),
+      author_hash: hashAuthor(((d.author as string) ?? 'unknown').slice(0, 50)),
+      posted_at: new Date(((d.created_utc as number) ?? 0) * 1000).toISOString(),
+      geo_hint: sourceTag,
+      ward_id: ward.id, issue_tag: issue, severity: severityFor(text),
+      ward_lng: ward.lng, ward_lat: ward.lat,
+    })
+  }
+
+  // 1. Targeted subreddit searches
+  for (const [sub, q] of targeted) {
     try {
-      const url = `https://www.reddit.com/r/${sub}/search.json?q=${encodeURIComponent(q)}&sort=new&t=month&limit=50&restrict_sr=on`
-      const r = await fetch(url, { headers: { 'User-Agent': 'Sushasan/1.0 (civic; sonawaneharsh147@gmail.com)' }, signal: AbortSignal.timeout(30_000) })
+      const url = `https://www.reddit.com/r/${sub}/search.json?q=${encodeURIComponent(q)}&sort=new&t=week&limit=25&restrict_sr=on`
+      const r = await fetch(url, { headers, signal: AbortSignal.timeout(20_000) })
       if (!r.ok) continue
       const data = (await r.json()) as { data?: { children?: Array<{ data: Record<string, unknown> }> } }
-      for (const c of data.data?.children ?? []) {
-        const d = c.data
-        const title = (d.title as string) ?? ''
-        const body = (d.selftext as string) ?? ''
-        const text = `${title} ${body}`.trim()
-        if (text.length < 20) continue
+      for (const c of data.data?.children ?? []) ingest(c, `r/${sub}`)
+      await new Promise((r) => setTimeout(r, 1200))
+    } catch (e) { console.error(`[reddit] ${sub}/${q}:`, e) }
+  }
+
+  // 2. Cross-subreddit catches (Pune content posted to r/india, r/IndianInfra, etc.)
+  for (const q of crossSub) {
+    try {
+      const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(q)}&sort=new&t=week&limit=25`
+      const r = await fetch(url, { headers, signal: AbortSignal.timeout(20_000) })
+      if (!r.ok) continue
+      const data = (await r.json()) as { data?: { children?: Array<{ data: Record<string, unknown> }> } }
+      for (const c of data.data?.children ?? []) ingest(c, 'reddit-cross')
+      await new Promise((r) => setTimeout(r, 1200))
+    } catch (e) { console.error(`[reddit-cross] ${q}:`, e) }
+  }
+
+  // 3. r/pune /new sweep — last 100 posts regardless of query
+  try {
+    const url = `https://www.reddit.com/r/pune/new.json?limit=100`
+    const r = await fetch(url, { headers, signal: AbortSignal.timeout(20_000) })
+    if (r.ok) {
+      const data = (await r.json()) as { data?: { children?: Array<{ data: Record<string, unknown> }> } }
+      for (const c of data.data?.children ?? []) ingest(c, 'r/pune-new')
+    }
+  } catch (e) { console.error('[reddit-new]', e) }
+
+  return out
+}
+
+// ── News (RSS feeds, free — no Apify spend) ──────────────────────────────────
+// Hindustan Times + The Hindu Pune feeds 404'd at probe time; if/when they
+// come back, append the URL here. Pune Mirror's RSS lives at a non-standard
+// path but returns 200 — kept conditionally.
+const NEWS_RSS: string[] = [
+  'https://timesofindia.indiatimes.com/rssfeeds/-2128825329.cms',
+  'https://indianexpress.com/section/cities/pune/feed/',
+  'https://punemirror.com/?service=rss',
+]
+
+function decodeXml(s: string): string {
+  return s
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ').replace(/&#\d+;/g, ' ')
+    .replace(/\s+/g, ' ').trim()
+}
+
+function pickTag(item: string, tag: string): string {
+  const m = item.match(new RegExp(`<${tag}\\b[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'))
+  return m ? decodeXml(m[1]) : ''
+}
+
+async function scrapeNews(): Promise<NormPost[]> {
+  const out: NormPost[] = []
+  for (const url of NEWS_RSS) {
+    try {
+      const r = await fetch(url, {
+        headers: { 'User-Agent': 'Sushasan/1.0 (+https://sushaasan.in; civic-monitor)' },
+        signal: AbortSignal.timeout(20_000),
+      })
+      if (!r.ok) { console.error(`[news] ${url} returned ${r.status}`); continue }
+      const xml = await r.text()
+      const items = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? []
+      const host = (() => { try { return new URL(url).hostname } catch { return 'news' } })()
+      for (const item of items) {
+        const title = pickTag(item, 'title')
+        const desc  = pickTag(item, 'description')
+        const link  = pickTag(item, 'link')
+        const pub   = pickTag(item, 'pubDate')
+        const text  = `${title} ${desc}`.trim()
+        if (text.length < 30) continue
         if (!isPuneCivic(text)) continue
         const issue = classifyIssue(text); if (!issue) continue
         const ward = detectWard(text); if (!ward) continue
+        const posted = (() => {
+          if (!pub) return null
+          const d = new Date(pub)
+          return isNaN(d.getTime()) ? null : d.toISOString()
+        })()
+        const id = link
+          ? hashAuthor(link).slice(0, 24)
+          : `${host}_${Date.now()}_${out.length}`
         out.push({
-          source: 'reddit',
-          source_post_id: `reddit_${d.id as string}`,
+          source: 'news',
+          source_post_id: `news_${id}`,
           raw_text: text.slice(0, 4000),
-          author_hash: hashAuthor(((d.author as string) ?? 'unknown').slice(0, 50)),
-          posted_at: new Date(((d.created_utc as number) ?? 0) * 1000).toISOString(),
-          geo_hint: `r/${d.subreddit as string}`,
+          author_hash: hashAuthor(host),
+          posted_at: posted,
+          geo_hint: host,
           ward_id: ward.id, issue_tag: issue, severity: severityFor(text),
           ward_lng: ward.lng, ward_lat: ward.lat,
         })
       }
-      await new Promise((r) => setTimeout(r, 1500))
-    } catch (e) { console.error(`[reddit] ${sub}/${q}:`, e) }
+    } catch (e) { console.error(`[news] ${url}:`, e) }
   }
   return out
 }
@@ -362,17 +467,18 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   const { data: run } = await supabase.from('pipeline_runs').insert({ trigger_type: triggerType, status: 'running' }).select('id').single()
   const runId = (run as { id: string } | null)?.id
 
-  // All 5 scrapers in parallel — each returns [] on failure, never throws
-  const [ig, rd, tw, gm, fb] = await Promise.all([
+  // All 6 scrapers in parallel — each returns [] on failure, never throws
+  const [ig, rd, tw, gm, fb, nw] = await Promise.all([
     scrapeInstagram(token),
     scrapeReddit(),
     scrapeTwitter(token),
     scrapeGoogleMaps(token),
     scrapeFacebook(token),
+    scrapeNews(),
   ])
-  console.log(`[pipeline] raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length}`)
+  console.log(`[pipeline] raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length} nw=${nw.length}`)
 
-  const all: NormPost[] = [...ig, ...rd, ...tw, ...gm, ...fb]
+  const all: NormPost[] = [...ig, ...rd, ...tw, ...gm, ...fb, ...nw]
 
   // Dedup by source_post_id
   const seen = new Set<string>()
@@ -404,6 +510,38 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
     else clustersWritten += 1
   }
 
+  // ── Auto-generate AI briefs for ward+issue combos new today ──────────────
+  // Calls /api/admin/generate-briefs with all:true. The generator is
+  // idempotent — it skips ward+issue combos that already have a published
+  // solution, so this only fires Opus for genuinely new signal.
+  let briefsCreated = 0
+  let briefsSkipped = 0
+  let briefsFailed = 0
+  if (process.env.ANTHROPIC_API_KEY && process.env.ADMIN_TOKEN && aggregates.length > 0) {
+    try {
+      const proto = 'https'
+      const host  = process.env.VERCEL_URL ?? 'sushaasan.in'
+      const base  = host.startsWith('http') ? host : `${proto}://${host}`
+      const target = `${base}/api/admin/generate-briefs?token=${encodeURIComponent(process.env.ADMIN_TOKEN)}`
+      const briefRes = await fetch(target, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ all: true, top_n: 2 }),
+        signal: AbortSignal.timeout(240_000),
+      })
+      if (briefRes.ok) {
+        const json = await briefRes.json() as { summary?: { created?: number; skipped?: number; failed?: number } }
+        briefsCreated = json.summary?.created ?? 0
+        briefsSkipped = json.summary?.skipped ?? 0
+        briefsFailed  = json.summary?.failed  ?? 0
+      } else {
+        console.error('[auto-brief] generator returned', briefRes.status)
+      }
+    } catch (e) {
+      console.error('[auto-brief] chain failed:', e)
+    }
+  }
+
   if (runId) {
     await supabase.from('pipeline_runs').update({
       status: 'completed', phase_completed: 4, posts_scraped: unique.length,
@@ -414,7 +552,8 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   return {
     runId, postsScraped: unique.length, clustersWritten,
     durationMs: Date.now() - startedAt,
-    bySource: { instagram: ig.length, reddit: rd.length, twitter: tw.length, gmaps: gm.length, facebook: fb.length },
+    bySource: { instagram: ig.length, reddit: rd.length, twitter: tw.length, gmaps: gm.length, facebook: fb.length, news: nw.length },
+    briefs: { created: briefsCreated, skipped: briefsSkipped, failed: briefsFailed },
   }
 }
 
