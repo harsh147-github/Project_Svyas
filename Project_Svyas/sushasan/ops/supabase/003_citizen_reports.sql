@@ -10,12 +10,20 @@ ALTER TABLE raw_posts ADD CONSTRAINT raw_posts_source_check
 ALTER TABLE raw_posts ADD COLUMN IF NOT EXISTS photo_url text;
 
 -- Allow anonymous users to insert citizen reports
--- (Enable RLS on raw_posts first if not already enabled)
 ALTER TABLE raw_posts ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anon can insert citizen reports"
-  ON raw_posts FOR INSERT TO anon
-  WITH CHECK (source = 'citizen');
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE tablename = 'raw_posts' AND policyname = 'Anon can insert citizen reports'
+  ) THEN
+    CREATE POLICY "Anon can insert citizen reports"
+      ON raw_posts FOR INSERT TO anon
+      WITH CHECK (source = 'citizen');
+  END IF;
+END
+$$;
 
 -- Storage bucket: run in Supabase dashboard Storage UI or SQL editor:
 -- INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
