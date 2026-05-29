@@ -1,78 +1,83 @@
-import type { Metadata } from 'next'
+'use client'
+
+/**
+ * /add-report — Trigger page for the citizen report sheet.
+ * Minimal — fires the sheet open event on CTA click.
+ */
+
+import { ReportSheet } from '@/components/map/ReportSheet'
 import Link from 'next/link'
 
-export const metadata: Metadata = {
-  title: 'Add a Report — Sushaasan',
-  description: 'Report a civic issue in your ward. Your report joins ward-level intelligence shared with PMC.',
-}
-
 export default function AddReportPage() {
+  function openSheet() {
+    window.dispatchEvent(
+      new CustomEvent('sushaasan:report-sheet-open', { detail: {} })
+    )
+  }
+
   return (
     <main className="min-h-screen bg-paper text-ink">
-      <div className="max-w-3xl mx-auto px-6 py-12">
-        <Link href="/" className="text-xs text-ink/60 hover:text-ink tracking-wide">
-          ← Back to map
-        </Link>
+      <div className="max-w-lg mx-auto px-6 py-16 flex flex-col items-center text-center gap-8">
 
-        <header className="mt-6 pb-8 border-b border-ink/10">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="px-2 py-0.5 text-[9px] font-bold tracking-[0.18em] uppercase rounded
-                            bg-saffron/10 text-saffron border border-saffron/30">
-              Coming Soon
-            </span>
-          </div>
-          <h1 className="font-serif text-3xl md:text-4xl font-semibold text-ink">
-            Add a civic report
+        {/* Back */}
+        <div className="self-start">
+          <Link href="/" className="text-xs text-ink/60 hover:text-ink tracking-wide transition-colors">
+            ← Back to map
+          </Link>
+        </div>
+
+        {/* Icon */}
+        <div className="w-16 h-16 rounded-2xl bg-saffron/10 border border-saffron/30 flex items-center justify-center text-3xl">
+          📍
+        </div>
+
+        {/* Heading */}
+        <div className="space-y-3">
+          <h1 className="font-serif text-3xl font-semibold text-ink">
+            Report a civic issue
           </h1>
-          <p className="mt-3 text-sm text-ink/70 leading-relaxed max-w-xl">
-            Sushaasan is building a structured reporting flow so citizens can add observations
-            directly — alongside the social-media signal we already aggregate. Your report will
-            be classified by ward, scored for severity, and joined to the next AI-generated
-            solution brief delivered to PMC.
+          <p className="text-sm text-ink/70 leading-relaxed max-w-sm">
+            Your report joins ward-level intelligence shared with PMC.
+            Takes under 60 seconds. Completely anonymous.
           </p>
-        </header>
+        </div>
 
-        <section className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-ink/10 p-6 bg-white">
-            <h2 className="font-serif text-lg font-semibold mb-2">What you'll be able to do</h2>
-            <ul className="text-sm text-ink/70 space-y-2 leading-relaxed">
-              <li>• Pick your ward + drop a pin on the map</li>
-              <li>• Tag the issue (traffic, water, garbage, electricity, other)</li>
-              <li>• Attach a photo + short description</li>
-              <li>• Track whether your report joined a cluster</li>
-              <li>• See the AI solution brief generated for your area</li>
-            </ul>
-          </div>
+        {/* Quick chips */}
+        <div className="flex flex-wrap gap-2 justify-center">
+          {['Anonymous', 'Takes 60 seconds', 'Joins live data'].map(chip => (
+            <span
+              key={chip}
+              className="px-3 py-1.5 rounded-full text-[11px] font-semibold
+                         bg-india-green/[0.08] text-india-green border border-india-green/20"
+            >
+              ✓ {chip}
+            </span>
+          ))}
+        </div>
 
-          <div className="rounded-2xl border border-ink/10 p-6 bg-white">
-            <h2 className="font-serif text-lg font-semibold mb-2">Why this matters</h2>
-            <p className="text-sm text-ink/70 leading-relaxed">
-              Social media signal misses citizens who don&apos;t post publicly. Direct reports
-              fill that gap — especially for elderly residents, non-English speakers, and
-              neighbourhoods underrepresented online. One team. No blame. Transparent
-              governance.
-            </p>
-          </div>
-        </section>
+        {/* CTA */}
+        <button
+          onClick={openSheet}
+          className="px-8 py-3.5 rounded-2xl bg-saffron text-white font-semibold text-sm
+                     shadow-[0_4px_18px_rgba(255,153,51,0.45)]
+                     hover:bg-[#e8891e] active:scale-95 transition-all duration-150"
+        >
+          Start Report →
+        </button>
 
-        <section className="mt-10 rounded-2xl border border-ink/10 p-6 bg-white">
-          <h2 className="font-serif text-lg font-semibold mb-3">In the meantime</h2>
-          <p className="text-sm text-ink/70 leading-relaxed mb-4">
-            Tag <span className="font-semibold">@sushaasan</span> on Instagram or post in r/pune
-            with location keywords — our AI will pick it up in the next 24h cycle.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/" className="px-4 py-2 text-xs font-semibold rounded-full
-                                       bg-ink text-white hover:bg-ink/85 transition">
-              Back to the map
-            </Link>
-            <Link href="/dashboard" className="px-4 py-2 text-xs font-semibold rounded-full
-                                                bg-white text-ink border border-ink/15 hover:border-ink/30 transition">
-              View transparency dashboard
-            </Link>
-          </div>
-        </section>
+        {/* Transparency note */}
+        <p className="text-[11px] text-ink/40 leading-relaxed max-w-xs">
+          All reports are anonymised before storage. No usernames, phone numbers, or personal identifiers are kept.
+          Read our{' '}
+          <Link href="/ethics" className="underline hover:text-ink/60">
+            privacy + ethics page
+          </Link>
+          .
+        </p>
       </div>
+
+      {/* Sheet is rendered here so it overlays this page too */}
+      <ReportSheet />
     </main>
   )
 }

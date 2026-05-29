@@ -64,12 +64,6 @@ const TIPS: Record<string, string[]> = {
   ],
 }
 
-const FLOW_STEPS = [
-  { icon: '📱', label: 'Citizens post', detail: 'People report problems on Twitter, Reddit, Instagram' },
-  { icon: '🤖', label: 'AI reads & maps', detail: 'Sushaasan clusters similar complaints by ward' },
-  { icon: '📋', label: 'Corporator acts', detail: 'A ready-to-use action plan reaches the ward office' },
-  { icon: '✅', label: 'You see results', detail: 'Resolution status updates on this very map' },
-]
 
 export function CitizenSheet() {
   const [data, setData] = useState<SheetData | null>(null)
@@ -187,27 +181,6 @@ export function CitizenSheet() {
                 </ul>
               </div>
 
-              {/* How Sushaasan works — simple flow */}
-              <div className="space-y-3">
-                <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-4">How your report becomes action</div>
-                <div className="flex flex-col gap-0">
-                  {FLOW_STEPS.map((step, i) => (
-                    <div key={i}>
-                      <div className="flex items-start gap-3 py-3">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[20px] flex-shrink-0 bg-ink/[0.04] border border-ink/8">{step.icon}</div>
-                        <div>
-                          <div className="text-[13px] font-semibold text-ink">{step.label}</div>
-                          <div className="text-[12px] text-ink-3 mt-0.5">{step.detail}</div>
-                        </div>
-                      </div>
-                      {i < FLOW_STEPS.length - 1 && (
-                        <div className="ml-5 w-0 border-l-2 border-dashed border-ink/15 h-3" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {/* Gov status */}
               <div className="p-4 rounded-2xl bg-india-green/[0.06] border border-india-green/20 space-y-1.5">
                 <div className="text-[11px] font-bold tracking-[0.14em] uppercase text-india-green">What the government is doing</div>
@@ -219,6 +192,21 @@ export function CitizenSheet() {
                   <p className="text-[13px] text-ink-2 leading-relaxed">📬 Sushaasan has generated a step-by-step action brief for the ward corporator. Tap <strong>&quot;Action Brief&quot;</strong> to see it.</p>
                 )}
               </div>
+
+              {/* Report this issue button */}
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('sushaasan:report-sheet-open', {
+                    detail: { wardId: data.wardId, issueTag: data.issueTag },
+                  }))
+                  close()
+                }}
+                className="w-full text-center py-3 px-4 rounded-2xl border border-saffron/40
+                           text-saffron font-semibold text-[14px]
+                           hover:bg-saffron/5 active:scale-95 transition-all"
+              >
+                Report this issue
+              </button>
 
               {/* CTA */}
               <a
