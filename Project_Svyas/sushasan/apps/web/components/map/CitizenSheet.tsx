@@ -193,6 +193,21 @@ export function CitizenSheet() {
                 )}
               </div>
 
+              {/* Report this issue button */}
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('sushaasan:report-sheet-open', {
+                    detail: { wardId: data.wardId, issueTag: data.issueTag },
+                  }))
+                  close()
+                }}
+                className="w-full text-center py-3 px-4 rounded-2xl border border-saffron/40
+                           text-saffron font-semibold text-[14px]
+                           hover:bg-saffron/5 active:scale-95 transition-all"
+              >
+                Report this issue
+              </button>
+
               {/* CTA */}
               <a
                 href={`/ward/${data.wardId}`}

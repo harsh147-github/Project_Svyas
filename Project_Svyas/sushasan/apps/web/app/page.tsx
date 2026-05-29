@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic'
 import { LegendBar } from '@/components/map/LegendBar'
 import { FindMyWardButton } from '@/components/map/SelectedWardPanel'
 import { SidePanels } from '@/components/map/SidePanels'
+import { ReportButton } from '@/components/map/ReportButton'
 
 // Citizen and Government sheets — bottom-sheet modals triggered from hotspot popups
 const CitizenSheet = dynamic(
@@ -11,6 +12,10 @@ const CitizenSheet = dynamic(
 )
 const GovSheet = dynamic(
   () => import('@/components/map/GovSheet').then((m) => m.GovSheet),
+  { ssr: false }
+)
+const ReportSheet = dynamic(
+  () => import('@/components/map/ReportSheet').then((m) => m.ReportSheet),
   { ssr: false }
 )
 
@@ -75,9 +80,10 @@ export default function HomePage() {
       {/* Onboarding hint card — top-center, dismisses on first ward interaction */}
       <MapHint />
 
-      {/* Citizen and gov sheets — rendered at page level so they overlay the map */}
+      {/* Citizen, gov, and report sheets — rendered at page level so they overlay the map */}
       <CitizenSheet />
       <GovSheet />
+      <ReportSheet />
 
       {/* Legend */}
       <LegendBar />
@@ -93,20 +99,7 @@ export default function HomePage() {
         <div className="flex items-center gap-5 flex-wrap justify-center">
           <FindMyWardButton />
 
-          <a
-            href="/add-report"
-            className="flex items-center gap-2.5 px-6 py-2.5 rounded-full
-                       bg-white text-ink font-semibold text-xs tracking-wide
-                       border border-saffron/60
-                       shadow-[0_4px_14px_rgba(255,153,51,0.18)]
-                       hover:bg-saffron/5 hover:border-saffron active:scale-95 transition-all duration-150"
-          >
-            <svg className="w-3.5 h-3.5 text-saffron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Add Report
-          </a>
+          <ReportButton />
 
           <a
             href="/dashboard/nibm"
