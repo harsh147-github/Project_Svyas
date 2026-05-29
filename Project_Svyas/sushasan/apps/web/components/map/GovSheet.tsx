@@ -126,7 +126,7 @@ export function GovSheet() {
               Decision support for your ward
             </h2>
             <p className="text-[12px] text-ink-3 mt-1">
-              For the ward corporator&apos;s office · Data-backed, budget-checked
+              AI analysis for the ward office · Requires official review before action
             </p>
           </div>
           <button
@@ -243,7 +243,7 @@ export function GovSheet() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-ink-4">
-                      Recommended action plan
+                      AI-suggested strategic steps
                     </div>
                     <span
                       className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase"
@@ -256,6 +256,14 @@ export function GovSheet() {
                       {ISSUE_EMOJI[topSolution.issue_tag] ?? '📌'}{' '}
                       {ISSUE_LABEL[topSolution.issue_tag] ?? topSolution.issue_tag}
                     </span>
+                  </div>
+
+                  {/* Needs-review disclaimer */}
+                  <div className="flex items-start gap-2.5 p-3 rounded-xl bg-saffron/[0.07] border border-saffron/25">
+                    <span className="text-[16px] flex-shrink-0 mt-0.5">🔍</span>
+                    <p className="text-[12px] leading-relaxed text-ink-2">
+                      <strong className="text-ink">Needs official review.</strong> The steps below are AI-generated analysis based on citizen reports. Final decisions and execution rest with the ward office and relevant PMC departments.
+                    </p>
                   </div>
 
                   <p className="text-[13px] leading-relaxed text-ink-2 bg-ink/[0.03] border border-ink/8 rounded-xl p-3">
