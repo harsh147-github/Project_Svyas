@@ -1,0 +1,721 @@
+'use client'
+
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const VOICE_BARS = [4, 8, 14, 20, 12, 18, 8, 14, 5]
+
+const LANGS = [
+  { code: 'en-IN', short: 'EN',  whisper: 'en' },
+  { code: 'hi-IN', short: 'हिं', whisper: 'hi' },
+  { code: 'mr-IN', short: 'मर',  whisper: 'mr' },
+]
+
+const CENTROIDS: Record<string, [number, number, string]> = {
+  '46': [18.4655, 73.9010, 'NIBM–Mohammadwadi'],
+  '47': [18.4489, 73.8780, 'Kondhwa Budruk'],
+  '43': [18.4788, 73.8832, 'Wanowrie–Salunke Vihar'],
+  '42': [18.4730, 73.9140, 'Ramtekadi'],
+  '41': [18.4520, 73.8900, 'Kondhwa Khurd'],
+  '44': [18.4400, 73.8950, 'Undri–Pisoli'],
+  '25': [18.5040, 73.9280, 'Hadapsar'],
+  '26': [18.4990, 73.9050, 'Wanwadi'],
+  '4':  [18.5290, 73.8450, 'Shivajinagar'],
+  '5':  [18.5360, 73.8930, 'Koregaon Park'],
+  '6':  [18.5670, 73.9140, 'Viman Nagar'],
+  '7':  [18.5500, 73.9380, 'Kharadi'],
+  '3':  [18.5080, 73.8070, 'Kothrud'],
+  '1':  [18.5590, 73.7920, 'Aundh–Baner'],
+  '8':  [18.5930, 73.9210, 'Lohegaon–Dhanori'],
+}
+
+function nearestWardId(lat: number, lng: number): string {
+  let min = Infinity, best = '46'
+  for (const [id, [wlat, wlng]] of Object.entries(CENTROIDS)) {
+    const d = (wlat - lat) ** 2 + (wlng - lng) ** 2
+    if (d < min) { min = d; best = id }
+  }
+  return best
+}
+
+const ISSUE_EMOJI:  Record<string, string> = { traffic: '🚗', water: '💧', electricity: '⚡', garbage: '🗑️', other: '📌' }
+const ISSUE_COLOR:  Record<string, string> = { traffic: '#EF4444', water: '#3B82F6', electricity: '#F59E0B', garbage: '#10B981', other: '#8B5CF6' }
+const ISSUE_LABEL:  Record<string, string> = { traffic: 'Traffic', water: 'Water', electricity: 'Electricity', garbage: 'Garbage', other: 'Other' }
+const SEV_LABEL = ['', 'Minor', 'Recurring', 'Significant', 'Serious', 'Emergency']
+
+// Apple-spec design tokens ────────────────────────────────────────────────────
+
+const EASE = 'cubic-bezier(0.25, 0.1, 0.25, 1)'
+const SPRING = 'cubic-bezier(0.16, 1, 0.3, 1)'
+
+const CARD: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.85)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  borderRadius: 18,
+  border: '1px solid rgba(0,0,0,0.05)',
+  boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type LocationStatus =
+  | { kind: 'idle' }
+  | { kind: 'detecting' }
+  | { kind: 'found'; lat: number; lng: number; wardId: string; wardName: string }
+  | { kind: 'denied' }
+
+type Result = {
+  issueTag: string; subTags: string[]; severity: number
+  citedLocation: string | null; civicAsk: string | null
+  wardId: string; wardName: string
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [visible,      setVisible]      = useState(false)
+  const [text,         setText]         = useState('')
+  const [submitting,   setSubmitting]   = useState(false)
+  const [submitError,  setSubmitError]  = useState(false)
+  const [result,       setResult]       = useState<Result | null>(null)
+  const [loc,          setLoc]          = useState<LocationStatus>({ kind: 'idle' })
+  const [voiceActive,  setVoiceActive]  = useState(false)
+  const [transcribing, setTranscribing] = useState(false)
+  const [voiceLang,    setVoiceLang]    = useState('en-IN')
+  const [voiceOk,      setVoiceOk]      = useState(false)
+  const [mediaOk,      setMediaOk]      = useState(false)
+  const [focused,      setFocused]      = useState(false)
+  const [isDesktop,    setIsDesktop]    = useState(false)
+
+  const textareaRef    = useRef<HTMLTextAreaElement>(null)
+  const recognitionRef = useRef<any>(null)
+  const recorderRef    = useRef<MediaRecorder | null>(null)
+  const voiceActiveRef = useRef(false)
+  const isIOS          = useRef(false)
+  const closingTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    setVoiceOk(!!SR)
+    setMediaOk(!!(navigator.mediaDevices?.getUserMedia))
+    isIOS.current = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+      (/Safari/i.test(navigator.userAgent) && !/Chrome|Chromium|Edg/i.test(navigator.userAgent))
+    const check = () => setIsDesktop(window.innerWidth >= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  useEffect(() => {
+    if (!isOpen) return
+    if (closingTimer.current) { clearTimeout(closingTimer.current); closingTimer.current = null }
+    setText(''); setResult(null); setSubmitError(false)
+    voiceActiveRef.current = false; setVoiceActive(false); setTranscribing(false)
+    requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
+    setLoc({ kind: 'detecting' })
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          const wardId = nearestWardId(coords.latitude, coords.longitude)
+          const [,, wardName] = CENTROIDS[wardId]
+          setLoc({ kind: 'found', lat: coords.latitude, lng: coords.longitude, wardId, wardName })
+        },
+        () => setLoc({ kind: 'denied' }),
+        { timeout: 8000, maximumAge: 60_000 }
+      )
+    } else { setLoc({ kind: 'denied' }) }
+    setTimeout(() => textareaRef.current?.focus(), 460)
+  }, [isOpen])
+
+  function handleClose() {
+    recognitionRef.current?.stop(); recorderRef.current?.stop()
+    voiceActiveRef.current = false; setVoiceActive(false)
+    setVisible(false)
+    closingTimer.current = setTimeout(onClose, 420)
+  }
+
+  function handleTextChange(e: ChangeEvent<HTMLTextAreaElement>) {
+    setText(e.target.value)
+    const el = e.target; el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 180) + 'px'
+  }
+
+  function startBrowserRecognition(lang: string) {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SR) return
+    const r = new SR()
+    r.lang = lang; r.continuous = !isIOS.current; r.interimResults = !isIOS.current
+    r.onresult = (ev: any) => {
+      const chunk = isIOS.current
+        ? (ev.results[0][0].transcript as string).trim()
+        : Array.from(ev.results as any[]).map((res: any) => res[0].transcript).join('')
+      setText(prev => isIOS.current ? (prev ? `${prev} ${chunk}` : chunk) : chunk)
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto'
+        textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 180) + 'px'
+      }
+    }
+    r.onerror = (e: any) => { if (e.error !== 'no-speech') { voiceActiveRef.current = false; setVoiceActive(false) } }
+    r.onend = () => {
+      if (isIOS.current && voiceActiveRef.current) startBrowserRecognition(lang)
+      else if (!isIOS.current) { voiceActiveRef.current = false; setVoiceActive(false) }
+    }
+    r.start(); recognitionRef.current = r
+  }
+
+  async function startWhisperRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mt = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
+      const recorder = new MediaRecorder(stream, { mimeType: mt })
+      const chunks: BlobPart[] = []
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop()); setTranscribing(true)
+        const blob = new Blob(chunks, { type: mt })
+        const lang = LANGS.find(l => l.code === voiceLang)?.whisper ?? 'en'
+        const fname = mt.includes('mp4') ? 'audio.mp4' : 'audio.webm'
+        const form = new FormData()
+        form.append('audio', new File([blob], fname, { type: mt }))
+        form.append('language', lang)
+        try {
+          const ctrl = new AbortController()
+          const t = setTimeout(() => ctrl.abort(), 30_000)
+          const res = await fetch('/api/transcribe', { method: 'POST', body: form, signal: ctrl.signal })
+          clearTimeout(t)
+          const data = await res.json() as { text?: string }
+          if (data.text?.trim()) {
+            setText(prev => prev ? `${prev} ${data.text!.trim()}` : data.text!.trim())
+            if (textareaRef.current) {
+              textareaRef.current.style.height = 'auto'
+              textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 180) + 'px'
+            }
+          }
+        } catch { /**/ } finally { setTranscribing(false); setVoiceActive(false); voiceActiveRef.current = false }
+      }
+      recorder.start(); recorderRef.current = recorder
+    } catch { voiceActiveRef.current = false; setVoiceActive(false) }
+  }
+
+  const useWhisper = voiceLang === 'hi-IN' || voiceLang === 'mr-IN'
+  const canSpeak = voiceOk || mediaOk
+
+  function toggleVoice() {
+    if (voiceActive) {
+      voiceActiveRef.current = false; recorderRef.current?.stop(); recognitionRef.current?.stop()
+      setVoiceActive(false); return
+    }
+    const doWhisper = !voiceOk || useWhisper
+    if (doWhisper && !mediaOk) return
+    voiceActiveRef.current = true; setVoiceActive(true)
+    if (doWhisper) startWhisperRecording(); else startBrowserRecognition(voiceLang)
+  }
+
+  async function handleSubmit() {
+    if (text.trim().length < 5 || submitting || !!result) return
+    setSubmitting(true); setSubmitError(false)
+    const payload = {
+      text: text.trim(),
+      lat:    loc.kind === 'found' ? loc.lat    : null,
+      lng:    loc.kind === 'found' ? loc.lng    : null,
+      wardId: loc.kind === 'found' ? loc.wardId : null,
+    }
+    try {
+      const res = await fetch('/api/add-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error(`${res.status}`)
+      setResult(await res.json() as Result)
+    } catch { setSubmitError(true) } finally { setSubmitting(false) }
+  }
+
+  const canSubmit = text.trim().length >= 5 && !submitting && !result
+  const showCursor = text === '' && !focused && !voiceActive && !transcribing
+
+  return (
+    <div
+      className={`fixed inset-0 z-[55] ${isDesktop ? 'flex items-center justify-center' : 'flex flex-col justify-end'}`}
+      style={{
+        pointerEvents: isOpen ? 'auto' : 'none',
+        background: `rgba(0,0,0,${visible ? (isDesktop ? '0.35' : '0.28') : '0'})`,
+        backdropFilter: visible ? 'blur(10px)' : 'none',
+        WebkitBackdropFilter: visible ? 'blur(10px)' : 'none',
+        transition: `background 0.35s ${EASE}, backdrop-filter 0.35s ${EASE}`,
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
+    >
+      {/* Sheet ───────────────────────────────────────────────────────────────── */}
+      <div
+        style={{
+          background: '#f5f5f7',
+          borderRadius: isDesktop ? 28 : '28px 28px 0 0',
+          boxShadow: isDesktop
+            ? '0 8px 40px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.10)'
+            : '0 -1px 0 rgba(0,0,0,0.07), 0 -24px 80px rgba(0,0,0,0.14)',
+          maxHeight: isDesktop ? '82vh' : '78vh',
+          maxWidth: isDesktop ? 580 : undefined,
+          width: isDesktop ? '100%' : undefined,
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch' as any,
+          transform: visible
+            ? 'translateY(0) scale(1)'
+            : isDesktop ? 'translateY(16px) scale(0.97)' : 'translateY(100%)',
+          opacity: isDesktop ? (visible ? 1 : 0) : 1,
+          transition: `transform 0.44s ${SPRING}, opacity 0.3s ${EASE}`,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3">
+          <div style={{ width: 36, height: 5, borderRadius: 999, background: 'rgba(0,0,0,0.12)' }} />
+        </div>
+
+        {/* Header ─────────────────────────────────────────────────────────── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px 10px' }}>
+          <div>
+            <div style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.20em',
+              textTransform: 'uppercase', color: 'rgba(29,29,31,0.40)',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+            }}>
+              Report an issue · Pune
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+              {loc.kind === 'detecting' && <>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'rgba(29,29,31,0.22)',
+                               flexShrink: 0, animation: 'pulse 1.5s ease infinite' }} />
+                <span style={{ fontSize: 13, color: '#86868b', fontFamily: '-apple-system, sans-serif' }}>
+                  Finding your ward…
+                </span>
+              </>}
+              {loc.kind === 'found' && <>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34c759', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#34c759',
+                               fontFamily: '-apple-system, sans-serif' }}>
+                  Ward {loc.wardId} · {loc.wardName}
+                </span>
+              </>}
+              {loc.kind === 'denied' && <>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF9933', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: '#86868b', fontFamily: '-apple-system, sans-serif' }}>
+                  Location unavailable
+                </span>
+              </>}
+            </div>
+          </div>
+
+          {/* Close button — circular, 44px touch target */}
+          <button
+            onClick={handleClose}
+            aria-label="Close"
+            style={{
+              width: 32, height: 32, borderRadius: '50%',
+              background: 'rgba(0,0,0,0.07)',
+              border: 'none', cursor: 'pointer', display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              transition: `all 0.2s ${EASE}`,
+              minWidth: 44, minHeight: 44,   /* 44px touch target */
+              margin: '-6px',                 /* optical offset so it looks 32px */
+            }}
+          >
+            <svg viewBox="0 0 24 24" style={{ width: 14, height: 14 }} fill="none"
+                 stroke="rgba(0,0,0,0.5)" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Content card ────────────────────────────────────────────────────── */}
+        <div style={{ padding: '4px 16px 16px' }}>
+          {result
+            ? <SuccessView result={result} onDone={handleClose}
+                onSeeMap={() => {
+                  const e = CENTROIDS[result.wardId]
+                  if (e) window.dispatchEvent(new CustomEvent('sushaasan:auto-select-ward', {
+                    detail: { wardId: result.wardId, lat: e[0], lng: e[1] }
+                  }))
+                  handleClose()
+                }} />
+            : <ComposeView
+                text={text} textareaRef={textareaRef} showCursor={showCursor}
+                onTextChange={handleTextChange}
+                onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+                voiceActive={voiceActive} transcribing={transcribing}
+                voiceLang={voiceLang} onLangChange={setVoiceLang}
+                onToggleVoice={toggleVoice} canSpeak={canSpeak}
+                useWhisper={useWhisper} canSubmit={canSubmit}
+                submitting={submitting} submitError={submitError}
+                onSubmit={handleSubmit}
+              />
+          }
+        </div>
+
+        <div style={{ height: 'env(safe-area-inset-bottom, 12px)' }} />
+      </div>
+    </div>
+  )
+}
+
+// ── ComposeView ───────────────────────────────────────────────────────────────
+
+function ComposeView({
+  text, textareaRef, showCursor, onTextChange, onFocus, onBlur,
+  voiceActive, transcribing, voiceLang, onLangChange, onToggleVoice,
+  canSpeak, useWhisper, canSubmit, submitting, submitError, onSubmit,
+}: {
+  text: string
+  textareaRef: React.RefObject<HTMLTextAreaElement>
+  showCursor: boolean
+  onTextChange: (e: ChangeEvent<HTMLTextAreaElement>) => void
+  onFocus: () => void; onBlur: () => void
+  voiceActive: boolean; transcribing: boolean
+  voiceLang: string; onLangChange: (c: string) => void
+  onToggleVoice: () => void; canSpeak: boolean; useWhisper: boolean
+  canSubmit: boolean; submitting: boolean; submitError: boolean
+  onSubmit: () => void
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+      {/* Hint — Apple text-secondary style */}
+      <p style={{
+        fontSize: 15, lineHeight: 1.5, color: '#86868b', margin: '4px 4px 0',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+      }}>
+        Speak or type freely — the more detail, the better the AI output.
+      </p>
+
+      {/* Textarea card ─────────────────────────────────────────────────────── */}
+      <div style={{ ...CARD, position: 'relative', overflow: 'hidden' }}>
+        {showCursor && (
+          <div style={{
+            position: 'absolute', left: 16, top: 16,
+            display: 'flex', alignItems: 'flex-start', pointerEvents: 'none', userSelect: 'none',
+          }}>
+            <span style={{ fontSize: 15, lineHeight: 1.5, color: 'rgba(29,29,31,0.22)',
+                           fontFamily: '-apple-system, sans-serif' }}>
+              The tanker hasn&apos;t come in 4 days…
+            </span>
+            <span style={{
+              display: 'inline-block', width: 2, height: 18, marginLeft: 2, marginTop: 1,
+              borderRadius: 1, background: 'rgba(255,153,51,0.60)',
+              animation: 'cursor-blink 1s step-end infinite', flexShrink: 0,
+            }} />
+          </div>
+        )}
+
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={onTextChange}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          placeholder=""
+          rows={4}
+          disabled={submitting || transcribing}
+          style={{
+            width: '100%', padding: '16px', paddingBottom: 16,
+            fontSize: 15, lineHeight: 1.5, color: '#1d1d1f',
+            background: 'transparent', border: 'none', outline: 'none',
+            resize: 'none', minHeight: 112, boxSizing: 'border-box',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+          }}
+        />
+
+        {text.length > 0 && (
+          <div style={{
+            position: 'absolute', bottom: 10, right: 12,
+            fontSize: 11, color: 'rgba(29,29,31,0.25)',
+            fontFamily: '-apple-system, sans-serif',
+          }}>
+            {text.length}
+          </div>
+        )}
+      </div>
+
+      {/* Voice card ─────────────────────────────────────────────────────────── */}
+      {canSpeak && (
+        <div style={{ ...CARD, padding: '14px 16px' }}>
+          {transcribing ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '6px 0' }}>
+              <div style={{
+                width: 18, height: 18, borderRadius: '50%',
+                border: '2px solid rgba(255,153,51,0.2)',
+                borderTopColor: '#FF9933',
+                animation: 'spin 0.8s linear infinite',
+              }} />
+              <span style={{ fontSize: 14, color: '#86868b', fontFamily: '-apple-system, sans-serif' }}>
+                Transcribing…
+              </span>
+            </div>
+
+          ) : voiceActive ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 22 }}>
+                {VOICE_BARS.map((h, i) => (
+                  <div key={i} style={{
+                    width: 3, height: h, borderRadius: 999, background: '#ff3b30',
+                    transformOrigin: 'bottom center',
+                    animation: `voice-bar 0.42s ease-in-out ${(i * 0.053).toFixed(3)}s infinite alternate`,
+                  }} />
+                ))}
+              </div>
+              {/* Stop button — pill, Apple red */}
+              <button
+                onClick={onToggleVoice}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '10px 20px', borderRadius: 980,
+                  background: '#ff3b30', color: '#fff',
+                  fontWeight: 600, fontSize: 14, border: 'none', cursor: 'pointer',
+                  fontFamily: '-apple-system, sans-serif',
+                  transition: `all 0.2s ${EASE}`,
+                  boxShadow: '0 4px 14px rgba(255,59,48,0.30)',
+                  minHeight: 44,
+                }}
+              >
+                <span style={{ width: 10, height: 10, borderRadius: 2, background: '#fff', flexShrink: 0 }} />
+                Stop recording
+              </button>
+            </div>
+
+          ) : (
+            /* Idle voice controls */
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Mic button — pill, secondary style */}
+              <button
+                onClick={onToggleVoice}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '10px 18px', borderRadius: 980,
+                  background: 'rgba(29,29,31,0.06)',
+                  border: '1px solid rgba(29,29,31,0.09)',
+                  color: '#1d1d1f', fontWeight: 600, fontSize: 14,
+                  cursor: 'pointer', fontFamily: '-apple-system, sans-serif',
+                  transition: `all 0.2s ${EASE}`, minHeight: 44,
+                }}
+              >
+                <svg viewBox="0 0 24 24" style={{ width: 15, height: 15 }} fill="none"
+                     stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
+                </svg>
+                Speak
+              </button>
+
+              {/* Language pills */}
+              <div style={{ display: 'flex', gap: 6, flex: 1 }}>
+                {LANGS.map(l => (
+                  <button
+                    key={l.code}
+                    onClick={() => onLangChange(l.code)}
+                    style={{
+                      flex: 1, padding: '10px 4px', borderRadius: 980,
+                      fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                      fontFamily: '-apple-system, sans-serif',
+                      transition: `all 0.2s ${EASE}`, minHeight: 44,
+                      ...(voiceLang === l.code ? {
+                        background: 'rgba(255,153,51,0.12)',
+                        color: '#c8741a',
+                        border: '1.5px solid rgba(255,153,51,0.35)',
+                      } : {
+                        background: 'rgba(29,29,31,0.04)',
+                        color: 'rgba(29,29,31,0.38)',
+                        border: '1.5px solid transparent',
+                      }),
+                    }}
+                  >
+                    {l.short}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {useWhisper && !voiceActive && !transcribing && (
+            <p style={{
+              fontSize: 11, color: '#34c759', fontWeight: 500,
+              marginTop: 10, marginBottom: 0,
+              fontFamily: '-apple-system, sans-serif',
+            }}>
+              ✦ Sarvam / Whisper AI — optimised for Indian languages
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Submit — PRIMARY ACTION, pill shape ───────────────────────────────── */}
+      <button
+        onClick={onSubmit}
+        disabled={!canSubmit}
+        style={{
+          width: '100%', padding: '15px 24px',
+          borderRadius: 980,          /* Apple pill */
+          fontWeight: 600, fontSize: 16, border: 'none', cursor: canSubmit ? 'pointer' : 'not-allowed',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+          transition: `all 0.2s ${EASE}`,
+          ...(canSubmit ? {
+            background: '#1d1d1f',
+            color: '#f5f5f7',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.20)',
+            transform: 'scale(1)',
+          } : {
+            background: 'rgba(29,29,31,0.08)',
+            color: 'rgba(29,29,31,0.28)',
+          }),
+        }}
+        onMouseEnter={(e) => { if (canSubmit) (e.target as HTMLButtonElement).style.transform = 'scale(1.02)' }}
+        onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.transform = 'scale(1)' }}
+      >
+        {submitting ? (
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <span style={{
+              width: 16, height: 16, borderRadius: '50%',
+              border: '2px solid rgba(245,245,247,0.25)', borderTopColor: '#f5f5f7',
+              animation: 'spin 0.8s linear infinite', display: 'inline-block',
+            }} />
+            AI is reading this…
+          </span>
+        ) : 'Submit report →'}
+      </button>
+
+      {submitError && (
+        <p style={{
+          textAlign: 'center', fontSize: 13, color: '#ff3b30', margin: 0,
+          fontFamily: '-apple-system, sans-serif',
+        }}>
+          Something went wrong — please try again.
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ── SuccessView ───────────────────────────────────────────────────────────────
+
+function SuccessView({ result, onDone, onSeeMap }: {
+  result: Result; onDone: () => void; onSeeMap: () => void
+}) {
+  const color = ISSUE_COLOR[result.issueTag] ?? '#8B5CF6'
+  const emoji = ISSUE_EMOJI[result.issueTag] ?? '📌'
+  const label = ISSUE_LABEL[result.issueTag] ?? result.issueTag
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 4 }}>
+
+      {/* Emoji ring — Apple-depth layering */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '12px 0 4px' }}>
+        <div style={{
+          width: 80, height: 80, borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 38,
+          background: `${color}12`,
+          border: `2px solid ${color}35`,
+          boxShadow: `0 0 0 8px ${color}08, 0 0 0 16px ${color}04`,
+        }}>
+          {emoji}
+        </div>
+        <div>
+          <div style={{
+            fontSize: 22, fontWeight: 600, color: '#1d1d1f', textAlign: 'center', lineHeight: 1.2,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+          }}>
+            Signal received.
+          </div>
+          <div style={{
+            fontSize: 13, color: '#86868b', textAlign: 'center', marginTop: 4,
+            fontFamily: '-apple-system, sans-serif',
+          }}>
+            {label} · Ward {result.wardId} · {result.wardName}
+          </div>
+        </div>
+      </div>
+
+      {/* Severity — in a card */}
+      <div style={{ ...CARD, padding: '14px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 700, letterSpacing: '0.18em',
+            textTransform: 'uppercase', color: 'rgba(29,29,31,0.38)',
+            fontFamily: '-apple-system, sans-serif',
+          }}>Severity</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color, fontFamily: '-apple-system, sans-serif' }}>
+            {SEV_LABEL[result.severity] ?? ''}
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {[1,2,3,4,5].map(i => (
+            <div key={i} style={{
+              flex: 1, height: 7, borderRadius: 999,
+              background: i <= result.severity ? color : `${color}18`,
+              transition: `background 0.3s ${EASE}`,
+            }} />
+          ))}
+        </div>
+      </div>
+
+      {/* AI summary — in a card */}
+      {result.civicAsk && (
+        <div style={{ ...CARD, padding: '14px 16px', background: `${color}0A`, borderColor: `${color}22` }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',
+            textTransform: 'uppercase', color, marginBottom: 6,
+            fontFamily: '-apple-system, sans-serif',
+          }}>
+            What Sushaasan AI understood
+          </div>
+          <div style={{
+            fontSize: 14, lineHeight: 1.5, color: '#1d1d1f',
+            fontFamily: '-apple-system, sans-serif',
+          }}>
+            {result.civicAsk}
+          </div>
+        </div>
+      )}
+
+      {/* Action buttons — pill primary + pill secondary, Apple pattern */}
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button
+          onClick={onSeeMap}
+          style={{
+            flex: 1, padding: '14px 20px', borderRadius: 980,
+            background: color, color: '#fff',
+            fontWeight: 600, fontSize: 15, border: 'none', cursor: 'pointer',
+            fontFamily: '-apple-system, sans-serif',
+            transition: `all 0.2s ${EASE}`,
+            boxShadow: `0 6px 20px ${color}40`,
+            minHeight: 52,
+          }}
+        >
+          See on map →
+        </button>
+        <button
+          onClick={onDone}
+          style={{
+            flex: 1, padding: '14px 20px', borderRadius: 980,
+            background: 'rgba(29,29,31,0.07)', color: '#1d1d1f',
+            fontWeight: 600, fontSize: 15,
+            border: '1.5px solid rgba(29,29,31,0.10)', cursor: 'pointer',
+            fontFamily: '-apple-system, sans-serif',
+            transition: `all 0.2s ${EASE}`,
+            minHeight: 52,
+          }}
+        >
+          Done
+        </button>
+      </div>
+
+      <p style={{
+        textAlign: 'center', fontSize: 11, color: 'rgba(29,29,31,0.30)', margin: '0 0 4px',
+        fontFamily: '-apple-system, sans-serif',
+      }}>
+        Identity never stored · Visible on map within 24h
+      </p>
+    </div>
+  )
+}

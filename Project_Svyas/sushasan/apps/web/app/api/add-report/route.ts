@@ -124,7 +124,9 @@ export async function POST(req: NextRequest) {
         messages: [{ role: 'user', content: `${gpsContext}${cleanText}` }],
       })
       const raw = (msg.content[0] as { type: string; text: string }).text.trim()
-      const parsed = JSON.parse(raw) as Classified
+      // Strip markdown fences if Claude wraps output despite instructions
+      const jsonStr = raw.startsWith('```') ? raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '') : raw
+      const parsed = JSON.parse(jsonStr) as Classified
       classified = parsed
     } catch (err) {
       console.error('[add-report] classify error:', err)
