@@ -13,20 +13,20 @@ const PRINCIPLES = [
   {
     icon: '⚘',
     color: '#138808',
-    title: 'Partner, not petitioner',
-    body: 'The corporator&rsquo;s office decides. Sushaasan keeps the brief honest and the loop visible — that&rsquo;s our entire job.',
+    title: 'Partner, not protester',
+    body: 'The corporator&rsquo;s office decides. Sushaasan keeps the brief data-driven and transparent and the loop visible — that&rsquo;s our entire job.',
   },
   {
     icon: '⚙',
     color: '#0B1F3A',
-    title: 'Structure over outrage',
+    title: 'Structure over noise',
     body: 'No anonymous outrage feed. Every signal becomes a ranked, budgeted, citable brief — or it doesn&rsquo;t reach a desk.',
   },
   {
     icon: '◇',
     color: '#FF9933',
     title: 'Transparency by default',
-    body: 'When citizens know how a problem is being solved, they stop creating chaos. The dashboard is the antidote to panic.',
+    body: 'When citizens know how a problem is being solved, they become patient partners in the process. The dashboard is the antidote to panic.',
   },
 ]
 
@@ -73,7 +73,7 @@ export default function AboutPage() {
         {/* ── Hero ───────────────────────────────────────────────────────── */}
         <section className="space-y-5">
           <div className="text-[9px] font-bold tracking-[0.22em] uppercase text-saffron-dark">
-            Government OS · Pune
+            Civic Intelligence · Pune
           </div>
           <h1 className="font-serif text-5xl sm:text-6xl font-semibold text-ink leading-[1.02] max-w-3xl">
             Civic frustration is loud.<br />
