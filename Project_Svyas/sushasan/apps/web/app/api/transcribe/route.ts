@@ -20,8 +20,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid form data' }, { status: 400 })
   }
 
-  const mimeType = audioBlob.type || 'audio/webm'
-  const filename = mimeType.includes('mp4') ? 'audio.mp4' : 'audio.webm'
+  // Derive filename from FormData name first (set by client), fall back to content-type
+  const audioFile = form.get('audio') as File | Blob
+  const providedName = audioFile instanceof File ? audioFile.name : ''
+  const filename = providedName || (audioBlob.type?.includes('mp4') ? 'audio.mp4' : 'audio.webm')
+  const mimeType = audioBlob.type || (filename.endsWith('.mp4') ? 'audio/mp4' : 'audio/webm')
 
   // ── 1. Sarvam Saaras — Indian languages ─────────────────────────────────
   if ((language === 'hi' || language === 'mr') && process.env.SARVAM_API_KEY) {

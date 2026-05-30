@@ -206,7 +206,10 @@ export function AddReportClient() {
         form.append('audio', blob, mimeType.includes('mp4') ? 'audio.mp4' : 'audio.webm')
         form.append('language', lang)
         try {
-          const res = await fetch('/api/transcribe', { method: 'POST', body: form })
+          const controller = new AbortController()
+          const timeout = setTimeout(() => controller.abort(), 30_000)
+          const res = await fetch('/api/transcribe', { method: 'POST', body: form, signal: controller.signal })
+          clearTimeout(timeout)
           const data = await res.json() as { text?: string }
           if (data.text?.trim()) {
             setText(prev => prev ? `${prev} ${data.text!.trim()}` : data.text!.trim())
@@ -286,7 +289,7 @@ export function AddReportClient() {
     }
 
     return (
-      <main className="min-h-screen bg-paper flex flex-col items-center justify-center px-5 py-10">
+      <main className="bg-paper flex flex-col items-center justify-center px-5 py-10" style={{ minHeight: '100dvh' }}>
         <div className="max-w-sm w-full">
           <div className="flex flex-col items-center mb-8">
             <div className="w-24 h-24 rounded-full flex items-center justify-center text-5xl"
