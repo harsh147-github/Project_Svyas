@@ -31,6 +31,12 @@ const MapHint = dynamic(
   { ssr: false }
 )
 
+// First-visit welcome overlay — localStorage-gated, never shown again after dismiss
+const FirstVisitOverlay = dynamic(
+  () => import('@/components/map/FirstVisitOverlay').then((m) => m.FirstVisitOverlay),
+  { ssr: false }
+)
+
 export const metadata: Metadata = {
   title: 'Sushaasan — Civic Intelligence for Pune',
   description: 'A Government OS. AI turns public chatter into structured, budgeted, actionable governance briefs — in partnership with PMC and citizens.',
@@ -87,6 +93,9 @@ export default function HomePage() {
       {/* Citizen and gov sheets — rendered at page level so they overlay the map */}
       <CitizenSheet />
       <GovSheet />
+
+      {/* First-visit welcome overlay — localStorage-gated, portal to document.body */}
+      <FirstVisitOverlay />
 
       {/* Legend */}
       <LegendBar />
