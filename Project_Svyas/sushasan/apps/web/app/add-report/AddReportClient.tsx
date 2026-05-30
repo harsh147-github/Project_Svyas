@@ -3,6 +3,13 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
+// ── Language config ───────────────────────────────────────────────────────────
+const LANGS = [
+  { code: 'en-IN', label: 'EN' },
+  { code: 'hi-IN', label: 'हिं' },
+  { code: 'mr-IN', label: 'मराठी' },
+]
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type LocationState =
@@ -90,8 +97,11 @@ export function AddReportClient() {
   const [result, setResult] = useState<Result | null>(null)
   const [voiceActive, setVoiceActive] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
+  const [voiceLang, setVoiceLang] = useState('en-IN')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<any>(null)
+  const voiceActiveRef = useRef(false)
+  const isIOS = useRef(false)
 
   useEffect(() => {
     if (!navigator.geolocation) { setLocation({ status: 'denied' }); return }
@@ -108,6 +118,7 @@ export function AddReportClient() {
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     setVoiceSupported(!!SR)
+    isIOS.current = /iPhone|iPad|iPod/i.test(navigator.userAgent)
   }, [])
 
   function handleTextChange(e: ChangeEvent<HTMLTextAreaElement>) {
@@ -117,33 +128,59 @@ export function AddReportClient() {
     el.style.height = Math.min(el.scrollHeight, 320) + 'px'
   }
 
-  function toggleVoice() {
+  function startRecognition(lang: string) {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     if (!SR) return
-    if (voiceActive) {
-      recognitionRef.current?.stop()
-      setVoiceActive(false)
-      return
-    }
     const r = new SR()
-    r.lang = 'en-IN'
-    r.continuous = true
-    r.interimResults = true
+    r.lang = lang
+    // iOS Safari doesn't support continuous or interimResults — use single-shot + chain restart
+    r.continuous = !isIOS.current
+    r.interimResults = !isIOS.current
     r.onresult = (event: any) => {
-      const transcript = Array.from(event.results as any[])
-        .map((res: any) => res[0].transcript)
-        .join('')
-      setText(transcript)
+      if (isIOS.current) {
+        // iOS gives one final result per utterance — append to existing text
+        const newChunk = (event.results[0][0].transcript as string).trim()
+        setText(prev => prev ? `${prev} ${newChunk}` : newChunk)
+      } else {
+        // Chrome/Android: event.results accumulates all interim + final
+        const transcript = Array.from(event.results as any[])
+          .map((res: any) => res[0].transcript)
+          .join('')
+        setText(transcript)
+      }
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto'
         textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 320) + 'px'
       }
     }
-    r.onerror = () => setVoiceActive(false)
-    r.onend = () => setVoiceActive(false)
+    r.onerror = (e: any) => {
+      if (e.error === 'no-speech') return // ignore silence, keep going on iOS
+      voiceActiveRef.current = false
+      setVoiceActive(false)
+    }
+    r.onend = () => {
+      // iOS stops after each utterance — restart if still active
+      if (isIOS.current && voiceActiveRef.current) {
+        startRecognition(voiceLang)
+      } else if (!isIOS.current) {
+        voiceActiveRef.current = false
+        setVoiceActive(false)
+      }
+    }
     r.start()
     recognitionRef.current = r
+  }
+
+  function toggleVoice() {
+    if (voiceActive) {
+      voiceActiveRef.current = false
+      recognitionRef.current?.stop()
+      setVoiceActive(false)
+      return
+    }
+    voiceActiveRef.current = true
     setVoiceActive(true)
+    startRecognition(voiceLang)
   }
 
   async function handleSubmit() {
@@ -368,20 +405,38 @@ export function AddReportClient() {
             <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 pt-2
                             bg-gradient-to-t from-white via-white/95 to-transparent
                             flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 {voiceSupported ? (
-                  <button
-                    onClick={toggleVoice}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px]
-                                font-semibold transition-all select-none
-                                ${voiceActive
-                      ? 'bg-red-500 text-white shadow-lg shadow-red-500/20 scale-105'
-                      : 'bg-ink/6 text-ink/60 hover:bg-ink/10 active:scale-95'}`}
-                  >
-                    🎤 {voiceActive ? 'Stop' : 'Speak'}
-                  </button>
+                  <>
+                    <button
+                      onClick={toggleVoice}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px]
+                                  font-semibold transition-all select-none
+                                  ${voiceActive
+                        ? 'bg-red-500 text-white shadow-lg shadow-red-500/20 scale-105'
+                        : 'bg-ink/6 text-ink/60 hover:bg-ink/10 active:scale-95'}`}
+                    >
+                      🎤 {voiceActive ? 'Stop' : 'Speak'}
+                    </button>
+                    {!voiceActive && (
+                      <div className="flex items-center gap-1">
+                        {LANGS.map(l => (
+                          <button
+                            key={l.code}
+                            onClick={() => setVoiceLang(l.code)}
+                            className={`px-2 py-1 rounded-full text-[11px] font-semibold transition-all
+                                        ${voiceLang === l.code
+                              ? 'bg-saffron/15 text-saffron-dark border border-saffron/30'
+                              : 'text-ink/35 hover:text-ink/60'}`}
+                          >
+                            {l.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 ) : (
-                  <span className="text-[11px] text-ink/30">Type in any language</span>
+                  <span className="text-[11px] text-ink/30">Type in any language · EN / हिंदी / मराठी</span>
                 )}
               </div>
               {text.length > 0 && (
