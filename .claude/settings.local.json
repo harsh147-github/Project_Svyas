@@ -24,7 +24,8 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "mcp__e4c4580f-98b7-4d62-9e22-1cc1afa66b3c__list_deployments",
-      "mcp__e4c4580f-98b7-4d62-9e22-1cc1afa66b3c__get_project"
+      "mcp__e4c4580f-98b7-4d62-9e22-1cc1afa66b3c__get_project",
+      "mcp__e4c4580f-98b7-4d62-9e22-1cc1afa66b3c__web_fetch_vercel_url"
     ]
   },
   "enableAllProjectMcpServers": true,
