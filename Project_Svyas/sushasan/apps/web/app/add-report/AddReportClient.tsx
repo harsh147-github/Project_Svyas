@@ -5,12 +5,12 @@ import Link from 'next/link'
 
 // ── Language config ───────────────────────────────────────────────────────────
 const LANGS = [
-  { code: 'en-IN', label: 'EN' },
-  { code: 'hi-IN', label: 'हिं' },
-  { code: 'mr-IN', label: 'मराठी' },
+  { code: 'en-IN', label: 'EN', whisper: 'en' },
+  { code: 'hi-IN', label: 'हिं', whisper: 'hi' },
+  { code: 'mr-IN', label: 'मराठी', whisper: 'mr' },
 ]
 
-// ── Voice waveform bar heights (max px, animated via scaleY) ──────────────────
+// ── Voice waveform bar heights ────────────────────────────────────────────────
 const VOICE_BARS = [8, 14, 22, 28, 20, 26, 14, 20, 10]
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -89,7 +89,6 @@ const ISSUE_LABEL: Record<string, string> = {
 }
 const SEV_LABEL = ['', 'Minor', 'Recurring', 'Significant', 'Serious', 'Emergency']
 
-// ── Mic SVG icon ──────────────────────────────────────────────────────────────
 function MicIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -109,17 +108,20 @@ export function AddReportClient() {
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
   const [result, setResult] = useState<Result | null>(null)
   const [voiceActive, setVoiceActive] = useState(false)
+  const [transcribing, setTranscribing] = useState(false)
   const [copied, setCopied] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
+  const [mediaSupported, setMediaSupported] = useState(false)
   const [voiceLang, setVoiceLang] = useState('en-IN')
   const [textFocused, setTextFocused] = useState(false)
   const [mounted, setMounted] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<any>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const voiceActiveRef = useRef(false)
   const isIOS = useRef(false)
 
-  // GPS ward detection
+  // GPS
   useEffect(() => {
     if (!navigator.geolocation) { setLocation({ status: 'denied' }); return }
     navigator.geolocation.getCurrentPosition(
@@ -132,16 +134,17 @@ export function AddReportClient() {
     )
   }, [])
 
-  // Voice support + Safari/iOS detection
+  // Capability detection
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     setVoiceSupported(!!SR)
+    setMediaSupported(!!(navigator.mediaDevices?.getUserMedia))
     const ua = navigator.userAgent
     isIOS.current = /iPhone|iPad|iPod/i.test(ua) ||
       (/Safari/i.test(ua) && !/Chrome|Chromium|Edg/i.test(ua))
   }, [])
 
-  // Intro reveal animation
+  // Intro reveal
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 60)
     return () => clearTimeout(t)
@@ -154,22 +157,22 @@ export function AddReportClient() {
     el.style.height = Math.min(el.scrollHeight, 320) + 'px'
   }
 
-  function startRecognition(lang: string) {
+  // ── Browser Speech API (en-IN on Chrome/Safari) ───────────────────────────
+
+  function startBrowserRecognition(lang: string) {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     if (!SR) return
     const r = new SR()
     r.lang = lang
-    // iOS Safari doesn't support continuous or interimResults — single-shot + chain restart
     r.continuous = !isIOS.current
     r.interimResults = !isIOS.current
     r.onresult = (event: any) => {
       if (isIOS.current) {
-        const newChunk = (event.results[0][0].transcript as string).trim()
-        setText(prev => prev ? `${prev} ${newChunk}` : newChunk)
+        const chunk = (event.results[0][0].transcript as string).trim()
+        setText(prev => prev ? `${prev} ${chunk}` : chunk)
       } else {
         const transcript = Array.from(event.results as any[])
-          .map((res: any) => res[0].transcript)
-          .join('')
+          .map((res: any) => res[0].transcript).join('')
         setText(transcript)
       }
       if (textareaRef.current) {
@@ -184,7 +187,7 @@ export function AddReportClient() {
     }
     r.onend = () => {
       if (isIOS.current && voiceActiveRef.current) {
-        startRecognition(voiceLang)
+        startBrowserRecognition(lang)
       } else if (!isIOS.current) {
         voiceActiveRef.current = false
         setVoiceActive(false)
@@ -194,17 +197,88 @@ export function AddReportClient() {
     recognitionRef.current = r
   }
 
+  // ── Whisper via MediaRecorder (hi/mr/Firefox fallback) ────────────────────
+  // Records audio → POST /api/transcribe → Sarvam or Groq Whisper
+
+  async function startWhisperRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : 'audio/mp4'
+      const recorder = new MediaRecorder(stream, { mimeType })
+      const chunks: BlobPart[] = []
+
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop())
+        setTranscribing(true)
+
+        const blob = new Blob(chunks, { type: mimeType })
+        const lang = LANGS.find(l => l.code === voiceLang)?.whisper ?? 'en'
+        const form = new FormData()
+        form.append('audio', blob, mimeType.includes('mp4') ? 'audio.mp4' : 'audio.webm')
+        form.append('language', lang)
+
+        try {
+          const res = await fetch('/api/transcribe', { method: 'POST', body: form })
+          const data = await res.json() as { text?: string }
+          if (data.text?.trim()) {
+            setText(prev => prev ? `${prev} ${data.text!.trim()}` : data.text!.trim())
+            if (textareaRef.current) {
+              textareaRef.current.style.height = 'auto'
+              textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 320) + 'px'
+            }
+          }
+        } catch {
+          // silent — user can still type
+        } finally {
+          setTranscribing(false)
+          setVoiceActive(false)
+          voiceActiveRef.current = false
+        }
+      }
+
+      recorder.start()
+      mediaRecorderRef.current = recorder
+    } catch {
+      // mic permission denied or not available
+      voiceActiveRef.current = false
+      setVoiceActive(false)
+    }
+  }
+
+  // ── Unified toggle ────────────────────────────────────────────────────────
+  // en-IN + browser speech API → instant live transcription
+  // hi-IN / mr-IN → Whisper (Sarvam or Groq) — far better accuracy
+  // No SpeechRecognition (Firefox) → Whisper regardless of language
+
   function toggleVoice() {
     if (voiceActive) {
       voiceActiveRef.current = false
-      recognitionRef.current?.stop()
+      mediaRecorderRef.current?.stop()   // whisper path
+      recognitionRef.current?.stop()     // browser speech path
       setVoiceActive(false)
       return
     }
+
+    const useWhisper = !voiceSupported || voiceLang === 'hi-IN' || voiceLang === 'mr-IN'
+    if (useWhisper && !mediaSupported) return  // no fallback available
+
     voiceActiveRef.current = true
     setVoiceActive(true)
-    startRecognition(voiceLang)
+    if (useWhisper) {
+      startWhisperRecording()
+    } else {
+      startBrowserRecognition(voiceLang)
+    }
   }
+
+  const canSpeak = voiceSupported || mediaSupported
+
+  // ── Submit ────────────────────────────────────────────────────────────────
 
   async function handleSubmit() {
     if (text.trim().length < 5 || submitState !== 'idle') return
@@ -251,7 +325,6 @@ export function AddReportClient() {
       <main className="min-h-screen bg-paper flex flex-col items-center justify-center px-5 py-10">
         <div className="max-w-sm w-full">
 
-          {/* Hero — issue emoji in layered color glow ring */}
           <div className="flex flex-col items-center mb-8">
             <div
               className="w-24 h-24 rounded-full flex items-center justify-center text-5xl"
@@ -271,7 +344,6 @@ export function AddReportClient() {
             </p>
           </div>
 
-          {/* Severity bar */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink/35">Severity</span>
@@ -281,16 +353,12 @@ export function AddReportClient() {
             </div>
             <div className="flex gap-1.5">
               {[1, 2, 3, 4, 5].map(i => (
-                <div
-                  key={i}
-                  className="flex-1 h-2.5 rounded-full"
-                  style={{ background: i <= result.severity ? color : `${color}18` }}
-                />
+                <div key={i} className="flex-1 h-2.5 rounded-full"
+                     style={{ background: i <= result.severity ? color : `${color}18` }} />
               ))}
             </div>
           </div>
 
-          {/* Details card */}
           <div className="rounded-2xl border border-ink/10 bg-white shadow-sm overflow-hidden mb-5">
             <div className="h-[3px]" style={{ background: `linear-gradient(90deg, ${color}, ${color}55)` }} />
             <div className="p-4 space-y-3">
@@ -315,11 +383,8 @@ export function AddReportClient() {
               {result.subTags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {result.subTags.map(tag => (
-                    <span
-                      key={tag}
-                      className="px-2.5 py-1 rounded-full text-[10px] font-semibold"
-                      style={{ background: `${color}12`, color, border: `1px solid ${color}25` }}
-                    >
+                    <span key={tag} className="px-2.5 py-1 rounded-full text-[10px] font-semibold"
+                          style={{ background: `${color}12`, color, border: `1px solid ${color}25` }}>
                       {tag}
                     </span>
                   ))}
@@ -328,13 +393,11 @@ export function AddReportClient() {
             </div>
           </div>
 
-          {/* CTAs */}
           <div className="space-y-2.5">
             <button
               onClick={() => { window.location.href = `/?ward=${result.wardId}` }}
               className="w-full py-4 rounded-2xl text-[15px] font-bold text-white
-                         flex items-center justify-center gap-2
-                         active:scale-[0.98] transition-transform"
+                         flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
               style={{ background: color, boxShadow: `0 8px 24px ${color}45` }}
             >
               See it on the map
@@ -342,21 +405,16 @@ export function AddReportClient() {
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </button>
-
             <div className="flex gap-2.5">
-              <button
-                onClick={handleShare}
-                className="flex-1 py-3 rounded-2xl border border-ink/15 text-ink text-[13px] font-semibold
-                           flex items-center justify-center gap-1.5
-                           hover:border-ink/30 active:scale-[0.98] transition-all"
-              >
-                {copied ? '✓ Link copied' : '↗ Share'}
+              <button onClick={handleShare}
+                      className="flex-1 py-3 rounded-2xl border border-ink/15 text-ink text-[13px] font-semibold
+                                 flex items-center justify-center gap-1.5 hover:border-ink/30 active:scale-[0.98] transition-all">
+                {copied ? '✓ Copied' : '↗ Share'}
               </button>
               <button
                 onClick={() => { setText(''); setSubmitState('idle'); setResult(null) }}
                 className="flex-1 py-3 rounded-2xl border border-ink/15 text-ink text-[13px] font-semibold
-                           hover:border-ink/30 active:scale-[0.98] transition-all"
-              >
+                           hover:border-ink/30 active:scale-[0.98] transition-all">
                 + Another
               </button>
             </div>
@@ -374,12 +432,11 @@ export function AddReportClient() {
   const canSubmit = text.trim().length >= 5 && submitState === 'idle'
   const locationLine = location.status === 'found'
     ? `Ward ${location.wardId} · ${location.wardName}`
-    : location.status === 'manual'
-    ? location.wardName
-    : null
-
-  // Show blinking cursor hint when box is empty, idle, and not recording
-  const showCursorOverlay = text === '' && !textFocused && !voiceActive
+    : location.status === 'manual' ? location.wardName : null
+  const showCursorOverlay = text === '' && !textFocused && !voiceActive && !transcribing
+  // Whisper is used when browser speech isn't available OR for Indian languages
+  const useWhisperForLang = voiceLang === 'hi-IN' || voiceLang === 'mr-IN'
+  const langLabel = useWhisperForLang ? 'Whisper' : 'Live'
 
   return (
     <main className="min-h-screen bg-paper text-ink overflow-x-hidden">
@@ -388,14 +445,11 @@ export function AddReportClient() {
 
         {/* Top nav */}
         <div className="flex items-center justify-between mb-8">
-          <Link href="/" className="text-xs text-ink/40 hover:text-ink transition-colors">
-            ← Map
-          </Link>
+          <Link href="/" className="text-xs text-ink/40 hover:text-ink transition-colors">← Map</Link>
           <div className="text-xs font-medium">
             {location.status === 'detecting' && (
               <span className="text-ink/40 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-ink/30 animate-pulse" />
-                Finding you…
+                <span className="w-1.5 h-1.5 rounded-full bg-ink/30 animate-pulse" />Finding you…
               </span>
             )}
             {location.status === 'found' && (
@@ -410,14 +464,9 @@ export function AddReportClient() {
           </div>
         </div>
 
-        {/* Hero — slides up + fades in on mount */}
-        <div
-          className="mb-7 transition-all duration-700 ease-out"
-          style={{
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? 'translateY(0)' : 'translateY(14px)',
-          }}
-        >
+        {/* Hero */}
+        <div className="mb-7 transition-all duration-700 ease-out"
+             style={{ opacity: mounted ? 1 : 0, transform: mounted ? 'translateY(0)' : 'translateY(14px)' }}>
           <h1 className="font-serif text-[26px] sm:text-[30px] font-bold text-ink leading-snug">
             We know filling forms<br />is boring.
           </h1>
@@ -426,12 +475,10 @@ export function AddReportClient() {
           </p>
         </div>
 
-        {/* Manual area picker (only when GPS denied) */}
+        {/* Manual area picker */}
         {location.status === 'denied' && (
           <div className="mb-5 rounded-2xl border border-saffron/30 bg-saffron/5 p-4">
-            <p className="text-[12px] font-semibold text-saffron-dark mb-2">
-              Which area are you reporting from?
-            </p>
+            <p className="text-[12px] font-semibold text-saffron-dark mb-2">Which area are you reporting from?</p>
             <select
               onChange={(e) => {
                 const area = MANUAL_AREAS.find(a => a.ward_id === e.target.value)
@@ -453,12 +500,10 @@ export function AddReportClient() {
         <div className="flex-1 flex flex-col gap-3">
           <div className="relative">
 
-            {/* Sticky note: "type it here" — desktop only, fades in */}
-            {!voiceActive && (
-              <div
-                className="absolute -top-8 left-0 z-10 pointer-events-none hidden sm:block"
-                style={{ opacity: mounted ? 1 : 0, transition: 'opacity 0.5s ease 0.5s' }}
-              >
+            {/* Sticky notes — desktop only */}
+            {!voiceActive && !transcribing && (
+              <div className="absolute -top-8 left-0 z-10 pointer-events-none hidden sm:block"
+                   style={{ opacity: mounted ? 1 : 0, transition: 'opacity 0.5s ease 0.5s' }}>
                 <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200
                                  rounded-md px-2.5 py-1 text-[10px] font-semibold text-amber-700
                                  shadow-sm -rotate-1">
@@ -466,13 +511,9 @@ export function AddReportClient() {
                 </span>
               </div>
             )}
-
-            {/* Sticky note: "or speak here" — desktop only, fades in */}
-            {voiceSupported && !voiceActive && (
-              <div
-                className="absolute -top-8 right-0 z-10 pointer-events-none hidden sm:block"
-                style={{ opacity: mounted ? 1 : 0, transition: 'opacity 0.5s ease 0.7s' }}
-              >
+            {canSpeak && !voiceActive && !transcribing && (
+              <div className="absolute -top-8 right-0 z-10 pointer-events-none hidden sm:block"
+                   style={{ opacity: mounted ? 1 : 0, transition: 'opacity 0.5s ease 0.7s' }}>
                 <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200
                                  rounded-md px-2.5 py-1 text-[10px] font-semibold text-emerald-700
                                  shadow-sm rotate-1">
@@ -483,21 +524,20 @@ export function AddReportClient() {
 
             {/* Main text box */}
             <div className={`relative rounded-2xl bg-white shadow-sm overflow-hidden transition-all duration-200
-                             border-2 ${voiceActive
-                               ? 'border-red-400/70 shadow-red-400/10 shadow-lg'
-                               : 'border-ink/10 focus-within:border-saffron/50 focus-within:shadow-saffron/8 focus-within:shadow-lg'
+                             border-2 ${
+                               transcribing ? 'border-saffron/50 shadow-saffron/10 shadow-lg' :
+                               voiceActive  ? 'border-red-400/70 shadow-red-400/10 shadow-lg' :
+                                              'border-ink/10 focus-within:border-saffron/50 focus-within:shadow-saffron/8 focus-within:shadow-lg'
                              }`}>
 
-              {/* Blinking cursor hint — when empty, idle, not recording */}
+              {/* Blinking cursor when idle + empty */}
               {showCursorOverlay && (
                 <div className="absolute left-5 top-5 flex items-start pointer-events-none select-none">
                   <span className="text-[15px] text-ink/20 leading-relaxed">
                     The water tanker hasn&apos;t come in 4 days…
                   </span>
-                  <span
-                    className="inline-block w-[2px] h-[19px] bg-saffron/55 ml-0.5 mt-0.5 rounded-full flex-shrink-0"
-                    style={{ animation: 'cursor-blink 1s step-end infinite' }}
-                  />
+                  <span className="inline-block w-[2px] h-[19px] bg-saffron/55 ml-0.5 mt-0.5 rounded-full flex-shrink-0"
+                        style={{ animation: 'cursor-blink 1s step-end infinite' }} />
                 </div>
               )}
 
@@ -509,7 +549,7 @@ export function AddReportClient() {
                 onBlur={() => setTextFocused(false)}
                 placeholder=""
                 rows={6}
-                disabled={submitState === 'submitting'}
+                disabled={submitState === 'submitting' || transcribing}
                 className="w-full px-5 pt-5 pb-20 text-[15px] text-ink leading-relaxed
                            bg-transparent resize-none focus:outline-none"
                 style={{ minHeight: 180 }}
@@ -520,70 +560,66 @@ export function AddReportClient() {
                               bg-gradient-to-t from-white via-white/98 to-transparent
                               flex items-center gap-2.5">
 
-                {voiceActive ? (
-                  /* ── Voice-active: waveform bars ── */
+                {transcribing ? (
+                  /* Transcribing: spinner */
+                  <>
+                    <span className="w-4 h-4 rounded-full border-2 border-saffron/35 border-t-saffron animate-spin flex-shrink-0" />
+                    <span className="text-[12px] font-medium text-ink/50 flex-1">Transcribing with AI…</span>
+                  </>
+                ) : voiceActive ? (
+                  /* Recording: waveform bars */
                   <>
                     <div className="flex items-end gap-[3px] flex-shrink-0">
                       {VOICE_BARS.map((h, i) => (
-                        <div
-                          key={i}
-                          className="w-[3px] rounded-full bg-red-400"
-                          style={{
-                            height: h,
-                            transformOrigin: 'bottom center',
-                            animation: `voice-bar 0.42s ease-in-out ${(i * 0.053).toFixed(3)}s infinite alternate`,
-                          }}
-                        />
+                        <div key={i} className="w-[3px] rounded-full bg-red-400"
+                             style={{
+                               height: h,
+                               transformOrigin: 'bottom center',
+                               animation: `voice-bar 0.42s ease-in-out ${(i * 0.053).toFixed(3)}s infinite alternate`,
+                             }} />
                       ))}
                     </div>
                     <span className="text-[12px] font-medium text-red-400 flex-1 truncate">
-                      Listening…
+                      {useWhisperForLang ? 'Recording…' : 'Listening…'}
                     </span>
-                    <button
-                      onClick={toggleVoice}
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px]
-                                 font-semibold bg-red-500 text-white active:scale-95 transition-all flex-shrink-0"
-                    >
+                    <button onClick={toggleVoice}
+                            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px]
+                                       font-semibold bg-red-500 text-white active:scale-95 transition-all flex-shrink-0">
                       <span className="w-2 h-2 rounded-sm bg-white inline-block" />
                       Stop
                     </button>
                   </>
-                ) : (
-                  /* ── Idle: mic + language picker ── */
+                ) : canSpeak ? (
+                  /* Idle: mic + language + mode hint */
                   <>
-                    {voiceSupported ? (
-                      <>
-                        <button
-                          onClick={toggleVoice}
-                          className="flex items-center gap-2 px-3.5 py-2 rounded-full text-[12px]
-                                     font-semibold bg-ink/6 text-ink/65 hover:bg-ink/10
-                                     active:scale-95 transition-all select-none flex-shrink-0"
-                        >
-                          <MicIcon className="w-3.5 h-3.5" />
-                          Speak
+                    <button onClick={toggleVoice}
+                            className="flex items-center gap-2 px-3.5 py-2 rounded-full text-[12px]
+                                       font-semibold bg-ink/6 text-ink/65 hover:bg-ink/10
+                                       active:scale-95 transition-all select-none flex-shrink-0">
+                      <MicIcon className="w-3.5 h-3.5" />
+                      Speak
+                    </button>
+                    <div className="flex items-center gap-1">
+                      {LANGS.map(l => (
+                        <button key={l.code} onClick={() => setVoiceLang(l.code)}
+                                className={`px-2 py-1 rounded-full text-[11px] font-semibold transition-all
+                                            ${voiceLang === l.code
+                                  ? 'bg-saffron/15 text-saffron-dark border border-saffron/30'
+                                  : 'text-ink/35 hover:text-ink/55'}`}>
+                          {l.label}
                         </button>
-                        <div className="flex items-center gap-1">
-                          {LANGS.map(l => (
-                            <button
-                              key={l.code}
-                              onClick={() => setVoiceLang(l.code)}
-                              className={`px-2 py-1 rounded-full text-[11px] font-semibold transition-all
-                                          ${voiceLang === l.code
-                                ? 'bg-saffron/15 text-saffron-dark border border-saffron/30'
-                                : 'text-ink/35 hover:text-ink/55'}`}
-                            >
-                              {l.label}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    ) : (
-                      <span className="text-[11px] text-ink/30">Type in any language — EN / हिंदी / मराठी</span>
-                    )}
-                    {text.length > 0 && (
-                      <span className="ml-auto text-[11px] text-ink/30 flex-shrink-0">{text.length}</span>
-                    )}
+                      ))}
+                    </div>
+                    {/* Mode badge — tells user which engine will run */}
+                    <span className={`ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0
+                                     ${useWhisperForLang
+                        ? 'bg-india-green/10 text-india-green'
+                        : 'bg-ink/6 text-ink/40'}`}>
+                      {langLabel}
+                    </span>
                   </>
+                ) : (
+                  <span className="text-[11px] text-ink/30">Type in any language — EN / हिंदी / मराठी</span>
                 )}
               </div>
             </div>
@@ -599,12 +635,10 @@ export function AddReportClient() {
               : 'bg-ink/8 text-ink/25 cursor-not-allowed'}`}
           >
             {submitState === 'submitting'
-              ? (
-                <span className="flex items-center justify-center gap-2">
+              ? <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
                   AI is reading this…
                 </span>
-              )
               : 'Submit report →'
             }
           </button>
@@ -614,7 +648,6 @@ export function AddReportClient() {
           )}
         </div>
 
-        {/* Footer */}
         <p className="mt-8 text-center text-[11px] text-ink/30 leading-relaxed max-w-xs mx-auto">
           Your identity is never stored · Report joins real ward-level intelligence
           shared with PMC · Visible on the public map within 24h
