@@ -87,6 +87,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const [voiceOk,      setVoiceOk]      = useState(false)
   const [mediaOk,      setMediaOk]      = useState(false)
   const [focused,      setFocused]      = useState(false)
+  const [isDesktop,    setIsDesktop]    = useState(false)
 
   const textareaRef    = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<any>(null)
@@ -101,6 +102,10 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
     setMediaOk(!!(navigator.mediaDevices?.getUserMedia))
     isIOS.current = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
       (/Safari/i.test(navigator.userAgent) && !/Chrome|Chromium|Edg/i.test(navigator.userAgent))
+    const check = () => setIsDesktop(window.innerWidth >= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
   }, [])
 
   useEffect(() => {
@@ -234,10 +239,10 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
 
   return (
     <div
-      className="fixed inset-0 z-[55] flex flex-col justify-end"
+      className={`fixed inset-0 z-[55] ${isDesktop ? 'flex items-center justify-center' : 'flex flex-col justify-end'}`}
       style={{
         pointerEvents: isOpen ? 'auto' : 'none',
-        background: `rgba(0,0,0,${visible ? '0.28' : '0'})`,
+        background: `rgba(0,0,0,${visible ? (isDesktop ? '0.35' : '0.28') : '0'})`,
         backdropFilter: visible ? 'blur(10px)' : 'none',
         WebkitBackdropFilter: visible ? 'blur(10px)' : 'none',
         transition: `background 0.35s ${EASE}, backdrop-filter 0.35s ${EASE}`,
@@ -247,14 +252,21 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
       {/* Sheet ───────────────────────────────────────────────────────────────── */}
       <div
         style={{
-          background: '#f5f5f7',  /* Apple bg-secondary under content */
-          borderRadius: '28px 28px 0 0',
-          boxShadow: '0 -1px 0 rgba(0,0,0,0.07), 0 -24px 80px rgba(0,0,0,0.14)',
-          maxHeight: '78vh',
+          background: '#f5f5f7',
+          borderRadius: isDesktop ? 28 : '28px 28px 0 0',
+          boxShadow: isDesktop
+            ? '0 8px 40px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.10)'
+            : '0 -1px 0 rgba(0,0,0,0.07), 0 -24px 80px rgba(0,0,0,0.14)',
+          maxHeight: isDesktop ? '82vh' : '78vh',
+          maxWidth: isDesktop ? 580 : undefined,
+          width: isDesktop ? '100%' : undefined,
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch' as any,
-          transform: `translateY(${visible ? '0' : '100%'})`,
-          transition: `transform 0.48s ${SPRING}`,
+          transform: visible
+            ? 'translateY(0) scale(1)'
+            : isDesktop ? 'translateY(16px) scale(0.97)' : 'translateY(100%)',
+          opacity: isDesktop ? (visible ? 1 : 0) : 1,
+          transition: `transform 0.44s ${SPRING}, opacity 0.3s ${EASE}`,
         }}
         onClick={(e) => e.stopPropagation()}
       >
