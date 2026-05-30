@@ -280,7 +280,7 @@ export default async function DashboardPage() {
         {/* ── Top metrics ────────────────────────────────────────────────── */}
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { value: totalReports,   label: 'Public reports collected', sub: 'Instagram · Reddit · news' },
+            { value: totalReports,   label: 'Public reports collected', sub: 'Instagram · Reddit · GMaps · X · news' },
             { value: openIssues,     label: 'Awaiting action',          sub: 'signal detected, not yet briefed' },
             { value: activeCount,    label: 'Being acted on',           sub: `${resolved} resolved · ${inProgress} in progress` },
             { value: fmt(totalCost), label: 'Estimated solution cost',  sub: 'across all open briefs' },
