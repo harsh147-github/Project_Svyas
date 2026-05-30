@@ -794,6 +794,36 @@ export function MobilePanel() {
       className="md:hidden absolute bottom-0 left-0 right-0 z-40
                  pointer-events-auto"
     >
+      {/* ── Orange "Add Report" CTA — only when no ward selected ── */}
+      {!active && (
+        <a
+          href="/add-report"
+          className="block w-full pointer-events-auto active:scale-[0.99] transition-transform"
+          style={{
+            background: 'linear-gradient(135deg, #FF9933 0%, #e8891e 100%)',
+            boxShadow: '0 -4px 24px rgba(255,153,51,0.35)',
+          }}
+        >
+          <div className="flex items-center justify-between px-5 py-3.5">
+            <div>
+              <div className="font-bold text-white text-[15px] leading-snug">
+                Spotted an issue near you?
+              </div>
+              <div className="text-white/75 text-[12px] mt-0.5 font-medium">
+                Tap to report — AI analyses it in seconds
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 ml-3">
+              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </div>
+          </div>
+        </a>
+      )}
+
       {/* Slide-up sheet */}
       <div
         className={`bg-white/96 backdrop-blur-md border-t border-ink/10

@@ -23,20 +23,28 @@ const config: Config = {
         sans:  ['Inter', 'system-ui', 'sans-serif'],
       },
       keyframes: {
-        // Hint card: fades in and rises up from slightly below — plays once
         'hint-rise': {
           '0%':   { opacity: '0', transform: 'translateX(-50%) translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateX(-50%) translateY(0)' },
         },
-        // Arrow: gentle downward pulse — plays 4 times then stops
         'arrow-bounce': {
           '0%, 100%': { transform: 'translateY(0)'   },
           '50%':       { transform: 'translateY(6px)' },
         },
+        'card-slide-up': {
+          '0%':   { opacity: '0', transform: 'translateY(60px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'overlay-fade': {
+          '0%':   { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
       },
       animation: {
-        'hint-rise':    'hint-rise 0.5s ease-out both',
-        'bounce-slow':  'arrow-bounce 1.2s ease-in-out 4',
+        'hint-rise':     'hint-rise 0.5s ease-out both',
+        'bounce-slow':   'arrow-bounce 1.2s ease-in-out 4',
+        'card-slide-up': 'card-slide-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'overlay-fade':  'overlay-fade 0.3s ease-out both',
       },
     },
   },
