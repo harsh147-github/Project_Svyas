@@ -22,6 +22,16 @@
   body { @apply bg-paper text-ink font-sans; }
 }
 
+/* ── Add-report page animations ───────────────────────────────── */
+@keyframes voice-bar {
+  0%   { transform: scaleY(0.15); }
+  100% { transform: scaleY(1); }
+}
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
 /* ── MapLibre GL overrides ─────────────────────────────────────── */
 .maplibregl-popup-content {
   background: #ffffff !important;
