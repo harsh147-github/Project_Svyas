@@ -37,6 +37,48 @@ const ISSUE_EMOJI: Record<string, string> = {
   traffic: '🚗', water: '💧', electricity: '⚡', garbage: '🗑️', other: '📌',
 }
 
+function PlusOneButton({ wardId, issueTag, clusterId }: { wardId: string; issueTag: string; clusterId?: string }) {
+  const [tapped, setTapped] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const color = ISSUE_COLOR[issueTag] ?? ISSUE_COLOR.other
+
+  async function handleTap() {
+    if (tapped || loading) return
+    setLoading(true)
+    try {
+      await fetch('/api/plus-one', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clusterId, wardId, issueTag }),
+      })
+      setTapped(true)
+    } catch { setTapped(true) } finally { setLoading(false) }
+  }
+
+  return (
+    <div className="space-y-2">
+      <button
+        onClick={handleTap}
+        disabled={loading}
+        className={`w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-2xl
+                   font-semibold text-[15px] active:scale-95 transition-all border-2
+                   ${tapped
+                     ? 'bg-india-green/10 border-india-green/30 text-india-green'
+                     : 'bg-saffron/10 border-saffron/30 text-ink'}`}
+      >
+        <span className="text-xl">{tapped ? '✓' : '👍'}</span>
+        {tapped ? 'Your voice added' : 'Facing the same issue?'}
+      </button>
+      {!tapped && (
+        <>
+          <p className="text-center text-[11px] text-ink-3">Tap to add your voice. It takes 2 seconds.</p>
+          <p className="text-center text-[11px] text-ink-3">समान समस्या आहे? 👍 टॅप करा</p>
+        </>
+      )}
+    </div>
+  )
+}
+
 export function CitizenSheet() {
   const [data, setData] = useState<SheetData | null>(null)
   const [cluster, setCluster] = useState<Cluster | null>(null)
@@ -197,6 +239,9 @@ export function CitizenSheet() {
                 >
                   See full ward report →
                 </a>
+
+                {/* +1 Signal */}
+                <PlusOneButton wardId={data.wardId} issueTag={data.issueTag} clusterId={cluster?.id} />
               </div>
             </>
           )}
