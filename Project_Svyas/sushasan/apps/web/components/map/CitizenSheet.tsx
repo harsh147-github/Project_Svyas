@@ -36,40 +36,6 @@ const ISSUE_LABEL: Record<string, string> = {
 const ISSUE_EMOJI: Record<string, string> = {
   traffic: '🚗', water: '💧', electricity: '⚡', garbage: '🗑️', other: '📌',
 }
-const TIPS: Record<string, string[]> = {
-  traffic: [
-    'Park at least 5 metres away from any junction or signal.',
-    'If an ambulance is stuck, share its location with @PuneTrafficPolice — it routes faster than a complaint.',
-    'Avoid peak hours on NIBM Road (8–10 AM, 6–8 PM) when possible.',
-  ],
-  water: [
-    'Report tanker price spikes to PMC Water Helpline: 1800-1030-022.',
-    'Maintain society storage discipline to reduce dependency on tankers.',
-    'Log supply failures on the PMC app — multiple reports in 24h escalate faster.',
-  ],
-  electricity: [
-    'Report streetlight outages via the MSEDCL app — attach a photo and the pole number.',
-    'Multiple reports in 24 hours cut the fix time from 96h to 48h.',
-    'Avoid using junction-box panels — call 1912 for electrical faults.',
-  ],
-  garbage: [
-    'Segregate dry and wet waste at home — mixed bags are why pickups get skipped.',
-    'Report missed pickups to PMC Solid Waste at 1800-233-0066.',
-    'Encourage shopfronts on your street to use covered bins.',
-  ],
-  other: [
-    'Report through PMC\'s helpline and document the issue with photos.',
-    'Tag local news accounts and @PuneMunicipal on Instagram for faster attention.',
-    'Connect with your RWA — grouped complaints move up the queue.',
-  ],
-}
-
-const FLOW_STEPS = [
-  { icon: '📱', label: 'Citizens post', detail: 'People report problems on Twitter, Reddit, Instagram' },
-  { icon: '🤖', label: 'AI reads & maps', detail: 'Sushaasan clusters similar complaints by ward' },
-  { icon: '📋', label: 'Corporator acts', detail: 'A ready-to-use action plan reaches the ward office' },
-  { icon: '✅', label: 'You see results', detail: 'Resolution status updates on this very map' },
-]
 
 export function CitizenSheet() {
   const [data, setData] = useState<SheetData | null>(null)
@@ -106,7 +72,6 @@ export function CitizenSheet() {
   const color = ISSUE_COLOR[data.issueTag] ?? ISSUE_COLOR.other
   const label = ISSUE_LABEL[data.issueTag] ?? data.issueTag
   const emoji = ISSUE_EMOJI[data.issueTag] ?? '📌'
-  const tips = TIPS[data.issueTag] ?? TIPS.other
 
   function close() { setData(null); setCluster(null) }
 
@@ -172,39 +137,9 @@ export function CitizenSheet() {
                     <span>Severity <span className="font-semibold text-ink">{cluster.severity_avg?.toFixed(1)}/5</span></span>
                   </div>
                 ) : null}
-              </div>
-
-              {/* What you can do */}
-              <div className="space-y-3">
-                <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-4">What you can do right now</div>
-                <ul className="space-y-2.5">
-                  {tips.map((tip, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <span className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold text-white mt-0.5" style={{ backgroundColor: color }}>{i + 1}</span>
-                      <span className="text-[13px] leading-relaxed text-ink-2">{tip}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* How Sushaasan works — simple flow */}
-              <div className="space-y-3">
-                <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-4">How your report becomes action</div>
-                <div className="flex flex-col gap-0">
-                  {FLOW_STEPS.map((step, i) => (
-                    <div key={i}>
-                      <div className="flex items-start gap-3 py-3">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[20px] flex-shrink-0 bg-ink/[0.04] border border-ink/8">{step.icon}</div>
-                        <div>
-                          <div className="text-[13px] font-semibold text-ink">{step.label}</div>
-                          <div className="text-[12px] text-ink-3 mt-0.5">{step.detail}</div>
-                        </div>
-                      </div>
-                      {i < FLOW_STEPS.length - 1 && (
-                        <div className="ml-5 w-0 border-l-2 border-dashed border-ink/15 h-3" />
-                      )}
-                    </div>
-                  ))}
+                {/* Timeline estimate */}
+                <div className="text-[12px] text-ink-3 mt-1">
+                  Estimated resolution: 14–21 days (based on similar issues in Pune)
                 </div>
               </div>
 
@@ -218,6 +153,26 @@ export function CitizenSheet() {
                 ) : (
                   <p className="text-[13px] text-ink-2 leading-relaxed">📬 Sushaasan has generated a step-by-step action brief for the ward corporator. Tap <strong>&quot;Action Brief&quot;</strong> to see it.</p>
                 )}
+              </div>
+
+              {/* +1 Signal */}
+              <div className="space-y-2">
+                <button
+                  className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-2xl
+                             bg-saffron/10 border-2 border-saffron/30
+                             font-semibold text-[15px] text-ink
+                             active:scale-95 transition-all"
+                  onClick={() => {/* +1 mechanic — wired in Wave 2 */}}
+                >
+                  <span className="text-xl">👍</span>
+                  Facing the same issue?
+                </button>
+                <p className="text-center text-[11px] text-ink-3">
+                  Tap to add your voice. It takes 2 seconds.
+                </p>
+                <p className="text-center text-[11px] text-ink-3">
+                  समान समस्या आहे? 👍 टॅप करा
+                </p>
               </div>
 
               {/* CTAs */}
