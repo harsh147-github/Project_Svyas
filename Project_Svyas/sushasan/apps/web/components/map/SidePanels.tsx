@@ -816,7 +816,7 @@ export function MobilePanel() {
             {/* Left: brand + info — tap to expand/collapse */}
             <button
               onClick={() => setExpanded(!expanded)}
-              className="flex items-center gap-2 flex-1 min-w-0 text-left"
+              className="flex items-center gap-2 flex-1 min-w-0 text-left min-h-[44px]"
               aria-label={expanded ? 'Collapse panel' : 'Expand panel'}
             >
               <div className="w-6 h-6 rounded-md flex items-center justify-center bg-saffron text-white font-serif font-bold text-xs flex-shrink-0">
@@ -853,8 +853,8 @@ export function MobilePanel() {
             {/* Right: Add Report pill — permanently visible */}
             <button
               onClick={() => setReportOpen(true)}
-              className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full
-                         text-[11px] font-bold text-white
+              className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2.5 rounded-full
+                         text-[11px] font-bold text-white min-h-[44px]
                          shadow-[0_3px_14px_rgba(255,153,51,0.45)]
                          active:scale-95 transition-transform"
               style={{ background: 'linear-gradient(135deg,#FF9933,#e8891e)' }}
