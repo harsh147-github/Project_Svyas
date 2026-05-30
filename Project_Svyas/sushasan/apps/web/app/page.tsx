@@ -69,9 +69,10 @@ export default function HomePage() {
           {/* Pilot badge */}
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full
                           bg-white border border-ink/10 shadow-sm
-                          text-[9px] font-bold tracking-[0.12em] uppercase text-ink-3">
+                          text-[9px] font-bold tracking-[0.12em] uppercase text-ink-3
+                          whitespace-nowrap flex-shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-india-green animate-pulse flex-shrink-0" />
-            <span className="hidden xs:inline">Pilot · </span>NIBM · Wanowrie
+            <span className="hidden xs:inline">Pilot · </span>NIBM – Kondhwa
           </div>
 
         </div>
