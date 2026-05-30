@@ -1,6 +1,7 @@
 'use client'
 
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -237,8 +238,8 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const canSubmit = text.trim().length >= 5 && !submitting && !result
   const showCursor = text === '' && !focused && !voiceActive && !transcribing
 
-  return (
-    <div
+  if (typeof document === 'undefined') return null
+  return createPortal(<div
       className={`fixed inset-0 z-[55] flex flex-col justify-end ${isDesktop ? 'items-center' : ''}`}
       style={{
         pointerEvents: isOpen ? 'auto' : 'none',
@@ -352,8 +353,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
 
         <div style={{ height: 'env(safe-area-inset-bottom, 12px)' }} />
       </div>
-    </div>
-  )
+    </div>, document.body)
 }
 
 // ── ComposeView ───────────────────────────────────────────────────────────────
