@@ -459,6 +459,15 @@ export function WardMap() {
         }, 700)
       })
 
+      // From /add-report: fly to a specific ward centroid and select it
+      window.addEventListener('sushaasan:auto-select-ward', ((e: CustomEvent) => {
+        const { wardId, lat, lng } = e.detail as { wardId: string; lat: number; lng: number }
+        map.flyTo({ center: [lng, lat], zoom: 14.5, speed: 1.2, curve: 1.2 })
+        map.once('moveend', () => {
+          selectWard('wards-pilot', { wardnum: Number(wardId), Name2: `Ward ${wardId}` })
+        })
+      }) as EventListener)
+
       // Cursors + hover state — broadcasts to side panels.
       // Both pilot and context wards hover, with pilot taking precedence on overlap.
       let hover: { source: 'wards-pilot' | 'wards-context'; id: number } | null = null

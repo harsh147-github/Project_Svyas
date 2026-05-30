@@ -4,6 +4,11 @@ import { LegendBar } from '@/components/map/LegendBar'
 import { FindMyWardButton } from '@/components/map/SelectedWardPanel'
 import { SidePanels } from '@/components/map/SidePanels'
 
+const WardAutoSelect = dynamic(
+  () => import('@/components/map/WardAutoSelect').then((m) => m.WardAutoSelect),
+  { ssr: false }
+)
+
 // Citizen and Government sheets — bottom-sheet modals triggered from hotspot popups
 const CitizenSheet = dynamic(
   () => import('@/components/map/CitizenSheet').then((m) => m.CitizenSheet),
@@ -37,6 +42,9 @@ export default function HomePage() {
 
       {/* Full-screen map */}
       <WardMap />
+
+      {/* Auto-select ward from ?ward= URL param (navigated from /add-report) */}
+      <WardAutoSelect />
 
       {/* Brand mark */}
       <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none">

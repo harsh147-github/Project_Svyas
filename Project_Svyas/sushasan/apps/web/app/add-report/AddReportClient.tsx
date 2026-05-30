@@ -96,6 +96,7 @@ export function AddReportClient() {
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
   const [result, setResult] = useState<Result | null>(null)
   const [voiceActive, setVoiceActive] = useState(false)
+  const [copied, setCopied] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
   const [voiceLang, setVoiceLang] = useState('en-IN')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -214,58 +215,85 @@ export function AddReportClient() {
 
   if (submitState === 'done' && result) {
     const color = ISSUE_COLOR[result.issueTag] ?? '#8B5CF6'
-    return (
-      <main className="min-h-screen bg-paper flex items-center justify-center px-5 py-12">
-        <div className="max-w-md w-full space-y-6">
+    const emoji = ISSUE_EMOJI[result.issueTag] ?? '📌'
 
-          {/* Check */}
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-full border-2 border-india-green/30 bg-india-green/8
-                            flex items-center justify-center text-2xl mx-auto mb-4">
-              ✓
+    async function handleShare() {
+      const shareText = `I just flagged a ${(ISSUE_LABEL[result!.issueTag] ?? 'civic').toLowerCase()} issue in ${result!.wardName} on Sushaasan 🗺️`
+      if (navigator.share) {
+        try { await navigator.share({ title: 'Sushaasan', text: shareText, url: 'https://sushasan.in' }) } catch { /* dismissed */ }
+      } else {
+        await navigator.clipboard.writeText('https://sushasan.in')
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      }
+    }
+
+    return (
+      <main className="min-h-screen bg-paper flex flex-col items-center justify-center px-5 py-10">
+        <div className="max-w-sm w-full">
+
+          {/* Hero — big emoji in layered color ring */}
+          <div className="flex flex-col items-center mb-8">
+            <div
+              className="w-24 h-24 rounded-full flex items-center justify-center text-5xl"
+              style={{
+                background: `${color}12`,
+                border: `2.5px solid ${color}40`,
+                boxShadow: `0 0 0 10px ${color}08, 0 0 0 20px ${color}04`,
+              }}
+            >
+              {emoji}
             </div>
-            <h1 className="font-serif text-2xl font-semibold text-ink">Signal received</h1>
-            <p className="text-sm text-ink/50 mt-1">Added to the ward intelligence map</p>
+
+            <h1 className="font-serif text-[30px] font-bold text-ink mt-6 leading-tight text-center">
+              Signal fired.
+            </h1>
+            <p className="text-[14px] text-ink/50 mt-1.5 text-center">
+              Ward {result.wardId} · {result.wardName}
+            </p>
           </div>
 
-          {/* AI extraction card */}
-          <div className="bg-white rounded-2xl border border-ink/10 shadow-sm overflow-hidden">
-            <div className="h-1" style={{ backgroundColor: color }} />
-            <div className="p-5 space-y-4">
-              <div className="text-[9px] font-bold tracking-[0.2em] uppercase text-ink/40">
+          {/* Severity bar */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink/35">Severity</span>
+              <span className="text-[11px] font-bold" style={{ color }}>
+                {SEV_LABEL[result.severity] ?? 'Unknown'}
+              </span>
+            </div>
+            <div className="flex gap-1.5">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div
+                  key={i}
+                  className="flex-1 h-2.5 rounded-full transition-all"
+                  style={{ background: i <= result.severity ? color : `${color}18` }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Details card */}
+          <div className="rounded-2xl border border-ink/10 bg-white shadow-sm overflow-hidden mb-5">
+            <div className="h-[3px]" style={{ background: `linear-gradient(90deg, ${color}, ${color}60)` }} />
+            <div className="p-4 space-y-3">
+              <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-ink/35">
                 What our AI understood
               </div>
 
-              <div className="flex items-start gap-3">
-                <span className="text-2xl mt-0.5">{ISSUE_EMOJI[result.issueTag] ?? '📌'}</span>
-                <div className="flex-1">
-                  <div className="font-semibold text-ink text-[15px]">
-                    {ISSUE_LABEL[result.issueTag] ?? result.issueTag} issue
-                  </div>
-                  <div className="text-xs text-ink/50 mt-0.5">
-                    Ward {result.wardId} · {result.wardName}
-                  </div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <div className="font-serif text-2xl font-bold" style={{ color }}>
-                    {result.severity}<span className="text-sm text-ink/30">/5</span>
-                  </div>
-                  <div className="text-[9px] font-bold tracking-widest uppercase text-ink/40">
-                    {SEV_LABEL[result.severity] ?? 'Severity'}
-                  </div>
-                </div>
+              <div className="font-semibold text-ink text-[15px]">
+                {ISSUE_LABEL[result.issueTag] ?? result.issueTag} issue
               </div>
 
               {result.citedLocation && (
-                <div className="text-[13px] text-ink/60 flex items-center gap-1.5">
-                  <span className="text-ink/30">📍</span>
-                  {result.citedLocation}
+                <div className="flex items-center gap-2 text-[13px] text-ink/65">
+                  <span style={{ color }}>📍</span>
+                  <span>{result.citedLocation}</span>
                 </div>
               )}
 
               {result.civicAsk && (
-                <div className="border-t border-ink/8 pt-3 text-[13px] text-ink/70 leading-relaxed">
-                  <span className="font-semibold text-ink/50 text-[10px] uppercase tracking-wide mr-2">Ask</span>
+                <div className="text-[13px] text-ink/70 leading-relaxed border-t border-ink/8 pt-3">
+                  <span className="font-semibold text-ink/40 text-[10px] uppercase tracking-wide mr-1.5">Ask ›</span>
                   {result.civicAsk}
                 </div>
               )}
@@ -273,9 +301,11 @@ export function AddReportClient() {
               {result.subTags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {result.subTags.map(tag => (
-                    <span key={tag}
-                          className="px-2 py-0.5 rounded-full text-[10px] font-medium"
-                          style={{ background: `${color}15`, color, border: `1px solid ${color}30` }}>
+                    <span
+                      key={tag}
+                      className="px-2.5 py-1 rounded-full text-[10px] font-semibold"
+                      style={{ background: `${color}12`, color, border: `1px solid ${color}25` }}
+                    >
                       {tag}
                     </span>
                   ))}
@@ -285,24 +315,44 @@ export function AddReportClient() {
           </div>
 
           {/* CTAs */}
-          <div className="flex gap-3">
-            <Link href="/"
-                  className="flex-1 py-3 rounded-2xl bg-ink text-white text-sm font-semibold
-                             text-center hover:bg-ink/85 transition-colors">
-              See it on the map
-            </Link>
+          <div className="space-y-2.5">
             <button
-              onClick={() => { setText(''); setSubmitState('idle'); setResult(null) }}
-              className="flex-1 py-3 rounded-2xl border border-ink/15 text-ink text-sm font-semibold
-                         hover:border-ink/30 transition-colors"
+              onClick={() => { window.location.href = `/?ward=${result.wardId}` }}
+              className="w-full py-4 rounded-2xl text-[15px] font-bold text-white
+                         flex items-center justify-center gap-2
+                         active:scale-[0.98] transition-transform"
+              style={{
+                background: color,
+                boxShadow: `0 8px 24px ${color}45`,
+              }}
             >
-              Report another
+              See it on the map
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
             </button>
+
+            <div className="flex gap-2.5">
+              <button
+                onClick={handleShare}
+                className="flex-1 py-3 rounded-2xl border border-ink/15 text-ink text-[13px] font-semibold
+                           flex items-center justify-center gap-1.5
+                           hover:border-ink/30 active:scale-[0.98] transition-all"
+              >
+                {copied ? '✓ Link copied' : '↗ Share'}
+              </button>
+              <button
+                onClick={() => { setText(''); setSubmitState('idle'); setResult(null) }}
+                className="flex-1 py-3 rounded-2xl border border-ink/15 text-ink text-[13px] font-semibold
+                           hover:border-ink/30 active:scale-[0.98] transition-all"
+              >
+                + Another
+              </button>
+            </div>
           </div>
 
-          <p className="text-center text-[11px] text-ink/30 leading-relaxed">
-            Your identity is never stored · This signal joins real ward intelligence
-            sent to PMC · Visible on the public map within 24h
+          <p className="text-center text-[11px] text-ink/30 mt-6 leading-relaxed">
+            Your identity is never stored · Signal joins real ward intelligence · Visible on map within 24h
           </p>
         </div>
       </main>
