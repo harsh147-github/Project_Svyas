@@ -40,19 +40,43 @@ function fmt(n: number) {
   return `₹${n}`
 }
 
-const STATUS_META: Record<string, { label: string; cls: string; dot: string }> = {
-  open:        { label: 'Open',         cls: 'bg-ink/5 text-ink-2 border-ink/15',                         dot: '#7a766d' },
-  in_progress: { label: 'In progress',  cls: 'bg-amber-50 text-amber-700 border-amber-200',               dot: '#F59E0B' },
-  resolved:    { label: '✓ Resolved',   cls: 'bg-india-green/8 text-india-green border-india-green/30', dot: '#138808' },
+const STATUS_PIPELINE: Record<string, { label: string; emoji: string; color: string; bg: string }> = {
+  signal_detected:  { label: 'Signal Detected',        emoji: '🔍', color: '#6B7280', bg: '#F3F4F6' },
+  brief_prepared:   { label: 'Brief Prepared',          emoji: '📋', color: '#3B82F6', bg: '#EFF6FF' },
+  shared_with_ward: { label: 'Shared with Ward Office', emoji: '📤', color: '#FF9933', bg: '#FFF7ED' },
+  under_review:     { label: 'Under Review',            emoji: '👀', color: '#D97706', bg: '#FFFBEB' },
+  in_progress:      { label: 'In Progress',             emoji: '🔧', color: '#EA580C', bg: '#FFF7ED' },
+  resolved:         { label: 'Resolved',                emoji: '✅', color: '#16A34A', bg: '#F0FDF4' },
+  open:             { label: 'Signal Detected',         emoji: '🔍', color: '#6B7280', bg: '#F3F4F6' },
+}
+
+function StatusBadge({ status }: { status?: string }) {
+  const s = STATUS_PIPELINE[status ?? 'signal_detected'] ?? STATUS_PIPELINE.signal_detected
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold"
+      style={{ color: s.color, background: s.bg }}
+    >
+      {s.emoji} {s.label}
+    </span>
+  )
 }
 
 export default async function DashboardPage() {
   const snap = await getDashboardSnapshot()
   const { wards, clusters, solutions, source, lastUpdated, totalReports } = snap
 
-  const openIssues = clusters.filter((c) => c.status === 'open').length
-  const inProgress = clusters.filter((c) => c.status === 'in_progress').length
-  const resolved   = clusters.filter((c) => c.status === 'resolved').length
+  const statusCounts = clusters.reduce((acc, c) => {
+    const s = c.status ?? 'signal_detected'
+    acc[s] = (acc[s] ?? 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  const resolved   = (statusCounts.resolved ?? 0)
+  const inProgress = (statusCounts.in_progress ?? 0)
+  const INACTIVE_STATUSES = new Set(['signal_detected', 'open'])
+  const activeCount = clusters.filter((c) => !INACTIVE_STATUSES.has(c.status ?? 'signal_detected')).length
+  const openIssues = clusters.filter((c) => INACTIVE_STATUSES.has(c.status ?? 'signal_detected')).length
   const totalCost  = solutions.reduce((s, x) => s + x.total_cost_est_inr, 0)
 
   // Issue-mix breakdown for the header band
@@ -257,8 +281,8 @@ export default async function DashboardPage() {
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { value: totalReports,   label: 'Public reports collected', sub: 'Instagram · Reddit · news' },
-            { value: openIssues,     label: 'Active issue clusters',    sub: 'awaiting government action' },
-            { value: inProgress + resolved, label: 'Being acted on',     sub: `${resolved} closed · ${inProgress} in progress` },
+            { value: openIssues,     label: 'Awaiting action',          sub: 'signal detected, not yet briefed' },
+            { value: activeCount,    label: 'Being acted on',           sub: `${resolved} resolved · ${inProgress} in progress` },
             { value: fmt(totalCost), label: 'Estimated solution cost',  sub: 'across all open briefs' },
           ].map((k) => (
             <div key={k.label} className="bg-white rounded-2xl border border-ink/8 shadow-sm p-5">
@@ -336,7 +360,6 @@ export default async function DashboardPage() {
                 {wClusters.map((c) => {
                   const sol = wSolutions.find((s) => s.cluster_id === c.id)
                   const color = ISSUE_COLOR[c.issue_tag] ?? ISSUE_COLOR.other
-                  const status = STATUS_META[c.status] ?? STATUS_META.open
 
                   return (
                     <article key={c.id}
@@ -351,11 +374,7 @@ export default async function DashboardPage() {
                                 style={{ background: `${color}18`, color, border: `1px solid ${color}40` }}>
                             {ISSUE_LABEL[c.issue_tag] ?? c.issue_tag}
                           </span>
-                          <span className={`inline-flex items-center gap-1 text-[9px] font-bold tracking-[0.14em]
-                                           uppercase px-2 py-0.5 rounded-full border ${status.cls}`}>
-                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: status.dot }} />
-                            {status.label}
-                          </span>
+                          <StatusBadge status={c.status} />
                           <span className="text-[10px] text-ink-4 ml-auto">
                             {c.post_count} reports · sev {c.severity_avg.toFixed(1)}
                           </span>
