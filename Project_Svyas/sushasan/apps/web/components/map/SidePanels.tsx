@@ -486,7 +486,7 @@ export function GovernmentPanel() {
           Sushaasan Brief
         </div>
         <div className="text-[8px] font-semibold tracking-[0.18em] text-ink-3 uppercase mt-1">
-          Decision Support · Ward Officials
+          Ward Intelligence
         </div>
       </header>
 
@@ -534,7 +534,7 @@ function GovEmpty() {
         <p className="text-[13px] leading-relaxed text-ink-2 mt-2">
           This is not a complaint box. Sushaasan turns citizen reports into a
           ready-to-use brief — department named, steps numbered, cost in ₹,
-          timeline in days. <strong className="text-ink">You decide. We just do the groundwork.</strong>
+          timeline in days. <strong className="text-ink">The corporator&apos;s office decides. We keep the brief data-driven and the loop visible.</strong>
         </p>
       </div>
 
@@ -558,7 +558,7 @@ function GovEmpty() {
           </li>
           <li className="flex items-start gap-2">
             <span className="font-bold text-saffron-dark w-4 flex-shrink-0">4.</span>
-            <span>Corporator acts → citizens see the resolution on this very map</span>
+            <span>Ward office reviews and acts → citizens see the resolution on this very map</span>
           </li>
         </ol>
       </div>
