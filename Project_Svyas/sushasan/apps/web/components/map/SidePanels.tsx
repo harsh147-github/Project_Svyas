@@ -111,6 +111,91 @@ function severityBar(value: number) {
   return Math.max(0, Math.min(100, (value / 5) * 100))
 }
 
+// ─── Static ward list for search ─────────────────────────────────────────
+
+const SEARCHABLE_WARDS = [
+  { wardnum: '46', name: 'NIBM–Mohammadwadi',       areas: 'NIBM Road Mohammadwadi Corinthians' },
+  { wardnum: '47', name: 'Kondhwa Budruk',           areas: 'Kondhwa Konark Pyramid Undri' },
+  { wardnum: '43', name: 'Wanowrie–Salunke Vihar',   areas: 'Wanowrie Salunke Vihar Clover Park' },
+  { wardnum: '42', name: 'Ramtekadi–Sayyadnagar',    areas: 'Ramtekadi Magarpatta' },
+  { wardnum: '41', name: 'Kondhwa Khurd',            areas: 'Kondhwa Pisoli' },
+  { wardnum: '44', name: 'Undri–Pisoli',             areas: 'Undri Pisoli Fursungi' },
+  { wardnum: '25', name: 'Hadapsar',                 areas: 'Hadapsar Fatima Nagar' },
+  { wardnum: '26', name: 'Wanwadi',                  areas: 'Wanwadi Salisbury Park' },
+  { wardnum: '4',  name: 'Shivajinagar',             areas: 'Shivajinagar FC Road' },
+  { wardnum: '5',  name: 'Koregaon Park',            areas: 'Koregaon Park Kalyani Nagar' },
+  { wardnum: '6',  name: 'Viman Nagar',              areas: 'Viman Nagar Airport Road' },
+  { wardnum: '7',  name: 'Kharadi',                  areas: 'Kharadi EON IT Park' },
+  { wardnum: '3',  name: 'Kothrud',                  areas: 'Kothrud Paud Road' },
+  { wardnum: '1',  name: 'Aundh–Baner',              areas: 'Aundh Baner Pashan' },
+]
+
+function WardSearch() {
+  const [query, setQuery] = useState('')
+  const results = useMemo(() => {
+    const q = query.toLowerCase().trim()
+    if (!q) return []
+    return SEARCHABLE_WARDS.filter(
+      (w) => w.name.toLowerCase().includes(q) || w.areas.toLowerCase().includes(q)
+    ).slice(0, 5)
+  }, [query])
+
+  function selectWard(w: typeof SEARCHABLE_WARDS[number]) {
+    setQuery('')
+    window.dispatchEvent(new CustomEvent('sushaasan:ward-selected', {
+      detail: { wardnum: w.wardnum, name: w.name },
+    }))
+    window.dispatchEvent(new CustomEvent('sushaasan:ward-search-select', {
+      detail: { wardnum: w.wardnum },
+    }))
+  }
+
+  return (
+    <div className="relative pt-3 border-t border-ink/8">
+      <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase mb-2">
+        Find your ward
+      </div>
+      <div className="relative">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Area name, e.g. NIBM or Baner…"
+          className="w-full px-3 py-2 pr-8 text-[13px] rounded-xl border border-ink/15
+                     bg-paper placeholder:text-ink-4 text-ink
+                     focus:outline-none focus:border-saffron/50 focus:ring-1 focus:ring-saffron/20
+                     transition-all"
+        />
+        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-3 text-[14px] pointer-events-none">
+          🔍
+        </span>
+      </div>
+      {results.length > 0 && (
+        <ul className="mt-1 bg-white border border-ink/10 rounded-xl shadow-md overflow-hidden z-10 relative">
+          {results.map((w) => (
+            <li key={w.wardnum}>
+              <button
+                onClick={() => selectWard(w)}
+                className="w-full text-left px-3 py-2.5 text-[12.5px] text-ink hover:bg-saffron/8
+                           flex items-center gap-2 transition-colors"
+              >
+                <span className="w-5 h-5 rounded-full bg-saffron/15 text-saffron-dark text-[9px] font-bold
+                                 flex items-center justify-center flex-shrink-0">
+                  {w.wardnum}
+                </span>
+                <div>
+                  <div className="font-semibold">{w.name}</div>
+                  <div className="text-[10px] text-ink-3">{w.areas}</div>
+                </div>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 // ─── Hook: shared active ward + cached data ───────────────────────────────
 
 function useActiveWard() {
@@ -254,10 +339,13 @@ function CitizenEmpty({ totalPosts, totalSources }: { totalPosts: number; totalS
           What&apos;s happening in your Pune ward?
         </div>
         <p className="text-[13px] leading-relaxed text-ink-2 mt-2">
-          Sushaasan reads public posts from Twitter, Reddit, Instagram and Facebook —
+          Sushaasan reads public posts from Twitter/X, Reddit, Instagram, Google Maps and local news —
           and pins every civic problem to the exact ward it happened in.
         </p>
       </div>
+
+      {/* Ward search */}
+      <WardSearch />
 
       {/* How to use */}
       <div className="pt-3 border-t border-ink/8 space-y-2">
@@ -546,7 +634,7 @@ function GovEmpty() {
         <ol className="space-y-2 text-[11.5px] text-ink-2">
           <li className="flex items-start gap-2">
             <span className="font-bold text-saffron-dark w-4 flex-shrink-0">1.</span>
-            <span>Citizens post about civic problems on Twitter, Reddit, Instagram</span>
+            <span>Citizens post about civic problems on Twitter/X, Reddit, Instagram, GMaps and local news — 5 public sources</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="font-bold text-saffron-dark w-4 flex-shrink-0">2.</span>
