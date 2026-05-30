@@ -526,8 +526,54 @@ export function WardMap() {
         clearHover()
         window.dispatchEvent(new CustomEvent('sushaasan:ward-unhovered'))
       })
-      map.on('mouseenter', 'hotspot-icons', () => { map.getCanvas().style.cursor = 'pointer' })
-      map.on('mouseleave', 'hotspot-icons', () => { map.getCanvas().style.cursor = '' })
+      // ── Hotspot tooltips ─────────────────────────────────────────────────
+      const tooltip = document.createElement('div')
+      tooltip.setAttribute('data-sushasan-tooltip', '1')
+      tooltip.style.cssText = `
+        position: absolute;
+        pointer-events: none;
+        z-index: 10;
+        background: rgba(11,31,58,0.88);
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        font-family: -apple-system, sans-serif;
+        white-space: nowrap;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+        opacity: 0;
+        transition: opacity 0.15s ease;
+        transform: translateY(-4px);
+        pointer-events: none;
+      `
+      document.body.appendChild(tooltip)
+
+      map.on('mouseenter', 'hotspot-icons', (e) => {
+        map.getCanvas().style.cursor = 'pointer'
+        const features = e.features
+        if (!features || features.length === 0) return
+        const p = features[0].properties as Record<string, unknown>
+        const issueLabel = ({ traffic: 'Traffic', water: 'Water', electricity: 'Electricity', garbage: 'Garbage', other: 'Other' } as Record<string, string>)[String(p.issue_tag ?? '')] ?? String(p.issue_tag ?? '')
+        const count = p.post_count ?? ''
+        const area = p.ward_name ?? ''
+        tooltip.textContent = `${issueLabel} · ${count} reports · ${area}`
+        tooltip.style.opacity = '1'
+        const rect = map.getCanvas().getBoundingClientRect()
+        tooltip.style.left = `${rect.left + e.point.x}px`
+        tooltip.style.top = `${rect.top + e.point.y - 44}px`
+      })
+
+      map.on('mousemove', 'hotspot-icons', (e) => {
+        const rect = map.getCanvas().getBoundingClientRect()
+        tooltip.style.left = `${rect.left + e.point.x}px`
+        tooltip.style.top = `${rect.top + e.point.y - 44}px`
+      })
+
+      map.on('mouseleave', 'hotspot-icons', () => {
+        map.getCanvas().style.cursor = ''
+        tooltip.style.opacity = '0'
+      })
 
       fetchClusters(map)
     })
@@ -539,6 +585,8 @@ export function WardMap() {
       // @ts-expect-error mapref
       mapRef.current?.remove()
       mapRef.current = null
+      // Remove the tooltip DOM node if it was created
+      document.querySelectorAll('div[data-sushasan-tooltip]').forEach(el => el.remove())
     }
   }, [initMap])
 
