@@ -361,6 +361,16 @@ export function WardMap() {
         const p = e.features[0].properties ?? {}
         // @ts-expect-error geojson coords
         const coords = e.features[0].geometry.coordinates.slice() as [number, number]
+
+        // Mobile: skip the floating popup — open the CitizenSheet bottom sheet directly
+        if (window.innerWidth < 768) {
+          window.dispatchEvent(new CustomEvent('sushaasan:citizen-sheet-open', {
+            detail: { wardId: String(p.ward_id ?? ''), issueTag: String(p.issue_tag ?? '') },
+          }))
+          e.stopPropagation()
+          return
+        }
+
         const color = ISSUE_COLORS[p.issue_tag as string] ?? '#FF9933'
 
         let platforms: string[] = []

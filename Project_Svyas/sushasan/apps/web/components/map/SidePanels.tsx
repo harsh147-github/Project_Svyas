@@ -797,36 +797,6 @@ export function MobilePanel() {
       className="md:hidden absolute bottom-0 left-0 right-0 z-40
                  pointer-events-auto"
     >
-      {/* ── Orange "Add Report" CTA — opens inline sheet, no page nav ── */}
-      {!active && (
-        <button
-          onClick={() => setReportOpen(true)}
-          className="block w-full pointer-events-auto active:scale-[0.99] transition-transform text-left"
-          style={{
-            background: 'linear-gradient(135deg, #FF9933 0%, #e8891e 100%)',
-            boxShadow: '0 -4px 24px rgba(255,153,51,0.35)',
-          }}
-        >
-          <div className="flex items-center justify-between px-5 py-3.5">
-            <div>
-              <div className="font-bold text-white text-[15px] leading-snug">
-                Spotted an issue near you?
-              </div>
-              <div className="text-white/75 text-[12px] mt-0.5 font-medium">
-                Tap to report — AI analyses it in seconds
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 ml-3">
-              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </div>
-          </div>
-        </button>
-      )}
-
       {/* Inline report sheet — fixed overlay, slides up over map */}
       <InlineReportSheet isOpen={reportOpen} onClose={() => setReportOpen(false)} />
 
@@ -837,49 +807,69 @@ export function MobilePanel() {
                     transition-all duration-300 ease-out
                     ${expanded ? 'rounded-t-2xl' : 'rounded-t-xl'}`}
       >
-        {/* Handle + header row — always visible, tap to toggle */}
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="w-full flex flex-col items-center pt-2 pb-2 px-5"
-          aria-label={expanded ? 'Collapse panel' : 'Expand panel'}
-        >
+        {/* Handle + header row — always visible */}
+        <div className="w-full pt-2 pb-2 px-4">
           {/* Drag handle */}
-          <div className="w-9 h-1 rounded-full bg-ink/15 mb-2" />
+          <div className="w-9 h-1 rounded-full bg-ink/15 mx-auto mb-2" />
 
-          <div className="w-full flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md flex items-center justify-center bg-saffron text-white font-serif font-bold text-xs">
+          <div className="flex items-center gap-2">
+            {/* Left: brand + info — tap to expand/collapse */}
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="flex items-center gap-2 flex-1 min-w-0 text-left"
+              aria-label={expanded ? 'Collapse panel' : 'Expand panel'}
+            >
+              <div className="w-6 h-6 rounded-md flex items-center justify-center bg-saffron text-white font-serif font-bold text-xs flex-shrink-0">
                 स
               </div>
-              <div className="text-left">
+              <div className="min-w-0">
                 {active ? (
                   <>
-                    <div className="text-[12px] font-semibold text-ink leading-none">
+                    <div className="text-[12px] font-semibold text-ink leading-none truncate">
                       {active.name}
                     </div>
                     <div className="text-[10px] text-ink-3 mt-0.5">
                       {clusters.length > 0
-                        ? `${clusters.length} active issue${clusters.length === 1 ? '' : 's'} this week`
+                        ? `${clusters.length} issue${clusters.length === 1 ? '' : 's'} this week`
                         : 'No reports yet'}
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="text-[12px] font-semibold text-ink leading-none">
-                      Sushaasan · Civic Intelligence
+                      Sushaasan
                     </div>
                     <div className="text-[10px] text-ink-3 mt-0.5">
-                      Tap a dot on the map to explore
+                      Tap any dot to explore
                     </div>
                   </>
                 )}
               </div>
-            </div>
-            <div className="text-ink-3 text-xs">
-              {expanded ? '▾' : '▴'}
-            </div>
+              <div className="text-ink-3 text-[10px] flex-shrink-0 ml-1">
+                {expanded ? '▾' : '▴'}
+              </div>
+            </button>
+
+            {/* Right: Add Report pill — permanently visible */}
+            <button
+              onClick={() => setReportOpen(true)}
+              className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full
+                         text-[11px] font-bold text-white
+                         shadow-[0_3px_14px_rgba(255,153,51,0.45)]
+                         active:scale-95 transition-transform"
+              style={{ background: 'linear-gradient(135deg,#FF9933,#e8891e)' }}
+              aria-label="Add a report"
+            >
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" strokeWidth="3"
+                   strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Report
+            </button>
           </div>
-        </button>
+        </div>
 
         {/* Expanded content */}
         {expanded && (

@@ -220,13 +220,29 @@ export function CitizenSheet() {
                 )}
               </div>
 
-              {/* CTA */}
-              <a
-                href={`/ward/${data.wardId}`}
-                className="block text-center py-3.5 px-4 rounded-2xl bg-saffron text-white font-semibold text-[14px] shadow-[0_4px_18px_rgba(255,153,51,0.35)] active:scale-95 transition-all"
-              >
-                See full ward report →
-              </a>
+              {/* CTAs */}
+              <div className="space-y-2.5">
+                <button
+                  onClick={() => {
+                    close()
+                    setTimeout(() => window.dispatchEvent(
+                      new CustomEvent('sushaasan:gov-sheet-open', { detail: { wardId: data.wardId } })
+                    ), 220)
+                  }}
+                  className="w-full text-center py-3.5 px-4 rounded-2xl
+                             bg-navy text-white font-semibold text-[14px]
+                             shadow-[0_4px_18px_rgba(11,31,58,0.25)]
+                             active:scale-95 transition-all block"
+                >
+                  📋 View Action Brief
+                </button>
+                <a
+                  href={`/ward/${data.wardId}`}
+                  className="block text-center py-3.5 px-4 rounded-2xl bg-saffron/10 border border-saffron/30 text-saffron-dark font-semibold text-[14px] active:scale-95 transition-all"
+                >
+                  See full ward report →
+                </a>
+              </div>
             </>
           )}
         </SheetScroller>
