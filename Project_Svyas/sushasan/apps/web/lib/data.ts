@@ -104,12 +104,12 @@ const CLUSTERS: Cluster[] = [
   {
     id: 'c1', ward_id: '46', issue_tag: 'traffic',
     centroid_text: 'Severe congestion at NIBM–Mohammadwadi junction during peak hours; ambulances blocked on multiple occasions this week.',
-    post_count: 34, severity_avg: 4.2, status: 'brief_prepared', updated_at: '2026-04-28T10:00:00Z',
+    post_count: 34, severity_avg: 4.2, status: 'shared_with_ward', updated_at: '2026-04-28T10:00:00Z',
   },
   {
     id: 'c2', ward_id: '46', issue_tag: 'water',
     centroid_text: 'Tribeca and Corinthians societies receiving only 30 minutes of supply daily; tanker prices have tripled over 2 weeks.',
-    post_count: 28, severity_avg: 4.5, status: 'shared_with_ward', updated_at: '2026-04-29T08:00:00Z',
+    post_count: 28, severity_avg: 4.5, status: 'under_review', updated_at: '2026-04-29T08:00:00Z',
   },
   {
     id: 'c4', ward_id: '46', issue_tag: 'traffic',
@@ -119,7 +119,7 @@ const CLUSTERS: Cluster[] = [
   {
     id: 'c3', ward_id: '47', issue_tag: 'garbage',
     centroid_text: 'Overflow at 3 collection points near Bliss Bakery and the NIBM Road service lane — uncleared for 4+ days.',
-    post_count: 19, severity_avg: 3.8, status: 'under_review', updated_at: '2026-04-28T16:00:00Z',
+    post_count: 19, severity_avg: 3.8, status: 'in_progress', updated_at: '2026-04-28T16:00:00Z',
   },
   {
     id: 'c6', ward_id: '47', issue_tag: 'traffic',
@@ -129,7 +129,7 @@ const CLUSTERS: Cluster[] = [
   {
     id: 'c5', ward_id: '43', issue_tag: 'electricity',
     centroid_text: 'Streetlights out on Wanowrie–Salunke Vihar stretch for 6 days; residents reporting safety concerns at night.',
-    post_count: 14, severity_avg: 3.2, status: 'signal_detected', updated_at: '2026-04-26T18:00:00Z',
+    post_count: 14, severity_avg: 3.2, status: 'resolved', updated_at: '2026-04-26T18:00:00Z',
   },
   {
     id: 'c7', ward_id: '43', issue_tag: 'water',
