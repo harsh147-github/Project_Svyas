@@ -118,7 +118,10 @@ export function AddReportClient() {
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     setVoiceSupported(!!SR)
-    isIOS.current = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+    // Both iOS Safari and macOS Safari don't support continuous + interimResults
+    const ua = navigator.userAgent
+    isIOS.current = /iPhone|iPad|iPod/i.test(ua) ||
+      (/Safari/i.test(ua) && !/Chrome|Chromium|Edg/i.test(ua))
   }, [])
 
   function handleTextChange(e: ChangeEvent<HTMLTextAreaElement>) {
