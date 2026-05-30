@@ -1,5 +1,7 @@
 'use client'
 
+import { InlineReportSheet } from './InlineReportSheet'
+
 /**
  * SidePanels — left (citizen) + right (government) analysis panels
  * that update as the user hovers / taps wards on the map.
@@ -783,6 +785,7 @@ export function MobilePanel() {
   const full = useWardFull(active?.wardnum)
 
   const [expanded, setExpanded] = useState(false)
+  const [reportOpen, setReportOpen] = useState(false)
 
   // Auto-expand when a ward is selected
   useEffect(() => {
@@ -794,11 +797,11 @@ export function MobilePanel() {
       className="md:hidden absolute bottom-0 left-0 right-0 z-40
                  pointer-events-auto"
     >
-      {/* ── Orange "Add Report" CTA — only when no ward selected ── */}
+      {/* ── Orange "Add Report" CTA — opens inline sheet, no page nav ── */}
       {!active && (
-        <a
-          href="/add-report"
-          className="block w-full pointer-events-auto active:scale-[0.99] transition-transform"
+        <button
+          onClick={() => setReportOpen(true)}
+          className="block w-full pointer-events-auto active:scale-[0.99] transition-transform text-left"
           style={{
             background: 'linear-gradient(135deg, #FF9933 0%, #e8891e 100%)',
             boxShadow: '0 -4px 24px rgba(255,153,51,0.35)',
@@ -821,8 +824,11 @@ export function MobilePanel() {
               </svg>
             </div>
           </div>
-        </a>
+        </button>
       )}
+
+      {/* Inline report sheet — fixed overlay, slides up over map */}
+      <InlineReportSheet isOpen={reportOpen} onClose={() => setReportOpen(false)} />
 
       {/* Slide-up sheet */}
       <div
