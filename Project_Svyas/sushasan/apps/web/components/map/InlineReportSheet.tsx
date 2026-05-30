@@ -239,34 +239,29 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
 
   return (
     <div
-      className={`fixed inset-0 z-[55] ${isDesktop ? 'flex items-center justify-center' : 'flex flex-col justify-end'}`}
+      className={`fixed inset-0 z-[55] flex flex-col justify-end ${isDesktop ? 'items-center' : ''}`}
       style={{
         pointerEvents: isOpen ? 'auto' : 'none',
-        background: `rgba(0,0,0,${visible ? (isDesktop ? '0.35' : '0.28') : '0'})`,
-        backdropFilter: visible ? 'blur(10px)' : 'none',
-        WebkitBackdropFilter: visible ? 'blur(10px)' : 'none',
-        transition: `background 0.35s ${EASE}, backdrop-filter 0.35s ${EASE}`,
+        background: `rgba(0,0,0,${visible ? '0.10' : '0'})`,
+        backdropFilter: visible ? 'blur(3px)' : 'none',
+        WebkitBackdropFilter: visible ? 'blur(3px)' : 'none',
+        transition: `background 0.3s ${EASE}, backdrop-filter 0.3s ${EASE}`,
       }}
       onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
     >
-      {/* Sheet ───────────────────────────────────────────────────────────────── */}
+      {/* Sheet — slides from bottom on both mobile and desktop ──────────────── */}
       <div
         style={{
-          background: '#f5f5f7',
-          borderRadius: isDesktop ? 28 : '28px 28px 0 0',
-          boxShadow: isDesktop
-            ? '0 8px 40px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.10)'
-            : '0 -1px 0 rgba(0,0,0,0.07), 0 -24px 80px rgba(0,0,0,0.14)',
-          maxHeight: isDesktop ? '82vh' : '78vh',
-          maxWidth: isDesktop ? 580 : undefined,
+          background: '#ffffff',
+          borderRadius: '24px 24px 0 0',
+          boxShadow: '0 -2px 20px rgba(0,0,0,0.08), 0 -1px 0 rgba(0,0,0,0.06)',
+          maxHeight: isDesktop ? '55vh' : '70vh',
+          maxWidth: isDesktop ? 640 : undefined,
           width: isDesktop ? '100%' : undefined,
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch' as any,
-          transform: visible
-            ? 'translateY(0) scale(1)'
-            : isDesktop ? 'translateY(16px) scale(0.97)' : 'translateY(100%)',
-          opacity: isDesktop ? (visible ? 1 : 0) : 1,
-          transition: `transform 0.44s ${SPRING}, opacity 0.3s ${EASE}`,
+          transform: `translateY(${visible ? '0' : '100%'})`,
+          transition: `transform 0.44s ${SPRING}`,
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -387,7 +382,7 @@ function ComposeView({
         fontSize: 15, lineHeight: 1.5, color: '#86868b', margin: '4px 4px 0',
         fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
       }}>
-        Speak or type freely — the more detail, the better the AI output.
+        Just describe it freely — Sushaasan&apos;s AI synthesiser turns it into a structured brief for the corporator.
       </p>
 
       {/* Textarea card ─────────────────────────────────────────────────────── */}
