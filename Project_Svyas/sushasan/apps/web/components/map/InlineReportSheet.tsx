@@ -4,7 +4,7 @@ import { ChangeEvent, useEffect, useRef, useState } from 'react'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const VOICE_BARS = [5, 9, 16, 22, 14, 20, 9, 15, 6]
+const VOICE_BARS = [4, 8, 14, 20, 12, 18, 8, 14, 5]
 
 const LANGS = [
   { code: 'en-IN', short: 'EN',  whisper: 'en' },
@@ -12,7 +12,6 @@ const LANGS = [
   { code: 'mr-IN', short: 'मर',  whisper: 'mr' },
 ]
 
-// [lat, lng, name]
 const CENTROIDS: Record<string, [number, number, string]> = {
   '46': [18.4655, 73.9010, 'NIBM–Mohammadwadi'],
   '47': [18.4489, 73.8780, 'Kondhwa Budruk'],
@@ -44,6 +43,20 @@ const ISSUE_EMOJI:  Record<string, string> = { traffic: '🚗', water: '💧', e
 const ISSUE_COLOR:  Record<string, string> = { traffic: '#EF4444', water: '#3B82F6', electricity: '#F59E0B', garbage: '#10B981', other: '#8B5CF6' }
 const ISSUE_LABEL:  Record<string, string> = { traffic: 'Traffic', water: 'Water', electricity: 'Electricity', garbage: 'Garbage', other: 'Other' }
 const SEV_LABEL = ['', 'Minor', 'Recurring', 'Significant', 'Serious', 'Emergency']
+
+// Apple-spec design tokens ────────────────────────────────────────────────────
+
+const EASE = 'cubic-bezier(0.25, 0.1, 0.25, 1)'
+const SPRING = 'cubic-bezier(0.16, 1, 0.3, 1)'
+
+const CARD: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.85)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  borderRadius: 18,
+  border: '1px solid rgba(0,0,0,0.05)',
+  boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -82,7 +95,6 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const isIOS          = useRef(false)
   const closingTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Detect voice capabilities once
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     setVoiceOk(!!SR)
@@ -91,17 +103,12 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
       (/Safari/i.test(navigator.userAgent) && !/Chrome|Chromium|Edg/i.test(navigator.userAgent))
   }, [])
 
-  // Animate in + reset when opened
   useEffect(() => {
     if (!isOpen) return
     if (closingTimer.current) { clearTimeout(closingTimer.current); closingTimer.current = null }
-    // Reset
     setText(''); setResult(null); setSubmitError(false)
-    voiceActiveRef.current = false
-    setVoiceActive(false); setTranscribing(false)
-    // Spring in
+    voiceActiveRef.current = false; setVoiceActive(false); setTranscribing(false)
     requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
-    // GPS
     setLoc({ kind: 'detecting' })
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -113,29 +120,22 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
         () => setLoc({ kind: 'denied' }),
         { timeout: 8000, maximumAge: 60_000 }
       )
-    } else {
-      setLoc({ kind: 'denied' })
-    }
-    setTimeout(() => textareaRef.current?.focus(), 440)
+    } else { setLoc({ kind: 'denied' }) }
+    setTimeout(() => textareaRef.current?.focus(), 460)
   }, [isOpen])
 
   function handleClose() {
-    recognitionRef.current?.stop()
-    recorderRef.current?.stop()
-    voiceActiveRef.current = false
-    setVoiceActive(false)
+    recognitionRef.current?.stop(); recorderRef.current?.stop()
+    voiceActiveRef.current = false; setVoiceActive(false)
     setVisible(false)
-    closingTimer.current = setTimeout(onClose, 380)
+    closingTimer.current = setTimeout(onClose, 420)
   }
 
   function handleTextChange(e: ChangeEvent<HTMLTextAreaElement>) {
     setText(e.target.value)
-    const el = e.target
-    el.style.height = 'auto'
+    const el = e.target; el.style.height = 'auto'
     el.style.height = Math.min(el.scrollHeight, 180) + 'px'
   }
-
-  // ── Voice: browser SpeechRecognition ─────────────────────────────────────
 
   function startBrowserRecognition(lang: string) {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -160,8 +160,6 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
     r.start(); recognitionRef.current = r
   }
 
-  // ── Voice: Whisper via MediaRecorder ────────────────────────────────────
-
   async function startWhisperRecording() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -171,8 +169,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
       const chunks: BlobPart[] = []
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
       recorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop())
-        setTranscribing(true)
+        stream.getTracks().forEach(t => t.stop()); setTranscribing(true)
         const blob = new Blob(chunks, { type: mt })
         const lang = LANGS.find(l => l.code === voiceLang)?.whisper ?? 'en'
         const fname = mt.includes('mp4') ? 'audio.mp4' : 'audio.webm'
@@ -181,9 +178,9 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
         form.append('language', lang)
         try {
           const ctrl = new AbortController()
-          const timeout = setTimeout(() => ctrl.abort(), 30_000)
+          const t = setTimeout(() => ctrl.abort(), 30_000)
           const res = await fetch('/api/transcribe', { method: 'POST', body: form, signal: ctrl.signal })
-          clearTimeout(timeout)
+          clearTimeout(t)
           const data = await res.json() as { text?: string }
           if (data.text?.trim()) {
             setText(prev => prev ? `${prev} ${data.text!.trim()}` : data.text!.trim())
@@ -192,9 +189,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
               textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 180) + 'px'
             }
           }
-        } catch { /**/ } finally {
-          setTranscribing(false); setVoiceActive(false); voiceActiveRef.current = false
-        }
+        } catch { /**/ } finally { setTranscribing(false); setVoiceActive(false); voiceActiveRef.current = false }
       }
       recorder.start(); recorderRef.current = recorder
     } catch { voiceActiveRef.current = false; setVoiceActive(false) }
@@ -205,8 +200,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
 
   function toggleVoice() {
     if (voiceActive) {
-      voiceActiveRef.current = false
-      recorderRef.current?.stop(); recognitionRef.current?.stop()
+      voiceActiveRef.current = false; recorderRef.current?.stop(); recognitionRef.current?.stop()
       setVoiceActive(false); return
     }
     const doWhisper = !voiceOk || useWhisper
@@ -214,8 +208,6 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
     voiceActiveRef.current = true; setVoiceActive(true)
     if (doWhisper) startWhisperRecording(); else startBrowserRecognition(voiceLang)
   }
-
-  // ── Submit ────────────────────────────────────────────────────────────────
 
   async function handleSubmit() {
     if (text.trim().length < 5 || submitting || !!result) return
@@ -240,80 +232,96 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const canSubmit = text.trim().length >= 5 && !submitting && !result
   const showCursor = text === '' && !focused && !voiceActive && !transcribing
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
   return (
     <div
       className="fixed inset-0 z-[55] flex flex-col justify-end"
       style={{
         pointerEvents: isOpen ? 'auto' : 'none',
-        background: `rgba(0,0,0,${visible ? '0.20' : '0'})`,
-        backdropFilter: visible ? 'blur(3px)' : 'none',
-        WebkitBackdropFilter: visible ? 'blur(3px)' : 'none',
-        transition: 'background 0.3s ease, backdrop-filter 0.3s ease',
+        background: `rgba(0,0,0,${visible ? '0.28' : '0'})`,
+        backdropFilter: visible ? 'blur(10px)' : 'none',
+        WebkitBackdropFilter: visible ? 'blur(10px)' : 'none',
+        transition: `background 0.35s ${EASE}, backdrop-filter 0.35s ${EASE}`,
       }}
       onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
     >
-      {/* Sheet */}
+      {/* Sheet ───────────────────────────────────────────────────────────────── */}
       <div
         style={{
-          background: '#ffffff',
-          borderRadius: '22px 22px 0 0',
-          boxShadow: '0 -1px 0 rgba(0,0,0,0.06), 0 -8px 50px rgba(0,0,0,0.12)',
+          background: '#f5f5f7',  /* Apple bg-secondary under content */
+          borderRadius: '28px 28px 0 0',
+          boxShadow: '0 -1px 0 rgba(0,0,0,0.07), 0 -24px 80px rgba(0,0,0,0.14)',
           maxHeight: '78vh',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch' as any,
           transform: `translateY(${visible ? '0' : '100%'})`,
-          transition: 'transform 0.42s cubic-bezier(0.16, 1, 0.3, 1)',
+          transition: `transform 0.48s ${SPRING}`,
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle */}
         <div className="flex justify-center pt-3">
-          <div className="w-9 h-[5px] rounded-full" style={{ background: 'rgba(0,0,0,0.10)' }} />
+          <div style={{ width: 36, height: 5, borderRadius: 999, background: 'rgba(0,0,0,0.12)' }} />
         </div>
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-3 pb-3">
+        {/* Header ─────────────────────────────────────────────────────────── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px 10px' }}>
           <div>
-            <div className="text-[10px] font-bold tracking-[0.22em] uppercase"
-                 style={{ color: 'rgba(10,10,10,0.35)' }}>
+            <div style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.20em',
+              textTransform: 'uppercase', color: 'rgba(29,29,31,0.40)',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+            }}>
               Report an issue · Pune
             </div>
-            <div className="flex items-center gap-1.5 mt-[5px]">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
               {loc.kind === 'detecting' && <>
-                <span className="w-[7px] h-[7px] rounded-full flex-shrink-0 animate-pulse"
-                      style={{ background: 'rgba(10,10,10,0.25)' }} />
-                <span className="text-[12px]" style={{ color: 'rgba(10,10,10,0.45)' }}>Finding your ward…</span>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'rgba(29,29,31,0.22)',
+                               flexShrink: 0, animation: 'pulse 1.5s ease infinite' }} />
+                <span style={{ fontSize: 13, color: '#86868b', fontFamily: '-apple-system, sans-serif' }}>
+                  Finding your ward…
+                </span>
               </>}
               {loc.kind === 'found' && <>
-                <span className="w-[7px] h-[7px] rounded-full flex-shrink-0" style={{ background: '#138808' }} />
-                <span className="text-[12px] font-medium" style={{ color: '#138808' }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#34c759', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#34c759',
+                               fontFamily: '-apple-system, sans-serif' }}>
                   Ward {loc.wardId} · {loc.wardName}
                 </span>
               </>}
               {loc.kind === 'denied' && <>
-                <span className="w-[7px] h-[7px] rounded-full flex-shrink-0" style={{ background: '#FF9933' }} />
-                <span className="text-[12px]" style={{ color: 'rgba(10,10,10,0.45)' }}>Location unavailable</span>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF9933', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: '#86868b', fontFamily: '-apple-system, sans-serif' }}>
+                  Location unavailable
+                </span>
               </>}
             </div>
           </div>
+
+          {/* Close button — circular, 44px touch target */}
           <button
             onClick={handleClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
-            style={{ background: 'rgba(0,0,0,0.06)' }}
             aria-label="Close"
+            style={{
+              width: 32, height: 32, borderRadius: '50%',
+              background: 'rgba(0,0,0,0.07)',
+              border: 'none', cursor: 'pointer', display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              transition: `all 0.2s ${EASE}`,
+              minWidth: 44, minHeight: 44,   /* 44px touch target */
+              margin: '-6px',                 /* optical offset so it looks 32px */
+            }}
           >
-            <svg viewBox="0 0 24 24" className="w-[14px] h-[14px]" fill="none"
-                 stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <svg viewBox="0 0 24 24" style={{ width: 14, height: 14 }} fill="none"
+                 stroke="rgba(0,0,0,0.5)" strokeWidth="2.5" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
-        {/* ── Content ───────────────────────────────────────────────── */}
-        {result
-          ? <SuccessView result={result} onDone={handleClose}
+        {/* Content card ────────────────────────────────────────────────────── */}
+        <div style={{ padding: '4px 16px 16px' }}>
+          {result
+            ? <SuccessView result={result} onDone={handleClose}
                 onSeeMap={() => {
                   const e = CENTROIDS[result.wardId]
                   if (e) window.dispatchEvent(new CustomEvent('sushaasan:auto-select-ward', {
@@ -321,20 +329,21 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
                   }))
                   handleClose()
                 }} />
-          : <ComposeView
-              text={text} textareaRef={textareaRef} showCursor={showCursor}
-              onTextChange={handleTextChange}
-              onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-              voiceActive={voiceActive} transcribing={transcribing}
-              voiceLang={voiceLang} onLangChange={setVoiceLang}
-              onToggleVoice={toggleVoice} canSpeak={canSpeak}
-              useWhisper={useWhisper} canSubmit={canSubmit}
-              submitting={submitting} submitError={submitError}
-              onSubmit={handleSubmit}
-            />
-        }
+            : <ComposeView
+                text={text} textareaRef={textareaRef} showCursor={showCursor}
+                onTextChange={handleTextChange}
+                onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+                voiceActive={voiceActive} transcribing={transcribing}
+                voiceLang={voiceLang} onLangChange={setVoiceLang}
+                onToggleVoice={toggleVoice} canSpeak={canSpeak}
+                useWhisper={useWhisper} canSubmit={canSubmit}
+                submitting={submitting} submitError={submitError}
+                onSubmit={handleSubmit}
+              />
+          }
+        </div>
 
-        <div style={{ height: 'env(safe-area-inset-bottom, 10px)' }} />
+        <div style={{ height: 'env(safe-area-inset-bottom, 12px)' }} />
       </div>
     </div>
   )
@@ -359,26 +368,35 @@ function ComposeView({
   onSubmit: () => void
 }) {
   return (
-    <div className="px-5 pb-3 space-y-3">
-      {/* Prompt */}
-      <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(10,10,10,0.45)' }}>
-        Speak or type freely — include as much detail as you can.
-        Sushaasan&apos;s AI synthesiser does the rest.
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+      {/* Hint — Apple text-secondary style */}
+      <p style={{
+        fontSize: 15, lineHeight: 1.5, color: '#86868b', margin: '4px 4px 0',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+      }}>
+        Speak or type freely — the more detail, the better the AI output.
       </p>
 
-      {/* Textarea */}
-      <div className="relative rounded-[16px] overflow-hidden"
-           style={{ border: '1.5px solid rgba(10,10,10,0.10)', background: 'rgba(10,10,10,0.025)' }}>
+      {/* Textarea card ─────────────────────────────────────────────────────── */}
+      <div style={{ ...CARD, position: 'relative', overflow: 'hidden' }}>
         {showCursor && (
-          <div className="absolute left-4 top-4 flex items-start pointer-events-none select-none">
-            <span className="text-[14px] leading-relaxed" style={{ color: 'rgba(10,10,10,0.22)' }}>
-              The water tanker hasn&apos;t come in 4 days…
+          <div style={{
+            position: 'absolute', left: 16, top: 16,
+            display: 'flex', alignItems: 'flex-start', pointerEvents: 'none', userSelect: 'none',
+          }}>
+            <span style={{ fontSize: 15, lineHeight: 1.5, color: 'rgba(29,29,31,0.22)',
+                           fontFamily: '-apple-system, sans-serif' }}>
+              The tanker hasn&apos;t come in 4 days…
             </span>
-            <span className="inline-block ml-[2px] mt-[2px] rounded-[1px] flex-shrink-0"
-                  style={{ width: 2, height: 17, background: 'rgba(255,153,51,0.55)',
-                    animation: 'cursor-blink 1s step-end infinite' }} />
+            <span style={{
+              display: 'inline-block', width: 2, height: 18, marginLeft: 2, marginTop: 1,
+              borderRadius: 1, background: 'rgba(255,153,51,0.60)',
+              animation: 'cursor-blink 1s step-end infinite', flexShrink: 0,
+            }} />
           </div>
         )}
+
         <textarea
           ref={textareaRef}
           value={text}
@@ -388,103 +406,180 @@ function ComposeView({
           placeholder=""
           rows={4}
           disabled={submitting || transcribing}
-          className="w-full px-4 pt-4 pb-4 text-[14px] leading-relaxed bg-transparent resize-none focus:outline-none"
-          style={{ minHeight: 110, color: '#0a0a0a' }}
+          style={{
+            width: '100%', padding: '16px', paddingBottom: 16,
+            fontSize: 15, lineHeight: 1.5, color: '#1d1d1f',
+            background: 'transparent', border: 'none', outline: 'none',
+            resize: 'none', minHeight: 112, boxSizing: 'border-box',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+          }}
         />
+
         {text.length > 0 && (
-          <div className="absolute bottom-2.5 right-3.5 text-[11px]"
-               style={{ color: 'rgba(10,10,10,0.22)' }}>{text.length}</div>
+          <div style={{
+            position: 'absolute', bottom: 10, right: 12,
+            fontSize: 11, color: 'rgba(29,29,31,0.25)',
+            fontFamily: '-apple-system, sans-serif',
+          }}>
+            {text.length}
+          </div>
         )}
       </div>
 
-      {/* Voice area */}
+      {/* Voice card ─────────────────────────────────────────────────────────── */}
       {canSpeak && (
-        transcribing ? (
-          <div className="flex items-center justify-center gap-2.5 py-2.5">
-            <span className="w-5 h-5 rounded-full border-2 animate-spin"
-                  style={{ borderColor: 'rgba(255,153,51,0.2)', borderTopColor: '#FF9933' }} />
-            <span className="text-[13px] font-medium" style={{ color: 'rgba(10,10,10,0.5)' }}>
-              Transcribing with AI…
-            </span>
-          </div>
-        ) : voiceActive ? (
-          <div className="flex flex-col items-center gap-2.5 py-1">
-            <div className="flex items-end justify-center gap-[3px]" style={{ height: 24 }}>
-              {VOICE_BARS.map((h, i) => (
-                <div key={i} className="rounded-full" style={{
-                  width: 3, height: h, background: '#f87171',
-                  transformOrigin: 'bottom center',
-                  animation: `voice-bar 0.42s ease-in-out ${(i * 0.053).toFixed(3)}s infinite alternate`,
-                }} />
-              ))}
+        <div style={{ ...CARD, padding: '14px 16px' }}>
+          {transcribing ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '6px 0' }}>
+              <div style={{
+                width: 18, height: 18, borderRadius: '50%',
+                border: '2px solid rgba(255,153,51,0.2)',
+                borderTopColor: '#FF9933',
+                animation: 'spin 0.8s linear infinite',
+              }} />
+              <span style={{ fontSize: 14, color: '#86868b', fontFamily: '-apple-system, sans-serif' }}>
+                Transcribing…
+              </span>
             </div>
-            <button onClick={onToggleVoice}
-                    className="flex items-center gap-2 px-5 py-2 rounded-full text-white font-semibold text-[13px] active:scale-95 transition-transform"
-                    style={{ background: '#EF4444', boxShadow: '0 4px 14px rgba(239,68,68,0.28)' }}>
-              <span className="w-2.5 h-2.5 rounded-[2px] bg-white flex-shrink-0" />
-              Stop recording
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <button onClick={onToggleVoice}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-[12px] font-semibold text-[13px] active:scale-95 transition-transform"
-                    style={{ background: 'rgba(10,10,10,0.05)', border: '1.5px solid rgba(10,10,10,0.10)', color: '#0a0a0a' }}>
-              <svg viewBox="0 0 24 24" className="w-[15px] h-[15px]" fill="none"
-                   stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" />
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                <line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
-              </svg>
-              Speak
-            </button>
-            <div className="flex gap-1.5 flex-1">
-              {LANGS.map(l => (
-                <button key={l.code} onClick={() => onLangChange(l.code)}
-                        className="flex-1 py-2.5 rounded-[10px] text-[12px] font-bold active:scale-95 transition-all"
-                        style={voiceLang === l.code ? {
-                          background: 'rgba(255,153,51,0.12)', color: '#c8741a',
-                          border: '1.5px solid rgba(255,153,51,0.35)',
-                        } : {
-                          background: 'rgba(10,10,10,0.04)', color: 'rgba(10,10,10,0.38)',
-                          border: '1.5px solid transparent',
-                        }}>
-                  {l.short}
-                </button>
-              ))}
+
+          ) : voiceActive ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 22 }}>
+                {VOICE_BARS.map((h, i) => (
+                  <div key={i} style={{
+                    width: 3, height: h, borderRadius: 999, background: '#ff3b30',
+                    transformOrigin: 'bottom center',
+                    animation: `voice-bar 0.42s ease-in-out ${(i * 0.053).toFixed(3)}s infinite alternate`,
+                  }} />
+                ))}
+              </div>
+              {/* Stop button — pill, Apple red */}
+              <button
+                onClick={onToggleVoice}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '10px 20px', borderRadius: 980,
+                  background: '#ff3b30', color: '#fff',
+                  fontWeight: 600, fontSize: 14, border: 'none', cursor: 'pointer',
+                  fontFamily: '-apple-system, sans-serif',
+                  transition: `all 0.2s ${EASE}`,
+                  boxShadow: '0 4px 14px rgba(255,59,48,0.30)',
+                  minHeight: 44,
+                }}
+              >
+                <span style={{ width: 10, height: 10, borderRadius: 2, background: '#fff', flexShrink: 0 }} />
+                Stop recording
+              </button>
             </div>
-          </div>
-        )
+
+          ) : (
+            /* Idle voice controls */
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Mic button — pill, secondary style */}
+              <button
+                onClick={onToggleVoice}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '10px 18px', borderRadius: 980,
+                  background: 'rgba(29,29,31,0.06)',
+                  border: '1px solid rgba(29,29,31,0.09)',
+                  color: '#1d1d1f', fontWeight: 600, fontSize: 14,
+                  cursor: 'pointer', fontFamily: '-apple-system, sans-serif',
+                  transition: `all 0.2s ${EASE}`, minHeight: 44,
+                }}
+              >
+                <svg viewBox="0 0 24 24" style={{ width: 15, height: 15 }} fill="none"
+                     stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
+                </svg>
+                Speak
+              </button>
+
+              {/* Language pills */}
+              <div style={{ display: 'flex', gap: 6, flex: 1 }}>
+                {LANGS.map(l => (
+                  <button
+                    key={l.code}
+                    onClick={() => onLangChange(l.code)}
+                    style={{
+                      flex: 1, padding: '10px 4px', borderRadius: 980,
+                      fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                      fontFamily: '-apple-system, sans-serif',
+                      transition: `all 0.2s ${EASE}`, minHeight: 44,
+                      ...(voiceLang === l.code ? {
+                        background: 'rgba(255,153,51,0.12)',
+                        color: '#c8741a',
+                        border: '1.5px solid rgba(255,153,51,0.35)',
+                      } : {
+                        background: 'rgba(29,29,31,0.04)',
+                        color: 'rgba(29,29,31,0.38)',
+                        border: '1.5px solid transparent',
+                      }),
+                    }}
+                  >
+                    {l.short}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {useWhisper && !voiceActive && !transcribing && (
+            <p style={{
+              fontSize: 11, color: '#34c759', fontWeight: 500,
+              marginTop: 10, marginBottom: 0,
+              fontFamily: '-apple-system, sans-serif',
+            }}>
+              ✦ Sarvam / Whisper AI — optimised for Indian languages
+            </p>
+          )}
+        </div>
       )}
 
-      {useWhisper && !voiceActive && !transcribing && (
-        <p className="text-[11px] font-medium" style={{ color: '#138808' }}>
-          ✦ Sarvam / Whisper AI — optimised for Indian languages
-        </p>
-      )}
-
-      {/* Submit */}
+      {/* Submit — PRIMARY ACTION, pill shape ───────────────────────────────── */}
       <button
         onClick={onSubmit}
         disabled={!canSubmit}
-        className="w-full py-[14px] rounded-[14px] font-bold text-[15px] transition-all active:scale-[0.99]"
-        style={canSubmit ? {
-          background: '#0a0a0a', color: '#ffffff',
-          boxShadow: '0 4px 18px rgba(0,0,0,0.18)',
-        } : {
-          background: 'rgba(10,10,10,0.07)', color: 'rgba(10,10,10,0.25)', cursor: 'not-allowed',
+        style={{
+          width: '100%', padding: '15px 24px',
+          borderRadius: 980,          /* Apple pill */
+          fontWeight: 600, fontSize: 16, border: 'none', cursor: canSubmit ? 'pointer' : 'not-allowed',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+          transition: `all 0.2s ${EASE}`,
+          ...(canSubmit ? {
+            background: '#1d1d1f',
+            color: '#f5f5f7',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.20)',
+            transform: 'scale(1)',
+          } : {
+            background: 'rgba(29,29,31,0.08)',
+            color: 'rgba(29,29,31,0.28)',
+          }),
         }}
+        onMouseEnter={(e) => { if (canSubmit) (e.target as HTMLButtonElement).style.transform = 'scale(1.02)' }}
+        onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.transform = 'scale(1)' }}
       >
         {submitting ? (
-          <span className="flex items-center justify-center gap-2">
-            <span className="w-4 h-4 rounded-full border-2 border-t-white border-white/25 animate-spin" />
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <span style={{
+              width: 16, height: 16, borderRadius: '50%',
+              border: '2px solid rgba(245,245,247,0.25)', borderTopColor: '#f5f5f7',
+              animation: 'spin 0.8s linear infinite', display: 'inline-block',
+            }} />
             AI is reading this…
           </span>
         ) : 'Submit report →'}
       </button>
 
       {submitError && (
-        <p className="text-center text-[12px] text-red-500">Something went wrong — please try again.</p>
+        <p style={{
+          textAlign: 'center', fontSize: 13, color: '#ff3b30', margin: 0,
+          fontFamily: '-apple-system, sans-serif',
+        }}>
+          Something went wrong — please try again.
+        </p>
       )}
     </div>
   )
@@ -500,69 +595,113 @@ function SuccessView({ result, onDone, onSeeMap }: {
   const label = ISSUE_LABEL[result.issueTag] ?? result.issueTag
 
   return (
-    <div className="px-5 pb-3">
-      {/* Emoji ring */}
-      <div className="flex flex-col items-center mb-5">
-        <div className="w-[76px] h-[76px] rounded-full flex items-center justify-center text-[38px]"
-             style={{
-               background: `${color}12`, border: `2px solid ${color}35`,
-               boxShadow: `0 0 0 8px ${color}08, 0 0 0 16px ${color}04`,
-             }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 4 }}>
+
+      {/* Emoji ring — Apple-depth layering */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '12px 0 4px' }}>
+        <div style={{
+          width: 80, height: 80, borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 38,
+          background: `${color}12`,
+          border: `2px solid ${color}35`,
+          boxShadow: `0 0 0 8px ${color}08, 0 0 0 16px ${color}04`,
+        }}>
           {emoji}
         </div>
-        <div className="font-serif text-[22px] font-bold mt-4 leading-none" style={{ color: '#0a0a0a' }}>
-          Signal received.
-        </div>
-        <div className="text-[12px] mt-1.5" style={{ color: 'rgba(10,10,10,0.45)' }}>
-          {label} · Ward {result.wardId} · {result.wardName}
+        <div>
+          <div style={{
+            fontSize: 22, fontWeight: 600, color: '#1d1d1f', textAlign: 'center', lineHeight: 1.2,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+          }}>
+            Signal received.
+          </div>
+          <div style={{
+            fontSize: 13, color: '#86868b', textAlign: 'center', marginTop: 4,
+            fontFamily: '-apple-system, sans-serif',
+          }}>
+            {label} · Ward {result.wardId} · {result.wardName}
+          </div>
         </div>
       </div>
 
-      {/* Severity bar */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10px] font-bold tracking-[0.18em] uppercase"
-                style={{ color: 'rgba(10,10,10,0.35)' }}>Severity</span>
-          <span className="text-[11px] font-bold" style={{ color }}>
+      {/* Severity — in a card */}
+      <div style={{ ...CARD, padding: '14px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 700, letterSpacing: '0.18em',
+            textTransform: 'uppercase', color: 'rgba(29,29,31,0.38)',
+            fontFamily: '-apple-system, sans-serif',
+          }}>Severity</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color, fontFamily: '-apple-system, sans-serif' }}>
             {SEV_LABEL[result.severity] ?? ''}
           </span>
         </div>
-        <div className="flex gap-[5px]">
+        <div style={{ display: 'flex', gap: 4 }}>
           {[1,2,3,4,5].map(i => (
-            <div key={i} className="flex-1 h-[7px] rounded-full"
-                 style={{ background: i <= result.severity ? color : `${color}18` }} />
+            <div key={i} style={{
+              flex: 1, height: 7, borderRadius: 999,
+              background: i <= result.severity ? color : `${color}18`,
+              transition: `background 0.3s ${EASE}`,
+            }} />
           ))}
         </div>
       </div>
 
-      {/* AI summary */}
+      {/* AI summary — in a card */}
       {result.civicAsk && (
-        <div className="rounded-[14px] p-3.5 mb-4"
-             style={{ background: `${color}0A`, border: `1px solid ${color}22` }}>
-          <div className="text-[10px] font-bold tracking-[0.18em] uppercase mb-1.5" style={{ color }}>
+        <div style={{ ...CARD, padding: '14px 16px', background: `${color}0A`, borderColor: `${color}22` }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',
+            textTransform: 'uppercase', color, marginBottom: 6,
+            fontFamily: '-apple-system, sans-serif',
+          }}>
             What Sushaasan AI understood
           </div>
-          <div className="text-[13px] leading-relaxed" style={{ color: '#0a0a0a' }}>
+          <div style={{
+            fontSize: 14, lineHeight: 1.5, color: '#1d1d1f',
+            fontFamily: '-apple-system, sans-serif',
+          }}>
             {result.civicAsk}
           </div>
         </div>
       )}
 
-      {/* Action buttons */}
-      <div className="flex gap-2.5">
-        <button onClick={onSeeMap}
-                className="flex-1 py-[13px] rounded-[14px] font-bold text-[14px] text-white active:scale-[0.98] transition-transform"
-                style={{ background: color, boxShadow: `0 6px 20px ${color}40` }}>
+      {/* Action buttons — pill primary + pill secondary, Apple pattern */}
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button
+          onClick={onSeeMap}
+          style={{
+            flex: 1, padding: '14px 20px', borderRadius: 980,
+            background: color, color: '#fff',
+            fontWeight: 600, fontSize: 15, border: 'none', cursor: 'pointer',
+            fontFamily: '-apple-system, sans-serif',
+            transition: `all 0.2s ${EASE}`,
+            boxShadow: `0 6px 20px ${color}40`,
+            minHeight: 52,
+          }}
+        >
           See on map →
         </button>
-        <button onClick={onDone}
-                className="flex-1 py-[13px] rounded-[14px] font-bold text-[14px] active:scale-[0.98] transition-transform"
-                style={{ background: 'rgba(10,10,10,0.06)', color: '#0a0a0a', border: '1.5px solid rgba(10,10,10,0.10)' }}>
+        <button
+          onClick={onDone}
+          style={{
+            flex: 1, padding: '14px 20px', borderRadius: 980,
+            background: 'rgba(29,29,31,0.07)', color: '#1d1d1f',
+            fontWeight: 600, fontSize: 15,
+            border: '1.5px solid rgba(29,29,31,0.10)', cursor: 'pointer',
+            fontFamily: '-apple-system, sans-serif',
+            transition: `all 0.2s ${EASE}`,
+            minHeight: 52,
+          }}
+        >
           Done
         </button>
       </div>
 
-      <p className="text-center text-[11px] mt-4" style={{ color: 'rgba(10,10,10,0.28)' }}>
+      <p style={{
+        textAlign: 'center', fontSize: 11, color: 'rgba(29,29,31,0.30)', margin: '0 0 4px',
+        fontFamily: '-apple-system, sans-serif',
+      }}>
         Identity never stored · Visible on map within 24h
       </p>
     </div>
