@@ -3,6 +3,24 @@
  * All ward + issue + solution data for the Tribeca/NIBM/Wanowrie pilot.
  */
 
+/**
+ * WARD_NAME_OVERRIDES — canonical Pune ward names for IDs not present in WARDS array.
+ * Used by API routes and map layers to resolve ward names from GeoJSON wardnum fields.
+ * Add entries here as new wards are onboarded into the data pipeline.
+ */
+export const WARD_NAME_OVERRIDES: Record<string, string> = {
+  '8':  'Ganesh Peth',
+  '14': 'Rasta Peth',
+  '15': 'Kasba Peth',
+  '34': 'Kothrud',
+  '35': 'Karve Nagar',
+  '36': 'Bavdhan',
+  '37': 'Warje',
+  '38': 'Ambegaon-Katraj',
+  '39': 'Dhankawadi',
+  '53': 'Dhanori',
+}
+
 export type Ward = {
   id: string
   name: string
