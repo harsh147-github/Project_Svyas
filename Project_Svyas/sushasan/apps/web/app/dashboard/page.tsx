@@ -160,7 +160,7 @@ export default async function DashboardPage() {
             <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-2">
               Pune civic pilots
             </div>
-            <div className="grid sm:grid-cols-3 gap-3">
+            <div className="grid sm:grid-cols-3 gap-3 stagger-children">
               {[
                 {
                   href:    '/dashboard/nibm',
@@ -288,7 +288,7 @@ export default async function DashboardPage() {
             { value: activeCount,    label: 'Being acted on',           sub: `${resolved} resolved · ${inProgress} in progress` },
             { value: fmt(totalCost), label: 'Estimated solution cost',  sub: 'across all open briefs' },
           ].map((k) => (
-            <div key={k.label} className="bg-white rounded-2xl border border-ink/8 shadow-sm p-5">
+            <div key={k.label} className="stat-card bg-white rounded-2xl border border-ink/8 shadow-sm p-5">
               <div className="font-serif text-3xl font-bold text-ink leading-none">{k.value}</div>
               <div className="text-[11px] font-medium text-ink-2 mt-2 leading-snug">{k.label}</div>
               <div className="text-[10px] text-ink-4 mt-1">{k.sub}</div>

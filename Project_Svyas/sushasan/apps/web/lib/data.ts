@@ -8,6 +8,25 @@
  * Used by API routes and map layers to resolve ward names from GeoJSON wardnum fields.
  * Add entries here as new wards are onboarded into the data pipeline.
  */
+export const ISSUE_TYPES = [
+  { id: 'traffic',      label: 'Traffic & Roads',      color: '#EF4444', icon: '🚗' },
+  { id: 'water',        label: 'Water Supply',          color: '#3B82F6', icon: '💧' },
+  { id: 'electricity',  label: 'Power & Lights',        color: '#F59E0B', icon: '⚡' },
+  { id: 'garbage',      label: 'Garbage & Drains',      color: '#10B981', icon: '🗑️' },
+  { id: 'other',        label: 'Other',                 color: '#8B5CF6', icon: '📌' },
+  // Extended categories (Week 4+ data pipeline)
+  { id: 'safety',       label: "Women's Safety",        color: '#FF6B9D', icon: '🛡️' },
+  { id: 'environment',  label: 'Environment',            color: '#2D8A4E', icon: '🌿' },
+  { id: 'drainage',     label: 'Drainage & Flooding',   color: '#1E6BAA', icon: '🌊' },
+  { id: 'transport',    label: 'Public Transport',       color: '#7C3AED', icon: '🚌' },
+  { id: 'encroachment', label: 'Encroachment',          color: '#D97706', icon: '⚠️' },
+  { id: 'stray',        label: 'Stray Animals',         color: '#A78BFA', icon: '🐕' },
+  { id: 'noise',        label: 'Noise Pollution',       color: '#EC4899', icon: '🔇' },
+  { id: 'toilets',      label: 'Public Toilets',        color: '#0891B2', icon: '🚻' },
+  { id: 'healthcare',   label: 'Healthcare',            color: '#DC2626', icon: '❤️‍🩹' },
+  { id: 'parks',        label: 'Parks & Playgrounds',   color: '#059669', icon: '🌳' },
+] as const
+
 export const WARD_NAME_OVERRIDES: Record<string, string> = {
   '8':  'Ganesh Peth',
   '14': 'Rasta Peth',
