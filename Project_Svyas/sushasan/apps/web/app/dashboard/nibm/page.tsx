@@ -4,6 +4,9 @@ import { NibmCorridorMap } from '@/components/nibm/NibmCorridorMap'
 import { ScrapedPostsGallery } from '@/components/nibm/ScrapedPostsGallery'
 import { ReferenceCases } from '@/components/nibm/ReferenceCases'
 import { FadeUp } from '@/components/ui/FadeUp'
+import { PriorityGauge } from '@/components/ward/PriorityGauge'
+import { IssueLifecycle } from '@/components/ward/IssueLifecycle'
+import { SeverityDots } from '@/components/ward/SeverityDots'
 
 export const metadata: Metadata = {
   title: 'NIBM Traffic Pilot — Sushaasan Solution Brief',
@@ -274,6 +277,19 @@ export default async function NIBMPilotPage() {
                     {solution?.feasibility_score ?? 8.7}/10
                   </div>
                   <div className="text-[10px] text-ink-3 mt-1">Feasibility score</div>
+                </div>
+              </div>
+
+              {/* Priority gauge + lifecycle pipeline */}
+              <div className="flex flex-wrap items-center gap-6 pt-3 border-t border-ink/6">
+                <PriorityGauge score={87} />
+                <div className="flex flex-col gap-1">
+                  <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-ink/40">Pipeline status</span>
+                  <IssueLifecycle currentStage="in_progress" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-ink/40">Severity</span>
+                  <SeverityDots severity={4} size="md" />
                 </div>
               </div>
             </div>

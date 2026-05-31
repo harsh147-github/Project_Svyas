@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { PriorityGauge } from '@/components/ward/PriorityGauge'
+import { IssueLifecycle } from '@/components/ward/IssueLifecycle'
+import { SeverityDots } from '@/components/ward/SeverityDots'
 
 export const metadata: Metadata = {
   title: 'NIBM Water Pilot — Sushaasan Solution Brief',
@@ -280,6 +283,19 @@ export default function NibmWaterPage() {
               <div>
                 <div className="font-serif text-2xl font-bold text-saffron leading-none">8.4/10</div>
                 <div className="text-[10px] text-ink-3 mt-1">Feasibility score</div>
+              </div>
+            </div>
+
+            {/* Priority gauge + lifecycle pipeline */}
+            <div className="flex flex-wrap items-center gap-6 pt-3 border-t border-ink/6">
+              <PriorityGauge score={92} />
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-ink/40">Pipeline status</span>
+                <IssueLifecycle currentStage="under_review" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-ink/40">Severity</span>
+                <SeverityDots severity={5} size="md" />
               </div>
             </div>
           </div>

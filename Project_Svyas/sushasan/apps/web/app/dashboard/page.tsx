@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getDashboardSnapshot } from '@/lib/supabase-data'
+import { SeverityDots } from '@/components/ward/SeverityDots'
+import { IssueLifecycle } from '@/components/ward/IssueLifecycle'
+import { DashboardFilters } from '@/components/dashboard/DashboardFilters'
 
 export const revalidate = 120
 export const dynamic = 'force-dynamic'
@@ -329,6 +332,13 @@ export default async function DashboardPage() {
           </div>
         </section>
 
+        {/* ── Search / filter bar ────────────────────────────────────────── */}
+        <DashboardFilters
+          onSearch={() => {}}
+          onIssueType={() => {}}
+          onSort={() => {}}
+        />
+
         {/* ── Per-ward sections ──────────────────────────────────────────── */}
         {wards.map((ward) => {
           const wClusters = clusters.filter((c) => c.ward_id === ward.id)
@@ -376,8 +386,13 @@ export default async function DashboardPage() {
                           </span>
                           <StatusBadge status={c.status} />
                           <span className="text-[10px] text-ink-4 ml-auto">
-                            {c.post_count} reports · sev {c.severity_avg.toFixed(1)}
+                            {c.post_count} reports
                           </span>
+                        </div>
+
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <SeverityDots severity={Math.round(c.severity_avg)} />
+                          <IssueLifecycle currentStage={c.status ?? 'signal_detected'} compact={true} />
                         </div>
 
                         <p className="text-[13px] text-ink-2 leading-relaxed">{c.centroid_text}</p>
