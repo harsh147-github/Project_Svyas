@@ -26,7 +26,6 @@ export const ISSUE_TYPES = [
   { id: 'parks',        label: 'Parks & Playgrounds',   color: '#059669', icon: '🌳' },
 ] as const
 
-
 export const WARD_NAME_OVERRIDES: Record<string, string> = {
   '8':  'Ganesh Peth',
   '14': 'Rasta Peth',
