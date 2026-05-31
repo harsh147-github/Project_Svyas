@@ -19,10 +19,23 @@ const GovSheet = dynamic(
   { ssr: false }
 )
 
+function MapSkeleton() {
+  return (
+    <div className="w-full h-full bg-[#e8e4dc] relative flex items-center justify-center">
+      <div className="absolute inset-0 opacity-10"
+        style={{ backgroundImage: 'linear-gradient(#aaa 1px, transparent 1px), linear-gradient(90deg, #aaa 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      <div className="text-center">
+        <div className="w-8 h-8 border-2 border-saffron border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-sm text-ink/50 font-medium">Loading Pune civic map…</p>
+      </div>
+    </div>
+  )
+}
+
 // Real-OSM map with all 58 PMC ward overlays — client-only (MapLibre)
 const WardMap = dynamic(
   () => import('@/components/map/WardMap').then((m) => m.WardMap),
-  { ssr: false, loading: () => <div className="w-full h-full bg-paper" /> }
+  { ssr: false, loading: () => <MapSkeleton /> }
 )
 
 // Onboarding hint card — sessionStorage so no server side needed

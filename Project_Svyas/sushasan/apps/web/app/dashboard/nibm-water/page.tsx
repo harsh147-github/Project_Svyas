@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ShareButtons } from '@/components/ui/ShareButtons'
 
 export const metadata: Metadata = {
   title: 'NIBM Water Pilot — Sushaasan Solution Brief',
@@ -78,6 +79,12 @@ export default function NibmWaterPage() {
             PMC Water Supply, the Ward 46 corporator&rsquo;s office, and RWAs can act on — alongside
             citizens whose civic care turns infrastructure into a daily habit.
           </p>
+          <ShareButtons
+            url="/dashboard/nibm-water"
+            title="NIBM Water Solution Brief — Sushaasan"
+            description="42 public posts → AI-synthesised plan for PMC Water Supply and 7 housing societies"
+            compact={false}
+          />
         </section>
 
         {/* ── 2. Evidence stats ─────────────────────────────────────────── */}

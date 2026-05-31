@@ -4,6 +4,7 @@ import { NibmCorridorMap } from '@/components/nibm/NibmCorridorMap'
 import { ScrapedPostsGallery } from '@/components/nibm/ScrapedPostsGallery'
 import { ReferenceCases } from '@/components/nibm/ReferenceCases'
 import { FadeUp } from '@/components/ui/FadeUp'
+import { ShareButtons } from '@/components/ui/ShareButtons'
 
 export const metadata: Metadata = {
   title: 'NIBM Traffic Pilot — Sushaasan Solution Brief',
@@ -155,6 +156,12 @@ export default async function NIBMPilotPage() {
             the Ward 46 corporator's office and Pune Traffic Police can act on — alongside
             citizens whose civic care makes any infrastructure last.
           </p>
+          <ShareButtons
+            url="/dashboard/nibm"
+            title="NIBM Traffic Solution Brief — Sushaasan"
+            description="19 public posts → AI-synthesised plan for Ward 46 corporator and residents"
+            compact={false}
+          />
         </section>
 
         {/* ── 2. Evidence stats — quick-scan infographic ─────────────────── */}
