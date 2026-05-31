@@ -579,6 +579,27 @@ export function WardMap() {
     })
   }, [])
 
+  // Listen for issue-filter events from LegendBar and filter hotspot layers accordingly
+  useEffect(() => {
+    function handleIssueFilter(ev: Event) {
+      const map = mapRef.current as {
+        setFilter: (layer: string, filter: unknown) => void;
+        getLayer: (id: string) => unknown;
+      } | null
+      if (!map) return
+      const { filters } = (ev as CustomEvent).detail as { filters: string[] }
+      const filter = filters.length === 0
+        ? null
+        : ['in', ['get', 'issue_tag'], ['literal', filters]]
+      // Only set filter if the layers exist
+      if (map.getLayer('hotspot-icons')) map.setFilter('hotspot-icons', filter)
+      if (map.getLayer('hotspot-glow'))  map.setFilter('hotspot-glow', filter)
+    }
+
+    window.addEventListener('sushaasan:issue-filter', handleIssueFilter)
+    return () => window.removeEventListener('sushaasan:issue-filter', handleIssueFilter)
+  }, [])
+
   useEffect(() => {
     initMap()
     return () => {
