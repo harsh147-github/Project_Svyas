@@ -62,34 +62,57 @@ export function SelectedWardPanel() {
 
 export function FindMyWardButton() {
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  function handleClick() {
+    setError(null)
+    if (!navigator.geolocation) {
+      setError('Location not supported — tap a ward on the map.')
+      return
+    }
+    setBusy(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        window.dispatchEvent(new CustomEvent('sushaasan:locate', {
+          detail: { lat: pos.coords.latitude, lng: pos.coords.longitude },
+        }))
+        setBusy(false)
+      },
+      (err) => {
+        setBusy(false)
+        const msgs: Record<number, string> = {
+          1: 'Location access denied — tap a ward on the map.',
+          2: 'Location unavailable — try again or tap the map.',
+          3: 'Location timed out — tap a ward on the map.',
+        }
+        setError(msgs[err.code] ?? 'Could not locate — tap a ward on the map.')
+      },
+      { timeout: 8000, enableHighAccuracy: false },
+    )
+  }
+
   return (
-    <button
-      onClick={() => {
-        if (!navigator.geolocation) return
-        setBusy(true)
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            window.dispatchEvent(new CustomEvent('sushaasan:locate', {
-              detail: { lat: pos.coords.latitude, lng: pos.coords.longitude },
-            }))
-            setBusy(false)
-          },
-          () => setBusy(false),
-          { timeout: 8000 },
-        )
-      }}
-      disabled={busy}
-      className="flex items-center gap-2 px-5 py-2.5 rounded-full
-                 bg-white border border-ink/10 hover:border-saffron/40 shadow-sm
-                 text-ink text-xs font-semibold tracking-wide
-                 transition-all active:scale-95 disabled:opacity-60"
-    >
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <circle cx="12" cy="10" r="3" />
-        <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" />
-      </svg>
-      {busy ? 'Locating…' : 'Find my ward'}
-    </button>
+    <div className="flex flex-col items-start gap-1">
+      <button
+        onClick={handleClick}
+        disabled={busy}
+        className="flex items-center gap-2 px-5 py-2.5 rounded-full
+                   bg-white border border-ink/10 hover:border-saffron/40 shadow-sm
+                   text-ink text-xs font-semibold tracking-wide
+                   transition-all active:scale-95 disabled:opacity-60"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="10" r="3" />
+          <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" />
+        </svg>
+        {busy ? 'Locating…' : 'Find my ward'}
+      </button>
+      {error && (
+        <p className="text-[10px] text-red-600 font-medium max-w-[200px] leading-snug">
+          {error}
+        </p>
+      )}
+    </div>
   )
 }

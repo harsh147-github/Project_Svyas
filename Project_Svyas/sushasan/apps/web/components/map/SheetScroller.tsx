@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import Lenis from 'lenis'
 
 /**
  * Applies Lenis smooth-scroll to a specific div container (bottom sheets, panels).
@@ -20,26 +19,32 @@ export function SheetScroller({
     const el = ref.current
     if (!el) return
 
-    const lenis = new Lenis({
-      wrapper: el,
-      content: el.firstElementChild as HTMLElement ?? el,
-      orientation: 'vertical',
-      smoothWheel: true,
-      touchMultiplier: 2,
-      duration: 1.1,
+    let raf: number
+    let cleanup: (() => void) | undefined
+
+    import('lenis').then(({ default: Lenis }) => {
+      const lenis = new Lenis({
+        wrapper: el,
+        content: el.firstElementChild as HTMLElement ?? el,
+        orientation: 'vertical',
+        smoothWheel: true,
+        touchMultiplier: 2,
+        duration: 1.1,
+      })
+
+      function tick(time: number) {
+        lenis.raf(time)
+        raf = requestAnimationFrame(tick)
+      }
+      raf = requestAnimationFrame(tick)
+
+      cleanup = () => {
+        cancelAnimationFrame(raf)
+        lenis.destroy()
+      }
     })
 
-    let raf: number
-    function tick(time: number) {
-      lenis.raf(time)
-      raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-
-    return () => {
-      cancelAnimationFrame(raf)
-      lenis.destroy()
-    }
+    return () => cleanup?.()
   }, [])
 
   return (

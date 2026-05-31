@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ShareButtons } from '@/components/ui/ShareButtons'
 
 export const metadata: Metadata = {
   title: 'NIBM Water Pilot — Sushaasan Solution Brief',
@@ -9,8 +10,6 @@ export const metadata: Metadata = {
     description: 'Public chatter → structured, budgeted, collaborative civic action.',
   },
 }
-
-const FRAMER_URL = 'https://sushaasan.framer.website/'
 
 export default function NibmWaterPage() {
   return (
@@ -28,7 +27,7 @@ export default function NibmWaterPage() {
             <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-3 hidden sm:block">
               NIBM Water Pilot · Ward 46
             </span>
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href={'https://sushasan.in'} target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-navy hover:underline hidden sm:inline">
               Visit website ↗
             </a>
@@ -78,6 +77,12 @@ export default function NibmWaterPage() {
             PMC Water Supply, the Ward 46 corporator&rsquo;s office, and RWAs can act on — alongside
             citizens whose civic care turns infrastructure into a daily habit.
           </p>
+          <ShareButtons
+            url="/dashboard/nibm-water"
+            title="NIBM Water Solution Brief — Sushaasan"
+            description="42 public posts → AI-synthesised plan for PMC Water Supply and 7 housing societies"
+            compact={false}
+          />
         </section>
 
         {/* ── 2. Evidence stats ─────────────────────────────────────────── */}
@@ -416,7 +421,7 @@ export default function NibmWaterPage() {
         {/* ── 8. Footer CTAs ───────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-4">
           <div className="flex flex-wrap items-center gap-3 justify-center">
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href={'https://sushasan.in'} target="_blank" rel="noopener noreferrer"
                className="px-5 py-2.5 rounded-full bg-navy text-white text-xs font-semibold
                           hover:bg-navy/90 transition-colors">
               Visit the full Sushaasan website ↗

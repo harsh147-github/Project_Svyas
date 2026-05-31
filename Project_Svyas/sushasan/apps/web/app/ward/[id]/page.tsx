@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getWardFull } from '@/lib/supabase-data'
+import { SeverityDots } from '@/components/ward/SeverityDots'
+import { IssueLifecycle } from '@/components/ward/IssueLifecycle'
 
 export const revalidate = 120
 
@@ -33,7 +35,6 @@ const CITIZEN_ROLE: Record<string, string> = {
   other:   'Residents document evidence specifically · verify resolution claims on the public dashboard · partner with the ward office rather than petitioning around it.',
 }
 
-const FRAMER_URL = 'https://sushaasan.framer.website/'
 
 function fmt(n: number) {
   if (!n) return '₹0'
@@ -71,7 +72,7 @@ export default async function WardPage({ params }: Props) {
                   className="text-[11px] font-medium text-ink-3 hover:text-ink hidden sm:inline">
               ← All wards
             </Link>
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
               About ↗
             </a>
@@ -170,11 +171,11 @@ export default async function WardPage({ params }: Props) {
                             style={{ background: `${color}18`, color, border: `1px solid ${color}40` }}>
                         {ISSUE_LABEL[c.issue_tag] ?? c.issue_tag}
                       </span>
-                      <span className="text-[10px] text-ink-4">
-                        {c.post_count} reports · sev {c.severity_avg.toFixed(1)}
-                      </span>
+                      <span className="text-[10px] text-ink-4">{c.post_count} reports</span>
                     </div>
+                    <SeverityDots severity={Math.round(c.severity_avg)} />
                     <p className="text-[13px] text-ink-2 leading-relaxed">{c.centroid_text}</p>
+                    <IssueLifecycle currentStage={c.status ?? 'signal_detected'} compact />
                   </div>
                 </article>
               )

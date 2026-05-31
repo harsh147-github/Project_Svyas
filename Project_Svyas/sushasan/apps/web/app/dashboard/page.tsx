@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getDashboardSnapshot } from '@/lib/supabase-data'
+import { DashboardFilters } from '@/components/dashboard/DashboardFilters'
 
 export const revalidate = 120
 export const dynamic = 'force-dynamic'
@@ -10,7 +11,6 @@ export const metadata: Metadata = {
   description: 'Every civic issue in NIBM · Wanowrie · Tribeca: what AI surfaced, what government is doing, and how citizens are partnering.',
 }
 
-const FRAMER_URL = 'https://sushaasan.framer.website/'
 
 const ISSUE_COLOR: Record<string, string> = {
   traffic: '#EF4444', water: '#3B82F6', electricity: '#F59E0B',
@@ -110,7 +110,7 @@ export default async function DashboardPage() {
                 Refreshed {formatRefreshed(lastUpdated)}
               </span>
             )}
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
               About ↗
             </a>
@@ -139,6 +139,9 @@ export default async function DashboardPage() {
           </p>
         </section>
 
+        {/* ── Filters ────────────────────────────────────────────────────── */}
+        <DashboardFilters />
+
         {/* ── Pilot solution briefs — 4-card directory ───────────────────── */}
         <section className="space-y-4">
           <div className="flex items-baseline gap-3 flex-wrap">
@@ -157,7 +160,7 @@ export default async function DashboardPage() {
             <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-2">
               Pune civic pilots
             </div>
-            <div className="grid sm:grid-cols-3 gap-3">
+            <div className="grid sm:grid-cols-3 gap-3 stagger-children">
               {[
                 {
                   href:    '/dashboard/nibm',
@@ -285,7 +288,7 @@ export default async function DashboardPage() {
             { value: activeCount,    label: 'Being acted on',           sub: `${resolved} resolved · ${inProgress} in progress` },
             { value: fmt(totalCost), label: 'Estimated solution cost',  sub: 'across all open briefs' },
           ].map((k) => (
-            <div key={k.label} className="bg-white rounded-2xl border border-ink/8 shadow-sm p-5">
+            <div key={k.label} className="stat-card bg-white rounded-2xl border border-ink/8 shadow-sm p-5">
               <div className="font-serif text-3xl font-bold text-ink leading-none">{k.value}</div>
               <div className="text-[11px] font-medium text-ink-2 mt-2 leading-snug">{k.label}</div>
               <div className="text-[10px] text-ink-4 mt-1">{k.sub}</div>
@@ -437,7 +440,7 @@ export default async function DashboardPage() {
         {/* ── Footer ──────────────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-3 text-center">
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
                className="px-4 py-2 rounded-full bg-navy text-white text-[11px] font-semibold
                           hover:bg-navy/90 transition-colors">
               Visit the website ↗

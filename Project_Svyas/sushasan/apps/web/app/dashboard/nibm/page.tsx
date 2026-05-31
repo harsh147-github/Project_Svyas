@@ -4,6 +4,7 @@ import { NibmCorridorMap } from '@/components/nibm/NibmCorridorMap'
 import { ScrapedPostsGallery } from '@/components/nibm/ScrapedPostsGallery'
 import { ReferenceCases } from '@/components/nibm/ReferenceCases'
 import { FadeUp } from '@/components/ui/FadeUp'
+import { ShareButtons } from '@/components/ui/ShareButtons'
 
 export const metadata: Metadata = {
   title: 'NIBM Traffic Pilot — Sushaasan Solution Brief',
@@ -72,7 +73,6 @@ function fmtDate(iso: string) {
   })
 }
 
-const FRAMER_URL = 'https://sushaasan.framer.website/'
 
 // ── Page ────────────────────────────────────────────────────────────────────
 export default async function NIBMPilotPage() {
@@ -95,7 +95,7 @@ export default async function NIBMPilotPage() {
             <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-3 hidden sm:block">
               NIBM Traffic Pilot · Ward 46
             </span>
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-navy hover:underline hidden sm:inline">
               Visit website ↗
             </a>
@@ -155,6 +155,12 @@ export default async function NIBMPilotPage() {
             the Ward 46 corporator's office and Pune Traffic Police can act on — alongside
             citizens whose civic care makes any infrastructure last.
           </p>
+          <ShareButtons
+            url="/dashboard/nibm"
+            title="NIBM Traffic Solution Brief — Sushaasan"
+            description="19 public posts → AI-synthesised plan for Ward 46 corporator and residents"
+            compact={false}
+          />
         </section>
 
         {/* ── 2. Evidence stats — quick-scan infographic ─────────────────── */}
@@ -590,7 +596,7 @@ export default async function NIBMPilotPage() {
         {/* ── 11. Footer CTAs ──────────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-4">
           <div className="flex flex-wrap items-center gap-3 justify-center">
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
                className="px-5 py-2.5 rounded-full bg-navy text-white text-xs font-semibold
                           hover:bg-navy/90 transition-colors">
               Visit the full Sushaasan website ↗
