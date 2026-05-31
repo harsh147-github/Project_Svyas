@@ -263,7 +263,7 @@
 .animation-delay-700  { animation-delay: 700ms; }
 .animation-delay-1000 { animation-delay: 1000ms; }
 
-/* ── Card hover effects (Task 4.2) ─────────────────────────────── */
+/* ── Card hover effects ─────────────────────────────── */
 .ward-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
@@ -279,7 +279,7 @@
   border-color: rgba(255, 153, 51, 0.3);
 }
 
-/* ── Entrance animations (Task 4.3) ─────────────────────────────── */
+/* ── Entrance animations ─────────────────────────────── */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }

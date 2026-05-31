@@ -14,7 +14,6 @@ export const ISSUE_TYPES = [
   { id: 'electricity',  label: 'Power & Lights',        color: '#F59E0B', icon: '⚡' },
   { id: 'garbage',      label: 'Garbage & Drains',      color: '#10B981', icon: '🗑️' },
   { id: 'other',        label: 'Other',                 color: '#8B5CF6', icon: '📌' },
-  // Extended categories (Week 4+ data pipeline)
   { id: 'safety',       label: "Women's Safety",        color: '#FF6B9D', icon: '🛡️' },
   { id: 'environment',  label: 'Environment',            color: '#2D8A4E', icon: '🌿' },
   { id: 'drainage',     label: 'Drainage & Flooding',   color: '#1E6BAA', icon: '🌊' },
@@ -26,6 +25,7 @@ export const ISSUE_TYPES = [
   { id: 'healthcare',   label: 'Healthcare',            color: '#DC2626', icon: '❤️‍🩹' },
   { id: 'parks',        label: 'Parks & Playgrounds',   color: '#059669', icon: '🌳' },
 ] as const
+
 
 export const WARD_NAME_OVERRIDES: Record<string, string> = {
   '8':  'Ganesh Peth',
