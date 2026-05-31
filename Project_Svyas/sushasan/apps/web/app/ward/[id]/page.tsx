@@ -33,8 +33,6 @@ const CITIZEN_ROLE: Record<string, string> = {
   other:   'Residents document evidence specifically · verify resolution claims on the public dashboard · partner with the ward office rather than petitioning around it.',
 }
 
-const FRAMER_URL = 'https://sushaasan.framer.website/'
-
 function fmt(n: number) {
   if (!n) return '₹0'
   if (n >= 1_00_00_000) return `₹${(n / 1_00_00_000).toFixed(1)} Cr`
@@ -71,7 +69,7 @@ export default async function WardPage({ params }: Props) {
                   className="text-[11px] font-medium text-ink-3 hover:text-ink hidden sm:inline">
               ← All wards
             </Link>
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
               About ↗
             </a>
