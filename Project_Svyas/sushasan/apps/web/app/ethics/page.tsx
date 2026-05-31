@@ -7,7 +7,6 @@ export const metadata: Metadata = {
   description: 'How Sushaasan handles data, anonymises authors, strips PII, and respects robots.txt — by design, not as an afterthought.',
 }
 
-const FRAMER_URL = 'https://sushaasan.framer.website/'
 
 const COLLECT = [
   { ok: true,  label: 'Public Instagram, Reddit, news, GMaps, X posts' },
@@ -96,7 +95,7 @@ export default function EthicsPage() {
                   className="text-[11px] font-medium text-ink-3 hover:text-ink hidden sm:inline">
               About
             </Link>
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
               Visit website ↗
             </a>

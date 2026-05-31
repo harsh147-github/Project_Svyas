@@ -10,7 +10,6 @@ export const metadata: Metadata = {
   description: 'Priority-ranked civic actions for Ward 46 + 47, Pune. AI-synthesised, budget-checked, and ready to act on — with citizens partnering on every step.',
 }
 
-const FRAMER_URL = 'https://sushaasan.framer.website/'
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 function formatINR(n: number) {
@@ -94,7 +93,7 @@ export default async function GovPage() {
               <span className="w-1.5 h-1.5 rounded-full bg-navy" />
               Government view
             </span>
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
               About ↗
             </a>

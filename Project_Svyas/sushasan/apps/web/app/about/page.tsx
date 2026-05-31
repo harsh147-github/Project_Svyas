@@ -7,7 +7,6 @@ export const metadata: Metadata = {
   description: 'A Government OS for Pune. AI turns public chatter into structured, budgeted, collaborative civic action — one corporator and one neighbourhood at a time.',
 }
 
-const FRAMER_URL = 'https://sushaasan.framer.website/'
 
 const PRINCIPLES = [
   {
@@ -56,7 +55,7 @@ export default function AboutPage() {
             <span className="text-ink-2 text-sm hidden sm:inline">About</span>
           </Link>
           <div className="flex items-center gap-3">
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
               Visit website ↗
             </a>
@@ -255,7 +254,7 @@ export default function AboutPage() {
                             hover:bg-saffron-dark transition-colors">
                 Reach out →
               </a>
-              <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+              <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
                  className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white border border-ink/10
                             text-ink-2 hover:border-saffron/30">
                 Pitch deck + story ↗
@@ -281,6 +280,11 @@ export default function AboutPage() {
                   className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white border border-ink/10
                              text-ink-2 hover:border-ink/20">
               Privacy &amp; ethics
+            </Link>
+            <Link href="/privacy"
+                  className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white border border-ink/10
+                             text-ink-2 hover:border-ink/20">
+              Privacy policy
             </Link>
           </div>
           <p className="text-[11px] text-ink-3">

@@ -73,7 +73,6 @@ function fmtDate(iso: string) {
   })
 }
 
-const FRAMER_URL = 'https://sushaasan.framer.website/'
 
 // ── Page ────────────────────────────────────────────────────────────────────
 export default async function NIBMPilotPage() {
@@ -96,7 +95,7 @@ export default async function NIBMPilotPage() {
             <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-3 hidden sm:block">
               NIBM Traffic Pilot · Ward 46
             </span>
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-navy hover:underline hidden sm:inline">
               Visit website ↗
             </a>
@@ -597,7 +596,7 @@ export default async function NIBMPilotPage() {
         {/* ── 11. Footer CTAs ──────────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-4">
           <div className="flex flex-wrap items-center gap-3 justify-center">
-            <a href={FRAMER_URL} target="_blank" rel="noopener noreferrer"
+            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
                className="px-5 py-2.5 rounded-full bg-navy text-white text-xs font-semibold
                           hover:bg-navy/90 transition-colors">
               Visit the full Sushaasan website ↗
