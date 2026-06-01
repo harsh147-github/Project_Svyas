@@ -445,7 +445,7 @@ export function WardMap() {
       map.on('click', (e) => {
         // @ts-expect-error defaultPrevented not standard on MapLibre events
         if (e.defaultPrevented) return
-        const features = map.queryRenderedFeatures(e.point, { layers: ['pilot-fill', 'hotspot-icons'] })
+        const features = map.queryRenderedFeatures(e.point, { layers: ['pilot-fill', 'context-fill', 'hotspot-icons'] })
         if (!features.length) {
           clearSelected()
           window.dispatchEvent(new CustomEvent('sushaasan:ward-cleared'))
