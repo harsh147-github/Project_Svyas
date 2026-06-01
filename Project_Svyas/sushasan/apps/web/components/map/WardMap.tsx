@@ -584,6 +584,24 @@ export function WardMap() {
     })
   }, [])
 
+  // When a citizen submits a report (from InlineReportSheet on this page),
+  // immediately add their formal grievance as a hotspot on the map.
+  useEffect(() => {
+    function handleReportSubmitted(ev: Event) {
+      const cluster = (ev as CustomEvent).detail as Record<string, unknown>
+      if (!cluster || typeof cluster.lng !== 'number' || typeof cluster.lat !== 'number') return
+      // Add to session list if not already there
+      if (!_userClusters.find((c) => c.id === cluster.id)) {
+        _userClusters.push(cluster)
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const map = mapRef.current as any
+      if (map) applyClusterData(map, _lastApiClusters)
+    }
+    window.addEventListener('sushaasan:report-submitted', handleReportSubmitted)
+    return () => window.removeEventListener('sushaasan:report-submitted', handleReportSubmitted)
+  }, [])
+
   // Listen for issue-filter events from LegendBar and filter hotspot layers accordingly
   useEffect(() => {
     function handleIssueFilter(ev: Event) {
@@ -628,22 +646,49 @@ export function WardMap() {
   )
 }
 
+// ── Optimistic user-submitted clusters (same browser session) ─────────────────
+const _userClusters: Record<string, unknown>[] = []
+
+// Load any cluster submitted before navigating to this page
+if (typeof window !== 'undefined') {
+  try {
+    const pending = sessionStorage.getItem('sushasan:pending-report')
+    if (pending) {
+      const parsed = JSON.parse(pending) as Record<string, unknown>
+      if (!_userClusters.find((c) => c.id === parsed.id)) {
+        _userClusters.push(parsed)
+      }
+    }
+  } catch { /* private mode or parse error */ }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function applyClusterData(map: any, apiClusters: Record<string, unknown>[]) {
+  const all = [...apiClusters, ..._userClusters]
+  const source = map.getSource('clusters') as { setData: (d: unknown) => void } | undefined
+  source?.setData({
+    type: 'FeatureCollection',
+    features: all
+      .filter((c) => typeof c.lng === 'number' && typeof c.lat === 'number')
+      .map((c) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [c.lng, c.lat] },
+        properties: c,
+      })),
+  })
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _lastApiClusters: Record<string, unknown>[] = []
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchClusters(map: any) {
   try {
     const res = await fetch('/api/ward/all')
     if (!res.ok) return
     const { clusters, wardSeverity } = await res.json()
-
-    const source = map.getSource('clusters') as { setData: (d: unknown) => void } | undefined
-    source?.setData({
-      type: 'FeatureCollection',
-      features: (clusters as Record<string, unknown>[]).map((c) => ({
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: [c.lng, c.lat] },
-        properties: c,
-      })),
-    })
+    _lastApiClusters = clusters as Record<string, unknown>[]
+    applyClusterData(map, _lastApiClusters)
 
     for (const { wardnum, severity_avg } of (wardSeverity as { wardnum: number; severity_avg: number }[]) ?? []) {
       map.setFeatureState({ source: 'wards-pilot', id: wardnum }, { severity_avg })
