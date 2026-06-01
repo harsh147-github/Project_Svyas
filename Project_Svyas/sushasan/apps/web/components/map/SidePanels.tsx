@@ -1,6 +1,7 @@
 'use client'
 
 import { InlineReportSheet } from './InlineReportSheet'
+import { FindMyWardButton } from './SelectedWardPanel'
 
 /**
  * SidePanels — left (citizen) + right (government) analysis panels
@@ -128,6 +129,23 @@ const SEARCHABLE_WARDS = [
   { wardnum: '7',  name: 'Kharadi',                  areas: 'Kharadi EON IT Park' },
   { wardnum: '3',  name: 'Kothrud',                  areas: 'Kothrud Paud Road' },
   { wardnum: '1',  name: 'Aundh–Baner',              areas: 'Aundh Baner Pashan' },
+  { wardnum: '9',  name: 'Shivajinagar',              areas: 'Shivajinagar FC Road Deccan Gymkhana' },
+  { wardnum: '20', name: 'Pune Station',              areas: 'Pune station Ganj Peth Kasba' },
+  { wardnum: '21', name: 'Koregaon Park',             areas: 'Koregaon Park Mundhwa East' },
+  { wardnum: '23', name: 'Magarpatta',                areas: 'Magarpatta Kharadi IT Park Hadapsar' },
+  { wardnum: '24', name: 'Keshavnagar – Sadhana',    areas: 'Keshavnagar Sadhana Nagar Magarpatta west' },
+  { wardnum: '31', name: 'Kothrud – Karve Nagar',    areas: 'Kothrud Karve Nagar Paud Road Depot' },
+  { wardnum: '34', name: 'Warje – Malwadi',           areas: 'Warje Malwadi Sinhagad Road' },
+  { wardnum: '40', name: 'Bibwewadi – Gangadham',    areas: 'Bibwewadi Gangadham Market Yard' },
+  { wardnum: '48', name: 'Indiranagar – Lohegaon',   areas: 'Indiranagar Lohegaon Airport' },
+  { wardnum: '50', name: 'Sahakarnagar',              areas: 'Sahakarnagar Ambegaon Taljai' },
+  { wardnum: '51', name: 'Vadgaon Budruk',            areas: 'Vadgaon Budruk Manikbaug Dandekar Bridge' },
+  { wardnum: '53', name: 'Narhe – Khadakwasla',      areas: 'Narhe Khadakwasla new layouts' },
+  { wardnum: '54', name: 'Dhayari',                   areas: 'Dhayari Uttamnagar Gaothan' },
+  { wardnum: '55', name: 'Dhankawadi',                areas: 'Dhankawadi Ambegaon Katraj new' },
+  { wardnum: '56', name: 'Bharati Vidyapeeth',        areas: 'Bharati Vidyapeeth Katraj Kondhwa' },
+  { wardnum: '57', name: 'Sukhsagarnagar',            areas: 'Sukhsagarnagar Anandnagar' },
+  { wardnum: '58', name: 'Katraj – Kondhwa Bk',      areas: 'Katraj Kondhwa Budruk Yewalewadi' },
 ]
 
 function WardSearch() {
@@ -179,7 +197,7 @@ function WardSearch() {
                 className="w-full text-left px-3 py-2.5 text-[12.5px] text-ink hover:bg-saffron/8
                            flex items-center gap-2 transition-colors"
               >
-                <span className="w-5 h-5 rounded-full bg-saffron/15 text-saffron-dark text-[9px] font-bold
+                <span className="w-5 h-5 rounded-full bg-saffron/15 text-saffron-dark text-[10px] font-bold
                                  flex items-center justify-center flex-shrink-0">
                   {w.wardnum}
                 </span>
@@ -308,7 +326,7 @@ export function CitizenPanel() {
       aria-label="Citizen analysis panel"
     >
       <header className="px-5 pt-4 pb-3 border-b border-ink/8 flex-shrink-0">
-        <div className="text-[9px] font-bold tracking-[0.2em] text-saffron-dark uppercase">
+        <div className="text-[10px] font-bold tracking-[0.2em] text-saffron-dark uppercase">
           Sushaasan Analysis
         </div>
         <div className="text-[8px] font-semibold tracking-[0.18em] text-ink-3 uppercase mt-1">
@@ -471,7 +489,7 @@ function CitizenContent({
         <article key={c.id} className="space-y-2 pt-3 border-t border-ink/8">
           <div className="flex items-center justify-between">
             <span
-              className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase"
+              className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase"
               style={{
                 backgroundColor: `${ISSUE_COLOR[c.issue_tag] ?? ISSUE_COLOR.other}1F`,
                 color: ISSUE_COLOR[c.issue_tag] ?? ISSUE_COLOR.other,
@@ -507,7 +525,7 @@ function CitizenContent({
                   }}
                 />
               </div>
-              <span className="text-[9px] font-semibold text-ink-3 tabular-nums">
+              <span className="text-[10px] font-semibold text-ink-3 tabular-nums">
                 Severity {c.severity_avg.toFixed(1)}/5
               </span>
             </div>
@@ -546,7 +564,7 @@ function CitizenTip({ issueTag }: { issueTag: string }) {
   const tip = TIPS[issueTag] ?? TIPS.other
   return (
     <div className="mt-2 px-3 py-2.5 rounded-lg bg-india-green/[0.06] border-l-2 border-india-green/40">
-      <div className="text-[9px] font-bold tracking-[0.16em] text-india-green uppercase mb-1">
+      <div className="text-[10px] font-bold tracking-[0.16em] text-india-green uppercase mb-1">
         {tip.title}
       </div>
       <div className="text-[11.5px] leading-relaxed text-ink-2">{tip.body}</div>
@@ -570,7 +588,7 @@ export function GovernmentPanel() {
       aria-label="Government action panel"
     >
       <header className="px-5 pt-4 pb-3 border-b border-ink/8 flex-shrink-0">
-        <div className="text-[9px] font-bold tracking-[0.2em] text-navy uppercase">
+        <div className="text-[10px] font-bold tracking-[0.2em] text-navy uppercase">
           Sushaasan Brief
         </div>
         <div className="text-[8px] font-semibold tracking-[0.18em] text-ink-3 uppercase mt-1">
@@ -749,7 +767,7 @@ function GovContent({ full }: { full: WardFull }) {
       </div>
 
       <div className="pt-3 border-t border-ink/8">
-        <div className="text-[9px] font-bold tracking-[0.18em] text-ink-3 uppercase mb-1.5">
+        <div className="text-[10px] font-bold tracking-[0.18em] text-ink-3 uppercase mb-1.5">
           Ward Incharge
         </div>
         <div className="text-[12.5px] font-semibold text-ink">
@@ -761,7 +779,7 @@ function GovContent({ full }: { full: WardFull }) {
       </div>
 
       <div className="pt-3 border-t border-ink/8">
-        <div className="text-[9px] font-bold tracking-[0.18em] text-ink-3 uppercase mb-2">
+        <div className="text-[10px] font-bold tracking-[0.18em] text-ink-3 uppercase mb-2">
           Budget at a glance
         </div>
         <div className="flex items-baseline justify-between text-[11px]">
@@ -787,7 +805,7 @@ function GovContent({ full }: { full: WardFull }) {
         <article className="pt-3 border-t border-ink/8 space-y-2.5">
           <div className="flex items-center justify-between">
             <span
-              className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase"
+              className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase"
               style={{
                 backgroundColor: `${ISSUE_COLOR[top.issue_tag] ?? ISSUE_COLOR.other}1F`,
                 color: ISSUE_COLOR[top.issue_tag] ?? ISSUE_COLOR.other,
@@ -795,7 +813,7 @@ function GovContent({ full }: { full: WardFull }) {
             >
               {ISSUE_EMOJI[top.issue_tag] ?? '📌'} {ISSUE_LABEL[top.issue_tag] ?? top.issue_tag}
             </span>
-            <span className="text-[9px] font-bold tracking-wider uppercase tabular-nums">
+            <span className="text-[10px] font-bold tracking-wider uppercase tabular-nums">
               <span className="text-ink-3">Priority </span>
               <span className="text-ink">{top.priority_score?.toFixed(0) ?? '—'}</span>
             </span>
@@ -834,11 +852,11 @@ function GovContent({ full }: { full: WardFull }) {
               <span className="font-semibold text-ink-2 tabular-nums">{top.timeline_days}d</span>
             </div>
             {top.budget_feasible ? (
-              <span className="text-[9px] font-bold tracking-wider uppercase text-india-green">
+              <span className="text-[10px] font-bold tracking-wider uppercase text-india-green">
                 ✓ Within budget
               </span>
             ) : (
-              <span className="text-[9px] font-bold tracking-wider uppercase text-saffron-dark">
+              <span className="text-[10px] font-bold tracking-wider uppercase text-saffron-dark">
                 ⚠ Budget review
               </span>
             )}
@@ -1010,6 +1028,11 @@ function MobileEmptyContent({ totalPosts }: { totalPosts: number }) {
         ))}
       </div>
 
+      {/* Find my ward — mobile geolocation CTA */}
+      <div className="pt-1">
+        <FindMyWardButton />
+      </div>
+
       {totalPosts > 0 && (
         <div className="text-[11px] text-ink-3">
           <span className="font-semibold text-ink">{totalPosts.toLocaleString('en-IN')}</span> reports tracked this week
@@ -1140,7 +1163,7 @@ function Stat({ label, value }: { label: string; value: string }) {
       <div className="font-serif text-2xl font-semibold text-ink tabular-nums leading-none">
         {value}
       </div>
-      <div className="text-[9px] font-bold tracking-[0.16em] text-ink-3 uppercase mt-1">
+      <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase mt-1">
         {label}
       </div>
     </div>

@@ -84,7 +84,7 @@ export default async function WardPage({ params }: Props) {
 
         {/* ── Hero ───────────────────────────────────────────────────────── */}
         <section className="space-y-3">
-          <div className="text-[9px] font-bold tracking-[0.2em] uppercase text-ink-4">
+          <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-ink-4">
             Ward {ward.ward_number} · Pune Municipal Corporation
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-ink leading-[1.1]">
@@ -167,7 +167,7 @@ export default async function WardPage({ params }: Props) {
                   <div className="h-1" style={{ backgroundColor: color }} />
                   <div className="p-4 space-y-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[9px] font-bold tracking-[0.14em] uppercase px-2 py-0.5 rounded-full"
+                      <span className="text-[10px] font-bold tracking-[0.14em] uppercase px-2 py-0.5 rounded-full"
                             style={{ background: `${color}18`, color, border: `1px solid ${color}40` }}>
                         {ISSUE_LABEL[c.issue_tag] ?? c.issue_tag}
                       </span>
@@ -191,7 +191,7 @@ export default async function WardPage({ params }: Props) {
                 <span className="text-base">📋</span>
                 <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-navy">For the Corporator&apos;s Office</span>
               </div>
-              <span className="text-[9px] font-bold tracking-[0.15em] uppercase text-saffron-dark bg-saffron/8 border border-saffron/20 px-2 py-1 rounded-full">
+              <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-saffron-dark bg-saffron/8 border border-saffron/20 px-2 py-1 rounded-full">
                 {hasRealSolutions ? 'AI-synthesised brief' : 'Preview · awaiting next AI run'}
               </span>
             </div>
@@ -219,13 +219,13 @@ export default async function WardPage({ params }: Props) {
                       <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-2">
-                            <span className="text-[9px] font-bold tracking-[0.16em] uppercase
+                            <span className="text-[10px] font-bold tracking-[0.16em] uppercase
                                              px-2 py-0.5 rounded-full"
                                   style={{ background: `${color}18`, color, border: `1px solid ${color}40` }}>
                               {ISSUE_LABEL[sol.issue_tag] ?? sol.issue_tag}
                             </span>
                             {sol.budget_feasible && (
-                              <span className="text-[9px] font-semibold text-india-green
+                              <span className="text-[10px] font-semibold text-india-green
                                                px-2 py-0.5 rounded-full bg-india-green/8 border border-india-green/25">
                                 ✓ Within budget
                               </span>
@@ -237,7 +237,7 @@ export default async function WardPage({ params }: Props) {
                           <div className="font-serif text-2xl font-bold leading-none" style={{ color }}>
                             {sol.priority_score}
                           </div>
-                          <div className="text-[9px] font-bold tracking-widest uppercase text-ink-4 mt-0.5">
+                          <div className="text-[10px] font-bold tracking-widest uppercase text-ink-4 mt-0.5">
                             Priority
                           </div>
                         </div>
@@ -261,7 +261,7 @@ export default async function WardPage({ params }: Props) {
                       {/* Government steps */}
                       <div className="sm:col-span-2 p-5 bg-navy/3 space-y-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-navy">
+                          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-navy">
                             What government can do
                           </span>
                           <span className="text-navy text-base">⚙</span>
@@ -291,7 +291,7 @@ export default async function WardPage({ params }: Props) {
                       {/* Citizen role */}
                       <div className="p-5 bg-india-green/4 space-y-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-india-green">
+                          <span className="text-[10px] font-bold tracking-[0.14em] uppercase text-india-green">
                             How citizens can help
                           </span>
                           <span className="text-india-green text-base">⚘</span>

@@ -265,8 +265,12 @@ export function AddReportClient() {
         body: JSON.stringify({ text: text.trim(), lat, lng, wardId }),
       })
       if (!res.ok) throw new Error(`${res.status}`)
-      setResult(await res.json())
+      const reportResult = await res.json()
+      setResult(reportResult)
       setSubmitState('done')
+      window.dispatchEvent(new CustomEvent('sushaasan:report-submitted', {
+        detail: { wardId: reportResult.wardId, issueTag: reportResult.issueTag }
+      }))
     } catch {
       setSubmitState('error')
     }
@@ -360,7 +364,7 @@ export function AddReportClient() {
           </div>
 
           <p className="text-center text-[11px] text-ink/30 mt-6 leading-relaxed">
-            Your identity is never stored · Visible on map within 24h
+            Your identity is never stored · Signal joins ward intelligence · Map updates within 1 hour
           </p>
         </div>
       </main>
