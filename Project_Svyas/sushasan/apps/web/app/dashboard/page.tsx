@@ -100,7 +100,7 @@ export default async function DashboardPage() {
             <span className="text-ink-2 text-sm hidden sm:inline">Transparency Dashboard</span>
           </Link>
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-[9px] font-bold tracking-[0.18em]
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.18em]
                              uppercase px-2.5 py-1 rounded-full bg-india-green/8 text-india-green border border-india-green/20">
               <span className="w-1.5 h-1.5 rounded-full bg-india-green animate-pulse" />
               {source === 'supabase' ? 'Live · auto-updated' : 'Pilot view'}
@@ -123,7 +123,7 @@ export default async function DashboardPage() {
         {/* ── Hero ───────────────────────────────────────────────────────── */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
+            <span className="text-[10px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
                              bg-saffron/10 text-saffron-dark rounded-full border border-saffron/20">
               NIBM · Wanowrie · Tribeca
             </span>
@@ -149,7 +149,7 @@ export default async function DashboardPage() {
               Pilot solution briefs
             </h2>
             <div className="flex-1 h-px bg-ink/8 min-w-[40px]" />
-            <span className="text-[9px] font-bold tracking-[0.15em] uppercase text-saffron-dark
+            <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-saffron-dark
                              bg-saffron/8 border border-saffron/20 px-2 py-1 rounded-full">
               4 live · diplomatic frame
             </span>
@@ -195,11 +195,11 @@ export default async function DashboardPage() {
                                  hover:border-saffron/40 hover:shadow-md transition-all
                                  flex flex-col">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full"
+                    <span className="text-[10px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full"
                           style={{ backgroundColor: `${p.tagColor}1A`, color: p.tagColor, border: `1px solid ${p.tagColor}33` }}>
                       {p.tag}
                     </span>
-                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-4">
+                    <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-4">
                       Live brief
                     </span>
                   </div>
@@ -238,15 +238,15 @@ export default async function DashboardPage() {
               <div className="flex items-start gap-6 flex-wrap">
                 <div className="flex-1 min-w-[280px]">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full"
+                    <span className="text-[10px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full"
                           style={{ backgroundColor: 'rgba(139,92,246,0.10)', color: '#6d28d9', border: '1px solid rgba(139,92,246,0.25)' }}>
                       Policy
                     </span>
-                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full
+                    <span className="text-[10px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full
                                      bg-ink/5 text-ink-3 border border-ink/10">
                       Nationwide
                     </span>
-                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-4">
+                    <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-4">
                       Live brief
                     </span>
                   </div>
@@ -268,7 +268,7 @@ export default async function DashboardPage() {
                   ].map((m) => (
                     <div key={m.l} className="bg-paper rounded-xl border border-ink/6 px-3 py-2">
                       <div className="font-serif text-lg font-bold text-ink leading-none">{m.v}</div>
-                      <div className="text-[9px] text-ink-3 mt-1">{m.l}</div>
+                      <div className="text-[10px] text-ink-3 mt-1">{m.l}</div>
                     </div>
                   ))}
                 </div>
@@ -342,7 +342,7 @@ export default async function DashboardPage() {
             <section key={ward.id} className="space-y-4">
               <div className="flex items-baseline justify-between flex-wrap gap-3">
                 <div>
-                  <div className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-4">
+                  <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-4">
                     Ward {ward.ward_number}
                   </div>
                   <h2 className="font-serif text-2xl font-semibold text-ink leading-tight">
@@ -372,7 +372,7 @@ export default async function DashboardPage() {
                       <div className="h-1" style={{ backgroundColor: color }} />
                       <div className="p-5 space-y-3">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[9px] font-bold tracking-[0.16em] uppercase
+                          <span className="text-[10px] font-bold tracking-[0.16em] uppercase
                                            px-2 py-0.5 rounded-full"
                                 style={{ background: `${color}18`, color, border: `1px solid ${color}40` }}>
                             {ISSUE_LABEL[c.issue_tag] ?? c.issue_tag}
@@ -388,7 +388,7 @@ export default async function DashboardPage() {
                         {/* Solution preview */}
                         {sol && (
                           <div className="rounded-xl bg-paper border border-ink/6 p-3 space-y-2">
-                            <div className="flex items-center justify-between text-[9px] font-bold tracking-[0.16em] uppercase">
+                            <div className="flex items-center justify-between text-[10px] font-bold tracking-[0.16em] uppercase">
                               <span className="text-saffron-dark">Sushaasan solution ready</span>
                               <span className="text-ink-4">Priority {sol.priority_score}/100</span>
                             </div>

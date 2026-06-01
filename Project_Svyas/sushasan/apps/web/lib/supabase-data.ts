@@ -326,6 +326,12 @@ export async function getWardFull(wardId: string): Promise<WardFull | null> {
     if (seed) {
       clusters = seed.clusters
       solutions = solutions.length === 0 ? seed.solutions : solutions
+    } else {
+      // Ward not in WARDS registry but clusters may exist in seed CLUSTERS
+      const seedClusters = getSeedClusters().filter((c) => c.ward_id === wardId)
+      if (seedClusters.length > 0) {
+        clusters = seedClusters
+      }
     }
   } else if (solutions.length === 0) {
     // Real clusters but no AI solutions — pull seed solutions for that ward if any exist

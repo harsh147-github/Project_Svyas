@@ -113,11 +113,16 @@ export function WardMap() {
         type: 'fill',
         source: 'wards-context',
         paint: {
-          'fill-color': '#0a0a0a',
+          'fill-color': [
+            'case',
+            ['>', ['coalesce', ['feature-state', 'severity_avg'], 0], 0], '#FF9933',
+            '#0a0a0a',
+          ],
           'fill-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false], 0.08,
-            ['boolean', ['feature-state', 'hover'], false],    0.04,
+            ['boolean', ['feature-state', 'selected'], false], 0.35,
+            ['boolean', ['feature-state', 'hover'], false], 0.12,
+            ['>', ['coalesce', ['feature-state', 'severity_avg'], 0], 0], 0.07,
             0.0,
           ],
         },
@@ -642,6 +647,7 @@ async function fetchClusters(map: any) {
 
     for (const { wardnum, severity_avg } of (wardSeverity as { wardnum: number; severity_avg: number }[]) ?? []) {
       map.setFeatureState({ source: 'wards-pilot', id: wardnum }, { severity_avg })
+      map.setFeatureState({ source: 'wards-context', id: wardnum }, { severity_avg })
     }
   } catch {
     // renders fine without live data
