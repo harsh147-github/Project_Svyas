@@ -89,6 +89,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const [mediaOk,      setMediaOk]      = useState(false)
   const [focused,      setFocused]      = useState(false)
   const [isDesktop,    setIsDesktop]    = useState(false)
+  const [mounted,      setMounted]      = useState(false)
 
   const textareaRef    = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<any>(null)
@@ -98,6 +99,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const closingTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
+    setMounted(true)
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     setVoiceOk(!!SR)
     setMediaOk(!!(navigator.mediaDevices?.getUserMedia))
@@ -238,7 +240,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const canSubmit = text.trim().length >= 5 && !submitting && !result
   const showCursor = text === '' && !focused && !voiceActive && !transcribing
 
-  if (typeof document === 'undefined') return null
+  if (!mounted) return null
   return createPortal(<div
       className={`fixed inset-0 z-[55] flex flex-col justify-end ${isDesktop ? 'items-center' : ''}`}
       style={{
