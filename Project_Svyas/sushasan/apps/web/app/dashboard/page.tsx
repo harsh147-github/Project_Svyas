@@ -236,7 +236,7 @@ export default async function DashboardPage() {
                   className="group block bg-white rounded-2xl border border-ink/8 shadow-sm p-6
                              hover:border-saffron/40 hover:shadow-md transition-all">
               <div className="flex items-start gap-6 flex-wrap">
-                <div className="flex-1 min-w-[280px]">
+                <div className="flex-1 min-w-[min(280px,100%)]">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-[10px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-full"
                           style={{ backgroundColor: 'rgba(139,92,246,0.10)', color: '#6d28d9', border: '1px solid rgba(139,92,246,0.25)' }}>
