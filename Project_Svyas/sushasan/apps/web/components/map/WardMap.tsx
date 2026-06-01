@@ -107,34 +107,36 @@ export function WardMap() {
         promoteId: 'wardnum',
       })
 
-      // ── Context wards — interactive, near-transparent fill so streets show through
+      // ── Context wards — all wards get a visible saffron fill so every
+      //    part of Pune looks interactive and accessible to citizens.
       map.addLayer({
         id: 'context-fill',
         type: 'fill',
         source: 'wards-context',
         paint: {
-          'fill-color': [
-            'case',
-            ['>', ['coalesce', ['feature-state', 'severity_avg'], 0], 0], '#FF9933',
-            '#0a0a0a',
-          ],
+          'fill-color': '#FF9933',
           'fill-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false], 0.35,
-            ['boolean', ['feature-state', 'hover'], false], 0.12,
-            ['>', ['coalesce', ['feature-state', 'severity_avg'], 0], 0], 0.07,
-            0.0,
+            ['boolean', ['feature-state', 'selected'], false], 0.38,
+            ['boolean', ['feature-state', 'hover'], false], 0.18,
+            ['>', ['coalesce', ['feature-state', 'severity_avg'], 0], 0], 0.12,
+            0.07,
           ],
         },
       })
-      // Single subtle border on every ward — was an overpowering double-stripe before
+      // Saffron border on every context ward — matches the pilot-ward style
       map.addLayer({
         id: 'context-border-base',
         type: 'line',
         source: 'wards-context',
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
-          'line-color': '#0a0a0a',
+          'line-color': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false], '#c8741a',
+            ['boolean', ['feature-state', 'hover'], false],    '#FF9933',
+            '#FF9933',
+          ],
           'line-width': [
             'case',
             ['boolean', ['feature-state', 'selected'], false], 2.8,
@@ -143,9 +145,9 @@ export function WardMap() {
           ],
           'line-opacity': [
             'case',
-            ['boolean', ['feature-state', 'selected'], false], 0.85,
-            ['boolean', ['feature-state', 'hover'], false],    0.55,
-            0.42,
+            ['boolean', ['feature-state', 'selected'], false], 1.0,
+            ['boolean', ['feature-state', 'hover'], false],    0.75,
+            0.45,
           ],
         },
       })
@@ -459,27 +461,42 @@ export function WardMap() {
         ;(popupRef.current as any)?.remove()
       })
 
-      // Geolocation: fly to user, find containing pilot ward, select it
+      // Geolocation: fly to user, find containing ward (pilot or context), select it
       window.addEventListener('sushaasan:locate', (ev) => {
         const { lat, lng } = (ev as CustomEvent).detail as { lat: number; lng: number }
         map.flyTo({ center: [lng, lat], zoom: 14, speed: 1.4 })
-        // small delay so source data is queryable at new viewport
         setTimeout(() => {
           const point = map.project([lng, lat])
-          const feats = map.queryRenderedFeatures(point, { layers: ['pilot-fill'] })
-          if (feats.length) {
-            const f = feats[0]
-            selectWard('wards-pilot', f.properties as Record<string, unknown>)
+          const pilotFeats = map.queryRenderedFeatures(point, { layers: ['pilot-fill'] })
+          if (pilotFeats.length) {
+            selectWard('wards-pilot', pilotFeats[0].properties as Record<string, unknown>)
+            return
+          }
+          const contextFeats = map.queryRenderedFeatures(point, { layers: ['context-fill'] })
+          if (contextFeats.length) {
+            selectWard('wards-context', contextFeats[0].properties as Record<string, unknown>)
           }
         }, 700)
       })
 
-      // From /add-report: fly to a specific ward centroid and select it
+      // From /add-report: fly to a specific ward centroid and select it (any ward)
       window.addEventListener('sushaasan:auto-select-ward', ((e: CustomEvent) => {
         const { wardId, lat, lng } = e.detail as { wardId: string; lat: number; lng: number }
         map.flyTo({ center: [lng, lat], zoom: 14.5, speed: 1.2, curve: 1.2 })
         map.once('moveend', () => {
-          selectWard('wards-pilot', { wardnum: Number(wardId), Name2: `Ward ${wardId}` })
+          const point = map.project([lng, lat])
+          const pilotFeats = map.queryRenderedFeatures(point, { layers: ['pilot-fill'] })
+          if (pilotFeats.length) {
+            selectWard('wards-pilot', pilotFeats[0].properties as Record<string, unknown>)
+            return
+          }
+          const contextFeats = map.queryRenderedFeatures(point, { layers: ['context-fill'] })
+          if (contextFeats.length) {
+            selectWard('wards-context', contextFeats[0].properties as Record<string, unknown>)
+            return
+          }
+          // Fallback: synthesise props from wardId
+          selectWard('wards-context', { wardnum: Number(wardId), Name2: `Ward ${wardId}` })
         })
       }) as EventListener)
 
