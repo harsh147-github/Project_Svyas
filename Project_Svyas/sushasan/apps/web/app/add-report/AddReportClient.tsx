@@ -21,12 +21,17 @@ type SubmitState = 'idle' | 'submitting' | 'done' | 'error'
 
 type Result = {
   issueTag: string
+  issueTypeFree: string
   subTags: string[]
   severity: number
+  grievanceFormal: string
   citedLocation: string | null
   civicAsk: string | null
+  responsibleDept: string
   wardId: string
   wardName: string
+  lng: number
+  lat: number
 }
 
 const WARD_CENTROIDS = [
@@ -268,9 +273,28 @@ export function AddReportClient() {
       const reportResult = await res.json()
       setResult(reportResult)
       setSubmitState('done')
-      window.dispatchEvent(new CustomEvent('sushaasan:report-submitted', {
-        detail: { wardId: reportResult.wardId, issueTag: reportResult.issueTag }
-      }))
+      // Build the full cluster payload for optimistic map update
+      const clusterPayload = {
+        id: `user-${Date.now()}`,
+        ward_id: reportResult.wardId,
+        issue_tag: reportResult.issueTag,
+        issue_type_free: reportResult.issueTypeFree,
+        centroid_text: reportResult.grievanceFormal,
+        post_count: 1,
+        severity_avg: reportResult.severity,
+        status: 'signal_detected',
+        lng: reportResult.lng,
+        lat: reportResult.lat,
+        source_platforms: ['web'],
+        citizen_headline: reportResult.issueTypeFree
+          ? `Just reported: ${reportResult.issueTypeFree}`
+          : 'Just reported by a citizen',
+        problem_simple: reportResult.grievanceFormal,
+      }
+      // Persist for map pickup on page navigation
+      try { sessionStorage.setItem('sushasan:pending-report', JSON.stringify(clusterPayload)) } catch { /* private mode */ }
+      // Dispatch for same-page (InlineReportSheet) map update
+      window.dispatchEvent(new CustomEvent('sushaasan:report-submitted', { detail: clusterPayload }))
     } catch {
       setSubmitState('error')
     }
@@ -281,11 +305,12 @@ export function AddReportClient() {
   if (submitState === 'done' && result) {
     const color = ISSUE_COLOR[result.issueTag] ?? '#8B5CF6'
     const emoji = ISSUE_EMOJI[result.issueTag] ?? '📌'
+    const issueLabel = result.issueTypeFree || ISSUE_LABEL[result.issueTag] || result.issueTag
 
     async function handleShare() {
-      const shareText = `I flagged a ${(ISSUE_LABEL[result!.issueTag] ?? 'civic').toLowerCase()} issue in ${result!.wardName} on Sushaasan 🗺️`
+      const shareText = `I just flagged a civic issue in ${result!.wardName} on Sushaasan — the Pune civic intelligence map 🗺️\n\n"${result!.grievanceFormal}"\n\nSee it at sushasan.in`
       if (navigator.share) {
-        try { await navigator.share({ title: 'Sushaasan', text: shareText, url: 'https://sushasan.in' }) } catch { /* dismissed */ }
+        try { await navigator.share({ title: 'Sushaasan — Civic Signal', text: shareText, url: 'https://sushasan.in' }) } catch { /* dismissed */ }
       } else {
         await navigator.clipboard.writeText('https://sushasan.in')
         setCopied(true); setTimeout(() => setCopied(false), 2000)
@@ -294,60 +319,95 @@ export function AddReportClient() {
 
     return (
       <main className="bg-paper flex flex-col items-center justify-center px-5 py-10" style={{ minHeight: '100dvh' }}>
-        <div className="max-w-sm w-full">
-          <div className="flex flex-col items-center mb-8">
-            <div className="w-24 h-24 rounded-full flex items-center justify-center text-5xl"
-                 style={{ background: `${color}12`, border: `2.5px solid ${color}40`, boxShadow: `0 0 0 10px ${color}08, 0 0 0 20px ${color}04` }}>
+        <div className="max-w-sm w-full space-y-5">
+
+          {/* Header */}
+          <div className="flex flex-col items-center">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4"
+                 style={{ background: `${color}12`, border: `2px solid ${color}30` }}>
               {emoji}
             </div>
-            <h1 className="font-serif text-[30px] font-bold text-ink mt-6 text-center">Signal fired.</h1>
-            <p className="text-[14px] text-ink/50 mt-1.5 text-center">Ward {result.wardId} · {result.wardName}</p>
+            <h1 className="font-serif text-[26px] font-bold text-ink text-center leading-tight">
+              Grievance synthesised.
+            </h1>
+            <p className="text-[13px] text-ink/45 mt-1 text-center">
+              Ward {result.wardId} · {result.wardName}
+            </p>
           </div>
 
-          <div className="mb-6">
+          {/* THE FORMAL GRIEVANCE — hero element */}
+          <div className="rounded-2xl overflow-hidden border border-ink/10 shadow-sm bg-white">
+            <div className="px-4 pt-3 pb-1 flex items-center gap-2 border-b border-ink/6">
+              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: color }} />
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-ink/35">
+                Official grievance · appearing on map
+              </span>
+            </div>
+            <div className="p-4">
+              <p className="text-[14px] leading-relaxed text-ink font-medium" style={{ fontFamily: 'Source Serif 4, serif' }}>
+                &ldquo;{result.grievanceFormal}&rdquo;
+              </p>
+            </div>
+            <div className="px-4 pb-3 flex flex-wrap gap-2 items-center border-t border-ink/6 pt-3">
+              {/* Issue type badge */}
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold"
+                    style={{ background: `${color}15`, color, border: `1px solid ${color}30` }}>
+                {issueLabel}
+              </span>
+              {/* Dept badge */}
+              {result.responsibleDept && (
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-navy/8 text-navy/70 border border-navy/15">
+                  → {result.responsibleDept}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Severity */}
+          <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink/35">Severity</span>
               <span className="text-[11px] font-bold" style={{ color }}>{SEV_LABEL[result.severity] ?? 'Unknown'}</span>
             </div>
             <div className="flex gap-1.5">
               {[1,2,3,4,5].map(i => (
-                <div key={i} className="flex-1 h-2.5 rounded-full"
+                <div key={i} className="flex-1 h-2 rounded-full"
                      style={{ background: i <= result.severity ? color : `${color}18` }} />
               ))}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-ink/10 bg-white shadow-sm overflow-hidden mb-5">
-            <div className="h-[3px]" style={{ background: `linear-gradient(90deg, ${color}, ${color}55)` }} />
-            <div className="p-4 space-y-3">
-              <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-ink/35">What our AI understood</div>
-              <div className="font-semibold text-ink text-[15px]">{ISSUE_LABEL[result.issueTag] ?? result.issueTag} issue</div>
+          {/* Extra detail — location, civic ask, sub-tags */}
+          {(result.citedLocation || result.civicAsk || result.subTags.length > 0) && (
+            <div className="rounded-xl border border-ink/8 bg-ink/[0.02] p-3.5 space-y-2.5">
               {result.citedLocation && (
-                <div className="flex items-center gap-2 text-[13px] text-ink/65">
-                  <span style={{ color }}>📍</span><span>{result.citedLocation}</span>
+                <div className="flex items-start gap-2 text-[12px] text-ink/60">
+                  <span className="flex-shrink-0">📍</span>
+                  <span>{result.citedLocation}</span>
                 </div>
               )}
               {result.civicAsk && (
-                <div className="text-[13px] text-ink/70 leading-relaxed border-t border-ink/8 pt-3">
-                  <span className="font-semibold text-ink/40 text-[10px] uppercase tracking-wide mr-1.5">Ask ›</span>
+                <div className="text-[12px] text-ink/65 leading-relaxed">
+                  <span className="font-semibold text-ink/35 text-[10px] uppercase tracking-wide mr-1.5">Citizen ask ›</span>
                   {result.civicAsk}
                 </div>
               )}
               {result.subTags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
+                <div className="flex flex-wrap gap-1.5">
                   {result.subTags.map(tag => (
-                    <span key={tag} className="px-2.5 py-1 rounded-full text-[10px] font-semibold"
+                    <span key={tag} className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
                           style={{ background: `${color}12`, color, border: `1px solid ${color}25` }}>{tag}</span>
                   ))}
                 </div>
               )}
             </div>
-          </div>
+          )}
 
-          <div className="space-y-2.5">
+          {/* Actions */}
+          <div className="space-y-2.5 pt-1">
             <button onClick={() => { window.location.href = `/?ward=${result.wardId}` }}
                     className="w-full py-4 rounded-2xl text-[15px] font-bold text-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-                    style={{ background: color, boxShadow: `0 8px 24px ${color}45` }}>
+                    style={{ background: color, boxShadow: `0 8px 24px ${color}40` }}>
               See it on the map
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
@@ -363,8 +423,8 @@ export function AddReportClient() {
             </div>
           </div>
 
-          <p className="text-center text-[11px] text-ink/30 mt-6 leading-relaxed">
-            Your identity is never stored · Signal joins ward intelligence · Map updates within 1 hour
+          <p className="text-center text-[11px] text-ink/25 leading-relaxed">
+            Your identity is never stored · This grievance joins ward intelligence · Visible on map within 1 hour
           </p>
         </div>
       </main>
