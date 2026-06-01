@@ -441,11 +441,12 @@ export function WardMap() {
         e.stopPropagation()
       })
 
-      // Click outside — deselect
+      // Click outside — deselect (checks all interactive layers so tapping any
+      // ward or hotspot does not accidentally trigger the deselect path)
       map.on('click', (e) => {
         // @ts-expect-error defaultPrevented not standard on MapLibre events
         if (e.defaultPrevented) return
-        const features = map.queryRenderedFeatures(e.point, { layers: ['pilot-fill', 'hotspot-icons'] })
+        const features = map.queryRenderedFeatures(e.point, { layers: ['pilot-fill', 'context-fill', 'hotspot-icons'] })
         if (!features.length) {
           clearSelected()
           window.dispatchEvent(new CustomEvent('sushaasan:ward-cleared'))
