@@ -118,9 +118,9 @@ export function WardMap() {
           'fill-opacity': [
             'case',
             ['boolean', ['feature-state', 'selected'], false], 0.38,
-            ['boolean', ['feature-state', 'hover'], false], 0.18,
-            ['>', ['coalesce', ['feature-state', 'severity_avg'], 0], 0], 0.12,
-            0.07,
+            ['boolean', ['feature-state', 'hover'], false], 0.22,
+            ['>', ['coalesce', ['feature-state', 'severity_avg'], 0], 0], 0.18,
+            0.14,
           ],
         },
       })
@@ -141,13 +141,13 @@ export function WardMap() {
             'case',
             ['boolean', ['feature-state', 'selected'], false], 2.8,
             ['boolean', ['feature-state', 'hover'], false],    2.0,
-            1.0,
+            1.2,
           ],
           'line-opacity': [
             'case',
             ['boolean', ['feature-state', 'selected'], false], 1.0,
-            ['boolean', ['feature-state', 'hover'], false],    0.75,
-            0.45,
+            ['boolean', ['feature-state', 'hover'], false],    0.85,
+            0.7,
           ],
         },
       })
