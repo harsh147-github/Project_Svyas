@@ -225,44 +225,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── Founder card ──────────────────────────────────────────────── */}
-        <section className="bg-gradient-to-br from-white via-saffron/4 to-india-green/4
-                            rounded-2xl border border-ink/8 shadow-sm p-6 sm:p-8
-                            flex flex-col sm:flex-row items-start gap-6">
-          <div className="flex-shrink-0">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-saffron to-saffron-dark
-                            flex items-center justify-center text-white font-serif text-2xl font-bold
-                            shadow-[0_4px_20px_rgba(255,153,51,0.25)]">
-              HS
-            </div>
-          </div>
-          <div className="space-y-3 flex-1">
-            <div className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-3">
-              From the founder
-            </div>
-            <p className="font-serif text-[19px] text-ink leading-snug">
-              &ldquo;When citizens don&rsquo;t know how a problem is being solved, they create chaos. When
-              government doesn&rsquo;t see the signal in time, the chaos becomes the headline. Sushaasan
-              is the layer in between — quiet, structured, and on everyone&rsquo;s side.&rdquo;
-            </p>
-            <div className="text-[12px] text-ink-3">
-              — Harsh Sonawane · Founder, Sushaasan
-            </div>
-            <div className="flex flex-wrap gap-2 pt-2">
-              <a href="mailto:sonawaneharsh147@gmail.com"
-                 className="text-[11px] font-semibold px-3 py-1.5 rounded-full bg-saffron text-white
-                            hover:bg-saffron-dark transition-colors">
-                Reach out →
-              </a>
-              <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
-                 className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white border border-ink/10
-                            text-ink-2 hover:border-saffron/30">
-                Pitch deck + story ↗
-              </a>
-            </div>
-          </div>
-        </section>
-
         {/* ── Footer ─────────────────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-3 text-center">
           <div className="flex flex-wrap items-center justify-center gap-3">
