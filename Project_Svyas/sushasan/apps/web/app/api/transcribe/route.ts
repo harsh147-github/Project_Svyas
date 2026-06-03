@@ -8,9 +8,10 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(req: NextRequest) {
   let audioBlob: Blob
   let language = 'en'
+  let form: FormData
 
   try {
-    const form = await req.formData()
+    form = await req.formData()
     audioBlob = form.get('audio') as Blob
     language = (form.get('language') as string) || 'en'
     if (!audioBlob || audioBlob.size === 0) {
