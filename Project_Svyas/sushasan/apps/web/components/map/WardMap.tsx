@@ -98,7 +98,7 @@ export function WardMap() {
       // electoral wards has its own feature-state for selected/hover.
       map.addSource('wards-context', {
         type: 'geojson',
-        data: '/geojson/wards-context.geojson',
+        data: '/geojson/pune-electoral-wards.geojson',
         promoteId: 'wardnum',
       })
       map.addSource('wards-pilot', {
@@ -109,10 +109,15 @@ export function WardMap() {
 
       // ── Context wards — all wards get a visible saffron fill so every
       //    part of Pune looks interactive and accessible to citizens.
+      // Pilot ward numbers — context layers exclude these so they don't double-render under pilot-fill
+      const PILOT_WARD_NUMS = [25, 26, 41, 42, 43, 44, 46, 47]
+      const notPilot = ['match', ['get', 'wardnum'], PILOT_WARD_NUMS, false, true]
+
       map.addLayer({
         id: 'context-fill',
         type: 'fill',
         source: 'wards-context',
+        filter: notPilot,
         paint: {
           'fill-color': '#FF9933',
           'fill-opacity': [
@@ -129,6 +134,7 @@ export function WardMap() {
         id: 'context-border-base',
         type: 'line',
         source: 'wards-context',
+        filter: notPilot,
         layout: { 'line-cap': 'round', 'line-join': 'round' },
         paint: {
           'line-color': [
@@ -200,6 +206,7 @@ export function WardMap() {
         id: 'context-labels',
         type: 'symbol',
         source: 'wards-context',
+        filter: notPilot,
         minzoom: 12,
         layout: {
           'text-field': [
