@@ -3,37 +3,93 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
 import { randomUUID, createHash } from 'crypto'
 
-// ── Ward centroid lookup ──────────────────────────────────────────────────────
+// ── In-memory rate limiter: 10 reports per IP per 10 minutes ─────────────────
+// Per-instance (fine for Vercel serverless — each cold start gets a fresh map).
+// For multi-instance rate limiting, wire Redis/Upstash when scaling.
+const _rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+const RATE_LIMIT = 10
+const RATE_WINDOW_MS = 10 * 60 * 1000  // 10 minutes
 
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = _rateLimitMap.get(ip)
+  if (!entry || now >= entry.resetAt) {
+    _rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS })
+    return true
+  }
+  if (entry.count >= RATE_LIMIT) return false
+  entry.count++
+  return true
+}
+
+// ── Ward centroids for all 58 PMC electoral wards (from real GeoJSON) ─────────
+// Corrected from actual ward boundary centroids — GPS reports now resolve
+// to the right ward regardless of which part of Pune the user is in.
 const WARD_CENTROIDS = [
-  { ward_id: '46', name: 'NIBM–Mohammadwadi',    lat: 18.4655, lng: 73.9010 },
-  { ward_id: '47', name: 'Kondhwa Budruk',        lat: 18.4489, lng: 73.8780 },
-  { ward_id: '43', name: 'Wanowrie–Kausar Baug',  lat: 18.4788, lng: 73.8832 },
-  { ward_id: '42', name: 'Wanawadi–Ramtekadi',    lat: 18.4730, lng: 73.9140 },
-  { ward_id: '41', name: 'Kondhwa Kh–Mithanagar', lat: 18.4520, lng: 73.8900 },
-  { ward_id: '44', name: 'Kale Boratenagar–Amanora', lat: 18.4400, lng: 73.8950 },
-  { ward_id: '25', name: 'Hadapsar',              lat: 18.5040, lng: 73.9280 },
-  { ward_id: '26', name: 'Wanwadi–Vaiduwadi',     lat: 18.4990, lng: 73.9050 },
-  { ward_id: '4',  name: 'Kharadi–EON IT Park',   lat: 18.5290, lng: 73.8450 },
-  { ward_id: '5',  name: 'Mahadeonagar–Ghorpadi', lat: 18.5360, lng: 73.8930 },
-  { ward_id: '6',  name: 'Kalyani Nagar–Viman Nagar', lat: 18.5670, lng: 73.9140 },
-  { ward_id: '7',  name: 'Yerwada',               lat: 18.5500, lng: 73.9380 },
-  { ward_id: '3',  name: 'Kothrud–Karve Nagar',   lat: 18.5080, lng: 73.8070 },
-  { ward_id: '1',  name: 'Aundh–Baner',           lat: 18.5590, lng: 73.7920 },
-  { ward_id: '8',  name: 'Lohegaon–Dhanori',      lat: 18.5930, lng: 73.9210 },
-  { ward_id: '9',  name: 'Shivajinagar',           lat: 18.5292, lng: 73.8530 },
-  { ward_id: '12', name: 'Baner–Balewadi',         lat: 18.5620, lng: 73.7870 },
-  { ward_id: '20', name: 'Pune Station',           lat: 18.5280, lng: 73.8740 },
-  { ward_id: '21', name: 'Koregaon Park',          lat: 18.5365, lng: 73.8982 },
-  { ward_id: '23', name: 'Magarpatta–Hadapsar',    lat: 18.5082, lng: 73.9228 },
-  { ward_id: '31', name: 'Kothrud',                lat: 18.5032, lng: 73.8100 },
-  { ward_id: '34', name: 'Warje–Malwadi',          lat: 18.4730, lng: 73.7900 },
-  { ward_id: '40', name: 'Bibwewadi–Gangadham',    lat: 18.4780, lng: 73.8530 },
-  { ward_id: '51', name: 'Vadgaon Budruk',         lat: 18.4720, lng: 73.8280 },
-  { ward_id: '53', name: 'Narhe–Khadakwasla',      lat: 18.4398, lng: 73.8010 },
-  { ward_id: '56', name: 'Bharati Vidyapeeth',     lat: 18.4552, lng: 73.8552 },
-  { ward_id: '57', name: 'Sukhsagarnagar',         lat: 18.4512, lng: 73.8655 },
-  { ward_id: '58', name: 'Katraj–Kondhwa Bk',      lat: 18.4438, lng: 73.8580 },
+  // Pilot wards
+  { ward_id: '46', name: 'NIBM–Mohammadwadi',           lat: 18.4655, lng: 73.9010 },
+  { ward_id: '47', name: 'Kondhwa Budruk–Yewalewadi',   lat: 18.4489, lng: 73.8780 },
+  { ward_id: '43', name: 'Wanowrie–Kausar Baug',        lat: 18.4788, lng: 73.8832 },
+  { ward_id: '42', name: 'Wanawadi–Ramtekadi',          lat: 18.4730, lng: 73.9140 },
+  { ward_id: '41', name: 'Kondhwa Kh–Mithanagar',       lat: 18.4520, lng: 73.8900 },
+  { ward_id: '44', name: 'Kale Boratenagar–Amanora',    lat: 18.4860, lng: 73.9390 },
+  { ward_id: '25', name: 'Hadapsar Gaothan–Satavwadi',  lat: 18.4988, lng: 73.9432 },
+  { ward_id: '26', name: 'Wanwadi–Vaiduwadi',           lat: 18.5062, lng: 73.9128 },
+  // North-East Pune
+  { ward_id: '1',  name: 'Dhanori–Vishrantwadi',        lat: 18.5908, lng: 73.8895 },
+  { ward_id: '2',  name: 'Tingrenagar–Sanjay Park',     lat: 18.5767, lng: 73.8985 },
+  { ward_id: '3',  name: 'Lohegaon–Viman Nagar',        lat: 18.5895, lng: 73.9254 },
+  { ward_id: '4',  name: 'East Kharadi–Wagholi',        lat: 18.5770, lng: 73.9665 },
+  { ward_id: '5',  name: 'West Kharadi–Vadgaon Sheri',  lat: 18.5511, lng: 73.9339 },
+  { ward_id: '6',  name: 'Vadgaon Sheri–Ramwadi',       lat: 18.5502, lng: 73.9203 },
+  { ward_id: '7',  name: 'Kalyani Nagar–Nagpur Chawl',  lat: 18.5527, lng: 73.9049 },
+  { ward_id: '8',  name: 'Kalas–Phulenagar',            lat: 18.5694, lng: 73.8780 },
+  { ward_id: '9',  name: 'Yerwada',                     lat: 18.5479, lng: 73.8835 },
+  // Central Pune
+  { ward_id: '10', name: 'Shivajinagar–Sangamwadi',     lat: 18.5393, lng: 73.8584 },
+  { ward_id: '11', name: 'Bopodi–SPPU',                 lat: 18.5541, lng: 73.8323 },
+  { ward_id: '17', name: 'Shaniwar Peth–Navi Peth',     lat: 18.5113, lng: 73.8482 },
+  { ward_id: '18', name: 'Kasba Peth–Mandai',           lat: 18.5191, lng: 73.8600 },
+  { ward_id: '19', name: 'Rasta Peth–Nana Peth',        lat: 18.5213, lng: 73.8651 },
+  { ward_id: '20', name: 'Pune Station–Ambedkar Road',  lat: 18.5255, lng: 73.8727 },
+  { ward_id: '21', name: 'Koregaon Park–Mundhwa',       lat: 18.5291, lng: 73.9035 },
+  { ward_id: '22', name: 'Manjari Bk–Shewalwadi',       lat: 18.5087, lng: 73.9714 },
+  { ward_id: '23', name: 'Sadesataranali–Hadapsar',     lat: 18.5135, lng: 73.9425 },
+  { ward_id: '24', name: 'Magarpatta–Sadhana Vidyalaya',lat: 18.5114, lng: 73.9291 },
+  { ward_id: '27', name: 'Kasewadi–Lohiyanagar',        lat: 18.5062, lng: 73.8704 },
+  { ward_id: '28', name: 'Bhavani Peth',                lat: 18.5100, lng: 73.8640 },
+  { ward_id: '29', name: 'Ghorpade Peth–Mandai',        lat: 18.5068, lng: 73.8598 },
+  // West Pune
+  { ward_id: '12', name: 'Aundh–Balewadi',              lat: 18.5639, lng: 73.7918 },
+  { ward_id: '13', name: 'Baner–Sus–Mahalunge',         lat: 18.5584, lng: 73.7680 },
+  { ward_id: '14', name: 'Pashan–Bawdhan',              lat: 18.5257, lng: 73.7775 },
+  { ward_id: '15', name: 'Gokhalenagar–Vadarwadi',      lat: 18.5307, lng: 73.8232 },
+  { ward_id: '16', name: 'Erandwane–Fergusson College', lat: 18.5114, lng: 73.8331 },
+  { ward_id: '30', name: 'Jai Bhavaninagar–Kelewadi',   lat: 18.5145, lng: 73.8162 },
+  { ward_id: '31', name: 'Kothrud Gaothan–Shivtirthnagar', lat: 18.5042, lng: 73.8070 },
+  { ward_id: '32', name: 'Bhusari Colony–Bavdhan',      lat: 18.5113, lng: 73.7901 },
+  { ward_id: '33', name: 'Ideal Colony–Mahatma Society',lat: 18.5006, lng: 73.7953 },
+  // South-West Pune
+  { ward_id: '34', name: 'Warje–Kondhave Dhavde',       lat: 18.4713, lng: 73.7614 },
+  { ward_id: '35', name: 'Ramnagar–Uttamnagar',         lat: 18.4737, lng: 73.7914 },
+  { ward_id: '36', name: 'Karvenagar',                  lat: 18.4858, lng: 73.8145 },
+  { ward_id: '37', name: 'Dattawadi–Janata Vasahat',    lat: 18.4955, lng: 73.8402 },
+  { ward_id: '38', name: 'Padmavati–Shivdarshan',       lat: 18.4931, lng: 73.8521 },
+  { ward_id: '39', name: 'Market Yard–Maharshi Nagar',  lat: 18.4902, lng: 73.8636 },
+  { ward_id: '40', name: 'Bibvewadi–Gangadham',         lat: 18.4839, lng: 73.8759 },
+  { ward_id: '45', name: 'Fursungi',                    lat: 18.4786, lng: 73.9589 },
+  // South Pune
+  { ward_id: '48', name: 'Indiranagar',                 lat: 18.4665, lng: 73.8702 },
+  { ward_id: '49', name: 'Balajinagar–Shankar Maharaj', lat: 18.4713, lng: 73.8605 },
+  { ward_id: '50', name: 'Sahakarnagar–Taljai',         lat: 18.4820, lng: 73.8479 },
+  { ward_id: '51', name: 'Vadgaon Bk–Manikbaug',        lat: 18.4746, lng: 73.8311 },
+  { ward_id: '52', name: 'Nanded City–Sun City',        lat: 18.4746, lng: 73.8169 },
+  { ward_id: '53', name: 'Narhe–Khadakwasla',           lat: 18.4364, lng: 73.7958 },
+  { ward_id: '54', name: 'Dhayari–Ambegaon',            lat: 18.4362, lng: 73.8274 },
+  { ward_id: '55', name: 'Dhankawadi–Ambegaon Pathar',  lat: 18.4605, lng: 73.8376 },
+  { ward_id: '56', name: 'Bharati Vidyapeeth',          lat: 18.4601, lng: 73.8519 },
+  { ward_id: '57', name: 'Sukhsagarnagar',              lat: 18.4513, lng: 73.8668 },
+  { ward_id: '58', name: 'Katraj–Gokulnagar',           lat: 18.4389, lng: 73.8632 },
 ]
 
 function nearestWard(lat: number, lng: number) {
@@ -90,6 +146,15 @@ Rules:
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 10 reports per IP per 10 minutes
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json(
+      { error: 'Too many reports. Please wait a few minutes before submitting again.' },
+      { status: 429 }
+    )
+  }
+
   let body: { text?: string; lat?: number; lng?: number; wardId?: string }
   try {
     body = await req.json()
