@@ -98,7 +98,7 @@ export function WardMap() {
       // electoral wards has its own feature-state for selected/hover.
       map.addSource('wards-context', {
         type: 'geojson',
-        data: '/geojson/pune-electoral-wards.geojson',
+        data: '/geojson/wards-context.geojson',
         promoteId: 'wardnum',
       })
       map.addSource('wards-pilot', {
