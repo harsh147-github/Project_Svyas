@@ -45,6 +45,26 @@ const ISSUE_COLOR:  Record<string, string> = { traffic: '#EF4444', water: '#3B82
 const ISSUE_LABEL:  Record<string, string> = { traffic: 'Traffic', water: 'Water', electricity: 'Electricity', garbage: 'Garbage', other: 'Other' }
 const SEV_LABEL = ['', 'Minor', 'Recurring', 'Significant', 'Serious', 'Emergency']
 
+// Resize an image file to max 1024px and encode as JPEG base64 (for Claude vision)
+function resizeAndEncode(file: File, maxPx = 1024): Promise<{ base64: string; mimeType: string }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height))
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.round(img.width * scale)
+      canvas.height = Math.round(img.height * scale)
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(url)
+      resolve({ base64: canvas.toDataURL('image/jpeg', 0.85).split(',')[1], mimeType: 'image/jpeg' })
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load failed')) }
+    img.src = url
+  })
+}
+
 // Apple-spec design tokens ────────────────────────────────────────────────────
 
 const EASE = 'cubic-bezier(0.25, 0.1, 0.25, 1)'
@@ -68,9 +88,10 @@ type LocationStatus =
   | { kind: 'denied' }
 
 type Result = {
-  issueTag: string; subTags: string[]; severity: number
+  issueTag: string; issueTypeFree?: string; subTags: string[]; severity: number
   citedLocation: string | null; civicAsk: string | null
   wardId: string; wardName: string
+  grievanceFormal?: string; lng?: number; lat?: number
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -90,6 +111,8 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const [focused,      setFocused]      = useState(false)
   const [isDesktop,    setIsDesktop]    = useState(false)
   const [mounted,      setMounted]      = useState(false)
+  const [photo,        setPhoto]        = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
 
   const textareaRef    = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<any>(null)
@@ -115,6 +138,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
     if (!isOpen) return
     if (closingTimer.current) { clearTimeout(closingTimer.current); closingTimer.current = null }
     setText(''); setResult(null); setSubmitError(false)
+    setPhoto(null); setPhotoPreview(null)
     voiceActiveRef.current = false; setVoiceActive(false); setTranscribing(false)
     requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
     setLoc({ kind: 'detecting' })
@@ -220,11 +244,24 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   async function handleSubmit() {
     if (text.trim().length < 5 || submitting || !!result) return
     setSubmitting(true); setSubmitError(false)
+
+    // Encode photo if present
+    let photoBase64: string | null = null
+    let photoMimeType: string | null = null
+    if (photo) {
+      try {
+        const encoded = await resizeAndEncode(photo)
+        photoBase64 = encoded.base64
+        photoMimeType = encoded.mimeType
+      } catch { /* skip photo if encode fails */ }
+    }
+
     const payload = {
       text: text.trim(),
       lat:    loc.kind === 'found' ? loc.lat    : null,
       lng:    loc.kind === 'found' ? loc.lng    : null,
       wardId: loc.kind === 'found' ? loc.wardId : null,
+      ...(photoBase64 ? { photoBase64, photoMimeType } : {}),
     }
     try {
       const res = await fetch('/api/add-report', {
@@ -233,8 +270,42 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
         body: JSON.stringify(payload),
       })
       if (!res.ok) throw new Error(`${res.status}`)
-      setResult(await res.json() as Result)
+      const apiResult = await res.json() as Result
+      // Optimistic map update — add their report as a hotspot immediately
+      const clusterPayload = {
+        id: `user-${Date.now()}`,
+        ward_id: apiResult.wardId,
+        issue_tag: apiResult.issueTag,
+        issue_type_free: apiResult.issueTypeFree ?? '',
+        centroid_text: apiResult.grievanceFormal ?? text.trim(),
+        post_count: 1,
+        severity_avg: apiResult.severity,
+        status: 'signal_detected',
+        lng: typeof apiResult.lng === 'number' ? apiResult.lng : (CENTROIDS[apiResult.wardId]?.[1] ?? 73.856),
+        lat: typeof apiResult.lat === 'number' ? apiResult.lat : (CENTROIDS[apiResult.wardId]?.[0] ?? 18.524),
+        source_platforms: ['web'],
+        citizen_headline: apiResult.issueTypeFree
+          ? `Just reported: ${apiResult.issueTypeFree}`
+          : 'Just reported by a citizen',
+        problem_simple: apiResult.grievanceFormal ?? text.trim(),
+      }
+      try { sessionStorage.setItem('sushasan:pending-report', JSON.stringify(clusterPayload)) } catch { /**/ }
+      window.dispatchEvent(new CustomEvent('sushaasan:report-submitted', { detail: clusterPayload }))
+      setResult(apiResult)
     } catch { setSubmitError(true) } finally { setSubmitting(false) }
+  }
+
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPhoto(file)
+    setPhotoPreview(URL.createObjectURL(file))
+    e.target.value = '' // reset so same file can be re-selected
+  }
+
+  function clearPhoto() {
+    if (photoPreview) URL.revokeObjectURL(photoPreview)
+    setPhoto(null); setPhotoPreview(null)
   }
 
   const canSubmit = text.trim().length >= 5 && !submitting && !result
@@ -349,6 +420,9 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
                 useWhisper={useWhisper} canSubmit={canSubmit}
                 submitting={submitting} submitError={submitError}
                 onSubmit={handleSubmit}
+                photoPreview={photoPreview}
+                onPhotoChange={handlePhotoChange}
+                onPhotoClear={clearPhoto}
               />
           }
         </div>
@@ -364,6 +438,7 @@ function ComposeView({
   text, textareaRef, showCursor, onTextChange, onFocus, onBlur,
   voiceActive, transcribing, voiceLang, onLangChange, onToggleVoice,
   canSpeak, useWhisper, canSubmit, submitting, submitError, onSubmit,
+  photoPreview, onPhotoChange, onPhotoClear,
 }: {
   text: string
   textareaRef: React.RefObject<HTMLTextAreaElement>
@@ -375,6 +450,9 @@ function ComposeView({
   onToggleVoice: () => void; canSpeak: boolean; useWhisper: boolean
   canSubmit: boolean; submitting: boolean; submitError: boolean
   onSubmit: () => void
+  photoPreview: string | null
+  onPhotoChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onPhotoClear: () => void
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -547,6 +625,53 @@ function ComposeView({
         </div>
       )}
 
+      {/* Photo — camera or gallery ──────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {photoPreview ? (
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photoPreview} alt="Attached photo"
+              style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 12,
+                       border: '1.5px solid rgba(0,0,0,0.08)' }} />
+            <button onClick={onPhotoClear} aria-label="Remove photo"
+              style={{
+                position: 'absolute', top: -6, right: -6, width: 20, height: 20,
+                borderRadius: '50%', background: 'rgba(29,29,31,0.75)', border: 'none',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontSize: 12, fontWeight: 700, lineHeight: 1,
+              }}>×</button>
+          </div>
+        ) : (
+          <>
+            <label style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px',
+              borderRadius: 980, background: 'rgba(29,29,31,0.05)',
+              border: '1px solid rgba(29,29,31,0.10)', cursor: 'pointer',
+              fontSize: 13, fontWeight: 600, color: '#1d1d1f',
+              fontFamily: '-apple-system, sans-serif', minHeight: 40,
+            }}>
+              📷 Camera
+              <input type="file" accept="image/*" capture="environment"
+                onChange={onPhotoChange} style={{ display: 'none' }} />
+            </label>
+            <label style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px',
+              borderRadius: 980, background: 'rgba(29,29,31,0.05)',
+              border: '1px solid rgba(29,29,31,0.10)', cursor: 'pointer',
+              fontSize: 13, fontWeight: 600, color: '#1d1d1f',
+              fontFamily: '-apple-system, sans-serif', minHeight: 40,
+            }}>
+              🖼 Gallery
+              <input type="file" accept="image/*"
+                onChange={onPhotoChange} style={{ display: 'none' }} />
+            </label>
+          </>
+        )}
+        <span style={{ fontSize: 11, color: 'rgba(29,29,31,0.35)', fontFamily: '-apple-system, sans-serif' }}>
+          {photoPreview ? 'Photo attached — AI will read it' : 'Add a photo (optional)'}
+        </span>
+      </div>
+
       {/* Submit — PRIMARY ACTION, pill shape ───────────────────────────────── */}
       <button
         onClick={onSubmit}
@@ -656,8 +781,27 @@ function SuccessView({ result, onDone, onSeeMap }: {
         </div>
       </div>
 
-      {/* AI summary — in a card */}
-      {result.civicAsk && (
+      {/* Formal grievance — the AI-synthesized text shown as the primary output */}
+      {result.grievanceFormal && (
+        <div style={{ ...CARD, padding: '14px 16px' }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',
+            textTransform: 'uppercase', color: 'rgba(29,29,31,0.35)', marginBottom: 6,
+            fontFamily: '-apple-system, sans-serif',
+          }}>
+            Official grievance · appearing on map
+          </div>
+          <div style={{
+            fontSize: 14, lineHeight: 1.5, color: '#1d1d1f',
+            fontFamily: 'Source Serif 4, Georgia, serif',
+          }}>
+            &ldquo;{result.grievanceFormal}&rdquo;
+          </div>
+        </div>
+      )}
+
+      {/* Civic ask */}
+      {result.civicAsk && !result.grievanceFormal && (
         <div style={{ ...CARD, padding: '14px 16px', background: `${color}0A`, borderColor: `${color}22` }}>
           <div style={{
             fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',

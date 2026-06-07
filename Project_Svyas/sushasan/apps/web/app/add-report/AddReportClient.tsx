@@ -3,6 +3,26 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
+// Resize image to max 1024px, encode as JPEG base64
+function resizeAndEncode(file: File, maxPx = 1024): Promise<{ base64: string; mimeType: string }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height))
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.round(img.width * scale)
+      canvas.height = Math.round(img.height * scale)
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(url)
+      resolve({ base64: canvas.toDataURL('image/jpeg', 0.85).split(',')[1], mimeType: 'image/jpeg' })
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load failed')) }
+    img.src = url
+  })
+}
+
 const LANGS = [
   { code: 'en-IN', label: 'English', short: 'EN', whisper: 'en' },
   { code: 'hi-IN', label: 'हिंदी', short: 'हिं', whisper: 'hi' },
@@ -211,6 +231,8 @@ export function AddReportClient() {
   const [voiceLang, setVoiceLang] = useState('en-IN')
   const [textFocused, setTextFocused] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [photo, setPhoto] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<any>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -353,17 +375,41 @@ export function AddReportClient() {
 
   const canSpeak = voiceSupported || mediaSupported
 
+  function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (photoPreview) URL.revokeObjectURL(photoPreview)
+    setPhoto(file)
+    setPhotoPreview(URL.createObjectURL(file))
+    e.target.value = ''
+  }
+
+  function clearPhoto() {
+    if (photoPreview) URL.revokeObjectURL(photoPreview)
+    setPhoto(null); setPhotoPreview(null)
+  }
+
   async function handleSubmit() {
     if (text.trim().length < 5 || submitState !== 'idle') return
     setSubmitState('submitting')
     const lat = location.status === 'found' ? location.lat : null
     const lng = location.status === 'found' ? location.lng : null
     const wardId = location.status === 'found' || location.status === 'manual' ? location.wardId : null
+
+    let photoBase64: string | null = null
+    let photoMimeType: string | null = null
+    if (photo) {
+      try {
+        const enc = await resizeAndEncode(photo)
+        photoBase64 = enc.base64; photoMimeType = enc.mimeType
+      } catch { /* skip photo */ }
+    }
+
     try {
       const res = await fetch('/api/add-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text.trim(), lat, lng, wardId }),
+        body: JSON.stringify({ text: text.trim(), lat, lng, wardId, ...(photoBase64 ? { photoBase64, photoMimeType } : {}) }),
       })
       if (!res.ok) throw new Error(`${res.status}`)
       const reportResult = await res.json()
@@ -635,6 +681,46 @@ export function AddReportClient() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* ── PHOTO section ────────────────────────────────────────── */}
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-[11px] font-bold tracking-[0.28em] uppercase text-ink/35">
+                Add a photo
+              </span>
+              <div className="flex-1 h-px bg-ink/10" />
+              <span className="text-ink/20 text-[10px]">optional</span>
+            </div>
+            {photoPreview ? (
+              <div className="flex items-center gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <div className="relative flex-shrink-0">
+                  <img src={photoPreview} alt="Attached"
+                    className="w-20 h-20 object-cover rounded-2xl border border-ink/10" />
+                  <button onClick={clearPhoto} aria-label="Remove photo"
+                    className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-ink/70 text-white text-xs flex items-center justify-center font-bold">
+                    ×
+                  </button>
+                </div>
+                <p className="text-[13px] text-ink/60 leading-relaxed">
+                  Photo attached — AI will read the image to write a better grievance.
+                </p>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                <label className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-ink/10 bg-white cursor-pointer hover:border-ink/20 transition-colors text-[14px] font-semibold text-ink">
+                  📷 Camera
+                  <input type="file" accept="image/*" capture="environment"
+                    onChange={handlePhotoChange} className="hidden" />
+                </label>
+                <label className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-ink/10 bg-white cursor-pointer hover:border-ink/20 transition-colors text-[14px] font-semibold text-ink">
+                  🖼 Gallery
+                  <input type="file" accept="image/*"
+                    onChange={handlePhotoChange} className="hidden" />
+                </label>
+              </div>
+            )}
           </div>
 
           {/* ── SPEAK section ────────────────────────────────────────── */}
