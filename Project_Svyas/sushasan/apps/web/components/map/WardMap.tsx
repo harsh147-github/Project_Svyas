@@ -766,10 +766,10 @@ function applyClusterData(map: any, apiClusters: Record<string, unknown>[]) {
 let _lastApiClusters: Record<string, unknown>[] = []
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function fetchClusters(map: any) {
+async function fetchClusters(map: any, retryOnce = true) {
   try {
     const res = await fetch('/api/ward/all')
-    if (!res.ok) return
+    if (!res.ok) throw new Error(`ward/all ${res.status}`)
     const { clusters, wardSeverity } = await res.json()
     _lastApiClusters = clusters as Record<string, unknown>[]
     applyClusterData(map, _lastApiClusters)
@@ -778,7 +778,11 @@ async function fetchClusters(map: any) {
       map.setFeatureState({ source: 'wards-pilot', id: wardnum }, { severity_avg })
       map.setFeatureState({ source: 'wards-context', id: wardnum }, { severity_avg })
     }
-  } catch {
-    // renders fine without live data
+  } catch (e) {
+    if (retryOnce) {
+      setTimeout(() => fetchClusters(map, false), 3000)
+    } else {
+      console.warn('[WardMap] cluster fetch failed after retry:', e)
+    }
   }
 }

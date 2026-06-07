@@ -282,12 +282,12 @@ const wardFullCache = new Map<string, Promise<WardFull | null>>()
 function fetchWardFull(wardnum: string | number): Promise<WardFull | null> {
   const key = String(wardnum)
   if (!wardFullCache.has(key)) {
-    wardFullCache.set(
-      key,
-      fetch(`/api/ward/${key}`)
-        .then((r) => r.ok ? r.json() : null)
-        .catch(() => null),
-    )
+    const p = fetch(`/api/ward/${key}`)
+      .then((r) => r.ok ? r.json() as Promise<WardFull> : null)
+      .catch(() => null)
+    // Only cache successes; on failure remove so next tap retries
+    p.then((v) => { if (v === null) wardFullCache.delete(key) })
+    wardFullCache.set(key, p)
   }
   return wardFullCache.get(key)!
 }
