@@ -13,22 +13,66 @@ const LANGS = [
   { code: 'mr-IN', short: 'मर',  whisper: 'mr' },
 ]
 
+// Full 58 PMC electoral ward centroids — accurate GPS fallback for all of Pune
 const CENTROIDS: Record<string, [number, number, string]> = {
-  '46': [18.4655, 73.9010, 'NIBM–Mohammadwadi'],
-  '47': [18.4489, 73.8780, 'Kondhwa Budruk'],
+  '1':  [18.5908, 73.8895, 'Dhanori–Vishrantwadi'],
+  '2':  [18.5767, 73.8985, 'Tingrenagar–Sanjay Park'],
+  '3':  [18.5895, 73.9254, 'Lohegaon–Viman Nagar'],
+  '4':  [18.5770, 73.9665, 'East Kharadi–Wagholi'],
+  '5':  [18.5511, 73.9339, 'West Kharadi–Vadgaon Sheri'],
+  '6':  [18.5502, 73.9203, 'Vadgaon Sheri–Ramwadi'],
+  '7':  [18.5527, 73.9049, 'Kalyani Nagar–Nagpur Chawl'],
+  '8':  [18.5694, 73.8780, 'Kalas–Phulenagar'],
+  '9':  [18.5479, 73.8835, 'Yerwada'],
+  '10': [18.5393, 73.8584, 'Shivajinagar–Sangamwadi'],
+  '11': [18.5541, 73.8323, 'Bopodi–SPPU'],
+  '12': [18.5639, 73.7918, 'Aundh–Balewadi'],
+  '13': [18.5584, 73.7680, 'Baner–Sus–Mahalunge'],
+  '14': [18.5257, 73.7775, 'Pashan–Bawdhan'],
+  '15': [18.5307, 73.8232, 'Gokhalenagar–Vadarwadi'],
+  '16': [18.5114, 73.8331, 'Erandwane–FC Road'],
+  '17': [18.5113, 73.8482, 'Shaniwar Peth–Navi Peth'],
+  '18': [18.5191, 73.8600, 'Kasba Peth–Mandai'],
+  '19': [18.5213, 73.8651, 'Rasta Peth–Nana Peth'],
+  '20': [18.5255, 73.8727, 'Pune Station–Ambedkar Road'],
+  '21': [18.5291, 73.9035, 'Koregaon Park–Mundhwa'],
+  '22': [18.5087, 73.9714, 'Manjari Bk–Shewalwadi'],
+  '23': [18.5135, 73.9425, 'Sadesataranali–Hadapsar'],
+  '24': [18.5114, 73.9291, 'Magarpatta–Sadhana Vidyalaya'],
+  '25': [18.4988, 73.9432, 'Hadapsar Gaothan–Satavwadi'],
+  '26': [18.5062, 73.9128, 'Wanwadi–Vaiduwadi'],
+  '27': [18.5062, 73.8704, 'Kasewadi–Lohiyanagar'],
+  '28': [18.5100, 73.8640, 'Bhavani Peth'],
+  '29': [18.5068, 73.8598, 'Ghorpade Peth–Mandai'],
+  '30': [18.5145, 73.8162, 'Jai Bhavaninagar–Kelewadi'],
+  '31': [18.5042, 73.8070, 'Kothrud–Shivtirthnagar'],
+  '32': [18.5113, 73.7901, 'Bhusari Colony–Bavdhan'],
+  '33': [18.5006, 73.7953, 'Ideal Colony–Mahatma Society'],
+  '34': [18.4713, 73.7614, 'Warje–Kondhave Dhavde'],
+  '35': [18.4737, 73.7914, 'Ramnagar–Uttamnagar'],
+  '36': [18.4858, 73.8145, 'Karvenagar'],
+  '37': [18.4955, 73.8402, 'Dattawadi–Janata Vasahat'],
+  '38': [18.4931, 73.8521, 'Padmavati–Shivdarshan'],
+  '39': [18.4902, 73.8636, 'Market Yard–Maharshi Nagar'],
+  '40': [18.4839, 73.8759, 'Bibvewadi–Gangadham'],
+  '41': [18.4520, 73.8900, 'Kondhwa Khurd–Mithanagar'],
+  '42': [18.4730, 73.9140, 'Wanawadi–Ramtekadi'],
   '43': [18.4788, 73.8832, 'Wanowrie–Salunke Vihar'],
-  '42': [18.4730, 73.9140, 'Ramtekadi'],
-  '41': [18.4520, 73.8900, 'Kondhwa Khurd'],
-  '44': [18.4400, 73.8950, 'Undri–Pisoli'],
-  '25': [18.5040, 73.9280, 'Hadapsar'],
-  '26': [18.4990, 73.9050, 'Wanwadi'],
-  '4':  [18.5290, 73.8450, 'Shivajinagar'],
-  '5':  [18.5360, 73.8930, 'Koregaon Park'],
-  '6':  [18.5670, 73.9140, 'Viman Nagar'],
-  '7':  [18.5500, 73.9380, 'Kharadi'],
-  '3':  [18.5080, 73.8070, 'Kothrud'],
-  '1':  [18.5590, 73.7920, 'Aundh–Baner'],
-  '8':  [18.5930, 73.9210, 'Lohegaon–Dhanori'],
+  '44': [18.4860, 73.9390, 'Kale Boratenagar–Amanora'],
+  '45': [18.4786, 73.9589, 'Fursungi'],
+  '46': [18.4655, 73.9010, 'NIBM–Mohammadwadi'],
+  '47': [18.4489, 73.8780, 'Kondhwa Budruk–Yewalewadi'],
+  '48': [18.4665, 73.8702, 'Indiranagar'],
+  '49': [18.4713, 73.8605, 'Balajinagar–Shankar Maharaj'],
+  '50': [18.4820, 73.8479, 'Sahakarnagar–Taljai'],
+  '51': [18.4746, 73.8311, 'Vadgaon Bk–Manikbaug'],
+  '52': [18.4746, 73.8169, 'Nanded City–Sun City'],
+  '53': [18.4364, 73.7958, 'Narhe–Khadakwasla'],
+  '54': [18.4362, 73.8274, 'Dhayari–Ambegaon'],
+  '55': [18.4605, 73.8376, 'Dhankawadi–Ambegaon Pathar'],
+  '56': [18.4601, 73.8519, 'Bharati Vidyapeeth'],
+  '57': [18.4513, 73.8668, 'Sukhsagarnagar'],
+  '58': [18.4389, 73.8632, 'Katraj–Gokulnagar'],
 }
 
 function nearestWardId(lat: number, lng: number): string {
@@ -44,6 +88,26 @@ const ISSUE_EMOJI:  Record<string, string> = { traffic: '🚗', water: '💧', e
 const ISSUE_COLOR:  Record<string, string> = { traffic: '#EF4444', water: '#3B82F6', electricity: '#F59E0B', garbage: '#10B981', other: '#8B5CF6' }
 const ISSUE_LABEL:  Record<string, string> = { traffic: 'Traffic', water: 'Water', electricity: 'Electricity', garbage: 'Garbage', other: 'Other' }
 const SEV_LABEL = ['', 'Minor', 'Recurring', 'Significant', 'Serious', 'Emergency']
+
+// Resize an image file to max 1024px and encode as JPEG base64 (for Claude vision)
+function resizeAndEncode(file: File, maxPx = 1024): Promise<{ base64: string; mimeType: string }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height))
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.round(img.width * scale)
+      canvas.height = Math.round(img.height * scale)
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(url)
+      resolve({ base64: canvas.toDataURL('image/jpeg', 0.85).split(',')[1], mimeType: 'image/jpeg' })
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load failed')) }
+    img.src = url
+  })
+}
 
 // Apple-spec design tokens ────────────────────────────────────────────────────
 
@@ -68,9 +132,10 @@ type LocationStatus =
   | { kind: 'denied' }
 
 type Result = {
-  issueTag: string; subTags: string[]; severity: number
+  issueTag: string; issueTypeFree?: string; subTags: string[]; severity: number
   citedLocation: string | null; civicAsk: string | null
   wardId: string; wardName: string
+  grievanceFormal?: string; lng?: number; lat?: number
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -90,8 +155,12 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const [focused,      setFocused]      = useState(false)
   const [isDesktop,    setIsDesktop]    = useState(false)
   const [mounted,      setMounted]      = useState(false)
+  const [photo,          setPhoto]          = useState<File | null>(null)
+  const [photoPreview,   setPhotoPreview]   = useState<string | null>(null)
+  const [transcribeError, setTranscribeError] = useState(false)
 
   const textareaRef    = useRef<HTMLTextAreaElement>(null)
+  const sheetRef       = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<any>(null)
   const recorderRef    = useRef<MediaRecorder | null>(null)
   const voiceActiveRef = useRef(false)
@@ -111,10 +180,30 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
     return () => window.removeEventListener('resize', check)
   }, [])
 
+  // Focus trap — keep keyboard focus inside the modal while it's open
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (!isOpen) return
+    if (e.key === 'Escape') { handleClose(); return }
+    if (e.key !== 'Tab') return
+    const el = sheetRef.current
+    if (!el) return
+    const focusable = el.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    const first = focusable[0]
+    const last  = focusable[focusable.length - 1]
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last?.focus() }
+    } else {
+      if (document.activeElement === last)  { e.preventDefault(); first?.focus() }
+    }
+  }
+
   useEffect(() => {
     if (!isOpen) return
     if (closingTimer.current) { clearTimeout(closingTimer.current); closingTimer.current = null }
-    setText(''); setResult(null); setSubmitError(false)
+    setText(''); setResult(null); setSubmitError(false); setTranscribeError(false)
+    setPhoto(null); setPhotoPreview(null)
     voiceActiveRef.current = false; setVoiceActive(false); setTranscribing(false)
     requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
     setLoc({ kind: 'detecting' })
@@ -189,15 +278,19 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
           const t = setTimeout(() => ctrl.abort(), 30_000)
           const res = await fetch('/api/transcribe', { method: 'POST', body: form, signal: ctrl.signal })
           clearTimeout(t)
-          const data = await res.json() as { text?: string }
+          if (!res.ok) throw new Error(`transcribe ${res.status}`)
+          const data = await res.json() as { text?: string; error?: string }
           if (data.text?.trim()) {
+            setTranscribeError(false)
             setText(prev => prev ? `${prev} ${data.text!.trim()}` : data.text!.trim())
             if (textareaRef.current) {
               textareaRef.current.style.height = 'auto'
               textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 180) + 'px'
             }
+          } else {
+            setTranscribeError(true)
           }
-        } catch { /**/ } finally { setTranscribing(false); setVoiceActive(false); voiceActiveRef.current = false }
+        } catch { setTranscribeError(true) } finally { setTranscribing(false); setVoiceActive(false); voiceActiveRef.current = false }
       }
       recorder.start(); recorderRef.current = recorder
     } catch { voiceActiveRef.current = false; setVoiceActive(false) }
@@ -220,11 +313,24 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   async function handleSubmit() {
     if (text.trim().length < 5 || submitting || !!result) return
     setSubmitting(true); setSubmitError(false)
+
+    // Encode photo if present
+    let photoBase64: string | null = null
+    let photoMimeType: string | null = null
+    if (photo) {
+      try {
+        const encoded = await resizeAndEncode(photo)
+        photoBase64 = encoded.base64
+        photoMimeType = encoded.mimeType
+      } catch { /* skip photo if encode fails */ }
+    }
+
     const payload = {
       text: text.trim(),
       lat:    loc.kind === 'found' ? loc.lat    : null,
       lng:    loc.kind === 'found' ? loc.lng    : null,
       wardId: loc.kind === 'found' ? loc.wardId : null,
+      ...(photoBase64 ? { photoBase64, photoMimeType } : {}),
     }
     try {
       const res = await fetch('/api/add-report', {
@@ -233,8 +339,44 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
         body: JSON.stringify(payload),
       })
       if (!res.ok) throw new Error(`${res.status}`)
-      setResult(await res.json() as Result)
+      const apiResult = await res.json() as Result
+      // Optimistic map update — add their report as a hotspot immediately
+      const clusterPayload = {
+        id: `user-${Date.now()}`,
+        ward_id: apiResult.wardId,
+        issue_tag: apiResult.issueTag,
+        issue_type_free: apiResult.issueTypeFree ?? '',
+        centroid_text: apiResult.grievanceFormal ?? text.trim(),
+        post_count: 1,
+        severity_avg: apiResult.severity,
+        status: 'signal_detected',
+        lng: typeof apiResult.lng === 'number' ? apiResult.lng : (CENTROIDS[apiResult.wardId]?.[1] ?? 73.856),
+        lat: typeof apiResult.lat === 'number' ? apiResult.lat : (CENTROIDS[apiResult.wardId]?.[0] ?? 18.524),
+        source_platforms: ['web'],
+        citizen_headline: apiResult.issueTypeFree
+          ? `Just reported: ${apiResult.issueTypeFree}`
+          : 'Just reported by a citizen',
+        problem_simple: apiResult.grievanceFormal ?? text.trim(),
+      }
+      try { sessionStorage.setItem('sushasan:pending-report', JSON.stringify(clusterPayload)) } catch { /**/ }
+      window.dispatchEvent(new CustomEvent('sushaasan:report-submitted', { detail: clusterPayload }))
+      setResult(apiResult)
     } catch { setSubmitError(true) } finally { setSubmitting(false) }
+  }
+
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) return  // reject non-images silently (accept attr is advisory only)
+    if (photoPreview) URL.revokeObjectURL(photoPreview)
+    setPhoto(file)
+    setPhotoPreview(URL.createObjectURL(file))
+    e.target.value = '' // reset so same file can be re-selected
+  }
+
+  function clearPhoto() {
+    if (photoPreview) URL.revokeObjectURL(photoPreview)
+    setPhoto(null); setPhotoPreview(null)
   }
 
   const canSubmit = text.trim().length >= 5 && !submitting && !result
@@ -242,6 +384,9 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
 
   if (!mounted) return null
   return createPortal(<div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Report a civic issue"
       className={`fixed inset-0 z-[55] flex flex-col justify-end ${isDesktop ? 'items-center' : ''}`}
       style={{
         pointerEvents: isOpen ? 'auto' : 'none',
@@ -251,9 +396,11 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
         transition: `background 0.3s ${EASE}, backdrop-filter 0.3s ${EASE}`,
       }}
       onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
+      onKeyDown={handleKeyDown}
     >
       {/* Sheet — slides from bottom on both mobile and desktop ──────────────── */}
       <div
+        ref={sheetRef}
         style={{
           background: '#ffffff',
           borderRadius: '24px 24px 0 0',
@@ -285,8 +432,8 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
               {loc.kind === 'detecting' && <>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'rgba(29,29,31,0.22)',
-                               flexShrink: 0, animation: 'pulse 1.5s ease infinite' }} />
+                <span className="animate-pulse" style={{ width: 7, height: 7, borderRadius: '50%', background: 'rgba(29,29,31,0.22)',
+                               flexShrink: 0 }} />
                 <span style={{ fontSize: 13, color: '#86868b', fontFamily: '-apple-system, sans-serif' }}>
                   Finding your ward…
                 </span>
@@ -344,11 +491,15 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
                 onTextChange={handleTextChange}
                 onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
                 voiceActive={voiceActive} transcribing={transcribing}
+                transcribeError={transcribeError}
                 voiceLang={voiceLang} onLangChange={setVoiceLang}
                 onToggleVoice={toggleVoice} canSpeak={canSpeak}
                 useWhisper={useWhisper} canSubmit={canSubmit}
                 submitting={submitting} submitError={submitError}
                 onSubmit={handleSubmit}
+                photoPreview={photoPreview}
+                onPhotoChange={handlePhotoChange}
+                onPhotoClear={clearPhoto}
               />
           }
         </div>
@@ -362,19 +513,23 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
 
 function ComposeView({
   text, textareaRef, showCursor, onTextChange, onFocus, onBlur,
-  voiceActive, transcribing, voiceLang, onLangChange, onToggleVoice,
+  voiceActive, transcribing, transcribeError, voiceLang, onLangChange, onToggleVoice,
   canSpeak, useWhisper, canSubmit, submitting, submitError, onSubmit,
+  photoPreview, onPhotoChange, onPhotoClear,
 }: {
   text: string
   textareaRef: React.RefObject<HTMLTextAreaElement>
   showCursor: boolean
   onTextChange: (e: ChangeEvent<HTMLTextAreaElement>) => void
   onFocus: () => void; onBlur: () => void
-  voiceActive: boolean; transcribing: boolean
+  voiceActive: boolean; transcribing: boolean; transcribeError: boolean
   voiceLang: string; onLangChange: (c: string) => void
   onToggleVoice: () => void; canSpeak: boolean; useWhisper: boolean
   canSubmit: boolean; submitting: boolean; submitError: boolean
   onSubmit: () => void
+  photoPreview: string | null
+  onPhotoChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onPhotoClear: () => void
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -440,11 +595,10 @@ function ComposeView({
         <div style={{ ...CARD, padding: '14px 16px' }}>
           {transcribing ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '6px 0' }}>
-              <div style={{
+              <div className="animate-spin" style={{
                 width: 18, height: 18, borderRadius: '50%',
                 border: '2px solid rgba(255,153,51,0.2)',
                 borderTopColor: '#FF9933',
-                animation: 'spin 0.8s linear infinite',
               }} />
               <span style={{ fontSize: 14, color: '#86868b', fontFamily: '-apple-system, sans-serif' }}>
                 Transcribing…
@@ -535,7 +689,16 @@ function ComposeView({
             </div>
           )}
 
-          {useWhisper && !voiceActive && !transcribing && (
+          {transcribeError && !voiceActive && !transcribing && (
+            <p role="alert" style={{
+              fontSize: 12, color: '#ff3b30', fontWeight: 500,
+              marginTop: 10, marginBottom: 0,
+              fontFamily: '-apple-system, sans-serif',
+            }}>
+              Transcription failed — please type your issue instead.
+            </p>
+          )}
+          {!transcribeError && useWhisper && !voiceActive && !transcribing && (
             <p style={{
               fontSize: 11, color: '#34c759', fontWeight: 500,
               marginTop: 10, marginBottom: 0,
@@ -546,6 +709,53 @@ function ComposeView({
           )}
         </div>
       )}
+
+      {/* Photo — camera or gallery ──────────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {photoPreview ? (
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photoPreview} alt="Attached photo"
+              style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 12,
+                       border: '1.5px solid rgba(0,0,0,0.08)' }} />
+            <button onClick={onPhotoClear} aria-label="Remove photo"
+              style={{
+                position: 'absolute', top: -6, right: -6, width: 20, height: 20,
+                borderRadius: '50%', background: 'rgba(29,29,31,0.75)', border: 'none',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontSize: 12, fontWeight: 700, lineHeight: 1,
+              }}>×</button>
+          </div>
+        ) : (
+          <>
+            <label style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px',
+              borderRadius: 980, background: 'rgba(29,29,31,0.05)',
+              border: '1px solid rgba(29,29,31,0.10)', cursor: 'pointer',
+              fontSize: 13, fontWeight: 600, color: '#1d1d1f',
+              fontFamily: '-apple-system, sans-serif', minHeight: 40,
+            }}>
+              📷 Camera
+              <input type="file" accept="image/*" capture="environment"
+                onChange={onPhotoChange} style={{ display: 'none' }} />
+            </label>
+            <label style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px',
+              borderRadius: 980, background: 'rgba(29,29,31,0.05)',
+              border: '1px solid rgba(29,29,31,0.10)', cursor: 'pointer',
+              fontSize: 13, fontWeight: 600, color: '#1d1d1f',
+              fontFamily: '-apple-system, sans-serif', minHeight: 40,
+            }}>
+              🖼 Gallery
+              <input type="file" accept="image/*"
+                onChange={onPhotoChange} style={{ display: 'none' }} />
+            </label>
+          </>
+        )}
+        <span style={{ fontSize: 11, color: 'rgba(29,29,31,0.35)', fontFamily: '-apple-system, sans-serif' }}>
+          {photoPreview ? 'Photo attached — AI will read it' : 'Add a photo (optional)'}
+        </span>
+      </div>
 
       {/* Submit — PRIMARY ACTION, pill shape ───────────────────────────────── */}
       <button
@@ -572,10 +782,10 @@ function ComposeView({
       >
         {submitting ? (
           <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <span style={{
+            <span className="animate-spin" style={{
               width: 16, height: 16, borderRadius: '50%',
               border: '2px solid rgba(245,245,247,0.25)', borderTopColor: '#f5f5f7',
-              animation: 'spin 0.8s linear infinite', display: 'inline-block',
+              display: 'inline-block',
             }} />
             AI is reading this…
           </span>
@@ -656,8 +866,27 @@ function SuccessView({ result, onDone, onSeeMap }: {
         </div>
       </div>
 
-      {/* AI summary — in a card */}
-      {result.civicAsk && (
+      {/* Formal grievance — the AI-synthesized text shown as the primary output */}
+      {result.grievanceFormal && (
+        <div style={{ ...CARD, padding: '14px 16px' }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',
+            textTransform: 'uppercase', color: 'rgba(29,29,31,0.35)', marginBottom: 6,
+            fontFamily: '-apple-system, sans-serif',
+          }}>
+            Official grievance · appearing on map
+          </div>
+          <div style={{
+            fontSize: 14, lineHeight: 1.5, color: '#1d1d1f',
+            fontFamily: 'Source Serif 4, Georgia, serif',
+          }}>
+            &ldquo;{result.grievanceFormal}&rdquo;
+          </div>
+        </div>
+      )}
+
+      {/* Civic ask */}
+      {result.civicAsk && !result.grievanceFormal && (
         <div style={{ ...CARD, padding: '14px 16px', background: `${color}0A`, borderColor: `${color}22` }}>
           <div style={{
             fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',

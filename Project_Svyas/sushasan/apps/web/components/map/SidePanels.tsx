@@ -1142,15 +1142,17 @@ function MobileWardContent({
       )}
 
       {/* CTA */}
-      <a
-        href={`/ward/${full?.ward?.id ?? ''}`}
-        className="block text-center px-4 py-3 rounded-xl
-                   bg-saffron text-white font-semibold text-[13px] tracking-wide
-                   shadow-[0_4px_18px_rgba(255,153,51,0.35)]
-                   active:scale-95 transition-all"
-      >
-        See full ward brief →
-      </a>
+      {full?.ward?.id && (
+        <a
+          href={`/ward/${full.ward.id}`}
+          className="block text-center px-4 py-3 rounded-xl
+                     bg-saffron text-white font-semibold text-[13px] tracking-wide
+                     shadow-[0_4px_18px_rgba(255,153,51,0.35)]
+                     active:scale-95 transition-all"
+        >
+          See full ward brief →
+        </a>
+      )}
     </div>
   )
 }

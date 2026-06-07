@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Transparency Dashboard — Sushaasan',
-  description: 'Every civic issue in NIBM · Wanowrie · Tribeca: what AI surfaced, what government is doing, and how citizens are partnering.',
+  description: 'Every civic issue in NIBM · Wanowrie · Kondhwa: what AI surfaced, what government is doing, and how citizens are partnering.',
 }
 
 
@@ -125,7 +125,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[10px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
                              bg-saffron/10 text-saffron-dark rounded-full border border-saffron/20">
-              NIBM · Wanowrie · Tribeca
+              NIBM · Wanowrie · Kondhwa
             </span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl font-semibold text-ink leading-[1.05] max-w-3xl">
@@ -379,11 +379,11 @@ export default async function DashboardPage() {
                           </span>
                           <StatusBadge status={c.status} />
                           <span className="text-[10px] text-ink-4 ml-auto">
-                            {c.post_count} reports · sev {c.severity_avg.toFixed(1)}
+                            {c.post_count} reports · sev {(c.severity_avg ?? 0).toFixed(1)}
                           </span>
                         </div>
 
-                        <p className="text-[13px] text-ink-2 leading-relaxed">{c.centroid_text}</p>
+                        <p className="text-[13px] text-ink-2 leading-relaxed">{c.centroid_text || 'AI brief pending…'}</p>
 
                         {/* Solution preview */}
                         {sol && (
@@ -456,7 +456,7 @@ export default async function DashboardPage() {
             Data sourced from public posts only · AI-assisted analysis, reviewed before publication
           </p>
           <p className="text-[11px] text-ink-3">
-            Sushaasan Pilot · NIBM · Wanowrie · Tribeca · Pune ·{' '}
+            Sushaasan Pilot · NIBM · Wanowrie · Kondhwa · Pune ·{' '}
             <a href="mailto:sonawaneharsh147@gmail.com" className="underline">Contact</a>
           </p>
         </footer>

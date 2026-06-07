@@ -19,8 +19,8 @@ const config: Config = {
         other:      '#8B5CF6',
       },
       fontFamily: {
-        serif: ['Source Serif 4', 'Georgia', 'serif'],
-        sans:  ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
+        sans:  ['var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         'hint-rise': {

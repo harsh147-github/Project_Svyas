@@ -75,7 +75,10 @@ export async function POST(req: NextRequest) {
     // 2. Mirror status onto solutions + clusters (so citizen dashboard updates immediately)
     if (solution_id && !solution_id.startsWith('synth-')) {
       const update: Record<string, unknown> = {}
-      if (status === 'in_progress' || status === 'acknowledged') {
+      if (status === 'acknowledged') {
+        update.status = 'published'   // visible to citizens; corporator has seen it
+        update.actioned_at = new Date().toISOString()
+      } else if (status === 'in_progress') {
         update.status = 'actioned'
         update.actioned_at = new Date().toISOString()
       } else if (status === 'completed') {

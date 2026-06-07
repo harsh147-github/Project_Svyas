@@ -155,14 +155,14 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  let body: { text?: string; lat?: number; lng?: number; wardId?: string }
+  let body: { text?: string; lat?: number; lng?: number; wardId?: string; photoBase64?: string; photoMimeType?: string }
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { text, lat, lng, wardId } = body
+  const { text, lat, lng, wardId, photoBase64, photoMimeType } = body
   if (!text || typeof text !== 'string' || text.trim().length < 3) {
     return NextResponse.json({ error: 'Text too short' }, { status: 400 })
   }
@@ -183,11 +183,12 @@ export async function POST(req: NextRequest) {
     resolvedLng = lng + (Math.random() - 0.5) * 0.003
     resolvedLat = lat + (Math.random() - 0.5) * 0.003
   } else if (wardId) {
-    const w = WARD_CENTROIDS.find(c => c.ward_id === wardId) ?? WARD_CENTROIDS[0]
-    resolvedWardId = wardId
-    resolvedWardName = w.name
-    resolvedLng = w.lng + (Math.random() - 0.5) * 0.006
-    resolvedLat = w.lat + (Math.random() - 0.5) * 0.006
+    const w = WARD_CENTROIDS.find(c => c.ward_id === wardId)
+    const fallback = w ?? WARD_CENTROIDS[0]
+    resolvedWardId = fallback.ward_id   // use fallback id, not the invalid incoming wardId
+    resolvedWardName = fallback.name
+    resolvedLng = (w ?? fallback).lng + (Math.random() - 0.5) * 0.006
+    resolvedLat = (w ?? fallback).lat + (Math.random() - 0.5) * 0.006
   } else {
     const w = WARD_CENTROIDS[0]
     resolvedWardId = w.ward_id
@@ -238,11 +239,34 @@ export async function POST(req: NextRequest) {
         ? `[GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)} → Ward ${resolvedWardId}, ${resolvedWardName}]\n\n`
         : `[Ward: ${resolvedWardId}, ${resolvedWardName}]\n\n`
 
+      // Whitelist photoMimeType — never pass arbitrary user-supplied strings to Claude
+      const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const
+      type AllowedImageType = typeof ALLOWED_IMAGE_TYPES[number]
+      const safePhotoMime: AllowedImageType = ALLOWED_IMAGE_TYPES.includes(photoMimeType as AllowedImageType)
+        ? (photoMimeType as AllowedImageType)
+        : 'image/jpeg'
+
+      // Build user content — text + optional photo for vision
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const userContent: any = photoBase64
+        ? [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: safePhotoMime,
+                data: photoBase64,
+              },
+            },
+            { type: 'text', text: `${context}${cleanText}\n\n[A photo of the issue has been attached above — use it to enrich the grievance description with specific visual details like exact damage, location markers, or severity indicators visible in the image.]` },
+          ]
+        : `${context}${cleanText}`
+
       const msg = await client.messages.create({
         model: 'claude-sonnet-4-6',
         max_tokens: 800,
         system: SYNTHESIZE_SYSTEM,
-        messages: [{ role: 'user', content: `${context}${cleanText}` }],
+        messages: [{ role: 'user', content: userContent }],
       })
       const raw = (msg.content[0] as { type: string; text: string }).text.trim()
       const jsonStr = raw.startsWith('```')

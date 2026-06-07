@@ -365,6 +365,20 @@ const SEED_CLUSTERS = [
   { id: 'cw38', ward_id: '35', issue_tag: 'electricity', centroid_text: 'Uttamnagar–Shivane new layouts: streetlights on only half the ring road; PMC handover pending from builder.', post_count: 7,  severity_avg: 2.5, status: 'open', lng: 73.7914, lat: 18.4737, source_platforms: ['reddit'] },
   { id: 'cw39', ward_id: '45', issue_tag: 'traffic',     centroid_text: 'Fursungi–Manjari road: trucks from Hadapsar MIDC using residential shortcut, road now potholed beyond repair.', post_count: 12, severity_avg: 3.3, status: 'open', lng: 73.9589, lat: 18.4786, source_platforms: ['instagram', 'reddit'] },
   { id: 'cw40', ward_id: '22', issue_tag: 'water',       centroid_text: 'Manjari Bk–Shewalwadi fringe layouts: supply extended without booster pump; zero water by 6am.', post_count: 10, severity_avg: 3.2, status: 'open', lng: 73.9714, lat: 18.5087, source_platforms: ['reddit'] },
+
+  // ── Remaining Pune wards — completing full-city coverage ─────────────────
+  { id: 'cw41', ward_id: '3',  issue_tag: 'traffic',     centroid_text: 'Lohegaon–Vimannagar junction: airport construction vehicles spilling onto NH road, peak-hour backlog growing daily.', post_count: 14, severity_avg: 3.4, status: 'open', lng: 73.9254, lat: 18.5895, source_platforms: ['reddit', 'instagram'] },
+  { id: 'cw42', ward_id: '17', issue_tag: 'water',       centroid_text: 'Shaniwar Peth inner lanes: summer supply cut to 45 minutes; older chawl buildings with no overhead tanks hit hardest.', post_count: 11, severity_avg: 3.3, status: 'open', lng: 73.8482, lat: 18.5113, source_platforms: ['reddit'] },
+  { id: 'cw43', ward_id: '17', issue_tag: 'garbage',     centroid_text: 'Navi Peth market strip: vendor organic waste accumulating post 8pm; PMC SWM night collection not scheduled for this lane.', post_count: 9,  severity_avg: 3.0, status: 'open', lng: 73.8495, lat: 18.5105, source_platforms: ['reddit', 'instagram'] },
+  { id: 'cw44', ward_id: '18', issue_tag: 'garbage',     centroid_text: 'Kasba Peth heritage footpaths: overflow from tourist-area waste bins near Shaniwarwada not cleared on weekends.', post_count: 12, severity_avg: 3.2, status: 'open', lng: 73.8600, lat: 18.5191, source_platforms: ['reddit', 'instagram'] },
+  { id: 'cw45', ward_id: '18', issue_tag: 'water',       centroid_text: 'Shaniwarwada area old pipelines: rusty water reported by 3 chawl clusters; residents boiling water as precaution.', post_count: 8,  severity_avg: 2.9, status: 'open', lng: 73.8608, lat: 18.5183, source_platforms: ['reddit'] },
+  { id: 'cw46', ward_id: '19', issue_tag: 'traffic',     centroid_text: 'Rasta Peth junction near CSM Stadium: event-day road closures rerouting heavy traffic through narrow peth lanes.', post_count: 13, severity_avg: 3.3, status: 'open', lng: 73.8651, lat: 18.5213, source_platforms: ['instagram', 'reddit'] },
+  { id: 'cw47', ward_id: '27', issue_tag: 'water',       centroid_text: 'Kasewadi–Lohiyanagar supply variance: pressure normal mornings but zero by 11am; RWA documenting for PMC complaint.', post_count: 9,  severity_avg: 2.9, status: 'open', lng: 73.8704, lat: 18.5062, source_platforms: ['reddit'] },
+  { id: 'cw48', ward_id: '28', issue_tag: 'garbage',     centroid_text: 'Bhavani Peth wholesale market: produce waste from mandai spilling onto footpath overnight; drain blockage risk.', post_count: 11, severity_avg: 3.1, status: 'open', lng: 73.8640, lat: 18.5100, source_platforms: ['reddit', 'instagram'] },
+  { id: 'cw49', ward_id: '29', issue_tag: 'electricity', centroid_text: 'Ghorpade Peth older buildings: frequent tripping on aging LT feeder — MSEDCL estimates replacement in 6 weeks.', post_count: 8,  severity_avg: 2.8, status: 'open', lng: 73.8598, lat: 18.5068, source_platforms: ['reddit'] },
+  { id: 'cw50', ward_id: '30', issue_tag: 'electricity', centroid_text: 'Jai Bhavaninagar streetlight gap: new residential pocket off Paud Road has no light coverage; four poles pending.', post_count: 7,  severity_avg: 2.6, status: 'open', lng: 73.8162, lat: 18.5145, source_platforms: ['reddit'] },
+  { id: 'cw51', ward_id: '32', issue_tag: 'water',       centroid_text: 'Bhusari Colony–Bavdhan Khurd fringe: tail-end PMC supply; high-rise floors get zero pressure after 9am daily.', post_count: 12, severity_avg: 3.3, status: 'open', lng: 73.7901, lat: 18.5113, source_platforms: ['reddit', 'instagram'] },
+  { id: 'cw52', ward_id: '33', issue_tag: 'traffic',     centroid_text: 'Ideal Colony–Mahatma Society connector: school-van parking at gate blocking half-lane during 7–9am school run.', post_count: 10, severity_avg: 3.0, status: 'open', lng: 73.7953, lat: 18.5006, source_platforms: ['reddit'] },
 ]
 
 async function fetchFromSupabase() {
@@ -384,79 +398,26 @@ async function fetchFromSupabase() {
   const clusterIds = clusters.map((c: { id: string }) => c.id)
   const wardIds = [...new Set(clusters.map((c: { ward_id: string }) => c.ward_id))]
 
-  // Canonical solution tables (populated once AI synthesis runs)
-  const [
-    { data: solutions },
-    { data: citizenDisplays },
-    { data: govDisplays },
-    // sushaasan_phase* tables — populated by the AI backend pipeline
-    { data: sushaSols },
-    { data: sushaCitizen },
-    { data: sushaGov },
-  ] = await Promise.all([
-    supabase.from('solutions')
-      .select('id, cluster_id, summary')
-      .in('cluster_id', clusterIds)
-      .in('status', ['published', 'actioned']),
-    supabase.from('citizen_displays')
-      .select('solution_id, headline, problem_simple'),
-    supabase.from('government_displays')
-      .select('solution_id, executive_summary'),
-    // Phase-3 optimized solutions keyed by (ward_id, governance_sector=issue_tag)
-    supabase.from('sushaasan_phase3_optimized_solutions')
-      .select('solution_id, ward_id, governance_sector, citizen_benefit_statement, government_benefit_statement, feasibility_score, priority_level')
-      .in('ward_id', wardIds),
-    supabase.from('sushaasan_phase4_citizen_display')
-      .select('solution_id, ward_id, headline, problem_simple, citizen_summary'),
-    supabase.from('sushaasan_phase4_government_display')
-      .select('solution_id, ward_id, executive_summary, technical_brief'),
-  ])
+  // Solutions table (the only real table — populated once AI synthesis runs)
+  const { data: solutions } = await supabase
+    .from('solutions')
+    .select('id, cluster_id, summary')
+    .in('cluster_id', clusterIds)
+    .in('status', ['published', 'actioned'])
 
-  // Canonical solution maps (cluster_id → solution)
   const solutionMap = new Map<string, { summary: string; id: string }>()
   for (const s of solutions ?? []) {
     if (s.cluster_id) solutionMap.set(s.cluster_id, s)
   }
-  const citizenMap = new Map<string, { headline: string; problem_simple: string }>()
-  for (const cd of citizenDisplays ?? []) {
-    if (cd.solution_id) citizenMap.set(cd.solution_id, cd)
-  }
-  const govMap = new Map<string, { executive_summary: string }>()
-  for (const gd of govDisplays ?? []) {
-    if (gd.solution_id) govMap.set(gd.solution_id, gd)
-  }
-
-  // sushaasan_phase maps (ward_id|issue_tag → display data)
-  const sushaKey = (wardId: string, issue: string) => `${wardId}|${issue}`
-  const sushaSolMap = new Map<string, { solution_id: string; citizen_benefit_statement: string; government_benefit_statement: string }>()
-  for (const s of sushaSols ?? []) {
-    sushaSolMap.set(sushaKey(s.ward_id, s.governance_sector), s)
-  }
-  const sushaCitizenMap = new Map<string, { headline: string; problem_simple: string; citizen_summary: string }>()
-  for (const c of sushaCitizen ?? []) {
-    sushaCitizenMap.set(c.solution_id, c)
-  }
-  const sushaGovMap = new Map<string, { executive_summary: string }>()
-  for (const g of sushaGov ?? []) {
-    sushaGovMap.set(g.solution_id, g)
-  }
 
   const enrichedClusters = clusters.map((c: Record<string, unknown>) => {
-    // Try canonical tables first, fall back to sushaasan_phase tables
     const sol = solutionMap.get(c.id as string)
-    const citizen = sol ? citizenMap.get(sol.id) : undefined
-    const gov = sol ? govMap.get(sol.id) : undefined
-
-    const sushaSol = sushaSolMap.get(sushaKey(c.ward_id as string, c.issue_tag as string))
-    const sushaCit = sushaSol ? sushaCitizenMap.get(sushaSol.solution_id) : undefined
-    const sushaG   = sushaSol ? sushaGovMap.get(sushaSol.solution_id) : undefined
-
     return {
       ...c,
-      solution_summary:  sol?.summary                      ?? sushaSol?.citizen_benefit_statement ?? null,
-      citizen_headline:  citizen?.headline                  ?? sushaCit?.headline                  ?? null,
-      problem_simple:    citizen?.problem_simple            ?? sushaCit?.problem_simple             ?? null,
-      gov_summary:       gov?.executive_summary             ?? sushaG?.executive_summary            ?? null,
+      solution_summary: sol?.summary ?? null,
+      citizen_headline: null,
+      problem_simple:   null,
+      gov_summary:      null,
     }
   })
 
