@@ -101,7 +101,7 @@ export function GovSheet() {
         className="fixed bottom-0 left-0 right-0 z-50
                    bg-white rounded-t-3xl
                    shadow-[0_-8px_40px_rgba(10,31,58,0.22)]
-                   max-h-[92vh] flex flex-col
+                   max-h-[min(92vh,600px)] flex flex-col
                    md:max-w-2xl md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-full
                    md:bottom-8 md:rounded-3xl"
         role="dialog"
@@ -109,7 +109,7 @@ export function GovSheet() {
         aria-label="Government Action Brief"
       >
         {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+        <div className="flex justify-center flex-shrink-0 min-h-[44px] items-center cursor-grab active:cursor-grabbing">
           <div className="w-10 h-1 rounded-full bg-ink/15" />
         </div>
 
@@ -119,7 +119,7 @@ export function GovSheet() {
           style={{ background: 'linear-gradient(135deg,rgba(11,31,58,0.05),transparent)' }}
         >
           <div>
-            <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-navy mb-1.5">
+            <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-navy mb-1.5">
               Sushaasan · Action Brief
             </div>
             <h2 className="font-serif text-xl font-semibold text-ink leading-tight">
@@ -131,7 +131,7 @@ export function GovSheet() {
           </div>
           <button
             onClick={close}
-            className="w-8 h-8 rounded-full flex items-center justify-center
+            className="w-11 h-11 rounded-full flex items-center justify-center
                        bg-ink/5 hover:bg-ink/10 text-ink-3 flex-shrink-0 mt-1
                        transition-colors font-bold"
             aria-label="Close"
@@ -151,7 +151,7 @@ export function GovSheet() {
               {/* Ward + corporator */}
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-ink-4">
+                  <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-ink-4">
                     Ward {wardFull.ward.ward_number}
                   </div>
                   <div className="font-serif text-lg font-semibold text-ink mt-0.5">
@@ -180,7 +180,7 @@ export function GovSheet() {
 
               {/* Active clusters */}
               <div className="space-y-2">
-                <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-ink-4">
+                <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-ink-4">
                   Active issues this week
                 </div>
                 <div className="space-y-2">
@@ -216,7 +216,7 @@ export function GovSheet() {
               {/* Budget snapshot */}
               {wardFull.ward.annual_budget_inr > 0 && (
                 <div className="p-4 rounded-2xl border border-ink/8 space-y-2.5">
-                  <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-ink-4">
+                  <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-ink-4">
                     Budget snapshot
                   </div>
                   <div className="flex items-baseline justify-between text-[13px]">
@@ -242,7 +242,7 @@ export function GovSheet() {
               {topSolution && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-ink-4">
+                    <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-ink-4">
                       Recommended action plan
                     </div>
                     <span
