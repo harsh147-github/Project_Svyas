@@ -557,10 +557,10 @@ export function AddReportClient() {
         <div className="mb-9 transition-all duration-700 ease-out"
              style={{ transform: mounted ? 'translateY(0)' : 'translateY(14px)' }}>
           <h1 className="font-serif text-[26px] sm:text-[30px] font-bold text-ink leading-[1.25] mb-3">
-            We know filling forms is inconvenient and boring, so we made it much more convenient.
+            Describe the problem in your own words.
           </h1>
           <p className="text-[15px] text-ink/50 leading-relaxed">
-            Just speak or type freely below — the Sushaasan AI synthesiser does the rest.
+            Speak or type freely — the Sushaasan AI turns it into a structured civic brief.
           </p>
         </div>
 

@@ -55,10 +55,10 @@ export default function AboutPage() {
             <span className="text-ink-2 text-sm hidden sm:inline">About</span>
           </Link>
           <div className="flex items-center gap-3">
-            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
-              Visit website ↗
-            </a>
+              Ward map →
+            </Link>
             <Link href="/dashboard"
                   className="text-[11px] font-medium text-ink-3 hover:text-ink hidden sm:inline">
               Live dashboard →
