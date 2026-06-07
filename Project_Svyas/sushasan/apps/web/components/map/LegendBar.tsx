@@ -3,11 +3,11 @@
 import { useState } from 'react'
 
 const CATEGORIES = [
-  { key: 'traffic',     label: 'Traffic',     color: '#EF4444', icon: '🚗' },
-  { key: 'water',       label: 'Water',       color: '#3B82F6', icon: '💧' },
-  { key: 'electricity', label: 'Electricity', color: '#F59E0B', icon: '⚡' },
-  { key: 'garbage',     label: 'Garbage',     color: '#10B981', icon: '🗑️' },
-  { key: 'other',       label: 'Other',       color: '#8B5CF6', icon: '📌' },
+  { key: 'traffic',     label: 'Traffic',     short: 'Traffic', color: '#EF4444', icon: '🚗' },
+  { key: 'water',       label: 'Water',       short: 'Water',   color: '#3B82F6', icon: '💧' },
+  { key: 'electricity', label: 'Electricity', short: 'Power',   color: '#F59E0B', icon: '⚡' },
+  { key: 'garbage',     label: 'Garbage',     short: 'Waste',   color: '#10B981', icon: '🗑️' },
+  { key: 'other',       label: 'Other',       short: 'Other',   color: '#8B5CF6', icon: '📌' },
 ]
 
 export function LegendBar() {
@@ -87,7 +87,8 @@ export function LegendBar() {
             >
               {c.icon}
             </span>
-            {c.label}
+            <span className="hidden sm:inline">{c.label}</span>
+            <span className="sm:hidden">{c.short}</span>
           </button>
         )
       })}

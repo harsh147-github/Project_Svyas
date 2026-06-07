@@ -98,7 +98,7 @@ export function FirstVisitOverlay() {
         }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#138808', display: 'inline-block' }} />
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.5)' }}>
-            Pilot · NIBM · Kondhwa · Wanowrie
+            Pilot · NIBM · Salunke Vihar · Wanowrie
           </span>
         </div>
 

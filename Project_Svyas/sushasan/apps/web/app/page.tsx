@@ -91,7 +91,7 @@ export default function HomePage() {
                           text-[9px] font-bold tracking-[0.12em] uppercase text-ink-3
                           whitespace-nowrap flex-shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-india-green animate-pulse flex-shrink-0" />
-            <span className="hidden xs:inline">Pilot · </span>NIBM – Kondhwa
+            <span className="hidden xs:inline">Pilot · </span>NIBM – Salunke Vihar
           </div>
 
         </div>
