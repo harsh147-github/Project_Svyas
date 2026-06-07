@@ -9,7 +9,8 @@ export function DesktopCTABar() {
 
   return (
     <>
-      <div
+      <nav
+        aria-label="Main navigation"
         className="hidden md:flex absolute bottom-6 left-1/2 -translate-x-1/2 z-40
                    flex-col items-center gap-4
                    px-6 py-4 rounded-3xl
@@ -67,7 +68,7 @@ export function DesktopCTABar() {
             About Sushaasan
           </a>
         </div>
-      </div>
+      </nav>
 
       <InlineReportSheet isOpen={reportOpen} onClose={() => setReportOpen(false)} />
     </>
