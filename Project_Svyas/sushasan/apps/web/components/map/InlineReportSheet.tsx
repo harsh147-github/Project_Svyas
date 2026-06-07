@@ -129,7 +129,8 @@ type LocationStatus =
   | { kind: 'idle' }
   | { kind: 'detecting' }
   | { kind: 'found'; lat: number; lng: number; wardId: string; wardName: string }
-  | { kind: 'denied' }
+  | { kind: 'denied'; wardId?: string; wardName?: string }
+  | { kind: 'manual'; wardId: string; wardName: string }
 
 type Result = {
   issueTag: string; issueTypeFree?: string; subTags: string[]; severity: number
@@ -343,7 +344,9 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
       text: text.trim(),
       lat:    loc.kind === 'found' ? loc.lat    : null,
       lng:    loc.kind === 'found' ? loc.lng    : null,
-      wardId: loc.kind === 'found' ? loc.wardId : null,
+      wardId: loc.kind === 'found' ? loc.wardId
+            : loc.kind === 'manual' ? loc.wardId
+            : null,
       ...(photoBase64 ? { photoBase64, photoMimeType } : {}),
     }
     try {
@@ -476,10 +479,39 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
                   Ward {loc.wardId} · {loc.wardName}
                 </span>
               </>}
-              {loc.kind === 'denied' && <>
+              {loc.kind === 'denied' && !loc.wardId && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF9933', flexShrink: 0 }} />
+                  <select
+                    onChange={(e) => {
+                      const [wId, wName] = e.target.value.split('|')
+                      if (wId) setLoc({ kind: 'manual', wardId: wId, wardName: wName })
+                    }}
+                    defaultValue=""
+                    style={{
+                      fontSize: 13, color: '#1d1d1f', border: 'none', background: 'transparent',
+                      fontFamily: '-apple-system, sans-serif', cursor: 'pointer',
+                      outline: 'none', flex: 1, minWidth: 0,
+                    }}
+                    aria-label="Select your area"
+                  >
+                    <option value="" disabled>Pick your area…</option>
+                    {Object.entries(CENTROIDS).sort((a, b) => +a[0] - +b[0]).map(([id, [,, name]]) => (
+                      <option key={id} value={`${id}|${name}`}>Ward {id} — {name}</option>
+                    ))}
+                  </select>
+                </span>
+              )}
+              {(loc.kind === 'manual' || (loc.kind === 'denied' && loc.wardId)) && <>
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF9933', flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: '#86868b', fontFamily: '-apple-system, sans-serif' }}>
-                  Location unavailable
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#FF9933',
+                               fontFamily: '-apple-system, sans-serif' }}>
+                  Ward {loc.kind === 'manual' ? loc.wardId : loc.wardId} · {loc.kind === 'manual' ? loc.wardName : loc.wardName}
+                  <button
+                    onClick={() => setLoc({ kind: 'denied' })}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11,
+                             color: '#86868b', marginLeft: 6, fontFamily: '-apple-system, sans-serif' }}
+                  >change</button>
                 </span>
               </>}
             </div>

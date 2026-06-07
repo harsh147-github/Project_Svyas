@@ -52,12 +52,12 @@ export function FirstVisitOverlay() {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close */}
+        {/* Close — 44×44 tap target */}
         <button
           onClick={dismiss}
           style={{
-            position: 'absolute', top: 16, right: 16,
-            width: 32, height: 32, borderRadius: '50%',
+            position: 'absolute', top: 8, right: 8,
+            width: 44, height: 44, borderRadius: '50%',
             background: 'rgba(10,10,10,0.06)', border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 14, color: 'rgba(10,10,10,0.5)',
@@ -91,7 +91,7 @@ export function FirstVisitOverlay() {
           Sushaasan reads public posts about civic issues and turns them into structured, budgeted briefs for your ward office — so problems get solved, not just reported.
         </p>
 
-        {/* Pilot badge */}
+        {/* Coverage badge */}
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           background: 'rgba(255,153,51,0.08)', border: '1px solid rgba(255,153,51,0.25)',
@@ -99,7 +99,7 @@ export function FirstVisitOverlay() {
         }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#138808', display: 'inline-block' }} />
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.5)' }}>
-            Pilot · NIBM · Kondhwa · Wanowrie
+            All 58 PMC Wards · Pune
           </span>
         </div>
 
