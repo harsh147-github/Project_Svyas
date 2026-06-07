@@ -583,7 +583,7 @@ export function AddReportClient() {
   return (
     <main className="min-h-screen bg-paper text-ink">
       <div className="max-w-lg mx-auto px-5 flex flex-col"
-           style={{ minHeight: '100dvh', paddingTop: 24, paddingBottom: 40 }}>
+           style={{ minHeight: '100dvh', paddingTop: 'max(1.5rem, env(safe-area-inset-top))', paddingBottom: 40 }}>
 
         {/* Top nav */}
         <div className="flex items-center justify-between mb-10">
@@ -699,7 +699,7 @@ export function AddReportClient() {
                   <img src={photoPreview} alt="Attached"
                     className="w-20 h-20 object-cover rounded-2xl border border-ink/10" />
                   <button onClick={clearPhoto} aria-label="Remove photo"
-                    className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-ink/70 text-white text-xs flex items-center justify-center font-bold">
+                    className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-ink/70 text-white text-xs flex items-center justify-center font-bold p-1">
                     ×
                   </button>
                 </div>

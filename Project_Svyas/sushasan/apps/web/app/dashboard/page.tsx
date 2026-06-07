@@ -91,7 +91,8 @@ export default async function DashboardPage() {
 
       {/* ── Nav ──────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-ink/10 bg-white/90 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between"
+             style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-saffron flex items-center justify-center
                             text-white font-serif font-bold text-sm">स</div>
@@ -106,7 +107,7 @@ export default async function DashboardPage() {
               {source === 'supabase' ? 'Live · auto-updated' : 'Pilot view'}
             </span>
             {lastUpdated && (
-              <span className="hidden md:inline-flex text-[10px] font-medium text-ink-3">
+              <span className="hidden md:inline-flex text-[11px] font-medium text-ink-3">
                 Refreshed {formatRefreshed(lastUpdated)}
               </span>
             )}
@@ -157,7 +158,7 @@ export default async function DashboardPage() {
 
           {/* Pune Civic Pilots */}
           <div>
-            <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-2">
+            <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-2">
               Pune civic pilots
             </div>
             <div className="grid sm:grid-cols-3 gap-3 stagger-children">
@@ -203,7 +204,7 @@ export default async function DashboardPage() {
                       Live brief
                     </span>
                   </div>
-                  <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-ink-4 mb-1">
+                  <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-ink-4 mb-1">
                     {p.ward}
                   </div>
                   <h3 className="font-serif text-xl font-semibold text-ink leading-tight mb-2 group-hover:text-saffron-dark transition-colors">
@@ -229,7 +230,7 @@ export default async function DashboardPage() {
 
           {/* National Policy Pilot — separate group */}
           <div>
-            <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-2">
+            <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-2">
               National policy pilot
             </div>
             <Link href="/dashboard/e20-ethanol"
@@ -268,7 +269,7 @@ export default async function DashboardPage() {
                   ].map((m) => (
                     <div key={m.l} className="bg-paper rounded-xl border border-ink/6 px-3 py-2">
                       <div className="font-serif text-lg font-bold text-ink leading-none">{m.v}</div>
-                      <div className="text-[10px] text-ink-3 mt-1">{m.l}</div>
+                      <div className="text-[11px] text-ink-3 mt-1">{m.l}</div>
                     </div>
                   ))}
                 </div>
@@ -291,7 +292,7 @@ export default async function DashboardPage() {
             <div key={k.label} className="stat-card bg-white rounded-2xl border border-ink/8 shadow-sm p-5">
               <div className="font-serif text-3xl font-bold text-ink leading-none">{k.value}</div>
               <div className="text-[11px] font-medium text-ink-2 mt-2 leading-snug">{k.label}</div>
-              <div className="text-[10px] text-ink-4 mt-1">{k.sub}</div>
+              <div className="text-[11px] text-ink-4 mt-1">{k.sub}</div>
             </div>
           ))}
         </section>
@@ -302,7 +303,7 @@ export default async function DashboardPage() {
             <h2 className="font-serif text-base font-semibold text-ink">
               What residents are flagging this cycle
             </h2>
-            <span className="text-[10px] text-ink-3">
+            <span className="text-[11px] text-ink-3">
               Share of {totalReports} reports across all pilot wards
             </span>
           </div>
@@ -319,7 +320,7 @@ export default async function DashboardPage() {
                      title={`${ISSUE_LABEL[tag]}: ${n}`} />
               ))}
           </div>
-          <div className="flex flex-wrap gap-3 text-[10px]">
+          <div className="flex flex-wrap gap-3 text-[11px]">
             {Object.entries(mixCounts)
               .sort(([, a], [, b]) => b - a)
               .map(([tag, n]) => (
@@ -342,7 +343,7 @@ export default async function DashboardPage() {
             <section key={ward.id} className="space-y-4">
               <div className="flex items-baseline justify-between flex-wrap gap-3">
                 <div>
-                  <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-4">
+                  <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-ink-4">
                     Ward {ward.ward_number}
                   </div>
                   <h2 className="font-serif text-2xl font-semibold text-ink leading-tight">
@@ -378,7 +379,7 @@ export default async function DashboardPage() {
                             {ISSUE_LABEL[c.issue_tag] ?? c.issue_tag}
                           </span>
                           <StatusBadge status={c.status} />
-                          <span className="text-[10px] text-ink-4 ml-auto">
+                          <span className="text-[11px] text-ink-4 ml-auto">
                             {c.post_count} reports · sev {(c.severity_avg ?? 0).toFixed(1)}
                           </span>
                         </div>
@@ -396,7 +397,7 @@ export default async function DashboardPage() {
                               {sol.summary}
                             </p>
                             <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-ink/5
-                                            text-[10px] text-ink-3">
+                                            text-[11px] text-ink-3">
                               <span><b className="text-ink-2">{fmt(sol.total_cost_est_inr)}</b> est.</span>
                               <span aria-hidden="true">·</span>
                               <span><b className="text-ink-2">{sol.timeline_days}d</b> timeline</span>
