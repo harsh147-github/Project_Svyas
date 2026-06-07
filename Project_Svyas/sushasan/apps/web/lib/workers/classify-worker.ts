@@ -2,6 +2,11 @@
  * Inngest worker: AI classification of raw_posts using Claude Sonnet.
  * Triggered by event "sushasan/posts.scraped" after each scrape batch.
  * Self-contained — no cross-package imports. Lives in apps/web.
+ *
+ * Steps per post:
+ *   1. Claude Sonnet: classify issue_tag, severity, location, ward_id, etc.
+ *   2. Voyage AI: generate 1024-dim multilingual embedding (if VOYAGE_API_KEY set)
+ *   3. Supabase upsert to posts table (onConflict: raw_post_id — requires migration 004)
  */
 import Anthropic from '@anthropic-ai/sdk'
 import { inngest } from '../inngest'
@@ -32,6 +37,23 @@ Rules:
 - ward_id: PMC ward number as string if location is recognisable, else null
 - translated_text_en: English translation if post is in Hindi/Marathi, else copy original`
 
+async function getVoyageEmbedding(text: string): Promise<number[] | null> {
+  const key = process.env.VOYAGE_API_KEY
+  if (!key) return null
+  try {
+    const res = await fetch('https://api.voyageai.com/v1/embeddings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify({ model: 'voyage-3', input: [text.slice(0, 8000)] }),
+    })
+    if (!res.ok) return null
+    const data = await res.json() as { data?: [{ embedding: number[] }] }
+    return data.data?.[0]?.embedding ?? null
+  } catch {
+    return null
+  }
+}
+
 export const classifyPostsWorker = inngest.createFunction(
   {
     id: 'classify-posts',
@@ -59,6 +81,7 @@ export const classifyPostsWorker = inngest.createFunction(
     for (const post of posts) {
       await step.run(`classify-${post.id}`, async () => {
         try {
+          // Step A: Claude Sonnet classification
           const msg = await ai.messages.create({
             model: 'claude-sonnet-4-6',
             max_tokens: 512,
@@ -68,7 +91,13 @@ export const classifyPostsWorker = inngest.createFunction(
           const json = raw.startsWith('{') ? raw : raw.replace(/^```json?\n?/, '').replace(/```$/, '').trim()
           const parsed = JSON.parse(json)
 
-          // Write to posts table (classified)
+          const textForEmbed = (parsed.translated_text_en || post.raw_text).slice(0, 8000)
+
+          // Step B: Voyage-3 embedding (optional — skipped if VOYAGE_API_KEY not set)
+          const embedding = await getVoyageEmbedding(textForEmbed)
+
+          // Step C: Upsert to posts table
+          // Requires migration 004_classify_pipeline.sql (UNIQUE on raw_post_id)
           await db.from('posts').upsert({
             raw_post_id: post.id,
             text_clean: post.raw_text.slice(0, 4000),
@@ -82,6 +111,7 @@ export const classifyPostsWorker = inngest.createFunction(
             is_actionable: Boolean(parsed.is_actionable),
             civic_ask: parsed.civic_ask ?? null,
             ward_id: parsed.ward_id ? String(parsed.ward_id) : null,
+            embedding: embedding ?? null,
             classifier_ver: 'sonnet-4-6-v1',
           }, { onConflict: 'raw_post_id', ignoreDuplicates: false })
 
@@ -92,6 +122,6 @@ export const classifyPostsWorker = inngest.createFunction(
       })
     }
 
-    return { classified, total: posts.length }
+    return { classified, total: posts.length, withEmbeddings: process.env.VOYAGE_API_KEY ? classified : 0 }
   }
 )
