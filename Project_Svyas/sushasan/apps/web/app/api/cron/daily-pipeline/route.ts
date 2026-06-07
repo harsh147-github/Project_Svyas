@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic'
 // ── Ward keyword → ward_id + lng/lat ─────────────────────────────────────────
 type WardEntry = { kw: string[]; id: string; name: string; lng: number; lat: number }
 const WARD_MAP: WardEntry[] = [
-  { kw: ['mohammadwadi', 'mohammad wadi', 'nibm', 'uruli devachi', 'undri', 'pisoli', 'handewadi', 'autadewadi'], id: '46', name: 'Mohammad Wadi - Uruli Devachi', lng: 73.9102, lat: 18.4651 },
-  { kw: ['salunke vihar', 'salunke', 'wanowrie', 'kondhwa bk', 'kondhwa budruk', 'yewalewadi'], id: '47', name: 'Kondhwa Bk - Yewalewadi', lng: 73.9015, lat: 18.4729 },
+  { kw: ['mohammadwadi', 'mohammad wadi', 'nibm', 'uruli devachi', 'undri', 'pisoli', 'handewadi', 'autadewadi'], id: '46', name: 'NIBM – Mohammadwadi', lng: 73.9102, lat: 18.4651 },
+  { kw: ['salunke vihar', 'salunke', 'wanowrie', 'kondhwa bk', 'kondhwa budruk', 'yewalewadi'], id: '47', name: 'Salunke Vihar – Wanowrie', lng: 73.9015, lat: 18.4729 },
   { kw: ['kondhwa kh', 'kondhwa khurd', 'mithanagar', 'kondhwa'], id: '41', name: 'Kondhwa Kh - Mithanagar', lng: 73.8762, lat: 18.4642 },
   { kw: ['wanawadi', 'kausar baug'], id: '43', name: 'Wanawadi - Kausar Baug', lng: 73.8985, lat: 18.4793 },
   { kw: ['ramtekadi', 'sayyadnagar'], id: '42', name: 'Ramtekadi - Sayyadnagar', lng: 73.8950, lat: 18.4750 },

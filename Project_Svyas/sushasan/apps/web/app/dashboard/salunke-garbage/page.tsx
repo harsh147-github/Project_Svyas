@@ -27,10 +27,10 @@ export default function SalunkeGarbagePage() {
             <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-3 hidden sm:block">
               Salunke Vihar Pilot · Ward 47
             </span>
-            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/"
                className="text-[11px] font-semibold text-navy hover:underline hidden sm:inline">
-              Visit website ↗
-            </a>
+              Ward map →
+            </Link>
             <Link href="/dashboard"
               className="text-xs text-ink-3 hover:text-ink transition-colors">
               ← All wards
@@ -385,10 +385,10 @@ export default function SalunkeGarbagePage() {
           <div className="grid sm:grid-cols-5 gap-3 text-[11px]">
             {[
               { phase: '01', name: 'Listen',  desc: '28 public posts from r/pune, Instagram, Google Maps reviews, RWA forums' },
-              { phase: '02', name: 'Read',    desc: 'Claude Sonnet 4.6 classifies, scores severity 1–5, extracts cited locations' },
+              { phase: '02', name: 'Read',    desc: 'AI classifier scores severity 1–5, extracts cited locations and issue tags' },
               { phase: '03', name: 'Ground',  desc: 'Ward 47 budget ₹2.8 Cr, PMC SWM Zone-IV, ongoing Kondhwa Road culvert works' },
               { phase: '04', name: 'Compare', desc: 'Cross-references Hadapsar 2024 desilting + Aundh composting (2023) DPRs' },
-              { phase: '05', name: 'Suggest', desc: 'AI synthesis produces the diplomatic, costed brief — gov action paired with citizen role' },
+              { phase: '05', name: 'Suggest', desc: 'AI synthesis produces the structured, costed brief — gov action paired with citizen role' },
             ].map(p => (
               <div key={p.phase} className="space-y-1.5">
                 <div className="text-saffron font-bold font-mono">{p.phase}</div>
@@ -405,11 +405,11 @@ export default function SalunkeGarbagePage() {
         {/* ── 8. Footer CTAs ───────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-4">
           <div className="flex flex-wrap items-center gap-3 justify-center">
-            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/"
                className="px-5 py-2.5 rounded-full bg-navy text-white text-xs font-semibold
                           hover:bg-navy/90 transition-colors">
-              Visit the full Sushaasan website ↗
-            </a>
+              ← Ward map
+            </Link>
             <Link href="/dashboard"
                   className="px-5 py-2.5 rounded-full bg-white border border-ink/10 text-ink
                              text-xs font-semibold hover:border-saffron/40 transition-colors">

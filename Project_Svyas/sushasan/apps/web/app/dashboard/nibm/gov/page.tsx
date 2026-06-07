@@ -304,7 +304,7 @@ export default async function GovBriefPage() {
               {
                 icon: '💧',
                 title: 'Infrastructure blockages',
-                detail: 'Exposed drainage pipes narrowing carriageway at Tribeca/Corinthians stretch. PMC records show no active repair project.',
+                detail: 'Exposed drainage pipes narrowing carriageway at Kumar Park/Corinthians stretch. PMC records show no active repair project.',
               },
             ].map((p) => (
               <div key={p.title}

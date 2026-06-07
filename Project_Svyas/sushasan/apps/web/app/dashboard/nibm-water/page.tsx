@@ -27,10 +27,10 @@ export default function NibmWaterPage() {
             <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-3 hidden sm:block">
               NIBM Water Pilot · Ward 46
             </span>
-            <a href={'https://sushasan.in'} target="_blank" rel="noopener noreferrer"
+            <Link href="/"
                className="text-[11px] font-semibold text-navy hover:underline hidden sm:inline">
-              Visit website ↗
-            </a>
+              Ward map →
+            </Link>
             <Link href="/dashboard"
               className="text-xs text-ink-3 hover:text-ink transition-colors">
               ← All wards
@@ -139,7 +139,7 @@ export default function NibmWaterPage() {
                 { x: 160, y: 270, name: 'Konark Pyramid',  load: 'severe',   units: 1240 },
                 { x: 280, y: 300, name: 'Clover Park',     load: 'severe',   units: 980 },
                 { x: 400, y: 285, name: 'Corinthians',     load: 'moderate', units: 720 },
-                { x: 540, y: 305, name: 'Tribeca',         load: 'moderate', units: 540 },
+                { x: 540, y: 305, name: 'Ozone Park',      load: 'moderate', units: 540 },
                 { x: 660, y: 290, name: 'Lunkad Goldcoast', load: 'severe',  units: 860 },
                 { x: 780, y: 305, name: 'Kumar Park',      load: 'moderate', units: 620 },
                 { x: 880, y: 285, name: 'Pyramid Square',  load: 'severe',   units: 740 },
@@ -190,7 +190,7 @@ export default function NibmWaterPage() {
                 { platform: 'reddit',    handle: 'r/pune · u/mohammadwadi_lf',  date: 'Apr 04, 2026', excerpt: 'Wanawadi pumping station has been on partial load since March. Nobody at the ward office can give us a fix date — three weeks now.', metric: '↑ 187 · 64 comments' },
                 { platform: 'news',      handle: 'PunekarNews.in',              date: 'Apr 11, 2026', excerpt: 'Eight NIBM housing societies meet Ward 46 corporator on chronic water shortage. The system gives him no consolidated data to escalate.', metric: 'News article' },
                 { platform: 'gmaps',     handle: 'PMC Sub-Station, Wanawadi',   date: 'Multiple',     excerpt: 'Erratic supply since 2024. Last week the timing changed three times in seven days. Plan your tank around their mood.', metric: '38 reviews mention supply' },
-                { platform: 'instagram', handle: '@sevenseasrwa',                date: 'Mar 22, 2026', excerpt: 'Tribeca and Pyramid Square residents pooling for a community storage tank. We will pay if PMC will plumb.', metric: '5.4K views' },
+                { platform: 'instagram', handle: '@sevenseasrwa',                date: 'Mar 22, 2026', excerpt: 'Clover Park and Pyramid Square residents pooling for a community storage tank. We will pay if PMC will plumb.', metric: '5.4K views' },
                 { platform: 'twitter',   handle: '@PMCPune',                     date: 'Apr 16, 2026', excerpt: 'Acknowledged. Water Supply Zone-IV is working on a revised schedule for the Mohammadwadi corridor — update expected by month-end.', metric: 'Official handle · 1.2K likes' },
               ].map((p, i) => {
                 const meta: Record<string, { label: string; bg: string; fg: string; icon: string }> = {
@@ -401,10 +401,10 @@ export default function NibmWaterPage() {
           <div className="grid sm:grid-cols-5 gap-3 text-[11px]">
             {[
               { phase: '01', name: 'Listen',  desc: '42 public posts from r/pune, Instagram, WhatsApp RWA forums, Google Maps reviews' },
-              { phase: '02', name: 'Read',    desc: 'Claude Sonnet 4.6 classifies, scores severity 1–5, extracts cited locations' },
+              { phase: '02', name: 'Read',    desc: 'AI classifier scores severity 1–5, extracts cited locations and issue tags' },
               { phase: '03', name: 'Ground',  desc: 'Ward 46 budget ₹3.5 Cr, PMC Water Supply Zone-IV, ongoing Khadakwasla feeder works' },
               { phase: '04', name: 'Compare', desc: 'Cross-references Aundh-Baner rezone (2023) and Hadapsar GSR (2024) DPRs' },
-              { phase: '05', name: 'Suggest', desc: 'AI synthesis produces the diplomatic, costed brief — gov action paired with citizen role' },
+              { phase: '05', name: 'Suggest', desc: 'AI synthesis produces the structured, costed brief — gov action paired with citizen role' },
             ].map(p => (
               <div key={p.phase} className="space-y-1.5">
                 <div className="text-saffron font-bold font-mono">{p.phase}</div>
@@ -421,11 +421,11 @@ export default function NibmWaterPage() {
         {/* ── 8. Footer CTAs ───────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-4">
           <div className="flex flex-wrap items-center gap-3 justify-center">
-            <a href={'https://sushasan.in'} target="_blank" rel="noopener noreferrer"
+            <Link href="/"
                className="px-5 py-2.5 rounded-full bg-navy text-white text-xs font-semibold
                           hover:bg-navy/90 transition-colors">
-              Visit the full Sushaasan website ↗
-            </a>
+              ← Ward map
+            </Link>
             <Link href="/dashboard"
                   className="px-5 py-2.5 rounded-full bg-white border border-ink/10 text-ink
                              text-xs font-semibold hover:border-saffron/40 transition-colors">

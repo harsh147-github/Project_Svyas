@@ -20,12 +20,12 @@ const SEED_CLUSTERS = [
   },
   {
     id: 'p02', ward_id: '46', issue_tag: 'water',
-    centroid_text: 'Tribeca and Corinthians societies receiving only 30 minutes of supply daily; tanker prices tripled in last 2 weeks.',
+    centroid_text: 'Clover Park and Corinthians societies receiving only 30 minutes of supply daily; tanker prices tripled in last 2 weeks.',
     post_count: 31, severity_avg: 4.5, status: 'open', lng: 73.9058, lat: 18.4712,
     solution_summary: 'Emergency tanker deployment + pipeline inspection on NIBM Road feeder. Est. ₹1,20,000 over 7 days.',
     source_platforms: ['instagram', 'reddit'],
-    citizen_headline: 'Emergency water tankers + pipeline fix for Tribeca area',
-    problem_simple: 'Residents of Tribeca and Corinthians societies are getting only 30 minutes of water daily, and tanker prices have tripled.',
+    citizen_headline: 'Emergency water tankers + pipeline fix for Clover Park area',
+    problem_simple: 'Residents of Clover Park and Corinthians societies are getting only 30 minutes of water daily, and tanker prices have tripled.',
     gov_summary: 'Water Supply Dept: emergency tanker deployment + pipeline inspection within 7 days. Budget: ₹1,20,000.',
   },
   {

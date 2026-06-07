@@ -110,7 +110,7 @@
     "31": {
       "wardnum": 31,
       "name": "NIBM Road",
-      "name_secondary": "Tribeca · Mohammadwadi",
+      "name_secondary": "Clover Park · Mohammadwadi",
       "pmc_region": "Kondhwa–Wanowrie Ward Office",
       "pmc_region_phone": "020-26854949",
       "pmc_region_address": "Kondhwa Ward Office, Kondhwa Road, Pune 411048",
@@ -189,8 +189,8 @@
     },
     "47": {
       "wardnum": 47,
-      "name": "Kondhwa Budruk – Yewalewadi",
-      "name_secondary": "Yewalewadi",
+      "name": "Salunke Vihar – Wanowrie",
+      "name_secondary": "Salunke Vihar",
       "pmc_region": "Kondhwa–Wanowrie Ward Office",
       "pmc_region_phone": "020-26854949",
       "pmc_region_address": "Kondhwa Ward Office, Kondhwa Road, Pune 411048",
