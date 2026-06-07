@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy & Ethics — Sushasan',
-  description: 'How Sushasan handles public civic data: what we collect, how authors are anonymised, and your rights — by design, not as an afterthought.',
+  title: 'Privacy & Ethics',
+  description: 'How Sushaasan handles public civic data: what we collect, how authors are anonymised, and your rights — by design, not as an afterthought.',
 }
 
 const SECTIONS = [

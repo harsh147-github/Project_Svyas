@@ -9,10 +9,12 @@ export function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // Gov dashboard protection
-  if (pathname.startsWith('/gov')) {
+  // Gov dashboard protection (exclude /gov-access itself to avoid redirect loop)
+  if (pathname.startsWith('/gov') && !pathname.startsWith('/gov-access')) {
     if (!isGovAuthed(req)) {
-      return new NextResponse('Unauthorized', { status: 401 })
+      const url = req.nextUrl.clone()
+      url.pathname = '/gov-access'
+      return NextResponse.redirect(url, 307)
     }
   }
 
