@@ -14,21 +14,70 @@ const LANGS = [
 ]
 
 const CENTROIDS: Record<string, [number, number, string]> = {
+  // Pilot wards
   '46': [18.4655, 73.9010, 'NIBM–Mohammadwadi'],
-  '47': [18.4489, 73.8780, 'Kondhwa Budruk'],
-  '43': [18.4788, 73.8832, 'Wanowrie–Salunke Vihar'],
-  '42': [18.4730, 73.9140, 'Ramtekadi'],
-  '41': [18.4520, 73.8900, 'Kondhwa Khurd'],
-  '44': [18.4400, 73.8950, 'Undri–Pisoli'],
-  '25': [18.5040, 73.9280, 'Hadapsar'],
-  '26': [18.4990, 73.9050, 'Wanwadi'],
-  '4':  [18.5290, 73.8450, 'Shivajinagar'],
-  '5':  [18.5360, 73.8930, 'Koregaon Park'],
-  '6':  [18.5670, 73.9140, 'Viman Nagar'],
-  '7':  [18.5500, 73.9380, 'Kharadi'],
-  '3':  [18.5080, 73.8070, 'Kothrud'],
-  '1':  [18.5590, 73.7920, 'Aundh–Baner'],
-  '8':  [18.5930, 73.9210, 'Lohegaon–Dhanori'],
+  '47': [18.4489, 73.8780, 'Kondhwa Budruk–Yewalewadi'],
+  '43': [18.4788, 73.8832, 'Wanowrie–Kausar Baug'],
+  '42': [18.4730, 73.9140, 'Wanawadi–Ramtekadi'],
+  '41': [18.4520, 73.8900, 'Kondhwa Kh–Mithanagar'],
+  '44': [18.4860, 73.9390, 'Kale Boratenagar–Amanora'],
+  '25': [18.4988, 73.9432, 'Hadapsar Gaothan–Satavwadi'],
+  '26': [18.5062, 73.9128, 'Wanwadi–Vaiduwadi'],
+  // North-East Pune
+  '1':  [18.5908, 73.8895, 'Dhanori–Vishrantwadi'],
+  '2':  [18.5767, 73.8985, 'Tingrenagar–Sanjay Park'],
+  '3':  [18.5895, 73.9254, 'Lohegaon–Viman Nagar'],
+  '4':  [18.5770, 73.9665, 'East Kharadi–Wagholi'],
+  '5':  [18.5511, 73.9339, 'West Kharadi–Vadgaon Sheri'],
+  '6':  [18.5502, 73.9203, 'Vadgaon Sheri–Ramwadi'],
+  '7':  [18.5527, 73.9049, 'Kalyani Nagar–Nagpur Chawl'],
+  '8':  [18.5694, 73.8780, 'Kalas–Phulenagar'],
+  '9':  [18.5479, 73.8835, 'Yerwada'],
+  // Central Pune
+  '10': [18.5393, 73.8584, 'Shivajinagar–Sangamwadi'],
+  '11': [18.5541, 73.8323, 'Bopodi–SPPU'],
+  '17': [18.5113, 73.8482, 'Shaniwar Peth–Navi Peth'],
+  '18': [18.5191, 73.8600, 'Kasba Peth–Mandai'],
+  '19': [18.5213, 73.8651, 'Rasta Peth–Nana Peth'],
+  '20': [18.5255, 73.8727, 'Pune Station–Ambedkar Road'],
+  '21': [18.5291, 73.9035, 'Koregaon Park–Mundhwa'],
+  '22': [18.5087, 73.9714, 'Manjari Bk–Shewalwadi'],
+  '23': [18.5135, 73.9425, 'Sadesataranali–Hadapsar'],
+  '24': [18.5114, 73.9291, 'Magarpatta–Sadhana Vidyalaya'],
+  '27': [18.5062, 73.8704, 'Kasewadi–Lohiyanagar'],
+  '28': [18.5100, 73.8640, 'Bhavani Peth'],
+  '29': [18.5068, 73.8598, 'Ghorpade Peth–Mandai'],
+  // West Pune
+  '12': [18.5639, 73.7918, 'Aundh–Balewadi'],
+  '13': [18.5584, 73.7680, 'Baner–Sus–Mahalunge'],
+  '14': [18.5257, 73.7775, 'Pashan–Bawdhan'],
+  '15': [18.5307, 73.8232, 'Gokhalenagar–Vadarwadi'],
+  '16': [18.5114, 73.8331, 'Erandwane–Fergusson College'],
+  '30': [18.5145, 73.8162, 'Jai Bhavaninagar–Kelewadi'],
+  '31': [18.5042, 73.8070, 'Kothrud Gaothan–Shivtirthnagar'],
+  '32': [18.5113, 73.7901, 'Bhusari Colony–Bavdhan'],
+  '33': [18.5006, 73.7953, 'Ideal Colony–Mahatma Society'],
+  // South-West Pune
+  '34': [18.4713, 73.7614, 'Warje–Kondhave Dhavde'],
+  '35': [18.4737, 73.7914, 'Ramnagar–Uttamnagar'],
+  '36': [18.4858, 73.8145, 'Karvenagar'],
+  '37': [18.4955, 73.8402, 'Dattawadi–Janata Vasahat'],
+  '38': [18.4931, 73.8521, 'Padmavati–Shivdarshan'],
+  '39': [18.4902, 73.8636, 'Market Yard–Maharshi Nagar'],
+  '40': [18.4839, 73.8759, 'Bibvewadi–Gangadham'],
+  '45': [18.4786, 73.9589, 'Fursungi'],
+  // South Pune
+  '48': [18.4665, 73.8702, 'Indiranagar'],
+  '49': [18.4713, 73.8605, 'Balajinagar–Shankar Maharaj'],
+  '50': [18.4820, 73.8479, 'Sahakarnagar–Taljai'],
+  '51': [18.4746, 73.8311, 'Vadgaon Bk–Manikbaug'],
+  '52': [18.4746, 73.8169, 'Nanded City–Sun City'],
+  '53': [18.4364, 73.7958, 'Narhe–Khadakwasla'],
+  '54': [18.4362, 73.8274, 'Dhayari–Ambegaon'],
+  '55': [18.4605, 73.8376, 'Dhankawadi–Ambegaon Pathar'],
+  '56': [18.4601, 73.8519, 'Bharati Vidyapeeth'],
+  '57': [18.4513, 73.8668, 'Sukhsagarnagar'],
+  '58': [18.4389, 73.8632, 'Katraj–Gokulnagar'],
 }
 
 function nearestWardId(lat: number, lng: number): string {
@@ -91,12 +140,15 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const [isDesktop,    setIsDesktop]    = useState(false)
   const [mounted,      setMounted]      = useState(false)
 
+  const [dragOffset,   setDragOffset]   = useState(0)
+
   const textareaRef    = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<any>(null)
   const recorderRef    = useRef<MediaRecorder | null>(null)
   const voiceActiveRef = useRef(false)
   const isIOS          = useRef(false)
   const closingTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const touchStartYRef = useRef(0)
 
   useEffect(() => {
     setMounted(true)
@@ -114,6 +166,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   useEffect(() => {
     if (!isOpen) return
     if (closingTimer.current) { clearTimeout(closingTimer.current); closingTimer.current = null }
+    setDragOffset(0)
     setText(''); setResult(null); setSubmitError(false)
     voiceActiveRef.current = false; setVoiceActive(false); setTranscribing(false)
     requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
@@ -135,6 +188,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   function handleClose() {
     recognitionRef.current?.stop(); recorderRef.current?.stop()
     voiceActiveRef.current = false; setVoiceActive(false)
+    setDragOffset(0)
     setVisible(false)
     closingTimer.current = setTimeout(onClose, 420)
   }
@@ -263,14 +317,31 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
           width: isDesktop ? '100%' : undefined,
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch' as any,
-          transform: `translateY(${visible ? '0' : '100%'})`,
-          transition: `transform 0.44s ${SPRING}`,
+          transform: `translateY(${!visible ? '100%' : dragOffset > 0 ? `${dragOffset}px` : '0'})`,
+          transition: dragOffset > 0 ? 'none' : `transform 0.44s ${SPRING}`,
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Drag handle */}
-        <div className="flex justify-center pt-3">
-          <div style={{ width: 36, height: 5, borderRadius: 999, background: 'rgba(0,0,0,0.12)' }} />
+        {/* Drag handle — swipe down to dismiss */}
+        <div
+          className="flex justify-center pt-3 pb-2"
+          style={{ cursor: 'grab', touchAction: 'none' }}
+          onTouchStart={(e) => {
+            touchStartYRef.current = e.touches[0].clientY
+          }}
+          onTouchMove={(e) => {
+            const dy = e.touches[0].clientY - touchStartYRef.current
+            if (dy > 0) setDragOffset(dy)
+          }}
+          onTouchEnd={() => {
+            if (dragOffset > 80) { handleClose() } else { setDragOffset(0) }
+          }}
+        >
+          <div style={{
+            width: 36, height: 5, borderRadius: 999,
+            background: dragOffset > 0 ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.12)',
+            transition: 'background 0.2s ease',
+          }} />
         </div>
 
         {/* Header ─────────────────────────────────────────────────────────── */}
