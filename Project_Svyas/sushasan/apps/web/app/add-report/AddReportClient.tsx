@@ -710,7 +710,7 @@ export function AddReportClient() {
                   <img src={photoPreview} alt="Attached"
                     className="w-20 h-20 object-cover rounded-2xl border border-ink/10" />
                   <button onClick={clearPhoto} aria-label="Remove photo"
-                    className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-ink/70 text-white text-xs flex items-center justify-center font-bold p-1">
+                    className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-ink/70 text-white text-xs flex items-center justify-center font-bold">
                     ×
                   </button>
                 </div>

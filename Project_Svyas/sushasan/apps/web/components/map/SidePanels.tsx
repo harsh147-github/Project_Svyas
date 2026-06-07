@@ -940,7 +940,7 @@ export function MobilePanel() {
         {/* ── Drag handle — full-width 40px tap zone ── */}
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="w-full flex justify-center items-center h-10 rounded-t-3xl"
+          className="w-full flex justify-center items-center h-11 rounded-t-3xl"
           data-no-min-size
           aria-label={expanded ? 'Collapse ward info' : 'Expand ward info'}
         >
