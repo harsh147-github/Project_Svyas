@@ -69,11 +69,11 @@ export default async function WardPage({ params }: Props) {
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/dashboard"
-                  className="text-[11px] font-medium text-ink-3 hover:text-ink hidden sm:inline">
+                  className="text-[11px] font-medium text-ink-3 hover:text-ink">
               ← All wards
             </Link>
             <Link href="/about"
-                  className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
+                  className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors hidden sm:inline">
               About
             </Link>
           </div>
