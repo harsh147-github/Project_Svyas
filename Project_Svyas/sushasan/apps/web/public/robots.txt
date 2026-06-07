@@ -4,4 +4,4 @@ Disallow: /api/
 Disallow: /_next/
 Disallow: /gov
 
-Sitemap: https://sushasan.in/sitemap.xml
+Sitemap: https://sushaasan.in/sitemap.xml

@@ -56,7 +56,7 @@ export default function AboutPage() {
             <span className="text-ink-2 text-sm hidden sm:inline">About</span>
           </Link>
           <div className="flex items-center gap-3">
-            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
+            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
               Visit website ↗
             </a>
@@ -234,10 +234,10 @@ export default function AboutPage() {
                              hover:bg-saffron-dark transition-colors">
               See the live ward map →
             </Link>
-            <Link href="/dashboard/nibm"
+            <Link href="/dashboard"
                   className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white border border-ink/10
                              text-ink-2 hover:border-saffron/30">
-              NIBM flagship pilot
+              Solution briefs
             </Link>
             <Link href="/ethics"
                   className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white border border-ink/10

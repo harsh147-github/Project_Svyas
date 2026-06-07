@@ -107,7 +107,7 @@ export function NibmCorridorMap() {
         </div>
         <div className="flex items-center gap-3 text-[10px] text-ink-3">
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-traffic animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-traffic" />
             Traffic flow
           </span>
           <span className="flex items-center gap-1.5">

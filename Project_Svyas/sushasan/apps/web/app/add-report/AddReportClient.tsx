@@ -463,9 +463,9 @@ export function AddReportClient() {
     async function handleShare() {
       const shareText = `I just flagged a civic issue in ${result!.wardName} on Sushaasan — the Pune civic intelligence map 🗺️\n\n"${result!.grievanceFormal}"\n\nSee it at sushasan.in`
       if (navigator.share) {
-        try { await navigator.share({ title: 'Sushaasan — Civic Signal', text: shareText, url: 'https://sushasan.in' }) } catch { /* dismissed */ }
+        try { await navigator.share({ title: 'Sushaasan — Civic Signal', text: shareText, url: 'https://sushaasan.in' }) } catch { /* dismissed */ }
       } else {
-        await navigator.clipboard.writeText('https://sushasan.in')
+        await navigator.clipboard.writeText('https://sushaasan.in')
         setCopied(true); setTimeout(() => setCopied(false), 2000)
       }
     }

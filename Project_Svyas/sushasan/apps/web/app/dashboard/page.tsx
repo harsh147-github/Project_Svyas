@@ -102,7 +102,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.18em]
                              uppercase px-2.5 py-1 rounded-full bg-india-green/8 text-india-green border border-india-green/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-india-green animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-india-green" />
               {source === 'supabase' ? 'Live · auto-updated' : 'Pilot view'}
             </span>
             {lastUpdated && (
@@ -110,7 +110,7 @@ export default async function DashboardPage() {
                 Refreshed {formatRefreshed(lastUpdated)}
               </span>
             )}
-            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
+            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
               About ↗
             </a>
@@ -440,7 +440,7 @@ export default async function DashboardPage() {
         {/* ── Footer ──────────────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-3 text-center">
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
+            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
                className="px-4 py-2 rounded-full bg-navy text-white text-[11px] font-semibold
                           hover:bg-navy/90 transition-colors">
               Visit the website ↗

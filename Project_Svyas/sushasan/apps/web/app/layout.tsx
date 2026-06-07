@@ -28,7 +28,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: { default: 'Sushasan — Civic Intelligence for Pune', template: '%s | Sushasan' },
   description: 'AI-powered ward map turning public civic signal into government action across Pune — transparent, structured, and built for every ward.',
-  metadataBase: new URL('https://sushasan.in'),
+  metadataBase: new URL('https://sushaasan.in'),
   openGraph: {
     siteName: 'Sushasan',
     type: 'website',

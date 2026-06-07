@@ -73,7 +73,7 @@ export default async function WardPage({ params }: Props) {
                   className="text-[11px] font-medium text-ink-3 hover:text-ink hidden sm:inline">
               ← All wards
             </Link>
-            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
+            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
               About ↗
             </a>
