@@ -404,7 +404,7 @@ export default function NibmWaterPage() {
               { phase: '02', name: 'Read',    desc: 'Claude Sonnet 4.6 classifies, scores severity 1–5, extracts cited locations' },
               { phase: '03', name: 'Ground',  desc: 'Ward 46 budget ₹3.5 Cr, PMC Water Supply Zone-IV, ongoing Khadakwasla feeder works' },
               { phase: '04', name: 'Compare', desc: 'Cross-references Aundh-Baner rezone (2023) and Hadapsar GSR (2024) DPRs' },
-              { phase: '05', name: 'Suggest', desc: 'Claude Opus 4.6 produces the diplomatic, costed brief — gov action paired with citizen role' },
+              { phase: '05', name: 'Suggest', desc: 'AI synthesis produces the diplomatic, costed brief — gov action paired with citizen role' },
             ].map(p => (
               <div key={p.phase} className="space-y-1.5">
                 <div className="text-saffron font-bold font-mono">{p.phase}</div>

@@ -388,7 +388,7 @@ export default function SalunkeGarbagePage() {
               { phase: '02', name: 'Read',    desc: 'Claude Sonnet 4.6 classifies, scores severity 1–5, extracts cited locations' },
               { phase: '03', name: 'Ground',  desc: 'Ward 47 budget ₹2.8 Cr, PMC SWM Zone-IV, ongoing Kondhwa Road culvert works' },
               { phase: '04', name: 'Compare', desc: 'Cross-references Hadapsar 2024 desilting + Aundh composting (2023) DPRs' },
-              { phase: '05', name: 'Suggest', desc: 'Claude Opus 4.6 produces the diplomatic, costed brief — gov action paired with citizen role' },
+              { phase: '05', name: 'Suggest', desc: 'AI synthesis produces the diplomatic, costed brief — gov action paired with citizen role' },
             ].map(p => (
               <div key={p.phase} className="space-y-1.5">
                 <div className="text-saffron font-bold font-mono">{p.phase}</div>

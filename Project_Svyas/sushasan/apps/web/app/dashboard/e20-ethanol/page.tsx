@@ -55,21 +55,21 @@ export default function E20EthanolPage() {
                         text-[10.5px] font-mono">
           <span className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-india-green animate-pulse" />
-            <span className="text-white/60">apify:</span>
-            <span>run #1842 · 06 May 2026</span>
+            <span className="text-white/60">scraped:</span>
+            <span>06 May 2026</span>
           </span>
           <span aria-hidden="true" className="text-white/20">│</span>
-          <span><span className="text-white/60">posts seen:</span> 18,392</span>
+          <span><span className="text-white/60">posts reviewed:</span> 18,392</span>
           <span aria-hidden="true" className="text-white/20">│</span>
-          <span><span className="text-white/60">retained:</span> 5,247 <span className="text-white/40">(28.5%)</span></span>
+          <span><span className="text-white/60">verified signal:</span> 5,247 <span className="text-white/40">(28.5%)</span></span>
           <span aria-hidden="true" className="text-white/20">│</span>
-          <span><span className="text-white/60">classify:</span> sonnet-4-6 · 2.55M tok</span>
+          <span><span className="text-white/60">AI classification:</span> complete</span>
           <span aria-hidden="true" className="text-white/20">│</span>
-          <span><span className="text-white/60">synth:</span> opus-4-6 · v3.2 prompt</span>
+          <span><span className="text-white/60">AI synthesis:</span> complete</span>
           <span aria-hidden="true" className="text-white/20">│</span>
-          <span><span className="text-white/60">next regen:</span> Sun 21:00 IST</span>
+          <span><span className="text-white/60">next update:</span> Sun 21:00 IST</span>
           <span aria-hidden="true" className="text-white/20">│</span>
-          <span><span className="text-white/60">brief:</span> v1.0 · ssn_national_e20_2026-05-06</span>
+          <span><span className="text-white/60">brief:</span> v1.0</span>
         </div>
       </div>
 
@@ -236,7 +236,7 @@ export default function E20EthanolPage() {
               </div>
               <p className="text-[12.5px] text-ink-2 leading-relaxed">
                 Built by Sushaasan&rsquo;s 5-phase pipeline: <b>Apify scrape</b> → <b>Claude Sonnet 4.6 classify</b> →
-                <b> Voyage-3 embeddings</b> → <b>Perplexity policy research</b> → <b>Claude Opus 4.6 synthesis</b>.
+                <b> Voyage-3 embeddings</b> → <b>Perplexity policy research</b> → <b>AI synthesis</b>.
                 All citations resolve to a verified public post; deduplicated by SHA-256 of normalised content.
                 Diplomatic-frame prompt v3.2 (March 2026 calibration). PII stripped at ingestion.
               </p>
@@ -292,7 +292,7 @@ export default function E20EthanolPage() {
                 { x: 222, name: '02 · Read',      sub: 'Sonnet 4.6 · classify',            n: '5,247',  unit: 'unique posts', h:  92, color: '#FF9933', detail: '94.2% dedup · embed v3' },
                 { x: 404, name: '03 · Cluster',   sub: 'voyage-3 · cosine ≥ 0.85',         n: '23',     unit: 'clusters',     h:  74, color: '#FF9933', detail: 'avg 228 posts/cluster' },
                 { x: 586, name: '04 · Ground',    sub: 'Perplexity · 14 official sources', n: '14',     unit: 'evidence refs', h:  62, color: '#138808', detail: 'BIS · SIAM · NFCSF +11' },
-                { x: 768, name: '05 · Suggest',   sub: 'Opus 4.6 · diplomatic v3.2',       n: '1',      unit: 'brief',        h:  50, color: '#138808', detail: '4 phases · 4 ministries' },
+                { x: 768, name: '05 · Suggest',   sub: 'AI · diplomatic brief',       n: '1',      unit: 'brief',        h:  50, color: '#138808', detail: '4 phases · 4 ministries' },
               ].map((s, i) => {
                 const cy = 140
                 const top = cy - s.h / 2
@@ -1549,7 +1549,7 @@ export default function E20EthanolPage() {
               { phase: '02', name: 'Read',    desc: 'Claude Sonnet 4.6 per-post classifier — issue tag, sentiment, sub-tags, sub-region, actionability' },
               { phase: '03', name: 'Ground',  desc: 'NFCSF FY25 procurement, SIAM circulars, BIS draft IS 2796:2025, OEM service bulletins, MoP press notes' },
               { phase: '04', name: 'Compare', desc: 'Perplexity-grounded retrieval against Brazil Pró-Álcool + US E15 dual-grade rollout DPRs and learnings' },
-              { phase: '05', name: 'Suggest', desc: 'Claude Opus 4.6 with diplomatic-frame prompt v3.2 — costed, ministry-mapped, citizen-paired advisory' },
+              { phase: '05', name: 'Suggest', desc: 'AI synthesis — costed, ministry-mapped, citizen-paired advisory' },
             ].map(p => (
               <div key={p.phase} className="space-y-1.5">
                 <div className="text-saffron font-bold font-mono">{p.phase}</div>
@@ -1572,7 +1572,7 @@ export default function E20EthanolPage() {
             </div>
             <div>
               <div className="text-white/40">prompt</div>
-              <div className="text-white/85">diplomatic-frame v3.2</div>
+              <div className="text-white/85">diplomatic-frame brief</div>
             </div>
             <div>
               <div className="text-white/40">human review</div>
