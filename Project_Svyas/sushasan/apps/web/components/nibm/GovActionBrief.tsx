@@ -207,7 +207,7 @@ export function GovActionBrief({
             <div className="space-y-1">
               <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-[#7a766d]">From</span>
               <div className="font-medium text-[#0B1F3A]">Sushaasan Civic Intelligence Platform</div>
-              <div className="text-[#7a766d] text-[11px]">sushaasan.in · harshsonavane@sushaasan.in</div>
+              <div className="text-[#7a766d] text-[11px]">sushasan.in · sonawaneharsh147@gmail.com</div>
             </div>
           </div>
 
@@ -471,7 +471,7 @@ export function GovActionBrief({
           <div className="pt-3 border-t border-[#1a1a1a]/6 flex flex-wrap items-center justify-between gap-2
                           text-[9px] text-[#9a9590] font-mono">
             <span>
-              Sushaasan Civic Intelligence · sushaasan.in · {FILE_NO}
+              Sushaasan Civic Intelligence · sushasan.in · {FILE_NO}
             </span>
             <span className="flex items-center gap-2">
               {feasibilityScore && (
