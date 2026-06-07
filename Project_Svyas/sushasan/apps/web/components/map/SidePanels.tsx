@@ -1006,7 +1006,7 @@ export function MobilePanel() {
 
             {/* Chevron */}
             <svg
-              className={`w-4 h-4 text-ink-3 flex-shrink-0 transition-transform duration-250 ${expanded ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 text-ink-3 flex-shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
               viewBox="0 0 24 24" fill="none" stroke="currentColor"
               strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
             >
