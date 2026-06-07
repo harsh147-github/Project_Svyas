@@ -40,14 +40,14 @@ export function DesktopCTABar() {
           </button>
 
           <a
-            href="/dashboard/nibm"
+            href="/dashboard"
             className="flex items-center gap-2.5 px-6 py-2.5 rounded-full
                        bg-saffron text-white font-semibold text-xs tracking-wide
                        shadow-[0_4px_18px_rgba(255,153,51,0.45)]
                        hover:bg-[#e8891e] active:scale-95 transition-all duration-150"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-white/80 flex-shrink-0" />
-            View NIBM Pilot — AI Solution Brief
+            View Pune Pilot — AI Solution Briefs
           </a>
         </div>
 
