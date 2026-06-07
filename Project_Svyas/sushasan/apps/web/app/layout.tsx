@@ -17,7 +17,6 @@ const sourceSerif = Source_Serif_4({
   display: 'swap',
   weight: ['400', '600', '700'],
   style: ['normal', 'italic'],
-  axes: ['opsz'],
 })
 
 export const viewport: Viewport = {
