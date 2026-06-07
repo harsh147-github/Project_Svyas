@@ -155,10 +155,12 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const [focused,      setFocused]      = useState(false)
   const [isDesktop,    setIsDesktop]    = useState(false)
   const [mounted,      setMounted]      = useState(false)
-  const [photo,        setPhoto]        = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photo,          setPhoto]          = useState<File | null>(null)
+  const [photoPreview,   setPhotoPreview]   = useState<string | null>(null)
+  const [transcribeError, setTranscribeError] = useState(false)
 
   const textareaRef    = useRef<HTMLTextAreaElement>(null)
+  const sheetRef       = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<any>(null)
   const recorderRef    = useRef<MediaRecorder | null>(null)
   const voiceActiveRef = useRef(false)
@@ -178,10 +180,29 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
     return () => window.removeEventListener('resize', check)
   }, [])
 
+  // Focus trap — keep keyboard focus inside the modal while it's open
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (!isOpen) return
+    if (e.key === 'Escape') { handleClose(); return }
+    if (e.key !== 'Tab') return
+    const el = sheetRef.current
+    if (!el) return
+    const focusable = el.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    const first = focusable[0]
+    const last  = focusable[focusable.length - 1]
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last?.focus() }
+    } else {
+      if (document.activeElement === last)  { e.preventDefault(); first?.focus() }
+    }
+  }
+
   useEffect(() => {
     if (!isOpen) return
     if (closingTimer.current) { clearTimeout(closingTimer.current); closingTimer.current = null }
-    setText(''); setResult(null); setSubmitError(false)
+    setText(''); setResult(null); setSubmitError(false); setTranscribeError(false)
     setPhoto(null); setPhotoPreview(null)
     voiceActiveRef.current = false; setVoiceActive(false); setTranscribing(false)
     requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
@@ -257,15 +278,19 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
           const t = setTimeout(() => ctrl.abort(), 30_000)
           const res = await fetch('/api/transcribe', { method: 'POST', body: form, signal: ctrl.signal })
           clearTimeout(t)
-          const data = await res.json() as { text?: string }
+          if (!res.ok) throw new Error(`transcribe ${res.status}`)
+          const data = await res.json() as { text?: string; error?: string }
           if (data.text?.trim()) {
+            setTranscribeError(false)
             setText(prev => prev ? `${prev} ${data.text!.trim()}` : data.text!.trim())
             if (textareaRef.current) {
               textareaRef.current.style.height = 'auto'
               textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 180) + 'px'
             }
+          } else {
+            setTranscribeError(true)
           }
-        } catch { /**/ } finally { setTranscribing(false); setVoiceActive(false); voiceActiveRef.current = false }
+        } catch { setTranscribeError(true) } finally { setTranscribing(false); setVoiceActive(false); voiceActiveRef.current = false }
       }
       recorder.start(); recorderRef.current = recorder
     } catch { voiceActiveRef.current = false; setVoiceActive(false) }
@@ -359,6 +384,9 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
 
   if (!mounted) return null
   return createPortal(<div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Report a civic issue"
       className={`fixed inset-0 z-[55] flex flex-col justify-end ${isDesktop ? 'items-center' : ''}`}
       style={{
         pointerEvents: isOpen ? 'auto' : 'none',
@@ -368,9 +396,11 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
         transition: `background 0.3s ${EASE}, backdrop-filter 0.3s ${EASE}`,
       }}
       onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
+      onKeyDown={handleKeyDown}
     >
       {/* Sheet — slides from bottom on both mobile and desktop ──────────────── */}
       <div
+        ref={sheetRef}
         style={{
           background: '#ffffff',
           borderRadius: '24px 24px 0 0',
@@ -461,6 +491,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
                 onTextChange={handleTextChange}
                 onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
                 voiceActive={voiceActive} transcribing={transcribing}
+                transcribeError={transcribeError}
                 voiceLang={voiceLang} onLangChange={setVoiceLang}
                 onToggleVoice={toggleVoice} canSpeak={canSpeak}
                 useWhisper={useWhisper} canSubmit={canSubmit}
@@ -482,7 +513,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
 
 function ComposeView({
   text, textareaRef, showCursor, onTextChange, onFocus, onBlur,
-  voiceActive, transcribing, voiceLang, onLangChange, onToggleVoice,
+  voiceActive, transcribing, transcribeError, voiceLang, onLangChange, onToggleVoice,
   canSpeak, useWhisper, canSubmit, submitting, submitError, onSubmit,
   photoPreview, onPhotoChange, onPhotoClear,
 }: {
@@ -491,7 +522,7 @@ function ComposeView({
   showCursor: boolean
   onTextChange: (e: ChangeEvent<HTMLTextAreaElement>) => void
   onFocus: () => void; onBlur: () => void
-  voiceActive: boolean; transcribing: boolean
+  voiceActive: boolean; transcribing: boolean; transcribeError: boolean
   voiceLang: string; onLangChange: (c: string) => void
   onToggleVoice: () => void; canSpeak: boolean; useWhisper: boolean
   canSubmit: boolean; submitting: boolean; submitError: boolean
@@ -658,7 +689,16 @@ function ComposeView({
             </div>
           )}
 
-          {useWhisper && !voiceActive && !transcribing && (
+          {transcribeError && !voiceActive && !transcribing && (
+            <p role="alert" style={{
+              fontSize: 12, color: '#ff3b30', fontWeight: 500,
+              marginTop: 10, marginBottom: 0,
+              fontFamily: '-apple-system, sans-serif',
+            }}>
+              Transcription failed — please type your issue instead.
+            </p>
+          )}
+          {!transcribeError && useWhisper && !voiceActive && !transcribing && (
             <p style={{
               fontSize: 11, color: '#34c759', fontWeight: 500,
               marginTop: 10, marginBottom: 0,

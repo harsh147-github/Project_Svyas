@@ -374,7 +374,7 @@ export function WardMap() {
           window.dispatchEvent(new CustomEvent('sushaasan:citizen-sheet-open', {
             detail: { wardId: String(p.ward_id ?? ''), issueTag: String(p.issue_tag ?? '') },
           }))
-          e.stopPropagation()
+          ;(e as any).stopPropagation?.()
           return
         }
 
@@ -438,14 +438,13 @@ export function WardMap() {
           .addTo(map)
         popupRef.current = popup
 
-        e.stopPropagation()
+        ;(e as any).stopPropagation?.()
       })
 
       // Click outside — deselect (checks all interactive layers so tapping any
       // ward or hotspot does not accidentally trigger the deselect path)
       map.on('click', (e) => {
-        // @ts-expect-error defaultPrevented not standard on MapLibre events
-        if (e.defaultPrevented) return
+        if ((e as any).defaultPrevented) return
         const features = map.queryRenderedFeatures(e.point, { layers: ['pilot-fill', 'context-fill', 'hotspot-icons'] })
         if (!features.length) {
           clearSelected()

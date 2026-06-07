@@ -58,6 +58,14 @@ export type Cluster = {
   severity_avg: number
   status: string
   updated_at: string
+  // Optional display fields populated from solutions/enrichment
+  solution_summary?: string | null
+  gov_summary?: string | null
+  citizen_headline?: string | null
+  problem_simple?: string | null
+  lng?: number
+  lat?: number
+  source_platforms?: string[]
 }
 
 export type SolutionStep = {

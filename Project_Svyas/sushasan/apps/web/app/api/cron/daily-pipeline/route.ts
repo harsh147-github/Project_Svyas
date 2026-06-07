@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import crypto from 'node:crypto'
 import { createServerClient, isSupabaseConfigured } from '../../../../lib/supabase'
+import { inngest } from '../../../../lib/inngest'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -379,13 +380,33 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   const unique = all.filter((p) => (seen.has(p.source_post_id) ? false : (seen.add(p.source_post_id), true)))
 
   // Write raw_posts (upsert — safe to re-run)
+  let insertedIds: string[] = []
   if (unique.length > 0) {
     const rows = unique.map((p) => ({
       source: p.source, source_post_id: p.source_post_id, raw_text: p.raw_text,
       author_hash: p.author_hash, posted_at: p.posted_at, geo_hint: p.geo_hint,
     }))
-    const { error } = await supabase.from('raw_posts').upsert(rows, { onConflict: 'source_post_id', ignoreDuplicates: true })
+    const { data: inserted, error } = await supabase
+      .from('raw_posts')
+      .upsert(rows, { onConflict: 'source_post_id', ignoreDuplicates: true })
+      .select('id')
     if (error) console.error('[raw_posts]', error.message)
+    insertedIds = (inserted ?? []).map((r: { id: string }) => r.id)
+
+    // Trigger AI classification for newly inserted posts
+    if (insertedIds.length > 0 && process.env.INNGEST_EVENT_KEY) {
+      try {
+        // Batch into chunks of 50 to stay within Inngest payload limits
+        for (let i = 0; i < insertedIds.length; i += 50) {
+          await inngest.send({
+            name: 'sushasan/posts.scraped',
+            data: { batchIds: insertedIds.slice(i, i + 50) },
+          })
+        }
+      } catch (err) {
+        console.error('[inngest emit]', err)
+      }
+    }
   }
 
   // Upsert clusters — unique constraint on (ward_id, issue_tag) handles conflicts

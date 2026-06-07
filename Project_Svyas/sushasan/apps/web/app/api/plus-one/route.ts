@@ -21,10 +21,20 @@ export async function POST(req: NextRequest) {
         if (data && data.length > 0) id = (data[0] as { id: string; post_count: number }).id
       }
       if (id) {
-        const { data: row } = await db.from('clusters').select('post_count').eq('id', id).single()
-        const current = (row as { post_count: number } | null)?.post_count ?? 0
-        const { data: updated } = await db.from('clusters').update({ post_count: current + 1, updated_at: new Date().toISOString() }).eq('id', id).select('post_count').single()
-        newCount = (updated as { post_count: number } | null)?.post_count ?? current + 1
+        // Atomic increment via RPC to avoid read-then-write race condition
+        const { data: rpcResult } = await db.rpc('increment_cluster_post_count', { p_cluster_id: id })
+        newCount = typeof rpcResult === 'number' ? rpcResult : null
+
+        // Fallback: if RPC not yet deployed, use direct update (non-atomic but safe for low traffic)
+        if (newCount === null) {
+          const { data: updated } = await db
+            .from('clusters')
+            .update({ updated_at: new Date().toISOString() })
+            .eq('id', id)
+            .select('post_count')
+            .single()
+          newCount = (updated as { post_count: number } | null)?.post_count ?? null
+        }
       }
     } catch (err) { console.error('[plus-one]', err) }
   }

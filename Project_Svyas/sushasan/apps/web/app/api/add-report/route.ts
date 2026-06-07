@@ -187,8 +187,8 @@ export async function POST(req: NextRequest) {
     const fallback = w ?? WARD_CENTROIDS[0]
     resolvedWardId = fallback.ward_id   // use fallback id, not the invalid incoming wardId
     resolvedWardName = fallback.name
-    resolvedLng = w.lng + (Math.random() - 0.5) * 0.006
-    resolvedLat = w.lat + (Math.random() - 0.5) * 0.006
+    resolvedLng = (w ?? fallback).lng + (Math.random() - 0.5) * 0.006
+    resolvedLat = (w ?? fallback).lat + (Math.random() - 0.5) * 0.006
   } else {
     const w = WARD_CENTROIDS[0]
     resolvedWardId = w.ward_id
