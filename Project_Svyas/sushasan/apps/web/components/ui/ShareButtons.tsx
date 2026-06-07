@@ -38,15 +38,15 @@ export function ShareButtons({ url, title, description, compact = false }: Share
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-wrap">
       <span className="text-[10px] text-ink/40 uppercase tracking-wider font-semibold">Share:</span>
-      <button onClick={shareWhatsApp} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#25D366]/10 text-[#25D366] text-xs font-semibold hover:bg-[#25D366]/20 transition-colors">
+      <button onClick={shareWhatsApp} className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#25D366]/10 text-[#25D366] text-xs font-semibold hover:bg-[#25D366]/20 transition-colors">
         WhatsApp
       </button>
-      <button onClick={shareTwitter} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0B1F3A]/8 text-[#0B1F3A] text-xs font-semibold hover:bg-[#0B1F3A]/15 transition-colors">
+      <button onClick={shareTwitter} className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0B1F3A]/8 text-[#0B1F3A] text-xs font-semibold hover:bg-[#0B1F3A]/15 transition-colors">
         X / Twitter
       </button>
-      <button onClick={copyLink} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-ink/6 text-ink/60 text-xs font-semibold hover:bg-ink/10 transition-colors">
+      <button onClick={copyLink} className="whitespace-nowrap flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-ink/6 text-ink/60 text-xs font-semibold hover:bg-ink/10 transition-colors">
         {copied ? '✓ Copied' : 'Copy link'}
       </button>
     </div>

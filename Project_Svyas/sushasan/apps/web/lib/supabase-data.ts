@@ -230,7 +230,8 @@ export type WardFull = {
 
 export async function getWardFull(wardId: string): Promise<WardFull | null> {
   const registry = await loadWardRegistry()
-  const ward = registry.get(wardId) ?? stubWard(wardId)
+  const knownWard = registry.get(wardId)
+  const ward = knownWard ?? stubWard(wardId)
 
   let clusters: Cluster[] = []
   let solutions: Solution[] = []
@@ -346,6 +347,9 @@ export async function getWardFull(wardId: string): Promise<WardFull | null> {
       .slice(0, 3)
       .map((c) => synthesizeSolution(c, ward))
   }
+
+  // Return 404 for wards not in the registry and with no data from any source
+  if (!knownWard && clusters.length === 0) return null
 
   return { ward, clusters, solutions, hasRealClusters, hasRealSolutions }
 }

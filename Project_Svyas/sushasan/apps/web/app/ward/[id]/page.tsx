@@ -50,9 +50,9 @@ export default async function WardPage({ params }: Props) {
   const { ward, clusters, solutions, hasRealSolutions } = data
 
   const totalCost = solutions.reduce((s, x) => s + x.total_cost_est_inr, 0)
-  const budgetPct = ward.annual_budget_inr
-    ? Math.min(100, Math.round((totalCost / ward.annual_budget_inr) * 100))
-    : 0
+  const budgetRatio = ward.annual_budget_inr ? totalCost / ward.annual_budget_inr : 0
+  const budgetPct = Math.min(100, Math.round(budgetRatio * 100))
+  const budgetPctLabel = totalCost > 0 && budgetPct === 0 ? '< 1' : String(budgetPct)
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -105,7 +105,7 @@ export default async function WardPage({ params }: Props) {
               </span>
               <span className="text-xs text-ink-2">
                 <b>{fmt(totalCost)}</b> <span className="text-ink-4">/</span> {fmt(ward.annual_budget_inr)}
-                <span className="ml-2 text-ink-4">({budgetPct}%)</span>
+                <span className="ml-2 text-ink-4">({budgetPctLabel}%)</span>
               </span>
             </div>
             <div className="h-2 bg-ink/8 rounded-full overflow-hidden">
@@ -122,7 +122,7 @@ export default async function WardPage({ params }: Props) {
             <p className="text-[11px] text-ink-3 mt-2">
               {budgetPct > 100
                 ? 'Combined estimate exceeds annual allocation — phase rollout suggested.'
-                : `Resolving every active brief uses ${budgetPct}% of the ward's annual budget.`}
+                : `Resolving every active brief uses ${budgetPctLabel}% of the ward's annual budget.`}
             </p>
           </section>
         )}
