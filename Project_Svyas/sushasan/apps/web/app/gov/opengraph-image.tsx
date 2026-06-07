@@ -66,7 +66,7 @@ export default async function OG() {
 
         <div style={{ marginTop: 'auto', display: 'flex', gap: 12, zIndex: 1 }}>
           {[
-            { v: '3', l: 'pilot wards · 43 · 46 · 47' },
+            { v: '2', l: 'pilot wards · 46 · 47' },
             { v: 'Gov', l: 'what government can do' },
             { v: 'Cit', l: 'how citizens can help' },
             { v: 'Loop', l: 'mark resolved -> public dashboard' },

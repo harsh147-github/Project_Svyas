@@ -28,7 +28,7 @@ function checkRateLimit(ip: string): boolean {
 const WARD_CENTROIDS = [
   // Pilot wards
   { ward_id: '46', name: 'NIBM–Mohammadwadi',           lat: 18.4655, lng: 73.9010 },
-  { ward_id: '47', name: 'Kondhwa Budruk–Yewalewadi',   lat: 18.4489, lng: 73.8780 },
+  { ward_id: '47', name: 'Salunke Vihar–Wanowrie',       lat: 18.4670, lng: 73.8950 },
   { ward_id: '43', name: 'Wanowrie–Kausar Baug',        lat: 18.4788, lng: 73.8832 },
   { ward_id: '42', name: 'Wanawadi–Ramtekadi',          lat: 18.4730, lng: 73.9140 },
   { ward_id: '41', name: 'Kondhwa Kh–Mithanagar',       lat: 18.4520, lng: 73.8900 },

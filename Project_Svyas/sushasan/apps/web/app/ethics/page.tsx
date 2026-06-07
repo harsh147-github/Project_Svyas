@@ -258,7 +258,7 @@ export default function EthicsPage() {
             </Link>
           </div>
           <p className="text-[11px] text-ink-3">
-            Sushaasan Pilot · NIBM · Wanowrie · Tribeca · Pune · Last reviewed: May 2026
+            Sushaasan Pilot · NIBM · Salunke Vihar · Wanowrie · Pune · Last reviewed: May 2026
           </p>
         </footer>
       </div>

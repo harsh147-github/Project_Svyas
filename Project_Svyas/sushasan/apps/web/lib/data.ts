@@ -101,7 +101,7 @@ const WARDS: Ward[] = [
   },
   {
     id: '47',
-    name: 'Kondhwa Budruk – Yewalewadi',
+    name: 'Salunke Vihar – Wanowrie',
     corporator_name: 'TBD — Contact Sushaasan',
     party: '',
     ward_number: 47,

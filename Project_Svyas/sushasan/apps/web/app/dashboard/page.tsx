@@ -124,7 +124,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[10px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
                              bg-saffron/10 text-saffron-dark rounded-full border border-saffron/20">
-              NIBM · Wanowrie · Tribeca
+              NIBM · Salunke Vihar · Wanowrie
             </span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl font-semibold text-ink leading-[1.05] max-w-3xl">
@@ -147,7 +147,7 @@ export default async function DashboardPage() {
             <div className="flex-1 h-px bg-ink/8 min-w-[40px]" />
             <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-saffron-dark
                              bg-saffron/8 border border-saffron/20 px-2 py-1 rounded-full">
-              4 live · diplomatic frame
+              4 active briefs
             </span>
           </div>
 
@@ -452,7 +452,7 @@ export default async function DashboardPage() {
             Data sourced from public posts only · AI-assisted analysis, reviewed before publication
           </p>
           <p className="text-[11px] text-ink-3">
-            Sushaasan Pilot · NIBM · Wanowrie · Tribeca · Pune ·{' '}
+            Sushaasan Pilot · NIBM · Salunke Vihar · Wanowrie · Pune ·{' '}
             <a href="mailto:sonawaneharsh147@gmail.com" className="underline">Contact</a>
           </p>
         </footer>

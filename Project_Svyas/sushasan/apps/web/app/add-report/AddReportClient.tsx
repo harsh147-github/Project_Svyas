@@ -36,7 +36,7 @@ type Result = {
 
 const WARD_CENTROIDS = [
   { ward_id: '46', name: 'NIBM–Mohammadwadi',           lat: 18.4655, lng: 73.9010 },
-  { ward_id: '47', name: 'Kondhwa Budruk–Yewalewadi',   lat: 18.4489, lng: 73.8780 },
+  { ward_id: '47', name: 'Salunke Vihar–Wanowrie',       lat: 18.4670, lng: 73.8950 },
   { ward_id: '43', name: 'Wanowrie–Kausar Baug',        lat: 18.4788, lng: 73.8832 },
   { ward_id: '42', name: 'Wanawadi–Ramtekadi',          lat: 18.4730, lng: 73.9140 },
   { ward_id: '41', name: 'Kondhwa Kh–Mithanagar',       lat: 18.4520, lng: 73.8900 },
@@ -151,10 +151,10 @@ const MANUAL_AREAS = [
   { ward_id: '38', name: 'Padmavati / Shivdarshan' },
   { ward_id: '39', name: 'Market Yard / Maharshi Nagar' },
   { ward_id: '40', name: 'Bibvewadi / Gangadham' },
-  // Pilot belt — NIBM / Kondhwa / Wanowrie
-  { ward_id: '43', name: 'Salunke Vihar / Wanowrie' },
+  // Pilot belt — NIBM / Salunke Vihar / Wanowrie
   { ward_id: '46', name: 'NIBM Road / Mohammadwadi' },
-  { ward_id: '47', name: 'Kondhwa Budruk / Yewalewadi' },
+  { ward_id: '47', name: 'Salunke Vihar / Wanowrie' },
+  { ward_id: '43', name: 'Wanowrie – Kausar Baug' },
   { ward_id: '41', name: 'Kondhwa Khurd / Mithanagar' },
   { ward_id: '44', name: 'Undri / Pisoli / Amanora' },
   { ward_id: '42', name: 'Wanawadi / Ramtekadi' },
@@ -555,7 +555,7 @@ export function AddReportClient() {
 
         {/* Headline */}
         <div className="mb-9 transition-all duration-700 ease-out"
-             style={{ opacity: mounted ? 1 : 0, transform: mounted ? 'translateY(0)' : 'translateY(14px)' }}>
+             style={{ transform: mounted ? 'translateY(0)' : 'translateY(14px)' }}>
           <h1 className="font-serif text-[26px] sm:text-[30px] font-bold text-ink leading-[1.25] mb-3">
             We know filling forms is inconvenient and boring, so we made it much more convenient.
           </h1>
