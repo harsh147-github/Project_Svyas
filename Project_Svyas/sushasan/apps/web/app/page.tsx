@@ -65,33 +65,37 @@ export default function HomePage() {
       {/* Auto-select ward from ?ward= URL param (navigated from /add-report) */}
       <WardAutoSelect />
 
-      {/* Brand mark */}
-      <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none">
-        <div className="flex items-center justify-between px-5 py-4">
+      {/* Brand mark — compact on mobile, full on desktop */}
+      <div className="absolute top-0 left-0 right-0 z-40 pointer-events-none"
+           style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="flex items-center justify-between
+                        px-3 py-2.5 md:px-5 md:py-4">
 
           {/* Logo */}
-          <div className="flex items-center gap-2.5 pointer-events-auto">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center
-                            bg-saffron text-white font-serif font-bold text-base shadow-sm">
+          <div className="flex items-center gap-2 pointer-events-auto
+                          bg-white/85 backdrop-blur-sm rounded-2xl
+                          px-2.5 py-1.5 border border-ink/8 shadow-sm">
+            <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center
+                            bg-saffron text-white font-serif font-bold text-sm md:text-base shadow-sm flex-shrink-0">
               स
             </div>
             <div>
-              <div className="font-serif text-lg font-semibold text-ink leading-none tracking-tight">
+              <div className="font-serif text-[15px] md:text-lg font-semibold text-ink leading-none tracking-tight">
                 Sushaasan
               </div>
-              <div className="text-[9px] font-semibold tracking-[0.18em] text-ink-3 uppercase mt-0.5">
+              <div className="text-[8px] md:text-[9px] font-semibold tracking-[0.16em] text-ink-3 uppercase mt-0.5">
                 Civic Signal · Pune
               </div>
             </div>
           </div>
 
           {/* Pilot badge */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full
-                          bg-white border border-ink/10 shadow-sm
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full pointer-events-auto
+                          bg-white/85 backdrop-blur-sm border border-ink/8 shadow-sm
                           text-[9px] font-bold tracking-[0.12em] uppercase text-ink-3
                           whitespace-nowrap flex-shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-india-green animate-pulse flex-shrink-0" />
-            <span className="hidden xs:inline">Pilot · </span>NIBM – Kondhwa
+            <span className="w-1.5 h-1.5 rounded-full bg-india-green flex-shrink-0" />
+            <span className="hidden sm:inline">Pilot · </span>NIBM – Kondhwa
           </div>
 
         </div>

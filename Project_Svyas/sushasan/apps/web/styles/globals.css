@@ -18,8 +18,27 @@
     --paper: #fafaf7;
   }
 
-  html { @apply antialiased; font-feature-settings: "cv11", "ss01"; }
-  body { @apply bg-paper text-ink font-sans; }
+  html {
+    @apply antialiased;
+    font-feature-settings: "cv11", "ss01";
+    /* Prevent layout shift from scrollbar appearing */
+    scrollbar-gutter: stable;
+  }
+  body {
+    @apply bg-paper text-ink font-sans;
+    /* Remove 300ms tap delay on mobile */
+    touch-action: manipulation;
+    /* Remove iOS tap highlight */
+    -webkit-tap-highlight-color: transparent;
+    /* Smooth text on all platforms */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Prevent pull-to-refresh and bounce on map page */
+  .h-screen { overscroll-behavior: none; }
+  /* Hide scrollbar on filter chip rows */
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
 /* ── Add-report page animations ───────────────────────────────── */
