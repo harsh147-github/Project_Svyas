@@ -155,7 +155,7 @@ export default function PrivacyPage() {
             </Link>
           </div>
           <p className="text-[11px] text-ink-3">
-            Sushasan Pilot · NIBM · Wanowrie · Pune
+            Sushaasan · Pune
           </p>
         </footer>
       </div>

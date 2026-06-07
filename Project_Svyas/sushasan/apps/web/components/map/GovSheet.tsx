@@ -7,7 +7,6 @@
  */
 
 import { useEffect, useState } from 'react'
-import { SheetScroller } from './SheetScroller'
 
 type SheetData = { wardId: string }
 
@@ -101,7 +100,7 @@ export function GovSheet() {
         className="fixed bottom-0 left-0 right-0 z-50
                    bg-white rounded-t-3xl
                    shadow-[0_-8px_40px_rgba(10,31,58,0.22)]
-                   max-h-[min(92vh,600px)] flex flex-col
+                   max-h-[min(92vh,600px)] flex flex-col overflow-hidden
                    md:max-w-2xl md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-full
                    md:bottom-8 md:rounded-3xl"
         role="dialog"
@@ -139,7 +138,8 @@ export function GovSheet() {
         </div>
 
         {/* Scrollable body */}
-        <SheetScroller className="flex-1 px-5 py-5 space-y-5">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-5 space-y-5"
+             style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
           {loading ? (
             <div className="text-center py-12 text-ink-3 text-sm">Loading brief…</div>
           ) : !wardFull ? (
@@ -306,7 +306,7 @@ export function GovSheet() {
               </a>
             </>
           )}
-        </SheetScroller>
+        </div>
 
         <div className="h-4 flex-shrink-0" />
       </div>

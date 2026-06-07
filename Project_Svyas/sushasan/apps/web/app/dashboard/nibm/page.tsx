@@ -95,7 +95,7 @@ export default async function NIBMPilotPage() {
             <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-3 hidden sm:block">
               NIBM Traffic Pilot · Ward 46
             </span>
-            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
+            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
                className="text-[11px] font-semibold text-navy hover:underline hidden sm:inline">
               Visit website ↗
             </a>
@@ -111,7 +111,7 @@ export default async function NIBMPilotPage() {
       {hasRealData ? (
         <div className="bg-india-green/8 border-b border-india-green/20">
           <div className="max-w-6xl mx-auto px-5 py-2.5 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-india-green animate-pulse flex-shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-india-green flex-shrink-0" />
             <span className="text-xs text-india-green font-medium">
               Live brief — synthesised {fmtDate(solution.created_at)} from 19 verified citizen posts
             </span>
@@ -596,7 +596,7 @@ export default async function NIBMPilotPage() {
         {/* ── 11. Footer CTAs ──────────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-4">
           <div className="flex flex-wrap items-center gap-3 justify-center">
-            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
+            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
                className="px-5 py-2.5 rounded-full bg-navy text-white text-xs font-semibold
                           hover:bg-navy/90 transition-colors">
               Visit the full Sushaasan website ↗

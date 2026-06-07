@@ -463,9 +463,9 @@ export function AddReportClient() {
     async function handleShare() {
       const shareText = `I just flagged a civic issue in ${result!.wardName} on Sushaasan — the Pune civic intelligence map 🗺️\n\n"${result!.grievanceFormal}"\n\nSee it at sushasan.in`
       if (navigator.share) {
-        try { await navigator.share({ title: 'Sushaasan — Civic Signal', text: shareText, url: 'https://sushasan.in' }) } catch { /* dismissed */ }
+        try { await navigator.share({ title: 'Sushaasan — Civic Signal', text: shareText, url: 'https://sushaasan.in' }) } catch { /* dismissed */ }
       } else {
-        await navigator.clipboard.writeText('https://sushasan.in')
+        await navigator.clipboard.writeText('https://sushaasan.in')
         setCopied(true); setTimeout(() => setCopied(false), 2000)
       }
     }
@@ -491,7 +491,7 @@ export function AddReportClient() {
           {/* THE FORMAL GRIEVANCE — hero element */}
           <div className="rounded-2xl overflow-hidden border border-ink/10 shadow-sm bg-white">
             <div className="px-4 pt-3 pb-1 flex items-center gap-2 border-b border-ink/6">
-              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: color }} />
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
               <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-ink/35">
                 Official grievance · appearing on map
               </span>
@@ -710,7 +710,7 @@ export function AddReportClient() {
                   <img src={photoPreview} alt="Attached"
                     className="w-20 h-20 object-cover rounded-2xl border border-ink/10" />
                   <button onClick={clearPhoto} aria-label="Remove photo"
-                    className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-ink/70 text-white text-xs flex items-center justify-center font-bold p-1">
+                    className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-ink/70 text-white text-xs flex items-center justify-center font-bold">
                     ×
                   </button>
                 </div>

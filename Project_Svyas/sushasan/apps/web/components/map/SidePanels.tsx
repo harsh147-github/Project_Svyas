@@ -12,7 +12,6 @@ import { FindMyWardButton } from './SelectedWardPanel'
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { SheetScroller } from './SheetScroller'
 
 // ─── Types matching /api/ward/all + /api/ward/[id] ────────────────────────
 
@@ -407,21 +406,12 @@ function CitizenEmpty({ totalPosts, totalSources }: { totalPosts: number; totalS
         </div>
       </div>
 
-      {/* Coverage area */}
-      <div className="pt-3 border-t border-ink/8 space-y-2">
-        <div className="text-[10px] font-bold tracking-[0.16em] text-ink-3 uppercase">
-          Areas covered right now
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {['NIBM Road', 'Salunke Vihar', 'Kondhwa', 'Wanowrie', 'Mohammadwadi'].map((area) => (
-            <span key={area}
-              className="px-2 py-0.5 rounded-full text-[10px] font-medium
-                         bg-saffron/10 text-saffron-dark border border-saffron/20">
-              {area}
-            </span>
-          ))}
-        </div>
-        <p className="text-[10px] text-ink-3">More areas added every week as citizens post online.</p>
+      {/* Coverage note — neutral, no area names */}
+      <div className="pt-3 border-t border-ink/8 space-y-1">
+        <p className="text-[11px] text-ink-3 leading-relaxed">
+          Coverage grows continuously as citizens post about civic issues across Pune.
+          Tap any ward on the map to see what&apos;s been reported there.
+        </p>
       </div>
 
       {totalPosts > 0 && (
@@ -451,15 +441,12 @@ function CitizenNoSignal({ name }: { name: string }) {
         </div>
       </div>
       <p className="text-[12px] leading-relaxed text-ink-2">
-        Sushaasan is currently tracking conversations across the NIBM · Wanowrie ·
-        Mohammadwadi belt. This ward is shown for context — coverage expands
-        every week as more citizens post about local issues online.
+        No civic reports have been collected here yet. Sushaasan is
+        continuously gathering data — coverage grows as more citizens
+        post about local issues online.
       </p>
-      <div className="pt-2 text-[11px] text-ink-3">
-        Want this ward covered sooner?{' '}
-        <a href="/about" className="text-saffron-dark hover:underline font-medium">
-          Reach out →
-        </a>
+      <div className="pt-2 text-[11px] text-ink-2">
+        Be the first — use <strong>Add Report</strong> to flag an issue in this ward.
       </div>
     </div>
   )
@@ -715,14 +702,10 @@ function GovNoSignal({ name }: { name: string }) {
         </div>
       </div>
       <p className="text-[12px] leading-relaxed text-ink-2">
-        Sushaasan generates briefs only when a cluster has enough signal —
-        at least 10 corroborating reports across 2+ platforms. This ward hasn&apos;t
-        crossed that threshold yet.
+        Sushaasan generates action briefs once enough citizen reports have been
+        collected and clustered for this ward. Data is building — a brief will
+        appear here automatically.
       </p>
-      <div className="pt-2 text-[11px] text-ink-3">
-        Pilot wards with live briefs:{' '}
-        <span className="font-semibold text-ink-2">Mohammadwadi · Kondhwa Budruk · Wanawadi</span>
-      </div>
     </div>
   )
 }
@@ -957,7 +940,7 @@ export function MobilePanel() {
         {/* ── Drag handle — full-width 40px tap zone ── */}
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="w-full flex justify-center items-center h-10 rounded-t-3xl"
+          className="w-full flex justify-center items-center h-11 rounded-t-3xl"
           data-no-min-size
           aria-label={expanded ? 'Collapse ward info' : 'Expand ward info'}
         >
@@ -1041,23 +1024,28 @@ export function MobilePanel() {
 
         {/* ── Expandable content — smooth CSS height transition ── */}
         <div
-          className="overflow-hidden transition-all duration-300 ease-in-out"
-          style={{ maxHeight: expanded ? '60vh' : '0px' }}
+          className="transition-all duration-300 ease-in-out"
+          style={{ maxHeight: expanded ? '58vh' : '0px', overflow: expanded ? 'visible' : 'hidden' }}
         >
-          <SheetScroller className="px-4 pt-2 pb-6 space-y-4">
-            {!active ? (
-              <MobileEmptyContent totalPosts={all?.totalPosts ?? 0} />
-            ) : clusters.length === 0 ? (
-              <MobileNoSignal name={active.name} />
-            ) : (
-              <MobileWardContent
-                name={active.name}
-                tier={active.tier}
-                clusters={clusters}
-                full={full}
-              />
-            )}
-          </SheetScroller>
+          <div
+            className="overflow-y-auto overscroll-contain px-4 pt-2 pb-6"
+            style={{ maxHeight: '58vh', WebkitOverflowScrolling: 'touch' }}
+          >
+            <div className="space-y-4">
+              {!active ? (
+                <MobileEmptyContent totalPosts={all?.totalPosts ?? 0} />
+              ) : clusters.length === 0 ? (
+                <MobileNoSignal name={active.name} />
+              ) : (
+                <MobileWardContent
+                  name={active.name}
+                  tier={active.tier}
+                  clusters={clusters}
+                  full={full}
+                />
+              )}
+            </div>
+          </div>
         </div>
 
         {/* ── iOS safe area spacer ── */}
@@ -1109,15 +1097,17 @@ function MobileEmptyContent({ totalPosts }: { totalPosts: number }) {
 
 function MobileNoSignal({ name }: { name: string }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <p className="text-[13px] leading-relaxed text-ink-2">
-        No reports yet for <strong>{name}</strong>. Sushaasan is currently
-        tracking the NIBM · Wanowrie · Mohammadwadi belt — coverage
-        expands weekly.
+        No citizen reports have been collected for <strong>{name}</strong> yet.
+        Sushaasan gathers data continuously — check back soon.
       </p>
-      <a href="/about" className="text-[12px] text-saffron-dark font-medium">
-        Want this ward covered? Reach out →
-      </a>
+      <div className="p-3 rounded-xl bg-saffron/[0.06] border border-saffron/15">
+        <p className="text-[12px] text-ink-2 leading-relaxed">
+          You can be the first — tap <strong>+ Report</strong> to flag a civic issue
+          in this ward and it will appear on the map immediately.
+        </p>
+      </div>
     </div>
   )
 }

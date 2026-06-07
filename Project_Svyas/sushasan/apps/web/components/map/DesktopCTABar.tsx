@@ -46,19 +46,18 @@ export function DesktopCTABar() {
                        shadow-[0_4px_18px_rgba(255,153,51,0.45)]
                        hover:bg-[#e8891e] active:scale-95 transition-all duration-150"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-white/80 flex-shrink-0" />
-            View Pune Pilot — AI Solution Briefs
+            View AI Solution Briefs
           </a>
         </div>
 
         {/* Secondary row */}
         <div className="flex items-center gap-4">
           <a
-            href="/dashboard"
+            href="/ward/46"
             className="text-[11px] font-medium text-ink/60 hover:text-ink transition-colors
                        px-4 py-2 rounded-full bg-white border border-ink/10 shadow-sm"
           >
-            Transparency dashboard →
+            Ward analysis →
           </a>
           <a
             href="/about"
