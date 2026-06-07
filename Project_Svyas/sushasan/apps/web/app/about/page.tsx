@@ -209,7 +209,7 @@ export default function AboutPage() {
                                  flex items-center justify-center text-india-green font-bold">47</span>
                 <div>
                   <div className="font-serif text-lg font-semibold text-ink leading-none">
-                    Kondhwa Bk – Yewalewadi
+                    Salunke Vihar – Wanowrie
                   </div>
                   <div className="text-[10px] text-ink-3 mt-1">
                     Annual ₹3.2 Cr · 3 active clusters · partner pilot

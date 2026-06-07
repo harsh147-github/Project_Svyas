@@ -16,7 +16,7 @@ const LANGS = [
 const CENTROIDS: Record<string, [number, number, string]> = {
   // Pilot wards
   '46': [18.4655, 73.9010, 'NIBM–Mohammadwadi'],
-  '47': [18.4489, 73.8780, 'Kondhwa Budruk–Yewalewadi'],
+  '47': [18.4670, 73.8950, 'Salunke Vihar–Wanowrie'],
   '43': [18.4788, 73.8832, 'Wanowrie–Kausar Baug'],
   '42': [18.4730, 73.9140, 'Wanawadi–Ramtekadi'],
   '41': [18.4520, 73.8900, 'Kondhwa Kh–Mithanagar'],

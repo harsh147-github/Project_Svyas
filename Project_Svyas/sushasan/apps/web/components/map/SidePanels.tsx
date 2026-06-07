@@ -116,8 +116,8 @@ function severityBar(value: number) {
 
 const SEARCHABLE_WARDS = [
   { wardnum: '46', name: 'NIBM–Mohammadwadi',       areas: 'NIBM Road Mohammadwadi Corinthians' },
-  { wardnum: '47', name: 'Kondhwa Budruk',           areas: 'Kondhwa Konark Pyramid Undri' },
-  { wardnum: '43', name: 'Wanowrie–Salunke Vihar',   areas: 'Wanowrie Salunke Vihar Clover Park' },
+  { wardnum: '47', name: 'Salunke Vihar–Wanowrie',   areas: 'Salunke Vihar Wanowrie Clover Park Corinthians Lunkad Gold Coast' },
+  { wardnum: '43', name: 'Wanowrie–Kausar Baug',    areas: 'Wanowrie Gaothan Kausar Baug' },
   { wardnum: '42', name: 'Ramtekadi–Sayyadnagar',    areas: 'Ramtekadi Magarpatta' },
   { wardnum: '41', name: 'Kondhwa Khurd',            areas: 'Kondhwa Pisoli' },
   { wardnum: '44', name: 'Undri–Pisoli',             areas: 'Undri Pisoli Fursungi' },
@@ -721,7 +721,7 @@ function GovNoSignal({ name }: { name: string }) {
       </p>
       <div className="pt-2 text-[11px] text-ink-3">
         Pilot wards with live briefs:{' '}
-        <span className="font-semibold text-ink-2">Mohammadwadi · Kondhwa Budruk · Wanawadi</span>
+        <span className="font-semibold text-ink-2">NIBM–Mohammadwadi (Ward 46) · Salunke Vihar–Wanowrie (Ward 47)</span>
       </div>
     </div>
   )
