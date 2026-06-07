@@ -117,9 +117,9 @@ type LocationStatus =
   | { kind: 'denied' }
 
 type Result = {
-  issueTag: string; subTags: string[]; severity: number
-  citedLocation: string | null; civicAsk: string | null
-  wardId: string; wardName: string
+  issueTag: string; issueTypeFree: string; subTags: string[]; severity: number
+  grievanceFormal: string; citedLocation: string | null; civicAsk: string | null
+  wardId: string; wardName: string; lng: number; lat: number
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -287,7 +287,28 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
         body: JSON.stringify(payload),
       })
       if (!res.ok) throw new Error(`${res.status}`)
-      setResult(await res.json() as Result)
+      const data = await res.json() as Result
+      setResult(data)
+      // Fire optimistic map hotspot update — WardMap listens on this event
+      window.dispatchEvent(new CustomEvent('sushaasan:report-submitted', {
+        detail: {
+          id: `user-${Date.now()}`,
+          ward_id: data.wardId,
+          issue_tag: data.issueTag,
+          issue_type_free: data.issueTypeFree,
+          centroid_text: data.grievanceFormal,
+          post_count: 1,
+          severity_avg: data.severity,
+          status: 'signal_detected',
+          lng: data.lng,
+          lat: data.lat,
+          source_platforms: ['web'],
+          citizen_headline: data.issueTypeFree
+            ? `Just reported: ${data.issueTypeFree}`
+            : 'Just reported by a citizen',
+          problem_simple: data.grievanceFormal,
+        },
+      }))
     } catch { setSubmitError(true) } finally { setSubmitting(false) }
   }
 
@@ -727,22 +748,27 @@ function SuccessView({ result, onDone, onSeeMap }: {
         </div>
       </div>
 
-      {/* AI summary — in a card */}
-      {result.civicAsk && (
+      {/* AI summary — formal civic statement that will appear on the map */}
+      {result.grievanceFormal && (
         <div style={{ ...CARD, padding: '14px 16px', background: `${color}0A`, borderColor: `${color}22` }}>
           <div style={{
             fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',
             textTransform: 'uppercase', color, marginBottom: 6,
             fontFamily: '-apple-system, sans-serif',
           }}>
-            What Sushaasan AI understood
+            Civic brief logged to map
           </div>
           <div style={{
             fontSize: 14, lineHeight: 1.5, color: '#1d1d1f',
             fontFamily: '-apple-system, sans-serif',
           }}>
-            {result.civicAsk}
+            {result.grievanceFormal}
           </div>
+          {result.civicAsk && (
+            <div style={{ fontSize: 12, color: '#86868b', marginTop: 8, fontFamily: '-apple-system, sans-serif' }}>
+              Ask: {result.civicAsk}
+            </div>
+          )}
         </div>
       )}
 
