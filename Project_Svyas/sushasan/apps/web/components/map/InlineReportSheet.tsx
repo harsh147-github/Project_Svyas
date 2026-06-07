@@ -169,6 +169,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const isIOS          = useRef(false)
   const closingTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
   const touchStartYRef = useRef(0)
+  const dragOffsetRef  = useRef(0)
 
   useEffect(() => {
     setMounted(true)
@@ -238,7 +239,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   function handleClose() {
     recognitionRef.current?.stop(); recorderRef.current?.stop()
     voiceActiveRef.current = false; setVoiceActive(false)
-    setDragOffset(0)
+    dragOffsetRef.current = 0; setDragOffset(0)
     setVisible(false)
     closingTimer.current = setTimeout(onClose, 420)
   }
@@ -436,15 +437,17 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
       >
         {/* Drag handle — swipe down to dismiss */}
         <div
+          aria-label="Drag to close"
           className="min-h-[44px] flex items-center justify-center cursor-grab active:cursor-grabbing w-full"
           style={{ touchAction: 'none' }}
           onTouchStart={(e) => { touchStartYRef.current = e.touches[0].clientY }}
           onTouchMove={(e) => {
             const dy = e.touches[0].clientY - touchStartYRef.current
-            if (dy > 0) setDragOffset(dy)
+            if (dy > 0) { dragOffsetRef.current = dy; setDragOffset(dy) }
           }}
           onTouchEnd={() => {
-            if (dragOffset > 80) { handleClose() } else { setDragOffset(0) }
+            if (dragOffsetRef.current > 80) { handleClose() } else { setDragOffset(0) }
+            dragOffsetRef.current = 0
           }}
         >
           <div style={{

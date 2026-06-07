@@ -14,6 +14,7 @@ export function FirstVisitOverlay() {
 
   function dismiss() {
     localStorage.setItem(STORAGE_KEY, '1')
+    sessionStorage.setItem('sush:mobile-onboarding-done', '1')
     setShow(false)
   }
 

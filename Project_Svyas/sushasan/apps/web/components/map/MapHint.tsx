@@ -24,8 +24,9 @@ export function MapHint() {
   }, [])
 
   useEffect(() => {
-    // Skip if the user already saw (and dismissed) the FirstVisitOverlay — one onboarding is enough
-    if (localStorage.getItem('sushaasan_welcome_seen')) return
+    // Only show for returning users (localStorage key already set = they've seen FirstVisitOverlay).
+    // First-timers get onboarded by FirstVisitOverlay — no double overlay.
+    if (!localStorage.getItem('sushaasan_welcome_seen')) return
     if (!sessionStorage.getItem('sush:mobile-onboarding-done')) {
       const t = setTimeout(() => setMobileVisible(true), 350)
       return () => clearTimeout(t)
