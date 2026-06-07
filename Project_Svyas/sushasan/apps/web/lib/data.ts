@@ -92,7 +92,7 @@ export type Solution = {
 const WARDS: Ward[] = [
   {
     id: '46',
-    name: 'Mohammadwadi – Uruli Devachi',
+    name: 'NIBM – Mohammadwadi',
     corporator_name: 'TBD — Contact Sushaasan',
     party: '',
     ward_number: 46,
