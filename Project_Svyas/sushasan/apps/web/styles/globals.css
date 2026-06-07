@@ -254,6 +254,13 @@
     min-width: unset;
     display: inline;
   }
+
+  /* Respect Tailwind's hidden utility — never show display: none elements as tap targets */
+  a[href].hidden, button.hidden, [role="button"].hidden {
+    display: none !important;
+    min-height: unset;
+    min-width: unset;
+  }
 }
 
 /* Animation delay utilities */
