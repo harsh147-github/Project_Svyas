@@ -225,6 +225,7 @@ export function AddReportClient() {
   const [result, setResult] = useState<Result | null>(null)
   const [voiceActive, setVoiceActive] = useState(false)
   const [transcribing, setTranscribing] = useState(false)
+  const [voiceError, setVoiceError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
   const [mediaSupported, setMediaSupported] = useState(false)
@@ -349,9 +350,18 @@ export function AddReportClient() {
       }
       recorder.start()
       mediaRecorderRef.current = recorder
-    } catch {
+    } catch (err) {
       voiceActiveRef.current = false
       setVoiceActive(false)
+      if (err instanceof Error) {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setVoiceError('Microphone access denied. Please allow microphone access in your browser settings and retry.')
+        } else if (err.name === 'NotFoundError') {
+          setVoiceError('No microphone found. Please connect a microphone and retry.')
+        } else {
+          setVoiceError('Could not start recording. Please try again.')
+        }
+      }
     }
   }
 
@@ -369,6 +379,7 @@ export function AddReportClient() {
     if (useWhisper && !mediaSupported) return
     voiceActiveRef.current = true
     setVoiceActive(true)
+    setVoiceError(null)
     if (useWhisper) startWhisperRecording()
     else startBrowserRecognition(voiceLang)
   }
@@ -582,8 +593,8 @@ export function AddReportClient() {
 
   return (
     <main className="min-h-screen bg-paper text-ink">
-      <div className="max-w-lg mx-auto px-5 flex flex-col"
-           style={{ minHeight: '100dvh', paddingTop: 24, paddingBottom: 40 }}>
+      <div className="w-full max-w-lg mx-auto px-5 flex flex-col"
+           style={{ minHeight: '100dvh', paddingTop: 'max(1.5rem, env(safe-area-inset-top))', paddingBottom: 40 }}>
 
         {/* Top nav */}
         <div className="flex items-center justify-between mb-10">
@@ -699,7 +710,7 @@ export function AddReportClient() {
                   <img src={photoPreview} alt="Attached"
                     className="w-20 h-20 object-cover rounded-2xl border border-ink/10" />
                   <button onClick={clearPhoto} aria-label="Remove photo"
-                    className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-ink/70 text-white text-xs flex items-center justify-center font-bold">
+                    className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-ink/70 text-white text-xs flex items-center justify-center font-bold p-1">
                     ×
                   </button>
                 </div>
@@ -798,6 +809,13 @@ export function AddReportClient() {
                   {useWhisperForLang && (
                     <p className="text-center text-[11px] text-india-green/80 font-medium mt-1">
                       ✦ Uses Sarvam / Whisper AI — optimised for Indian languages
+                    </p>
+                  )}
+
+                  {/* Microphone permission / device error */}
+                  {voiceError && (
+                    <p role="alert" className="text-[12px] text-red-600 mt-1 text-center leading-snug">
+                      {voiceError}
                     </p>
                   )}
                 </div>

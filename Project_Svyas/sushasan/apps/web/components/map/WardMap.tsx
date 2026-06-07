@@ -2,6 +2,16 @@
 
 import { useEffect, useRef, useCallback } from 'react'
 
+function esc(s: string | null | undefined): string {
+  if (!s) return ''
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
 const ISSUE_COLORS: Record<string, string> = {
   traffic:     '#EF4444',
   water:       '#3B82F6',
@@ -390,35 +400,38 @@ export function WardMap() {
           instagram: '📷', reddit: '💬', twitter: '𝕏', facebook: '📘',
         }
         const platformHtml = platforms.length > 0
-          ? `<div class="popup-platforms">${platforms.map((pl: string) => `<span class="popup-platform-badge">${platformIcons[pl] ?? '📌'} ${pl}</span>`).join(' ')}</div>`
+          ? `<div class="popup-platforms">${platforms.map((pl: string) => `<span class="popup-platform-badge">${platformIcons[pl] ?? '📌'} ${esc(pl)}</span>`).join(' ')}</div>`
           : ''
 
         const citizenSection = p.citizen_headline
-          ? `<div class="popup-citizen"><div class="popup-section-label">FOR CITIZENS</div><div class="popup-citizen-headline">${p.citizen_headline}</div>${p.problem_simple ? `<div class="popup-citizen-detail">${p.problem_simple}</div>` : ''}</div>`
+          ? `<div class="popup-citizen"><div class="popup-section-label">FOR CITIZENS</div><div class="popup-citizen-headline">${esc(p.citizen_headline as string)}</div>${p.problem_simple ? `<div class="popup-citizen-detail">${esc(p.problem_simple as string)}</div>` : ''}</div>`
           : ''
 
         const govSection = p.gov_summary
-          ? `<div class="popup-gov"><div class="popup-section-label">FOR GOVERNMENT</div><div class="popup-gov-text">${p.gov_summary}</div></div>`
+          ? `<div class="popup-gov"><div class="popup-section-label">FOR GOVERNMENT</div><div class="popup-gov-text">${esc(p.gov_summary as string)}</div></div>`
           : ''
 
         const fallbackSolution = !p.citizen_headline && p.solution_summary
-          ? `<div class="popup-solution"><b>Solution →</b> ${p.solution_summary}</div>`
+          ? `<div class="popup-solution"><b>Solution →</b> ${esc(p.solution_summary as string)}</div>`
           : ''
+
+        const safeWardId = esc(String(p.ward_id ?? ''))
+        const safeIssueTag = esc(String(p.issue_tag ?? ''))
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(popupRef.current as any)?.remove()
         const popup = new maplibregl.Popup({
-          offset: 16, maxWidth: '340px', className: 'sushasan-popup',
+          offset: 16, maxWidth: 'min(90vw, 340px)', className: 'sushasan-popup',
         })
           .setLngLat(coords)
           .setHTML(`
-            <div class="popup-inner">
+            <div class="popup-inner" style="min-width:min(90vw,340px);max-width:min(90vw,340px)">
               <span class="popup-tag" style="background:${color}22;color:${color};border:1px solid ${color}55">
-                ${(p.issue_tag as string ?? '').toUpperCase()}
+                ${esc(p.issue_tag as string ?? '').toUpperCase()}
               </span>
-              <div class="popup-issue-text">${p.centroid_text ?? ''}</div>
+              <div class="popup-issue-text">${esc(p.centroid_text as string ?? '')}</div>
               <div class="popup-meta">
-                <span><b>${p.post_count ?? 0}</b> reports</span>
+                <span><b>${esc(String(p.post_count ?? 0))}</b> reports</span>
                 <span>severity ${Number(p.severity_avg ?? 0).toFixed(1)}/5</span>
               </div>
               ${platformHtml}
@@ -426,10 +439,10 @@ export function WardMap() {
               ${govSection}
               ${fallbackSolution}
               <div class="popup-cta-row">
-                     <button class="popup-btn-citizen" onclick="window.dispatchEvent(new CustomEvent('sushaasan:citizen-sheet-open',{detail:{wardId:'${p.ward_id ?? ''}',issueTag:'${p.issue_tag ?? ''}'}}))">
+                     <button class="popup-btn-citizen" onclick="window.dispatchEvent(new CustomEvent('sushaasan:citizen-sheet-open',{detail:{wardId:'${safeWardId}',issueTag:'${safeIssueTag}'}}))">
                        \u{1F465} What's happening?
                      </button>
-                     <button class="popup-btn-gov" onclick="window.dispatchEvent(new CustomEvent('sushaasan:gov-sheet-open',{detail:{wardId:'${p.ward_id ?? ''}'}}))">
+                     <button class="popup-btn-gov" onclick="window.dispatchEvent(new CustomEvent('sushaasan:gov-sheet-open',{detail:{wardId:'${safeWardId}'}}))">
                        \u{1F4CB} Action Brief
                      </button>
                    </div>
@@ -453,52 +466,6 @@ export function WardMap() {
           ;(popupRef.current as any)?.remove()
         }
       })
-
-      // External deselect (e.g. user closes panel)
-      window.addEventListener('sushaasan:ward-deselect', () => {
-        clearSelected()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(popupRef.current as any)?.remove()
-      })
-
-      // Geolocation: fly to user, find containing ward (pilot or context), select it
-      window.addEventListener('sushaasan:locate', (ev) => {
-        const { lat, lng } = (ev as CustomEvent).detail as { lat: number; lng: number }
-        map.flyTo({ center: [lng, lat], zoom: 14, speed: 1.4 })
-        setTimeout(() => {
-          const point = map.project([lng, lat])
-          const pilotFeats = map.queryRenderedFeatures(point, { layers: ['pilot-fill'] })
-          if (pilotFeats.length) {
-            selectWard('wards-pilot', pilotFeats[0].properties as Record<string, unknown>)
-            return
-          }
-          const contextFeats = map.queryRenderedFeatures(point, { layers: ['context-fill'] })
-          if (contextFeats.length) {
-            selectWard('wards-context', contextFeats[0].properties as Record<string, unknown>)
-          }
-        }, 700)
-      })
-
-      // From /add-report: fly to a specific ward centroid and select it (any ward)
-      window.addEventListener('sushaasan:auto-select-ward', ((e: CustomEvent) => {
-        const { wardId, lat, lng } = e.detail as { wardId: string; lat: number; lng: number }
-        map.flyTo({ center: [lng, lat], zoom: 14.5, speed: 1.2, curve: 1.2 })
-        map.once('moveend', () => {
-          const point = map.project([lng, lat])
-          const pilotFeats = map.queryRenderedFeatures(point, { layers: ['pilot-fill'] })
-          if (pilotFeats.length) {
-            selectWard('wards-pilot', pilotFeats[0].properties as Record<string, unknown>)
-            return
-          }
-          const contextFeats = map.queryRenderedFeatures(point, { layers: ['context-fill'] })
-          if (contextFeats.length) {
-            selectWard('wards-context', contextFeats[0].properties as Record<string, unknown>)
-            return
-          }
-          // Fallback: synthesise props from wardId
-          selectWard('wards-context', { wardnum: Number(wardId), Name2: `Ward ${wardId}` })
-        })
-      }) as EventListener)
 
       // Cursors + hover state — broadcasts to side panels.
       // Both pilot and context wards hover, with pilot taking precedence on overlap.
@@ -641,8 +608,107 @@ export function WardMap() {
   }, [])
 
   useEffect(() => {
+    // External deselect (e.g. user closes panel)
+    function handleWardDeselect() {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const m = mapRef.current as any
+      if (!m) return
+      // clear selection via feature state — mirror clearSelected() logic
+      m._selectedWard && m.setFeatureState(
+        { source: m._selectedWard.source, id: m._selectedWard.id },
+        { selected: false },
+      )
+      m._selectedWard = null
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(popupRef.current as any)?.remove()
+    }
+
+    // Geolocation: fly to user, find containing ward (pilot or context), select it
+    function handleLocate(ev: Event) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const m = mapRef.current as any
+      if (!m) return
+      const { lat, lng } = (ev as CustomEvent).detail as { lat: number; lng: number }
+      m.flyTo({ center: [lng, lat], zoom: 14, speed: 1.4 })
+      setTimeout(() => {
+        const point = m.project([lng, lat])
+        const pilotFeats = m.queryRenderedFeatures(point, { layers: ['pilot-fill'] })
+        if (pilotFeats.length) {
+          const props = pilotFeats[0].properties as Record<string, unknown>
+          const wardnum = props?.wardnum as number
+          if (wardnum != null) {
+            m._selectedWard && m.setFeatureState({ source: m._selectedWard.source, id: m._selectedWard.id }, { selected: false })
+            m._selectedWard = { source: 'wards-pilot', id: wardnum }
+            m.setFeatureState({ source: 'wards-pilot', id: wardnum }, { selected: true })
+            window.dispatchEvent(new CustomEvent('sushaasan:ward-selected', { detail: { wardnum, name: (props?.Name2 as string) ?? `Ward ${wardnum}`, tier: 'pilot' } }))
+          }
+          return
+        }
+        const contextFeats = m.queryRenderedFeatures(point, { layers: ['context-fill'] })
+        if (contextFeats.length) {
+          const props = contextFeats[0].properties as Record<string, unknown>
+          const wardnum = props?.wardnum as number
+          if (wardnum != null) {
+            m._selectedWard && m.setFeatureState({ source: m._selectedWard.source, id: m._selectedWard.id }, { selected: false })
+            m._selectedWard = { source: 'wards-context', id: wardnum }
+            m.setFeatureState({ source: 'wards-context', id: wardnum }, { selected: true })
+            window.dispatchEvent(new CustomEvent('sushaasan:ward-selected', { detail: { wardnum, name: (props?.Name2 as string) ?? `Ward ${wardnum}`, tier: 'context' } }))
+          }
+        }
+      }, 700)
+    }
+
+    // From /add-report: fly to a specific ward centroid and select it (any ward)
+    function handleAutoSelectWard(ev: Event) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const m = mapRef.current as any
+      if (!m) return
+      const { wardId, lat, lng } = (ev as CustomEvent).detail as { wardId: string; lat: number; lng: number }
+      m.flyTo({ center: [lng, lat], zoom: 14.5, speed: 1.2, curve: 1.2 })
+      m.once('moveend', () => {
+        const point = m.project([lng, lat])
+        const pilotFeats = m.queryRenderedFeatures(point, { layers: ['pilot-fill'] })
+        if (pilotFeats.length) {
+          const props = pilotFeats[0].properties as Record<string, unknown>
+          const wardnum = props?.wardnum as number
+          if (wardnum != null) {
+            m._selectedWard && m.setFeatureState({ source: m._selectedWard.source, id: m._selectedWard.id }, { selected: false })
+            m._selectedWard = { source: 'wards-pilot', id: wardnum }
+            m.setFeatureState({ source: 'wards-pilot', id: wardnum }, { selected: true })
+            window.dispatchEvent(new CustomEvent('sushaasan:ward-selected', { detail: { wardnum, name: (props?.Name2 as string) ?? `Ward ${wardnum}`, tier: 'pilot' } }))
+          }
+          return
+        }
+        const contextFeats = m.queryRenderedFeatures(point, { layers: ['context-fill'] })
+        if (contextFeats.length) {
+          const props = contextFeats[0].properties as Record<string, unknown>
+          const wardnum = props?.wardnum as number
+          if (wardnum != null) {
+            m._selectedWard && m.setFeatureState({ source: m._selectedWard.source, id: m._selectedWard.id }, { selected: false })
+            m._selectedWard = { source: 'wards-context', id: wardnum }
+            m.setFeatureState({ source: 'wards-context', id: wardnum }, { selected: true })
+            window.dispatchEvent(new CustomEvent('sushaasan:ward-selected', { detail: { wardnum, name: (props?.Name2 as string) ?? `Ward ${wardnum}`, tier: 'context' } }))
+          }
+          return
+        }
+        // Fallback: synthesise props from wardId
+        const wardnum = Number(wardId)
+        m._selectedWard && m.setFeatureState({ source: m._selectedWard.source, id: m._selectedWard.id }, { selected: false })
+        m._selectedWard = { source: 'wards-context', id: wardnum }
+        m.setFeatureState({ source: 'wards-context', id: wardnum }, { selected: true })
+        window.dispatchEvent(new CustomEvent('sushaasan:ward-selected', { detail: { wardnum, name: `Ward ${wardId}`, tier: 'context' } }))
+      })
+    }
+
+    window.addEventListener('sushaasan:ward-deselect', handleWardDeselect)
+    window.addEventListener('sushaasan:locate', handleLocate)
+    window.addEventListener('sushaasan:auto-select-ward', handleAutoSelectWard as EventListener)
+
     initMap()
     return () => {
+      window.removeEventListener('sushaasan:ward-deselect', handleWardDeselect)
+      window.removeEventListener('sushaasan:locate', handleLocate)
+      window.removeEventListener('sushaasan:auto-select-ward', handleAutoSelectWard as EventListener)
       // @ts-expect-error mapref
       mapRef.current?.remove()
       mapRef.current = null

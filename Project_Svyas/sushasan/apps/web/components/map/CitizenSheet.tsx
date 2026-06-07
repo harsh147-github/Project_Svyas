@@ -126,14 +126,14 @@ export function CitizenSheet() {
       <div
         className="fixed bottom-0 left-0 right-0 z-50
                    bg-white rounded-t-3xl shadow-[0_-8px_40px_rgba(10,31,58,0.18)]
-                   max-h-[92vh] flex flex-col
+                   max-h-[min(92vh,600px)] flex flex-col
                    md:max-w-xl md:mx-auto md:bottom-8 md:rounded-3xl md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-full"
         role="dialog"
         aria-modal
         aria-label="What's happening in this area"
       >
         {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+        <div className="flex justify-center flex-shrink-0 min-h-[44px] items-center cursor-grab active:cursor-grabbing">
           <div className="w-10 h-1 rounded-full bg-ink/15" />
         </div>
 
@@ -151,7 +151,7 @@ export function CitizenSheet() {
             </h2>
             <p className="text-[12px] text-ink-3 mt-1">Plain-language summary for residents</p>
           </div>
-          <button onClick={close} className="w-8 h-8 rounded-full flex items-center justify-center bg-ink/5 hover:bg-ink/10 text-ink-3 flex-shrink-0 mt-1" aria-label="Close">✕</button>
+          <button onClick={close} className="w-11 h-11 rounded-full flex items-center justify-center bg-ink/5 hover:bg-ink/10 text-ink-3 flex-shrink-0 mt-1" aria-label="Close">✕</button>
         </div>
 
         {/* Scrollable body */}
@@ -162,7 +162,7 @@ export function CitizenSheet() {
             <>
               {/* The problem */}
               <div className="space-y-2">
-                <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-4">The problem</div>
+                <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-ink-4">The problem</div>
                 {cluster?.citizen_headline ? (
                   <p className="font-serif text-[17px] font-semibold text-ink leading-snug">{cluster.citizen_headline}</p>
                 ) : null}

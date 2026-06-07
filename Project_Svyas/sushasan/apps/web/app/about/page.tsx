@@ -46,7 +46,8 @@ export default function AboutPage() {
 
       {/* ── Nav ──────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-ink/10 bg-white/90 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between"
+             style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-saffron flex items-center justify-center
                             text-white font-serif font-bold text-sm">स</div>
@@ -97,7 +98,7 @@ export default function AboutPage() {
             <div key={m.l} className="bg-white rounded-2xl border border-ink/8 shadow-sm p-5">
               <div className="font-serif text-3xl font-bold text-ink leading-none">{m.v}</div>
               <div className="text-[11px] font-medium text-ink-2 mt-2 leading-snug">{m.l}</div>
-              <div className="text-[10px] text-ink-4 mt-1">{m.s}</div>
+              <div className="text-[11px] text-ink-4 mt-1">{m.s}</div>
             </div>
           ))}
         </section>
@@ -113,7 +114,7 @@ export default function AboutPage() {
             <h2 className="font-serif text-2xl font-semibold text-ink">
               Three principles we don&rsquo;t bend on
             </h2>
-            <span className="text-[10px] text-ink-3">Why officials and citizens both trust the brief</span>
+            <span className="text-[11px] text-ink-3">Why officials and citizens both trust the brief</span>
           </div>
           <div className="grid sm:grid-cols-3 gap-4">
             {PRINCIPLES.map((p) => (
@@ -192,7 +193,7 @@ export default function AboutPage() {
                   <div className="font-serif text-lg font-semibold text-ink leading-none">
                     NIBM–Mohammadwadi
                   </div>
-                  <div className="text-[10px] text-ink-3 mt-1">
+                  <div className="text-[11px] text-ink-3 mt-1">
                     Annual ₹3.5 Cr · 4 active clusters · flagship pilot
                   </div>
                 </div>
@@ -211,7 +212,7 @@ export default function AboutPage() {
                   <div className="font-serif text-lg font-semibold text-ink leading-none">
                     Kondhwa Bk – Yewalewadi
                   </div>
-                  <div className="text-[10px] text-ink-3 mt-1">
+                  <div className="text-[11px] text-ink-3 mt-1">
                     Annual ₹3.2 Cr · 3 active clusters · partner pilot
                   </div>
                 </div>

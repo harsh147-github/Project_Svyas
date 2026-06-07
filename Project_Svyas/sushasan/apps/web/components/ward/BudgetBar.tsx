@@ -11,7 +11,7 @@ function formatINR(n: number) {
 }
 
 export function BudgetBar({ spent, total, label = 'Solution cost vs annual allocation' }: Props) {
-  const pct = Math.min(100, Math.round((spent / total) * 100))
+  const pct = total > 0 ? Math.min(100, Math.round((spent / total) * 100)) : 0
   const over = spent > total
 
   return (

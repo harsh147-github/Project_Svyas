@@ -34,6 +34,7 @@ export function FirstVisitOverlay() {
         backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '20px',
+        paddingTop: 'max(20px, env(safe-area-inset-top))',
         animation: 'fadeIn 0.3s ease',
       }}
       onClick={(e) => { if (e.target === e.currentTarget) dismiss() }}
@@ -43,9 +44,9 @@ export function FirstVisitOverlay() {
         style={{
           background: '#ffffff',
           borderRadius: 24,
-          padding: '36px 32px 28px',
+          padding: 'max(2rem, env(safe-area-inset-top)) clamp(1rem, 5vw, 2rem) 1.75rem',
           maxWidth: 440,
-          width: '100%',
+          width: 'min(440px, calc(100vw - 2rem))',
           boxShadow: '0 24px 80px rgba(11,31,58,0.22)',
           position: 'relative',
         }}
@@ -110,6 +111,7 @@ export function FirstVisitOverlay() {
             background: '#FF9933', color: '#fff', fontWeight: 700, fontSize: 15,
             cursor: 'pointer', letterSpacing: '0.01em',
             boxShadow: '0 4px 18px rgba(255,153,51,0.4)',
+            minHeight: 44,
           }}
         >
           See the Map ↓

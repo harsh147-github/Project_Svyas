@@ -200,6 +200,17 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   }
 
   useEffect(() => {
+    const handleFocus = (e: FocusEvent) => {
+      const target = e.target as HTMLElement
+      if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
+        setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350)
+      }
+    }
+    document.addEventListener('focusin', handleFocus)
+    return () => document.removeEventListener('focusin', handleFocus)
+  }, [])
+
+  useEffect(() => {
     if (!isOpen) return
     if (closingTimer.current) { clearTimeout(closingTimer.current); closingTimer.current = null }
     setText(''); setResult(null); setSubmitError(false); setTranscribeError(false)
@@ -382,6 +393,8 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const canSubmit = text.trim().length >= 5 && !submitting && !result
   const showCursor = text === '' && !focused && !voiceActive && !transcribing
 
+  const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
   if (!mounted) return null
   return createPortal(<div
       role="dialog"
@@ -411,12 +424,12 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch' as any,
           transform: `translateY(${visible ? '0' : '100%'})`,
-          transition: `transform 0.44s ${SPRING}`,
+          transition: prefersReduced ? 'none' : `transform 0.44s ${SPRING}`,
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle */}
-        <div className="flex justify-center pt-3">
+        <div className="min-h-[44px] flex items-center justify-center cursor-grab active:cursor-grabbing w-full">
           <div style={{ width: 36, height: 5, borderRadius: 999, background: 'rgba(0,0,0,0.12)' }} />
         </div>
 
@@ -459,13 +472,12 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
             onClick={handleClose}
             aria-label="Close"
             style={{
-              width: 32, height: 32, borderRadius: '50%',
+              width: 44, height: 44, borderRadius: '50%',
               background: 'rgba(0,0,0,0.07)',
               border: 'none', cursor: 'pointer', display: 'flex',
               alignItems: 'center', justifyContent: 'center',
               transition: `all 0.2s ${EASE}`,
               minWidth: 44, minHeight: 44,   /* 44px touch target */
-              margin: '-6px',                 /* optical offset so it looks 32px */
             }}
           >
             <svg viewBox="0 0 24 24" style={{ width: 14, height: 14 }} fill="none"
@@ -720,10 +732,10 @@ function ComposeView({
                        border: '1.5px solid rgba(0,0,0,0.08)' }} />
             <button onClick={onPhotoClear} aria-label="Remove photo"
               style={{
-                position: 'absolute', top: -6, right: -6, width: 20, height: 20,
+                position: 'absolute', top: -8, right: -8, width: 28, height: 28,
                 borderRadius: '50%', background: 'rgba(29,29,31,0.75)', border: 'none',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontSize: 12, fontWeight: 700, lineHeight: 1,
+                color: '#fff', fontSize: 14, fontWeight: 700, lineHeight: 1, padding: 2,
               }}>×</button>
           </div>
         ) : (
@@ -870,7 +882,7 @@ function SuccessView({ result, onDone, onSeeMap }: {
       {result.grievanceFormal && (
         <div style={{ ...CARD, padding: '14px 16px' }}>
           <div style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',
+            fontSize: 11, fontWeight: 700, letterSpacing: '0.18em',
             textTransform: 'uppercase', color: 'rgba(29,29,31,0.35)', marginBottom: 6,
             fontFamily: '-apple-system, sans-serif',
           }}>
@@ -889,7 +901,7 @@ function SuccessView({ result, onDone, onSeeMap }: {
       {result.civicAsk && !result.grievanceFormal && (
         <div style={{ ...CARD, padding: '14px 16px', background: `${color}0A`, borderColor: `${color}22` }}>
           <div style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: '0.18em',
+            fontSize: 11, fontWeight: 700, letterSpacing: '0.18em',
             textTransform: 'uppercase', color, marginBottom: 6,
             fontFamily: '-apple-system, sans-serif',
           }}>

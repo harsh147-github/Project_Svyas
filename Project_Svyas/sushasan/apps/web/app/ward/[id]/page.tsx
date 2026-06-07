@@ -59,7 +59,8 @@ export default async function WardPage({ params }: Props) {
 
       {/* ── Nav ──────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-ink/10 bg-white/90 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between"
+             style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-saffron flex items-center justify-center
                             text-white font-serif font-bold text-sm">स</div>
@@ -84,7 +85,7 @@ export default async function WardPage({ params }: Props) {
 
         {/* ── Hero ───────────────────────────────────────────────────────── */}
         <section className="space-y-3">
-          <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-ink-4">
+          <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-ink-4">
             Ward {ward.ward_number} · Pune Municipal Corporation
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-ink leading-[1.1]">
@@ -100,7 +101,7 @@ export default async function WardPage({ params }: Props) {
         {ward.annual_budget_inr > 0 && (
           <section className="bg-white rounded-2xl border border-ink/8 shadow-sm p-5">
             <div className="flex items-baseline justify-between mb-2 flex-wrap gap-2">
-              <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-3">
+              <span className="text-[11px] font-bold tracking-[0.18em] uppercase text-ink-3">
                 Solution cost vs annual allocation
               </span>
               <span className="text-xs text-ink-2">
@@ -155,7 +156,7 @@ export default async function WardPage({ params }: Props) {
             <h2 className="font-serif text-xl font-semibold text-ink">
               What&apos;s happening in this ward
             </h2>
-            <span className="text-[10px] text-ink-3">
+            <span className="text-[11px] text-ink-3">
               {clusters.length} issue{clusters.length !== 1 ? 's' : ''} reported this week
             </span>
           </div>
@@ -171,7 +172,7 @@ export default async function WardPage({ params }: Props) {
                             style={{ background: `${color}18`, color, border: `1px solid ${color}40` }}>
                         {ISSUE_LABEL[c.issue_tag] ?? c.issue_tag}
                       </span>
-                      <span className="text-[10px] text-ink-4">{c.post_count} reports</span>
+                      <span className="text-[11px] text-ink-4">{c.post_count} reports</span>
                     </div>
                     <SeverityDots severity={Math.round(c.severity_avg)} />
                     <p className="text-[13px] text-ink-2 leading-relaxed">{c.centroid_text}</p>
@@ -231,13 +232,13 @@ export default async function WardPage({ params }: Props) {
                               </span>
                             )}
                           </div>
-                          <p className="text-[13.5px] text-ink leading-relaxed">{sol.summary}</p>
+                          <p className="text-[13.5px] text-ink leading-relaxed">{sol.summary || 'AI solution pending'}</p>
                         </div>
                         <div className="flex-shrink-0 text-right">
                           <div className="font-serif text-2xl font-bold leading-none" style={{ color }}>
                             {sol.priority_score}
                           </div>
-                          <div className="text-[10px] font-bold tracking-widest uppercase text-ink-4 mt-0.5">
+                          <div className="text-[11px] font-bold tracking-widest uppercase text-ink-4 mt-0.5">
                             Priority
                           </div>
                         </div>
@@ -251,7 +252,7 @@ export default async function WardPage({ params }: Props) {
                           {sol.timeline_days} days
                         </span>
                         <span className="px-2.5 py-1 bg-white rounded-full text-[10px] font-semibold text-ink-2 border border-ink/10">
-                          {sol.steps.length} steps
+                          {(sol.steps ?? []).length} steps
                         </span>
                       </div>
                     </div>
@@ -267,7 +268,7 @@ export default async function WardPage({ params }: Props) {
                           <span className="text-navy text-base">⚙</span>
                         </div>
                         <ol className="space-y-2.5">
-                          {sol.steps.map((step) => (
+                          {(sol.steps ?? []).map((step) => (
                             <li key={step.step} className="flex items-start gap-3">
                               <span className="flex-shrink-0 w-5 h-5 rounded-full bg-white border border-navy/20
                                                flex items-center justify-center text-[10px] font-bold text-navy mt-0.5">
@@ -275,7 +276,7 @@ export default async function WardPage({ params }: Props) {
                               </span>
                               <div className="flex-1 min-w-0">
                                 <p className="text-[12.5px] text-ink-2 leading-relaxed">{step.action}</p>
-                                <div className="flex items-center gap-2 mt-1 text-[10px] text-ink-4 flex-wrap">
+                                <div className="flex items-center gap-2 mt-1 text-[11px] text-ink-4 flex-wrap">
                                   <span>{step.dept}</span>
                                   <span aria-hidden="true">·</span>
                                   <span>{step.timeline_days}d</span>
@@ -298,7 +299,7 @@ export default async function WardPage({ params }: Props) {
                         </div>
                         <p className="text-[12.5px] text-ink-2 leading-relaxed"
                            dangerouslySetInnerHTML={{ __html: citizenText }} />
-                        <div className="text-[10px] text-ink-4 italic pt-2 border-t border-india-green/15">
+                        <div className="text-[11px] text-ink-4 italic pt-2 border-t border-india-green/15">
                           Citizens are partners, not petitioners.
                         </div>
                       </div>

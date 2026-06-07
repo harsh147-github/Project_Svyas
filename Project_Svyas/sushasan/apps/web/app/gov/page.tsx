@@ -2,8 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getDashboardSnapshot } from '@/lib/supabase-data'
 
-export const revalidate = 120
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Corporator Command Centre — Sushaasan',
@@ -79,7 +78,8 @@ export default async function GovPage() {
 
       {/* ── Nav ──────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-ink/10 bg-white/90 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between"
+             style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-saffron flex items-center justify-center
                             text-white font-serif font-bold text-sm">स</div>
@@ -137,7 +137,7 @@ export default async function GovPage() {
             <div key={m.label} className="bg-white rounded-2xl border border-ink/8 shadow-sm p-5">
               <div className="font-serif text-3xl font-bold text-ink leading-none">{m.value}</div>
               <div className="text-[11px] font-medium text-ink-2 mt-2 leading-snug">{m.label}</div>
-              <div className="text-[10px] text-ink-4 mt-1">{m.sub}</div>
+              <div className="text-[11px] text-ink-4 mt-1">{m.sub}</div>
             </div>
           ))}
         </section>
@@ -248,14 +248,14 @@ export default async function GovPage() {
                                 </span>
                               )}
                             </div>
-                            <p className="text-[13px] text-ink leading-relaxed">{s.summary}</p>
+                            <p className="text-[13px] text-ink leading-relaxed">{s.summary || 'AI solution pending'}</p>
                           </div>
 
                           <div className="flex-shrink-0 text-right text-[10px] text-ink-3
                                           flex flex-col gap-0.5 min-w-[90px]">
                             <span><b className="text-ink">{formatINR(s.total_cost_est_inr)}</b> estimate</span>
                             <span><b className="text-ink">{s.timeline_days}d</b> timeline</span>
-                            <span><b className="text-ink">{s.steps.length}</b> steps</span>
+                            <span><b className="text-ink">{(s.steps ?? []).length}</b> steps</span>
                           </div>
                         </div>
 
@@ -270,7 +270,7 @@ export default async function GovPage() {
                               <span className="text-navy text-base">⚙</span>
                             </div>
                             <ol className="space-y-2.5">
-                              {s.steps.map((step) => (
+                              {(s.steps ?? []).map((step) => (
                                 <li key={step.step} className="flex items-start gap-3">
                                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-white border border-navy/20
                                                    flex items-center justify-center text-[10px] font-bold text-navy mt-0.5">
