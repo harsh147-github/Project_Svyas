@@ -7,7 +7,6 @@
  */
 
 import { useEffect, useState } from 'react'
-import { SheetScroller } from './SheetScroller'
 
 type SheetData = {
   wardId: string
@@ -126,7 +125,7 @@ export function CitizenSheet() {
       <div
         className="fixed bottom-0 left-0 right-0 z-50
                    bg-white rounded-t-3xl shadow-[0_-8px_40px_rgba(10,31,58,0.18)]
-                   max-h-[min(92vh,600px)] flex flex-col
+                   max-h-[min(92vh,600px)] flex flex-col overflow-hidden
                    md:max-w-xl md:mx-auto md:bottom-8 md:rounded-3xl md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-full"
         role="dialog"
         aria-modal
@@ -155,7 +154,8 @@ export function CitizenSheet() {
         </div>
 
         {/* Scrollable body */}
-        <SheetScroller className="flex-1 px-5 py-5 space-y-6">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-5 space-y-6"
+             style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
           {loading ? (
             <div className="text-center py-10 text-ink-3 text-sm">Loading…</div>
           ) : (
@@ -225,7 +225,7 @@ export function CitizenSheet() {
               </div>
             </>
           )}
-        </SheetScroller>
+        </div>
 
         {/* Safe area */}
         <div className="h-4 flex-shrink-0" />
