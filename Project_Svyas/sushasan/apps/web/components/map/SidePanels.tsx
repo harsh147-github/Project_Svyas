@@ -12,7 +12,6 @@ import { FindMyWardButton } from './SelectedWardPanel'
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { SheetScroller } from './SheetScroller'
 
 // ─── Types matching /api/ward/all + /api/ward/[id] ────────────────────────
 
