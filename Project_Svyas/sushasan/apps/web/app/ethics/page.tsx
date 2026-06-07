@@ -250,7 +250,7 @@ export default function EthicsPage() {
             <Link href="/dashboard/nibm"
                   className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white border border-ink/10
                              text-ink-2 hover:border-saffron/30">
-              NIBM flagship pilot
+              View featured brief
             </Link>
             <Link href="/"
                   className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white border border-ink/10
@@ -259,7 +259,7 @@ export default function EthicsPage() {
             </Link>
           </div>
           <p className="text-[11px] text-ink-3">
-            Sushaasan Pilot · NIBM · Wanowrie · Tribeca · Pune · Last reviewed: May 2026
+            Sushaasan · Pune · Last reviewed: May 2026
           </p>
         </footer>
       </div>

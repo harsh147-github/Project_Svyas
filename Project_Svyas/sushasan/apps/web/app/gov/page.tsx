@@ -129,7 +129,7 @@ export default async function GovPage() {
         {/* ── Top-line metrics ────────────────────────────────────────────── */}
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { value: totalSolutions, label: 'AI solution briefs', sub: 'across all pilot wards' },
+            { value: totalSolutions, label: 'AI solution briefs', sub: 'across active wards' },
             { value: ready,          label: 'Ready to action',    sub: 'awaiting your decision' },
             { value: inProgress,     label: 'In progress',        sub: 'underway with PMC depts' },
             { value: formatINR(totalCost), label: 'Total estimate',     sub: 'across all open briefs' },
@@ -358,7 +358,7 @@ export default async function GovPage() {
             <Link href="/dashboard/nibm"
                   className="text-[11px] font-semibold px-3 py-1.5 rounded-full
                              bg-saffron text-white hover:bg-saffron-dark transition-colors">
-              See NIBM pilot brief →
+              View featured brief →
             </Link>
             <Link href="/dashboard"
                   className="text-[11px] font-medium px-3 py-1.5 rounded-full
