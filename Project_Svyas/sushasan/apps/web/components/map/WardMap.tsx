@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
+import type { FilterSpecification } from 'maplibre-gl'
 
 const ISSUE_COLORS: Record<string, string> = {
   traffic:     '#EF4444',
@@ -111,7 +112,7 @@ export function WardMap() {
       //    part of Pune looks interactive and accessible to citizens.
       // Pilot ward numbers — context layers exclude these so they don't double-render under pilot-fill
       const PILOT_WARD_NUMS = [25, 26, 41, 42, 43, 44, 46, 47]
-      const notPilot = ['match', ['get', 'wardnum'], PILOT_WARD_NUMS, false, true]
+      const notPilot = ['match', ['get', 'wardnum'], PILOT_WARD_NUMS, false, true] as FilterSpecification
 
       map.addLayer({
         id: 'context-fill',
@@ -381,7 +382,7 @@ export function WardMap() {
           window.dispatchEvent(new CustomEvent('sushaasan:citizen-sheet-open', {
             detail: { wardId: String(p.ward_id ?? ''), issueTag: String(p.issue_tag ?? '') },
           }))
-          e.stopPropagation()
+          e.originalEvent?.stopPropagation()
           return
         }
 
@@ -445,13 +446,12 @@ export function WardMap() {
           .addTo(map)
         popupRef.current = popup
 
-        e.stopPropagation()
+        e.originalEvent?.stopPropagation()
       })
 
       // Click outside — deselect
       map.on('click', (e) => {
-        // @ts-expect-error defaultPrevented not standard on MapLibre events
-        if (e.defaultPrevented) return
+        if ((e as unknown as { defaultPrevented?: boolean }).defaultPrevented) return
         const features = map.queryRenderedFeatures(e.point, { layers: ['pilot-fill', 'context-fill', 'hotspot-icons'] })
         if (!features.length) {
           clearSelected()

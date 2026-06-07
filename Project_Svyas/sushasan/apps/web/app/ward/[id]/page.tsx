@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getWardFull(params.id)
   if (!data) return { title: 'Ward not found' }
   return {
-    title: `${data.ward.name} — Ward ${data.ward.ward_number} · Sushaasan`,
+    title: `${data.ward.name} — Ward ${data.ward.ward_number}`,
     description: `Civic intelligence brief for Ward ${data.ward.ward_number}. AI-synthesised solutions, citizen partnership, and budget-checked plans.`,
   }
 }

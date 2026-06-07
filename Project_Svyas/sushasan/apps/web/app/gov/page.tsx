@@ -6,7 +6,7 @@ export const revalidate = 120
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Corporator Command Centre — Sushaasan',
+  title: 'Corporator Command Centre',
   description: 'Priority-ranked civic actions for Ward 46 + 47, Pune. AI-synthesised, budget-checked, and ready to act on — with citizens partnering on every step.',
 }
 

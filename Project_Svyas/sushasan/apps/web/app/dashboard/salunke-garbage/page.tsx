@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Salunke Vihar Garbage & Drainage Pilot — Sushaasan Solution Brief',
+  title: 'Salunke Vihar Garbage & Drainage Pilot — Solution Brief',
   description: 'A diplomat-partner solution for the Salunke Vihar–Wanowrie corridor: 28 verified citizen posts → AI-synthesised plan that PMC Solid Waste, Storm-water Drainage, and 11 RWAs can act on together before monsoon 2026.',
   openGraph: {
     title: 'Sushaasan: Salunke Vihar Garbage & Drainage — Solution Brief',

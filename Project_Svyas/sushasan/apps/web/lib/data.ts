@@ -58,6 +58,11 @@ export type Cluster = {
   severity_avg: number
   status: string
   updated_at: string
+  source_platforms?: string[]
+  citizen_headline?: string | null
+  problem_simple?: string | null
+  gov_summary?: string | null
+  solution_summary?: string | null
 }
 
 export type SolutionStep = {
@@ -88,7 +93,7 @@ const WARDS: Ward[] = [
   {
     id: '46',
     name: 'Mohammadwadi – Uruli Devachi',
-    corporator_name: 'TBD — Contact Sushasan',
+    corporator_name: 'TBD — Contact Sushaasan',
     party: '',
     ward_number: 46,
     annual_budget_inr: 3_50_00_000,
@@ -97,7 +102,7 @@ const WARDS: Ward[] = [
   {
     id: '47',
     name: 'Kondhwa Budruk – Yewalewadi',
-    corporator_name: 'TBD — Contact Sushasan',
+    corporator_name: 'TBD — Contact Sushaasan',
     party: '',
     ward_number: 47,
     annual_budget_inr: 3_20_00_000,

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { LoopDiagram } from '@/components/about/LoopDiagram'
 
 export const metadata: Metadata = {
-  title: 'About — Sushaasan',
+  title: 'About',
   description: 'A Government OS for Pune. AI turns public chatter into structured, budgeted, collaborative civic action — one corporator and one neighbourhood at a time.',
 }
 

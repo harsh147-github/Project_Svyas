@@ -7,8 +7,8 @@ export const revalidate = 120
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Transparency Dashboard — Sushaasan',
-  description: 'Every civic issue in NIBM · Wanowrie · Tribeca: what AI surfaced, what government is doing, and how citizens are partnering.',
+  title: 'Transparency Dashboard',
+  description: 'Every civic issue tracked by Sushaasan: what AI surfaced, what government is doing, and how citizens are partnering for better governance.',
 }
 
 

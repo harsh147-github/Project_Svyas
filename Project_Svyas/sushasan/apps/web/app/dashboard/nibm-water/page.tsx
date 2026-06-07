@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ShareButtons } from '@/components/ui/ShareButtons'
 
 export const metadata: Metadata = {
-  title: 'NIBM Water Pilot — Sushaasan Solution Brief',
+  title: 'NIBM Water Pilot — Solution Brief',
   description: 'A diplomat-partner solution for the NIBM–Mohammadwadi water-supply corridor: 42 verified citizen posts → AI-synthesised plan that PMC Water Supply and 7 housing societies can act on together.',
   openGraph: {
     title: 'Sushaasan: NIBM Water — Solution Brief',

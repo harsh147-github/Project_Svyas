@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'E20 Ethanol Blending — National Policy Brief — Sushaasan',
+  title: 'E20 Ethanol Blending — National Policy Brief',
   description: 'Sushaasan extends from civic to national: 5,200+ verified posts on E20 ethanol blending, read by AI, organised into a diplomatic policy brief that the Ministry of Petroleum, BIS, NITI Aayog and OEMs can act on together.',
   openGraph: {
     title: 'Sushaasan: E20 Ethanol Blending — National Policy Brief',

@@ -7,7 +7,7 @@ import { FadeUp } from '@/components/ui/FadeUp'
 import { ShareButtons } from '@/components/ui/ShareButtons'
 
 export const metadata: Metadata = {
-  title: 'NIBM Traffic Pilot — Sushaasan Solution Brief',
+  title: 'NIBM Traffic Pilot — Solution Brief',
   description: 'A diplomat-partner solution for the NIBM–Mohammadwadi corridor: 19 verified citizen posts → AI-synthesised plan that the corporator and citizens can act on together.',
   openGraph: {
     title: 'Sushaasan: NIBM Traffic — Solution Brief',

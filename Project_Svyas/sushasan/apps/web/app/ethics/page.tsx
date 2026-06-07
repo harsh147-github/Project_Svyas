@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { AnonymisationFlow } from '@/components/about/AnonymisationFlow'
 
 export const metadata: Metadata = {
-  title: 'Privacy & Ethics — Sushaasan',
+  title: 'Privacy & Ethics',
   description: 'How Sushaasan handles data, anonymises authors, strips PII, and respects robots.txt — by design, not as an afterthought.',
 }
 

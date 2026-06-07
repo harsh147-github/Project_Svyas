@@ -4,7 +4,7 @@ import { NibmCorridorMap } from '@/components/nibm/NibmCorridorMap'
 import { GovActionBrief } from '@/components/nibm/GovActionBrief'
 
 export const metadata: Metadata = {
-  title: 'NIBM Traffic — Government Action Brief | Sushaasan',
+  title: 'NIBM Traffic — Government Action Brief',
   description:
     'Official-format action brief for Ward 46 NIBM–Mohammadwadi corridor traffic. AI-synthesised from 19 verified citizen posts. Para 1–6 noting format for AMC / Corporator / DC review.',
   robots: { index: false }, // keep out of public search — this is for officials
