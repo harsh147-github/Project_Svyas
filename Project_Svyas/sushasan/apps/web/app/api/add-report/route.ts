@@ -183,9 +183,10 @@ export async function POST(req: NextRequest) {
     resolvedLng = lng + (Math.random() - 0.5) * 0.003
     resolvedLat = lat + (Math.random() - 0.5) * 0.003
   } else if (wardId) {
-    const w = WARD_CENTROIDS.find(c => c.ward_id === wardId) ?? WARD_CENTROIDS[0]
-    resolvedWardId = wardId
-    resolvedWardName = w.name
+    const w = WARD_CENTROIDS.find(c => c.ward_id === wardId)
+    const fallback = w ?? WARD_CENTROIDS[0]
+    resolvedWardId = fallback.ward_id   // use fallback id, not the invalid incoming wardId
+    resolvedWardName = fallback.name
     resolvedLng = w.lng + (Math.random() - 0.5) * 0.006
     resolvedLat = w.lat + (Math.random() - 0.5) * 0.006
   } else {
@@ -238,6 +239,13 @@ export async function POST(req: NextRequest) {
         ? `[GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)} → Ward ${resolvedWardId}, ${resolvedWardName}]\n\n`
         : `[Ward: ${resolvedWardId}, ${resolvedWardName}]\n\n`
 
+      // Whitelist photoMimeType — never pass arbitrary user-supplied strings to Claude
+      const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const
+      type AllowedImageType = typeof ALLOWED_IMAGE_TYPES[number]
+      const safePhotoMime: AllowedImageType = ALLOWED_IMAGE_TYPES.includes(photoMimeType as AllowedImageType)
+        ? (photoMimeType as AllowedImageType)
+        : 'image/jpeg'
+
       // Build user content — text + optional photo for vision
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const userContent: any = photoBase64
@@ -246,7 +254,7 @@ export async function POST(req: NextRequest) {
               type: 'image',
               source: {
                 type: 'base64',
-                media_type: (photoMimeType ?? 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+                media_type: safePhotoMime,
                 data: photoBase64,
               },
             },

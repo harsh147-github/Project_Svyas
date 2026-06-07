@@ -672,6 +672,7 @@ if (typeof window !== 'undefined') {
   try {
     const pending = sessionStorage.getItem('sushasan:pending-report')
     if (pending) {
+      sessionStorage.removeItem('sushasan:pending-report')  // consume once — prevent stale re-adds
       const parsed = JSON.parse(pending) as Record<string, unknown>
       if (!_userClusters.find((c) => c.id === parsed.id)) {
         _userClusters.push(parsed)
