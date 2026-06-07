@@ -90,7 +90,7 @@ export default function AboutPage() {
         {/* ── Stat band ─────────────────────────────────────────────────── */}
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { v: '2', l: 'pilot wards', s: 'NIBM · Salunke Vihar' },
+            { v: '2', l: 'active wards', s: 'Ward 46 · Ward 47' },
             { v: '5', l: 'data sources', s: 'Insta · Reddit · news · GMaps · X' },
             { v: '4', l: 'issue types',  s: 'traffic · water · power · waste' },
             { v: '1', l: 'closed loop',  s: 'signal → brief → action → proof' },

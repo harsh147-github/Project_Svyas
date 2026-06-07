@@ -491,7 +491,7 @@ export function AddReportClient() {
           {/* THE FORMAL GRIEVANCE — hero element */}
           <div className="rounded-2xl overflow-hidden border border-ink/10 shadow-sm bg-white">
             <div className="px-4 pt-3 pb-1 flex items-center gap-2 border-b border-ink/6">
-              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: color }} />
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
               <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-ink/35">
                 Official grievance · appearing on map
               </span>
