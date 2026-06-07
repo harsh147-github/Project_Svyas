@@ -109,10 +109,10 @@ export default async function DashboardPage() {
                 Refreshed {formatRefreshed(lastUpdated)}
               </span>
             )}
-            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/about"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
-              About ↗
-            </a>
+              About
+            </Link>
           </div>
         </div>
       </header>
@@ -180,7 +180,7 @@ export default async function DashboardPage() {
                   href:    '/dashboard/salunke-garbage',
                   tag:     'Garbage & Drainage',
                   tagColor:'#10B981',
-                  ward:    'Ward 43 · Salunke Vihar–Wanowrie',
+                  ward:    'Ward 47 · Salunke Vihar–Wanowrie',
                   title:   'Salunke Vihar sanitation',
                   blurb:   '28 verified posts · ₹2.05 Cr · 156d. Four chronic dump sites, 12 drain blocks — pre-monsoon deadline.',
                   stats:   ['28 posts', '4 dump sites', '12 drain blocks'],

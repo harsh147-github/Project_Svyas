@@ -26,7 +26,6 @@ const POSTS: Post[] = [
     date: 'Mar 14, 2026',
     excerpt: 'NIBM Road has come to a halt for the third time this week. Residents stepped in to clear traffic themselves.',
     metric: '12.4K views',
-    image: '/scraped/p1.jpg',
   },
   {
     id: 'p2',
@@ -35,7 +34,6 @@ const POSTS: Post[] = [
     date: 'Feb 28, 2026',
     excerpt: '13 accidents in NIBM since 2022, 4 fatalities. Encroachments on every footpath. Has anyone actually escalated this beyond local Twitter?',
     metric: '↑ 234 · 87 comments',
-    image: '/scraped/p2.jpg',
   },
   {
     id: 'p3',
@@ -43,7 +41,6 @@ const POSTS: Post[] = [
     handle: 'PunekarNews.in',
     date: 'Jan 22, 2026',
     excerpt: 'Residents from 8 housing societies near Mohammadwadi gathered to demand traffic action. PMC says no project planned in vicinity.',
-    image: '/scraped/p3.jpg',
   },
   {
     id: 'p4',
@@ -52,7 +49,6 @@ const POSTS: Post[] = [
     date: 'Multiple',
     excerpt: '"Avoid 8–11am and 5–9pm at all costs. Heavy vehicles parked on both sides. Ambulances cannot pass."',
     metric: '47 reviews mention traffic',
-    image: '/scraped/p4.jpg',
   },
   {
     id: 'p5',
@@ -61,7 +57,6 @@ const POSTS: Post[] = [
     date: 'Mar 02, 2026',
     excerpt: 'School pickup at Kondhwa Khurd is now a 25-minute ordeal. We need bollards and enforcement, not promises.',
     metric: '4.1K views',
-    image: '/scraped/p5.jpg',
   },
   {
     id: 'p6',
@@ -70,7 +65,6 @@ const POSTS: Post[] = [
     date: 'Feb 11, 2026',
     excerpt: 'Acknowledged. PMC Roads dept will inspect NIBM corridor encroachments. Update to follow.',
     metric: 'Official handle',
-    image: '/scraped/p6.jpg',
   },
 ]
 

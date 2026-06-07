@@ -448,10 +448,17 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
     }
   }
 
-  // Build ward list: every ward referenced by any cluster + every registry ward
+  // Dashboard shows pilot wards only; context wards appear once solutions are published
   const wardIds = new Set<string>()
-  for (const c of clusters) wardIds.add(c.ward_id)
-  for (const w of registry.values()) wardIds.add(w.id)
+  for (const w of registry.values()) {
+    if (w.tier === 'pilot') wardIds.add(w.id)
+  }
+  // Also surface any ward where a solution has been published/actioned/resolved
+  for (const s of solutions) {
+    if (s.status === 'published' || s.status === 'actioned' || s.status === 'resolved') {
+      wardIds.add(s.ward_id)
+    }
+  }
   const wards: Ward[] = Array.from(wardIds)
     .map((id) => registry.get(id) ?? stubWard(id))
     .sort((a, b) => a.ward_number - b.ward_number)

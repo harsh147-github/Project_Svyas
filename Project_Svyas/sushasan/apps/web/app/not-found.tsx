@@ -22,7 +22,7 @@ export default function NotFound() {
             This ward or page doesn&rsquo;t exist yet.
           </h1>
           <p className="text-ink-2 text-sm leading-relaxed">
-            The Sushasan pilot covers Ward 46 (NIBM–Mohammadwadi) and Ward 47 (Salunke Vihar–Wanowrie).
+            The Sushaasan pilot covers Ward 46 (NIBM–Mohammadwadi) and Ward 47 (Salunke Vihar–Wanowrie).
             Other wards will be added as the platform expands across Pune.
           </p>
         </div>

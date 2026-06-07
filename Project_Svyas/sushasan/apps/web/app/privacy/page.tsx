@@ -10,7 +10,7 @@ const SECTIONS = [
   {
     id: 'public-posts',
     title: 'Public Posts Only',
-    body: `Sushasan only processes content that is already publicly visible on the open internet — posts on Instagram, Reddit, X (Twitter), Google Maps reviews, Telegram public channels, and local news. If a post requires a login to view, we do not access it. We respect robots.txt on every platform we ingest from.`,
+    body: `Sushaasan only processes content that is already publicly visible on the open internet — posts on Instagram, Reddit, X (Twitter), Google Maps reviews, Telegram public channels, and local news. If a post requires a login to view, we do not access it. We respect robots.txt on every platform we ingest from.`,
   },
   {
     id: 'authors-anonymised',
@@ -25,7 +25,7 @@ const SECTIONS = [
   {
     id: 'voice-input',
     title: 'Voice Input',
-    body: `Sushasan does not use microphone input or voice recording in any form. The platform is text and map based. No audio is ever captured, processed, or stored.`,
+    body: `Sushaasan does not use microphone input or voice recording in any form. The platform is text and map based. No audio is ever captured, processed, or stored.`,
   },
   {
     id: 'location-data',
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-saffron flex items-center justify-center
                             text-white font-serif font-bold text-sm">स</div>
-            <span className="font-serif text-lg font-semibold text-ink">Sushasan</span>
+            <span className="font-serif text-lg font-semibold text-ink">Sushaasan</span>
             <span className="text-ink/20 mx-1 hidden sm:inline">/</span>
             <span className="text-ink-2 text-sm hidden sm:inline">Privacy &amp; Ethics</span>
           </Link>
@@ -84,7 +84,7 @@ export default function PrivacyPage() {
             </div>
           </div>
           <p className="text-ink-2 text-base leading-relaxed">
-            Sushasan listens only to what residents already say in public. Every record is
+            Sushaasan listens only to what residents already say in public. Every record is
             anonymised before storage, every AI prompt sees stripped text, and no personal profile
             is ever built. The same rules apply whether a citizen, a journalist, or a corporator
             is looking at the data.
@@ -146,7 +146,7 @@ export default function PrivacyPage() {
             <Link href="/about"
                   className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white border border-ink/10
                              text-ink-2 hover:border-saffron/30">
-              About Sushasan
+              About Sushaasan
             </Link>
             <Link href="/ethics"
                   className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white border border-ink/10
@@ -155,7 +155,7 @@ export default function PrivacyPage() {
             </Link>
           </div>
           <p className="text-[11px] text-ink-3">
-            Sushasan Pilot · NIBM · Wanowrie · Pune
+            Sushaasan Pilot · NIBM · Wanowrie · Pune
           </p>
         </footer>
       </div>

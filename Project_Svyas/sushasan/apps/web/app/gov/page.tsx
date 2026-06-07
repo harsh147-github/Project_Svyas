@@ -93,10 +93,10 @@ export default async function GovPage() {
               <span className="w-1.5 h-1.5 rounded-full bg-navy" />
               Government view
             </span>
-            <a href="https://sushasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/about"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
-              About ↗
-            </a>
+              About
+            </Link>
           </div>
         </div>
       </header>
