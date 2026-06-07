@@ -66,7 +66,7 @@ export function MapHint() {
           <div className="relative bg-white border-2 border-saffron/30 rounded-2xl shadow-[0_12px_40px_rgba(10,31,58,0.18)] px-5 py-5">
             <button
               onClick={dismissDesktop}
-              className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center text-ink-3 hover:text-ink hover:bg-ink/8 transition-colors text-sm font-bold"
+              className="absolute top-3 right-3 w-7 h-7 min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center text-ink-3 hover:text-ink hover:bg-ink/8 transition-colors text-sm font-bold"
               aria-label="Dismiss"
             >✕</button>
 
@@ -95,7 +95,7 @@ export function MapHint() {
       {mobileVisible && !mobileDone && (
         <div
           className="md:hidden fixed inset-0 z-50 flex flex-col justify-end pointer-events-auto animate-overlay-fade"
-          style={{ background: 'rgba(11, 31, 58, 0.62)', backdropFilter: 'blur(5px)' }}
+          style={{ background: 'rgba(11, 31, 58, 0.62)', backdropFilter: 'blur(5px)', paddingTop: 'env(safe-area-inset-top)' }}
           onClick={dismissMobile}
         >
           {/* Card slides up from bottom */}
@@ -157,7 +157,7 @@ export function MapHint() {
             {/* CTA */}
             <button
               onClick={dismissMobile}
-              className="w-full py-4 rounded-2xl font-bold text-[16px] text-white
+              className="w-full py-4 min-h-[44px] rounded-2xl font-bold text-[16px] text-white
                          shadow-[0_8px_24px_rgba(255,153,51,0.40)]
                          active:scale-[0.98] transition-transform"
               style={{ background: '#FF9933' }}

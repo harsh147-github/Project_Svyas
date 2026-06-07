@@ -51,11 +51,7 @@ export function LoopDiagram() {
 
           {/* Slow rotating dashed ring */}
           <circle cx={cx} cy={cy} r={r} fill="none" stroke="#FF9933" strokeWidth="1.2"
-                  strokeDasharray="3 8" opacity="0.45">
-            <animateTransform attributeName="transform" type="rotate"
-                              from={`0 ${cx} ${cy}`} to={`360 ${cx} ${cy}`}
-                              dur="60s" repeatCount="indefinite" />
-          </circle>
+                  strokeDasharray="3 8" opacity="0.45" />
 
           {/* Connecting arcs between stages */}
           {points.map((p, i) => {
