@@ -158,6 +158,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const [photo,          setPhoto]          = useState<File | null>(null)
   const [photoPreview,   setPhotoPreview]   = useState<string | null>(null)
   const [transcribeError, setTranscribeError] = useState(false)
+  const [dragOffset,       setDragOffset]       = useState(0)
 
   const textareaRef    = useRef<HTMLTextAreaElement>(null)
   const sheetRef       = useRef<HTMLDivElement>(null)
@@ -166,6 +167,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const voiceActiveRef = useRef(false)
   const isIOS          = useRef(false)
   const closingTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const touchStartYRef = useRef(0)
 
   useEffect(() => {
     setMounted(true)
@@ -235,6 +237,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   function handleClose() {
     recognitionRef.current?.stop(); recorderRef.current?.stop()
     voiceActiveRef.current = false; setVoiceActive(false)
+    setDragOffset(0)
     setVisible(false)
     closingTimer.current = setTimeout(onClose, 420)
   }
@@ -423,14 +426,29 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
           width: isDesktop ? '100%' : undefined,
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch' as any,
-          transform: `translateY(${visible ? '0' : '100%'})`,
-          transition: prefersReduced ? 'none' : `transform 0.44s ${SPRING}`,
+          transform: `translateY(${!visible ? '100%' : dragOffset > 0 ? `${dragOffset}px` : '0'})`,
+          transition: dragOffset > 0 ? 'none' : prefersReduced ? 'none' : `transform 0.44s ${SPRING}`,
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Drag handle */}
-        <div className="min-h-[44px] flex items-center justify-center cursor-grab active:cursor-grabbing w-full">
-          <div style={{ width: 36, height: 5, borderRadius: 999, background: 'rgba(0,0,0,0.12)' }} />
+        {/* Drag handle — swipe down to dismiss */}
+        <div
+          className="min-h-[44px] flex items-center justify-center cursor-grab active:cursor-grabbing w-full"
+          style={{ touchAction: 'none' }}
+          onTouchStart={(e) => { touchStartYRef.current = e.touches[0].clientY }}
+          onTouchMove={(e) => {
+            const dy = e.touches[0].clientY - touchStartYRef.current
+            if (dy > 0) setDragOffset(dy)
+          }}
+          onTouchEnd={() => {
+            if (dragOffset > 80) { handleClose() } else { setDragOffset(0) }
+          }}
+        >
+          <div style={{
+            width: 36, height: 5, borderRadius: 999,
+            background: dragOffset > 0 ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.12)',
+            transition: 'background 0.15s ease',
+          }} />
         </div>
 
         {/* Header ─────────────────────────────────────────────────────────── */}
