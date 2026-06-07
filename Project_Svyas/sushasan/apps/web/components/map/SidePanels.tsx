@@ -876,6 +876,53 @@ function GovContent({ full }: { full: WardFull }) {
   )
 }
 
+// ─── Issue filter chips (mobile-only, replaces LegendBar on small screens) ───
+
+const ISSUE_FILTERS = [
+  { key: 'all',         label: 'All',         color: '#0A0A0A', icon: null },
+  { key: 'traffic',     label: 'Traffic',     color: '#EF4444', icon: '🚗' },
+  { key: 'water',       label: 'Water',       color: '#3B82F6', icon: '💧' },
+  { key: 'electricity', label: 'Electricity', color: '#F59E0B', icon: '⚡' },
+  { key: 'garbage',     label: 'Garbage',     color: '#10B981', icon: '🗑️' },
+  { key: 'other',       label: 'Other',       color: '#8B5CF6', icon: '📌' },
+]
+
+function MobileFilterChips() {
+  const [active, setActive] = useState('all')
+  function tap(key: string) {
+    setActive(key)
+    window.dispatchEvent(new CustomEvent('sushaasan:issue-filter', {
+      detail: { filters: key === 'all' ? [] : [key] },
+    }))
+  }
+  return (
+    <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none px-4 pb-2 pt-1">
+      {ISSUE_FILTERS.map((f) => {
+        const isActive = active === f.key
+        return (
+          <button
+            key={f.key}
+            onClick={() => tap(f.key)}
+            data-no-min-size
+            className={[
+              'flex items-center gap-1 flex-shrink-0 px-3 py-1.5 rounded-full',
+              'text-[11px] font-semibold whitespace-nowrap transition-all duration-150',
+              'active:scale-95',
+              isActive
+                ? 'text-white shadow-sm'
+                : 'bg-ink/[0.05] text-ink-2',
+            ].join(' ')}
+            style={isActive ? { backgroundColor: f.color } : undefined}
+          >
+            {f.icon && <span className="text-[12px] leading-none">{f.icon}</span>}
+            {f.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 // ─── Mobile Panel (bottom sheet — visible only on mobile) ─────────────────
 
 export function MobilePanel() {
@@ -893,93 +940,102 @@ export function MobilePanel() {
   const [expanded, setExpanded] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
 
-  // Auto-expand when a ward is selected
+  // Auto-expand when a ward is tapped
   useEffect(() => {
     if (active) setExpanded(true)
   }, [active?.wardnum])
 
   return (
-    <div
-      className="md:hidden absolute bottom-0 left-0 right-0 z-40
-                 pointer-events-auto"
-    >
-      {/* Inline report sheet — fixed overlay, slides up over map */}
+    <div className="md:hidden absolute bottom-0 left-0 right-0 z-40 pointer-events-auto">
+      {/* Inline report sheet */}
       <InlineReportSheet isOpen={reportOpen} onClose={() => setReportOpen(false)} />
 
-      {/* Slide-up sheet */}
-      <div
-        className={`bg-white/96 backdrop-blur-md border-t border-ink/10
-                    shadow-[0_-8px_30px_rgba(10,31,58,0.12)]
-                    transition-all duration-300 ease-out
-                    ${expanded ? 'rounded-t-2xl' : 'rounded-t-xl'}`}
-      >
-        {/* Handle + header row — always visible */}
-        <div className="w-full pt-2 pb-2 px-4">
-          {/* Drag handle */}
-          <div className="w-9 h-1 rounded-full bg-ink/15 mx-auto mb-2" />
+      <div className="bg-white/97 backdrop-blur-xl border-t border-ink/10 rounded-t-2xl
+                      shadow-[0_-4px_24px_rgba(10,31,58,0.10)]">
 
-          <div className="flex items-center gap-2">
-            {/* Left: brand + info — tap to expand/collapse */}
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="flex items-center gap-2 flex-1 min-w-0 text-left min-h-[44px]"
-              aria-label={expanded ? 'Collapse panel' : 'Expand panel'}
-            >
-              <div className="w-6 h-6 rounded-md flex items-center justify-center bg-saffron text-white font-serif font-bold text-xs flex-shrink-0">
-                स
-              </div>
-              <div className="min-w-0">
-                {active ? (
-                  <>
-                    <div className="text-[12px] font-semibold text-ink leading-none truncate">
-                      {active.name}
-                    </div>
-                    <div className="text-[10px] text-ink-3 mt-0.5">
-                      {clusters.length > 0
-                        ? `${clusters.length} issue${clusters.length === 1 ? '' : 's'} this week`
-                        : 'No reports yet'}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-[12px] font-semibold text-ink leading-none">
-                      Sushaasan
-                    </div>
-                    <div className="text-[10px] text-ink-3 mt-0.5">
-                      Tap any dot to explore
-                    </div>
-                  </>
-                )}
-              </div>
-              <div className="text-ink-3 text-[10px] flex-shrink-0 ml-1">
-                {expanded ? '▾' : '▴'}
-              </div>
-            </button>
-
-            {/* Right: Add Report pill — permanently visible */}
-            <button
-              onClick={() => setReportOpen(true)}
-              className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2.5 rounded-full
-                         text-[11px] font-bold text-white min-h-[44px]
-                         shadow-[0_3px_14px_rgba(255,153,51,0.45)]
-                         active:scale-95 transition-transform"
-              style={{ background: 'linear-gradient(135deg,#FF9933,#e8891e)' }}
-              aria-label="Add a report"
-            >
-              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" strokeWidth="3"
-                   strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Report
-            </button>
-          </div>
+        {/* ── Drag handle ── */}
+        <div className="flex justify-center pt-2.5 pb-1">
+          <div className="w-9 h-1 rounded-full bg-ink/12" />
         </div>
 
-        {/* Expanded content */}
-        {expanded && (
-          <SheetScroller className="px-5 pb-4 max-h-[55vh] space-y-4">
+        {/* ── Header row — always visible ── */}
+        <div className="flex items-center gap-2.5 px-4 py-2 min-h-[52px]">
+          {/* Expand/collapse tap target */}
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="flex items-center gap-2.5 flex-1 min-w-0 text-left"
+            data-no-min-size
+            aria-expanded={expanded}
+            aria-label={expanded ? 'Collapse ward info' : 'Expand ward info'}
+          >
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center
+                            bg-saffron text-white font-serif font-bold text-sm flex-shrink-0">
+              स
+            </div>
+            <div className="min-w-0 flex-1">
+              {active ? (
+                <>
+                  <div className="text-[13.5px] font-semibold text-ink leading-tight truncate">
+                    {active.name}
+                  </div>
+                  <div className="text-[11px] text-ink-3 mt-0.5 flex items-center gap-1">
+                    {clusters.length > 0 ? (
+                      <>
+                        <span className="w-1.5 h-1.5 rounded-full bg-india-green inline-block flex-shrink-0" />
+                        <span>{clusters.length} issue{clusters.length === 1 ? '' : 's'} this week</span>
+                      </>
+                    ) : (
+                      <span>No reports yet</span>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-[13.5px] font-semibold text-ink leading-tight">Sushaasan</div>
+                  <div className="text-[11px] text-ink-3 mt-0.5">Tap any dot to explore</div>
+                </>
+              )}
+            </div>
+            {/* Chevron */}
+            <svg
+              className={`w-4 h-4 text-ink-3 flex-shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+              viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          {/* Report button */}
+          <button
+            onClick={() => setReportOpen(true)}
+            data-no-min-size
+            className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-full
+                       text-[12px] font-bold text-white
+                       shadow-[0_3px_12px_rgba(255,153,51,0.40)]
+                       active:scale-95 transition-transform duration-100"
+            style={{ background: 'linear-gradient(135deg,#FF9933,#e8891e)' }}
+            aria-label="Report a civic issue"
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" strokeWidth="3"
+                 strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Report
+          </button>
+        </div>
+
+        {/* ── Filter chips — always visible, replaces LegendBar on mobile ── */}
+        <MobileFilterChips />
+
+        {/* ── Expandable content — smooth CSS height transition ── */}
+        <div
+          className="overflow-hidden transition-all duration-300"
+          style={{ maxHeight: expanded ? '58vh' : '0px' }}
+        >
+          <SheetScroller className="px-4 pt-1 pb-4 space-y-4">
             {!active ? (
               <MobileEmptyContent totalPosts={all?.totalPosts ?? 0} />
             ) : clusters.length === 0 ? (
@@ -993,10 +1049,10 @@ export function MobilePanel() {
               />
             )}
           </SheetScroller>
-        )}
+        </div>
 
-        {/* Safe area spacer for phones with home bar */}
-        <div className="h-safe-area-inset-bottom h-2" />
+        {/* ── iOS safe area spacer ── */}
+        <div style={{ height: 'env(safe-area-inset-bottom)', minHeight: '4px' }} />
       </div>
     </div>
   )
