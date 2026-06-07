@@ -330,23 +330,17 @@ export async function POST(req: NextRequest) {
           console.error('[add-report] posts insert:', postErr.message)
         } else if (post) {
           postId = post.id
-          // Bump or create a cluster for this ward+issue
+          // Bump or create a cluster for this ward+issue (atomic increment via RPC)
           const { data: clusterRows } = await db
             .from('clusters')
-            .select('id, post_count')
+            .select('id')
             .eq('ward_id', resolvedWardId)
             .eq('issue_tag', synthesized.issue_tag)
             .limit(1)
 
           if (clusterRows && clusterRows.length > 0) {
-            const row = clusterRows[0] as { id: string; post_count: number }
-            await db
-              .from('clusters')
-              .update({
-                post_count: (row.post_count ?? 0) + 1,
-                updated_at: new Date().toISOString(),
-              })
-              .eq('id', row.id)
+            const row = clusterRows[0] as { id: string }
+            await db.rpc('increment_cluster_post_count', { p_cluster_id: row.id })
           } else {
             // Create a new cluster from this single report
             await db.from('clusters').insert({
@@ -355,7 +349,7 @@ export async function POST(req: NextRequest) {
               centroid_text: synthesized.grievance_formal,
               post_count: 1,
               severity_avg: synthesized.severity,
-              status: 'signal_detected',
+              status: 'open',
               lng: resolvedLng,
               lat: resolvedLat,
             })
