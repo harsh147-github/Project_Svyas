@@ -232,7 +232,7 @@ export default async function WardPage({ params }: Props) {
                               </span>
                             )}
                           </div>
-                          <p className="text-[13.5px] text-ink leading-relaxed">{sol.summary}</p>
+                          <p className="text-[13.5px] text-ink leading-relaxed">{sol.summary || 'AI solution pending'}</p>
                         </div>
                         <div className="flex-shrink-0 text-right">
                           <div className="font-serif text-2xl font-bold leading-none" style={{ color }}>
@@ -252,7 +252,7 @@ export default async function WardPage({ params }: Props) {
                           {sol.timeline_days} days
                         </span>
                         <span className="px-2.5 py-1 bg-white rounded-full text-[10px] font-semibold text-ink-2 border border-ink/10">
-                          {sol.steps.length} steps
+                          {(sol.steps ?? []).length} steps
                         </span>
                       </div>
                     </div>
@@ -268,7 +268,7 @@ export default async function WardPage({ params }: Props) {
                           <span className="text-navy text-base">⚙</span>
                         </div>
                         <ol className="space-y-2.5">
-                          {sol.steps.map((step) => (
+                          {(sol.steps ?? []).map((step) => (
                             <li key={step.step} className="flex items-start gap-3">
                               <span className="flex-shrink-0 w-5 h-5 rounded-full bg-white border border-navy/20
                                                flex items-center justify-center text-[10px] font-bold text-navy mt-0.5">

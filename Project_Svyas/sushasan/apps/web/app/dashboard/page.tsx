@@ -3,8 +3,7 @@ import Link from 'next/link'
 import { getDashboardSnapshot } from '@/lib/supabase-data'
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters'
 
-export const revalidate = 120
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Transparency Dashboard — Sushaasan',
@@ -402,7 +401,7 @@ export default async function DashboardPage() {
                               <span aria-hidden="true">·</span>
                               <span><b className="text-ink-2">{sol.timeline_days}d</b> timeline</span>
                               <span aria-hidden="true">·</span>
-                              <span><b className="text-ink-2">{sol.steps.length}</b> steps</span>
+                              <span><b className="text-ink-2">{(sol.steps ?? []).length}</b> steps</span>
                               {sol.budget_feasible && (
                                 <span className="ml-auto text-india-green font-semibold">✓ Within budget</span>
                               )}

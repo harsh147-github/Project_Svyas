@@ -36,9 +36,14 @@ export async function POST(req: NextRequest) {
           newCount = (updated as { post_count: number } | null)?.post_count ?? null
         }
       }
-    } catch (err) { console.error('[plus-one]', err) }
+    } catch (err) {
+      console.error('[plus-one]', err)
+      return NextResponse.json({ ok: false, error: 'increment failed' }, { status: 500 })
+    }
   }
 
-  // Always return success (optimistic if Supabase not configured)
+  if (newCount === null) {
+    return NextResponse.json({ ok: false, error: 'increment failed' }, { status: 500 })
+  }
   return NextResponse.json({ ok: true, newCount })
 }
