@@ -46,7 +46,7 @@ export function DesktopCTABar() {
                        shadow-[0_4px_18px_rgba(255,153,51,0.45)]
                        hover:bg-[#e8891e] active:scale-95 transition-all duration-150"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse flex-shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-white/80 flex-shrink-0" />
             View NIBM Pilot — AI Solution Brief
           </a>
         </div>
