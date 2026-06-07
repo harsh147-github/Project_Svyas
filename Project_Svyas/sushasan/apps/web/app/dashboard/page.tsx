@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getDashboardSnapshot } from '@/lib/supabase-data'
-import { DashboardFilters } from '@/components/dashboard/DashboardFilters'
 
 export const revalidate = 120
 export const dynamic = 'force-dynamic'
@@ -138,9 +137,6 @@ export default async function DashboardPage() {
             all updated as soon as anything moves.
           </p>
         </section>
-
-        {/* ── Filters ────────────────────────────────────────────────────── */}
-        <DashboardFilters />
 
         {/* ── Pilot solution briefs — 4-card directory ───────────────────── */}
         <section className="space-y-4">

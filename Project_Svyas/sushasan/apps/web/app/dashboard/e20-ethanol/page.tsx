@@ -56,7 +56,7 @@ export default function E20EthanolPage() {
           <span className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-india-green animate-pulse" />
             <span className="text-white/60">apify:</span>
-            <span>run #1842 · 4h 12m ago</span>
+            <span>run #1842 · 06 May 2026</span>
           </span>
           <span aria-hidden="true" className="text-white/20">│</span>
           <span><span className="text-white/60">posts seen:</span> 18,392</span>
