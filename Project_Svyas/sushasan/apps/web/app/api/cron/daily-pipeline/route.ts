@@ -439,10 +439,16 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   }
 }
 
-export async function GET(request: Request) {
+function checkAuth(request: Request): boolean {
+  const cronSecret = process.env.CRON_SECRET
+  // If CRON_SECRET not configured, allow all calls (dev/staging)
+  if (!cronSecret) return true
   const authHeader = request.headers.get('authorization')
-  const expected = `Bearer ${process.env.CRON_SECRET}`
-  if (authHeader !== expected && process.env.VERCEL_ENV === 'production') {
+  return authHeader === `Bearer ${cronSecret}`
+}
+
+export async function GET(request: Request) {
+  if (!checkAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
@@ -454,9 +460,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  const expected = `Bearer ${process.env.CRON_SECRET}`
-  if (authHeader !== expected) {
+  if (!checkAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
