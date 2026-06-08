@@ -283,7 +283,8 @@ export function NibmCorridorMap() {
                   </div>
                 </div>
                 <button onClick={() => setOpenId(null)}
-                        className="text-ink-3 hover:text-ink text-sm leading-none">×</button>
+                        className="text-ink-3 hover:text-ink text-sm leading-none"
+                        aria-label="Close">×</button>
               </div>
               <div className="grid sm:grid-cols-2 gap-3 mt-3">
                 <div className="bg-navy/4 rounded-lg p-3 border border-navy/10">

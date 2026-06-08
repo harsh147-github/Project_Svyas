@@ -30,9 +30,9 @@ export function ShareButtons({ url, title, description, compact = false }: Share
   if (compact) {
     return (
       <div className="flex items-center gap-1.5">
-        <button onClick={shareWhatsApp} className="w-7 h-7 rounded-full bg-[#25D366] text-white flex items-center justify-center text-xs hover:scale-110 transition-transform" title="Share on WhatsApp">W</button>
-        <button onClick={shareTwitter} className="w-7 h-7 rounded-full bg-[#0B1F3A] text-white flex items-center justify-center text-xs hover:scale-110 transition-transform" title="Share on X/Twitter">𝕏</button>
-        <button onClick={copyLink} className="w-7 h-7 rounded-full bg-ink/8 text-ink/60 flex items-center justify-center text-xs hover:scale-110 transition-transform" title="Copy link">{copied ? '✓' : '🔗'}</button>
+        <button onClick={shareWhatsApp} className="w-7 h-7 rounded-full bg-[#25D366] text-white flex items-center justify-center text-xs hover:scale-110 transition-transform" title="Share on WhatsApp" aria-label="Share on WhatsApp">W</button>
+        <button onClick={shareTwitter} className="w-7 h-7 rounded-full bg-[#0B1F3A] text-white flex items-center justify-center text-xs hover:scale-110 transition-transform" title="Share on X/Twitter" aria-label="Share on X / Twitter">𝕏</button>
+        <button onClick={copyLink} className="w-7 h-7 rounded-full bg-ink/8 text-ink/60 flex items-center justify-center text-xs hover:scale-110 transition-transform" title="Copy link" aria-label={copied ? 'Link copied' : 'Copy link'}>{copied ? '✓' : '🔗'}</button>
       </div>
     )
   }
