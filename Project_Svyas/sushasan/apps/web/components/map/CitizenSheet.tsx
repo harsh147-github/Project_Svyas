@@ -197,26 +197,6 @@ export function CitizenSheet() {
                 )}
               </div>
 
-              {/* +1 Signal */}
-              <div className="space-y-2">
-                <button
-                  className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-2xl
-                             bg-saffron/10 border-2 border-saffron/30
-                             font-semibold text-[15px] text-ink
-                             active:scale-95 transition-all"
-                  onClick={() => {/* +1 mechanic — wired in Wave 2 */}}
-                >
-                  <span className="text-xl">👍</span>
-                  Facing the same issue?
-                </button>
-                <p className="text-center text-[11px] text-ink-3">
-                  Tap to add your voice. It takes 2 seconds.
-                </p>
-                <p className="text-center text-[11px] text-ink-3">
-                  समान समस्या आहे? 👍 टॅप करा
-                </p>
-              </div>
-
               {/* CTAs */}
               <div className="space-y-2.5">
                 <button

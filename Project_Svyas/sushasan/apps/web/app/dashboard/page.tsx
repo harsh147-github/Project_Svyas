@@ -441,9 +441,6 @@ export default async function DashboardPage() {
                           hover:bg-navy/90 transition-colors">
               ← Ward map
             </Link>
-            <Link href="/" className="text-[11px] font-medium text-ink-3 hover:text-ink">
-              ← Public map
-            </Link>
             <Link href="/ethics" className="text-[11px] font-medium text-ink-3 hover:text-ink">
               Privacy &amp; Ethics
             </Link>
