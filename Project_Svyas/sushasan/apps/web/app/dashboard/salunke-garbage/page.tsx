@@ -300,7 +300,7 @@ export default function SalunkeGarbagePage() {
                 phase: 4,
                 title: 'Public Dashboard + RWA Partnerships',
                 duration: '30 days', budget: '₹12L',
-                gov: 'Public dashboard at ward43sanitation.pmc.gov.in showing daily collection, dump-site clearance photos (before/after), drain-block resolution times, monthly waterlogging incidents.',
+                gov: 'Public dashboard at ward47sanitation.pmc.gov.in showing daily collection, dump-site clearance photos (before/after), drain-block resolution times, monthly waterlogging incidents.',
                 citizen: '15 RWA reps form the Ward 47 Sanitation Standing Committee — meets the 1st Saturday monthly with corporator + ward officer. Verifies dashboard accuracy.',
               },
             ].map((p) => (
@@ -398,7 +398,7 @@ export default function SalunkeGarbagePage() {
             ))}
           </div>
           <div className="border-t border-white/10 pt-4 text-white/40 text-[10px] font-mono">
-            brief_id: ssn_w43_garbage_2026-05-06 · generated: 06 May 2026
+            brief_id: ssn_w47_garbage_2026-05-06 · generated: 06 May 2026
           </div>
         </section>
 
