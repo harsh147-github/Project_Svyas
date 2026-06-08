@@ -24,8 +24,8 @@ const SECTIONS = [
   },
   {
     id: 'voice-input',
-    title: 'Voice Input',
-    body: `Sushaasan does not use microphone input or voice recording in any form. The platform is text and map based. No audio is ever captured, processed, or stored.`,
+    title: 'Voice Input (Optional)',
+    body: `The "Add Report" page includes an optional voice-to-text feature. If you choose to use it, your browser will ask for microphone permission — this is a standard browser permission prompt, and you can decline it to type your report instead. Audio is sent only to our transcription endpoint to convert speech to text; it is not stored, logged, or used for any other purpose. If you deny microphone access or skip the feature entirely, the platform works identically via text input.`,
   },
   {
     id: 'location-data',
