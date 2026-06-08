@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy & Ethics',
+  title: 'Privacy Policy',
   description: 'How Sushaasan handles public civic data: what we collect, how authors are anonymised, and your rights — by design, not as an afterthought.',
 }
 

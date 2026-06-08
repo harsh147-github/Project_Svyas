@@ -332,6 +332,12 @@ export default async function WardPage({ params }: Props) {
                                hover:bg-saffron-dark transition-colors">
                 See full NIBM pilot brief →
               </Link>
+            ) : ward.id === '47' ? (
+              <Link href="/dashboard/salunke-garbage"
+                    className="px-4 py-2 rounded-full bg-saffron text-white text-[11px] font-semibold
+                               hover:bg-saffron-dark transition-colors">
+                See Salunke Vihar sanitation brief →
+              </Link>
             ) : (
               <Link href="/dashboard"
                     className="px-4 py-2 rounded-full bg-saffron text-white text-[11px] font-semibold

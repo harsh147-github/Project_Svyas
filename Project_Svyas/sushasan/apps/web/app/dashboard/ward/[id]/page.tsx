@@ -8,7 +8,7 @@ import type { Metadata } from 'next'
 
 const WARD_ROUTES: Record<string, string> = {
   '46': '/dashboard/nibm',
-  '47': '/dashboard/nibm',
+  '47': '/dashboard/salunke-garbage',
 }
 
 interface Props {
