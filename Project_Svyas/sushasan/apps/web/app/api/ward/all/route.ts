@@ -89,7 +89,7 @@ const SEED_CLUSTERS = [
     source_platforms: ['instagram'],
   },
 
-  // ── WARD 47 — Kondhwa Bk / Yewalewadi (8 clusters) ──────────────────────────
+  // ── WARD 47 — Salunke Vihar / Wanowrie (8 clusters) ────────────────────────
   {
     id: 'p11', ward_id: '47', issue_tag: 'garbage',
     centroid_text: 'Overflow at 3 collection points near Bliss Bakery and NIBM South service lane — 4+ days uncleared.',
