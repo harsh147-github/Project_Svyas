@@ -408,6 +408,9 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
     await supabase.from('pipeline_runs').update({
       status: 'completed', phase_completed: 4, posts_scraped: unique.length,
       batches_processed: aggregates.length, completed_at: new Date().toISOString(),
+      // Per-source yield, persisted for observability — a source stuck at 0
+      // for days means its actor/API needs attention.
+      errors: { by_source: { instagram: ig.length, reddit: rd.length, twitter: tw.length, gmaps: gm.length, facebook: fb.length } },
     }).eq('id', runId)
   }
 

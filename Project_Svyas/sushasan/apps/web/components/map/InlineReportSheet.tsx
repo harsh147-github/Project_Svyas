@@ -131,6 +131,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const [submitError,  setSubmitError]  = useState(false)
   const [result,       setResult]       = useState<Result | null>(null)
   const [loc,          setLoc]          = useState<LocationStatus>({ kind: 'idle' })
+  const [manualWardId, setManualWardId] = useState<string>('')
   const [voiceActive,  setVoiceActive]  = useState(false)
   const [transcribing, setTranscribing] = useState(false)
   const [voiceLang,    setVoiceLang]    = useState('en-IN')
@@ -167,7 +168,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
     if (!isOpen) return
     if (closingTimer.current) { clearTimeout(closingTimer.current); closingTimer.current = null }
     setDragOffset(0)
-    setText(''); setResult(null); setSubmitError(false)
+    setText(''); setResult(null); setSubmitError(false); setManualWardId('')
     voiceActiveRef.current = false; setVoiceActive(false); setTranscribing(false)
     requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
     setLoc({ kind: 'detecting' })
@@ -278,7 +279,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
       text: text.trim(),
       lat:    loc.kind === 'found' ? loc.lat    : null,
       lng:    loc.kind === 'found' ? loc.lng    : null,
-      wardId: loc.kind === 'found' ? loc.wardId : null,
+      wardId: loc.kind === 'found' ? loc.wardId : (manualWardId || null),
     }
     try {
       const res = await fetch('/api/add-report', {
@@ -391,10 +392,28 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
                 </span>
               </>}
               {loc.kind === 'denied' && <>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF9933', flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: '#86868b', fontFamily: '-apple-system, sans-serif' }}>
-                  Location unavailable
-                </span>
+                <span style={{ width: 7, height: 7, borderRadius: '50%',
+                               background: manualWardId ? '#34c759' : '#FF9933', flexShrink: 0 }} />
+                <select
+                  value={manualWardId}
+                  onChange={(e) => setManualWardId(e.target.value)}
+                  aria-label="Choose your area"
+                  style={{
+                    fontSize: 13, fontWeight: 500,
+                    color: manualWardId ? '#34c759' : '#86868b',
+                    fontFamily: '-apple-system, sans-serif',
+                    background: 'transparent', border: 'none', outline: 'none',
+                    cursor: 'pointer', maxWidth: 230,
+                    padding: 0, appearance: 'auto',
+                  }}
+                >
+                  <option value="" disabled>Location off — choose your area…</option>
+                  {Object.entries(CENTROIDS)
+                    .sort((a, b) => a[1][2].localeCompare(b[1][2]))
+                    .map(([id, [,, name]]) => (
+                      <option key={id} value={id}>{name}</option>
+                    ))}
+                </select>
               </>}
             </div>
           </div>
