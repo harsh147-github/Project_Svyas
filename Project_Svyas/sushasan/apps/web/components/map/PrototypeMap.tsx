@@ -27,7 +27,7 @@ const WARDS: Ward[] = [
     points: '168,238 246,294 372,290 372,398 282,490 168,476 110,398 88,308' },
   { id: 'kondhwa_bk', no: '30', name: 'KONDHWA BUDRUK',   sub: 'Mithanagar · Devnagar',
     points: '372,398 488,440 510,540 422,610 282,580 282,490' },
-  { id: 'nibm',       no: '31', name: 'NIBM ROAD',        sub: 'Tribeca · Mohammadwadi',
+  { id: 'nibm',       no: '31', name: 'NIBM ROAD',        sub: 'Clover Park · Mohammadwadi',
     points: '488,440 600,400 720,420 760,540 668,610 510,540' },
   { id: 'undri',      no: '32', name: 'UNDRI · PISOLI',   sub: 'Bizzbay · Handewadi',
     points: '282,580 422,610 510,540 668,610 638,720 488,770 320,748 246,652' },

@@ -342,7 +342,9 @@ export function AddReportClient() {
               textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 320) + 'px'
             }
           }
-        } catch { /* silent */ } finally {
+        } catch {
+          setVoiceError('Voice captured but transcription failed. Please type your report below.')
+        } finally {
           setTranscribing(false)
           setVoiceActive(false)
           voiceActiveRef.current = false
@@ -613,19 +615,21 @@ export function AddReportClient() {
 
         {/* Headline */}
         <div className="mb-9 transition-all duration-700 ease-out"
-             style={{ opacity: mounted ? 1 : 0, transform: mounted ? 'translateY(0)' : 'translateY(14px)' }}>
+             style={{ transform: mounted ? 'translateY(0)' : 'translateY(14px)' }}>
           <h1 className="font-serif text-[26px] sm:text-[30px] font-bold text-ink leading-[1.25] mb-3">
-            We know filling forms is inconvenient and boring, so we made it much more convenient.
+            Describe the problem in your own words.
           </h1>
           <p className="text-[15px] text-ink/50 leading-relaxed">
-            Just speak or type freely below — the Sushaasan AI synthesiser does the rest.
+            Speak or type freely — the Sushaasan AI turns it into a structured civic brief.
           </p>
         </div>
 
-        {/* Manual area picker */}
-        {location.status === 'denied' && (
+        {/* Manual area picker — shown immediately on denial, or as skip-option during detection */}
+        {(location.status === 'denied' || location.status === 'detecting') && (
           <div className="mb-6 rounded-2xl border border-saffron/30 bg-saffron/5 p-4">
-            <p className="text-[12px] font-semibold text-saffron-dark mb-2">Which area are you reporting from?</p>
+            <p className="text-[12px] font-semibold text-saffron-dark mb-2">
+              {location.status === 'detecting' ? 'Or select your area manually:' : 'Which area are you reporting from?'}
+            </p>
             <select
               onChange={(e) => {
                 const area = MANUAL_AREAS.find(a => a.ward_id === e.target.value)

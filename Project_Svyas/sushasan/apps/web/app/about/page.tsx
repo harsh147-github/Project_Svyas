@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { LoopDiagram } from '@/components/about/LoopDiagram'
 
 export const metadata: Metadata = {
-  title: 'About — Sushaasan',
+  title: 'About',
   description: 'A Government OS for Pune. AI turns public chatter into structured, budgeted, collaborative civic action — one corporator and one neighbourhood at a time.',
 }
 
@@ -56,10 +56,10 @@ export default function AboutPage() {
             <span className="text-ink-2 text-sm hidden sm:inline">About</span>
           </Link>
           <div className="flex items-center gap-3">
-            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
-              Visit website ↗
-            </a>
+              Ward map →
+            </Link>
             <Link href="/dashboard"
                   className="text-[11px] font-medium text-ink-3 hover:text-ink hidden sm:inline">
               Live dashboard →
@@ -210,7 +210,7 @@ export default function AboutPage() {
                                  flex items-center justify-center text-india-green font-bold">47</span>
                 <div>
                   <div className="font-serif text-lg font-semibold text-ink leading-none">
-                    Kondhwa Bk – Yewalewadi
+                    Salunke Vihar – Wanowrie
                   </div>
                   <div className="text-[11px] text-ink-3 mt-1">
                     Annual ₹3.2 Cr · 3 active clusters · partner pilot

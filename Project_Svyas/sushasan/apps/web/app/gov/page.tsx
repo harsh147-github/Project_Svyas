@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getDashboardSnapshot } from '@/lib/supabase-data'
+import { LoopCloseButtons } from '@/components/gov/LoopCloseButtons'
 
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: 'Corporator Command Centre — Sushaasan',
+  title: 'Corporator Command Centre',
   description: 'Priority-ranked civic actions for Ward 46 + 47, Pune. AI-synthesised, budget-checked, and ready to act on — with citizens partnering on every step.',
 }
 
@@ -93,10 +94,10 @@ export default async function GovPage() {
               <span className="w-1.5 h-1.5 rounded-full bg-navy" />
               Government view
             </span>
-            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/about"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
-              About ↗
-            </a>
+              About
+            </Link>
           </div>
         </div>
       </header>
@@ -108,11 +109,11 @@ export default async function GovPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
                              bg-saffron/10 text-saffron-dark rounded-full border border-saffron/20">
-              Pilot · Wards 43 · 46 · 47
+              Pilot · Wards 46 · 47
             </span>
             <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
                              bg-india-green/8 text-india-green rounded-full border border-india-green/20">
-              Diplomatic brief
+              Civic brief
             </span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl font-semibold text-ink leading-[1.05] max-w-3xl">
@@ -309,30 +310,7 @@ export default async function GovPage() {
                         </div>
 
                         {/* Loop closure CTAs */}
-                        <div className="px-5 py-3 border-t border-ink/8 bg-paper flex items-center
-                                        justify-between flex-wrap gap-3">
-                          <div className="text-[10px] text-ink-3">
-                            Mark progress to update the public dashboard automatically.
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button className="text-[11px] font-medium px-3 py-1.5 rounded-full
-                                               bg-white border border-amber-200 text-amber-700
-                                               hover:bg-amber-50 transition-colors">
-                              Mark in progress
-                            </button>
-                            <button className="text-[11px] font-semibold px-3 py-1.5 rounded-full
-                                               bg-india-green/10 border border-india-green/30 text-india-green
-                                               hover:bg-india-green/15 transition-colors">
-                              ✓ Mark resolved
-                            </button>
-                            <Link href={`/ward/${ward.id}`}
-                                  className="text-[11px] font-medium px-3 py-1.5 rounded-full
-                                             bg-saffron/8 border border-saffron/30 text-saffron-dark
-                                             hover:bg-saffron/15 transition-colors">
-                              Open ward →
-                            </Link>
-                          </div>
-                        </div>
+                        <LoopCloseButtons solutionId={s.id} wardId={ward.id} currentStatus={s.status} />
                       </article>
                     )
                   })}

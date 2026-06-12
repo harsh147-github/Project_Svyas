@@ -4,7 +4,7 @@ import { NibmCorridorMap } from '@/components/nibm/NibmCorridorMap'
 import { GovActionBrief } from '@/components/nibm/GovActionBrief'
 
 export const metadata: Metadata = {
-  title: 'NIBM Traffic — Government Action Brief | Sushaasan',
+  title: 'NIBM Traffic — Government Action Brief',
   description:
     'Official-format action brief for Ward 46 NIBM–Mohammadwadi corridor traffic. AI-synthesised from 19 verified citizen posts. Para 1–6 noting format for AMC / Corporator / DC review.',
   robots: { index: false }, // keep out of public search — this is for officials
@@ -141,7 +141,7 @@ export default async function GovBriefPage() {
                 The citizen brief at{' '}
                 <Link href="/dashboard/nibm"
                       className="text-india-green font-semibold underline underline-offset-2">
-                  sushaasan.in/dashboard/nibm
+                  sushasan.in/dashboard/nibm
                 </Link>{' '}
                 is visual, narrative, and built for anyone. It shows the corridor map, citizen
                 quotes, a phase-by-phase solution plan, and the civic role residents can play
@@ -304,7 +304,7 @@ export default async function GovBriefPage() {
               {
                 icon: '💧',
                 title: 'Infrastructure blockages',
-                detail: 'Exposed drainage pipes narrowing carriageway at Tribeca/Corinthians stretch. PMC records show no active repair project.',
+                detail: 'Exposed drainage pipes narrowing carriageway at Kumar Park/Corinthians stretch. PMC records show no active repair project.',
               },
             ].map((p) => (
               <div key={p.title}
@@ -352,7 +352,7 @@ export default async function GovBriefPage() {
             ))}
           </div>
           <div className="border-t border-white/10 pt-4 text-white/35 text-[10px] font-mono">
-            All data sourced from public posts only · Authors anonymised · PII stripped before AI processing · sushaasan.in
+            All data sourced from public posts only · Authors anonymised · PII stripped before AI processing · sushasan.in
           </div>
         </section>
 
@@ -376,8 +376,8 @@ export default async function GovBriefPage() {
           </div>
           <p className="text-[11px] text-ink-3">
             Sushaasan Civic Intelligence · Ward 46 Pune ·{' '}
-            <a href="mailto:harshsonavane@sushaasan.in" className="underline">
-              harshsonavane@sushaasan.in
+            <a href="mailto:sonawaneharsh147@gmail.com" className="underline">
+              sonawaneharsh147@gmail.com
             </a>
           </p>
         </footer>

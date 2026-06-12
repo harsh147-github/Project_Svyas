@@ -7,19 +7,29 @@
     {
       "path": "/api/cron/daily-pipeline",
       "schedule": "30 3 * * *"
+    },
+    {
+      "path": "/api/admin/generate-briefs",
+      "schedule": "30 15 * * 0"
     }
   ],
   "headers": [
     {
       "source": "/geojson/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
       ]
     },
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "s-maxage=120, stale-while-revalidate=60" }
+        {
+          "key": "Cache-Control",
+          "value": "s-maxage=120, stale-while-revalidate=60"
+        }
       ]
     }
   ]

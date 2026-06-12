@@ -1,6 +1,6 @@
 /**
  * Seed data layer — replaces Supabase for the weekend MVP.
- * All ward + issue + solution data for the Tribeca/NIBM/Wanowrie pilot.
+ * All ward + issue + solution data for the Clover Park/NIBM/Wanowrie pilot.
  */
 
 /**
@@ -95,8 +95,8 @@ export type Solution = {
 const WARDS: Ward[] = [
   {
     id: '46',
-    name: 'Mohammadwadi – Uruli Devachi',
-    corporator_name: 'TBD — Contact Sushasan',
+    name: 'NIBM – Mohammadwadi',
+    corporator_name: 'TBD — Contact Sushaasan',
     party: '',
     ward_number: 46,
     annual_budget_inr: 3_50_00_000,
@@ -104,8 +104,8 @@ const WARDS: Ward[] = [
   },
   {
     id: '47',
-    name: 'Kondhwa Budruk – Yewalewadi',
-    corporator_name: 'TBD — Contact Sushasan',
+    name: 'Salunke Vihar – Wanowrie',
+    corporator_name: 'TBD — Contact Sushaasan',
     party: '',
     ward_number: 47,
     annual_budget_inr: 3_20_00_000,
@@ -158,7 +158,7 @@ const CLUSTERS: Cluster[] = [
   },
   {
     id: 'c2', ward_id: '46', issue_tag: 'water',
-    centroid_text: 'Tribeca and Corinthians societies receiving only 30 minutes of supply daily; tanker prices have tripled over 2 weeks.',
+    centroid_text: 'Clover Park and Corinthians societies receiving only 30 minutes of supply daily; tanker prices have tripled over 2 weeks.',
     post_count: 28, severity_avg: 4.5, status: 'under_review', updated_at: '2026-04-29T08:00:00Z',
   },
   {
@@ -218,12 +218,12 @@ const CLUSTERS: Cluster[] = [
 const SOLUTIONS: Solution[] = [
   {
     id: 's1', ward_id: '46', cluster_id: 'c2', issue_tag: 'water',
-    summary: 'Tribeca and Corinthians societies face a critical water shortage driven by a pipeline supply mismatch — PMC schedule delivers water at 5am while residents are asleep, and no storage reserve exists. Tanker dependency has tripled costs in 2 weeks. Ward officer\'s judgment is final. These are AI-generated suggestions based on public signal analysis.',
+    summary: 'Clover Park and Corinthians societies face a critical water shortage driven by a pipeline supply mismatch — PMC schedule delivers water at 5am while residents are asleep, and no storage reserve exists. Tanker dependency has tripled costs in 2 weeks. Ward officer\'s judgment is final. These are AI-generated suggestions based on public signal analysis.',
     steps: [
-      { step: 1, action: 'The ward office may consider deploying 2 emergency water tankers daily to Tribeca society gate (morning 7–9am) and Corinthians gate (evening 5–7pm) at the ward office\'s earliest convenience', dept: 'PMC Water Supply Department', timeline_days: 1, cost_est_inr: 8000 },
+      { step: 1, action: 'The ward office may consider deploying 2 emergency water tankers daily to Clover Park society gate (morning 7–9am) and Corinthians gate (evening 5–7pm) at the ward office\'s earliest convenience', dept: 'PMC Water Supply Department', timeline_days: 1, cost_est_inr: 8000 },
       { step: 2, action: 'Conduct pipeline inspection on the NIBM Road water main to identify the supply-schedule mismatch causing the shortage', dept: 'PMC Water Supply Engineering', timeline_days: 3, cost_est_inr: 15000 },
       { step: 3, action: 'Notify society facility managers via PMC app of the corrected supply schedule (shift to 7am–9am) to eliminate wasted supply', dept: 'PMC Water Supply Department', timeline_days: 2, cost_est_inr: 0 },
-      { step: 4, action: 'The ward office could explore installing a 10,000-litre overhead storage buffer at the Tribeca society pump room to bridge daily supply gaps. Estimated budget: ₹95,000 (subject to ward allocation review)', dept: 'PMC Water Supply Engineering + Society', timeline_days: 7, cost_est_inr: 95000 },
+      { step: 4, action: 'The ward office could explore installing a 10,000-litre overhead storage buffer at the Clover Park society pump room to bridge daily supply gaps. Estimated budget: ₹95,000 (subject to ward allocation review)', dept: 'PMC Water Supply Engineering + Society', timeline_days: 7, cost_est_inr: 95000 },
     ],
     total_cost_est_inr: 1_18_000,
     timeline_days: 10,

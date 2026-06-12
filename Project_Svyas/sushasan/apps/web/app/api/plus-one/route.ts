@@ -21,29 +21,29 @@ export async function POST(req: NextRequest) {
         if (data && data.length > 0) id = (data[0] as { id: string; post_count: number }).id
       }
       if (id) {
-        // Atomic increment via RPC to avoid read-then-write race condition
-        const { data: rpcResult } = await db.rpc('increment_cluster_post_count', { p_cluster_id: id })
-        newCount = typeof rpcResult === 'number' ? rpcResult : null
+        // Atomic increment via RPC (preferred)
+        const { data: rpcResult, error: rpcErr } = await db.rpc('increment_cluster_post_count', { p_cluster_id: id })
+        if (!rpcErr) newCount = typeof rpcResult === 'number' ? rpcResult : null
 
-        // Fallback: if RPC not yet deployed, use direct update (non-atomic but safe for low traffic)
+        // Fallback: read-then-increment (non-atomic, safe for low traffic)
         if (newCount === null) {
+          const { data: current } = await db.from('clusters').select('post_count').eq('id', id).single()
+          const next = ((current as { post_count: number } | null)?.post_count ?? 0) + 1
           const { data: updated } = await db
             .from('clusters')
-            .update({ updated_at: new Date().toISOString() })
+            .update({ post_count: next, updated_at: new Date().toISOString() })
             .eq('id', id)
             .select('post_count')
             .single()
-          newCount = (updated as { post_count: number } | null)?.post_count ?? null
+          newCount = (updated as { post_count: number } | null)?.post_count ?? next
         }
       }
     } catch (err) {
       console.error('[plus-one]', err)
-      return NextResponse.json({ ok: false, error: 'increment failed' }, { status: 500 })
+      // Degrade gracefully — don't block the user on a count tracking failure
+      return NextResponse.json({ ok: true, newCount: null })
     }
   }
 
-  if (newCount === null) {
-    return NextResponse.json({ ok: false, error: 'increment failed' }, { status: 500 })
-  }
   return NextResponse.json({ ok: true, newCount })
 }

@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 
 // lng, lat pairs for each ward centroid
 const CENTROIDS: Record<string, [number, number]> = {
-  '46': [73.9010, 18.4655],
+  '46': [73.9334, 18.4567],
   '47': [73.8780, 18.4489],
   '43': [73.8832, 18.4788],
   '42': [73.9140, 18.4730],

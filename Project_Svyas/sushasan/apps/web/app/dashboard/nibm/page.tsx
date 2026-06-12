@@ -7,7 +7,7 @@ import { FadeUp } from '@/components/ui/FadeUp'
 import { ShareButtons } from '@/components/ui/ShareButtons'
 
 export const metadata: Metadata = {
-  title: 'NIBM Traffic Pilot — Sushaasan Solution Brief',
+  title: 'NIBM Traffic Pilot — Solution Brief',
   description: 'A diplomat-partner solution for the NIBM–Mohammadwadi corridor: 19 verified citizen posts → AI-synthesised plan that the corporator and citizens can act on together.',
   openGraph: {
     title: 'Sushaasan: NIBM Traffic — Solution Brief',
@@ -95,10 +95,10 @@ export default async function NIBMPilotPage() {
             <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-3 hidden sm:block">
               NIBM Traffic Pilot · Ward 46
             </span>
-            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/"
                className="text-[11px] font-semibold text-navy hover:underline hidden sm:inline">
-              Visit website ↗
-            </a>
+              Ward map →
+            </Link>
             <Link href="/dashboard"
               className="text-xs text-ink-3 hover:text-ink transition-colors">
               ← All wards
@@ -143,7 +143,7 @@ export default async function NIBMPilotPage() {
             </span>
             <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
                              bg-india-green/8 text-india-green rounded-full border border-india-green/20">
-              Diplomatic brief
+              Civic brief
             </span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl font-semibold text-ink leading-[1.05] max-w-3xl">
@@ -596,11 +596,11 @@ export default async function NIBMPilotPage() {
         {/* ── 11. Footer CTAs ──────────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-4">
           <div className="flex flex-wrap items-center gap-3 justify-center">
-            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/"
                className="px-5 py-2.5 rounded-full bg-navy text-white text-xs font-semibold
                           hover:bg-navy/90 transition-colors">
-              Visit the full Sushaasan website ↗
-            </a>
+              ← Ward map
+            </Link>
             <Link href="/dashboard"
                   className="px-5 py-2.5 rounded-full bg-white border border-ink/10 text-ink
                              text-xs font-semibold hover:border-saffron/40 transition-colors">

@@ -44,7 +44,7 @@ export default async function OG() {
             background: 'rgba(19,136,8,0.08)', border: '1px solid rgba(19,136,8,0.25)',
             padding: '6px 14px', borderRadius: 999, textTransform: 'uppercase', alignSelf: 'flex-start',
             display: 'flex',
-          }}>Citizen view · NIBM · Wanowrie · Tribeca</div>
+          }}>Citizen view · NIBM · Salunke Vihar · Wanowrie</div>
           <div style={{
             fontSize: 80, fontWeight: 600, color: '#0a0a0a',
             lineHeight: 1.04, letterSpacing: -1.5,

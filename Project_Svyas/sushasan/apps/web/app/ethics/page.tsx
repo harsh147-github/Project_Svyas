@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { AnonymisationFlow } from '@/components/about/AnonymisationFlow'
 
 export const metadata: Metadata = {
-  title: 'Privacy & Ethics — Sushaasan',
+  title: 'Privacy & Ethics',
   description: 'How Sushaasan handles data, anonymises authors, strips PII, and respects robots.txt — by design, not as an afterthought.',
 }
 
@@ -64,7 +64,7 @@ const FAQ = [
   },
   {
     q: 'What if a post mentions me by name?',
-    a: 'Personal names matched against common-name and location patterns are stripped during PII removal before AI processing or database storage. If a name slips through, request takedown via privacy@sushaasan.in and it will be purged within 7 days.',
+    a: 'Personal names matched against common-name and location patterns are stripped during PII removal before AI processing or database storage. If a name slips through, request takedown via privacy@sushasan.in and it will be purged within 7 days.',
   },
   {
     q: 'Is the AI trained on my data?',
@@ -96,10 +96,10 @@ export default function EthicsPage() {
                   className="text-[11px] font-medium text-ink-3 hover:text-ink hidden sm:inline">
               About
             </Link>
-            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
-              Visit website ↗
-            </a>
+              Ward map →
+            </Link>
           </div>
         </div>
       </header>
@@ -232,10 +232,10 @@ export default function EthicsPage() {
               We&rsquo;d rather over-correct than be casual about citizen trust.
             </p>
           </div>
-          <a href="mailto:privacy@sushaasan.in"
+          <a href="mailto:privacy@sushasan.in"
              className="flex-shrink-0 px-5 py-2.5 rounded-full bg-india-green text-white text-xs font-semibold
                         shadow-[0_4px_18px_rgba(19,136,8,0.25)] hover:bg-india-green/90 transition-colors">
-            privacy@sushaasan.in →
+            privacy@sushasan.in →
           </a>
         </section>
 
@@ -259,7 +259,7 @@ export default function EthicsPage() {
             </Link>
           </div>
           <p className="text-[11px] text-ink-3">
-            Sushaasan · Pune · Last reviewed: May 2026
+            Sushaasan Pilot · NIBM · Salunke Vihar · Wanowrie · Pune · Last reviewed: May 2026
           </p>
         </footer>
       </div>

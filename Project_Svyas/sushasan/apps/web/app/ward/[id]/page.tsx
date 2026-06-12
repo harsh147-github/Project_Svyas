@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getWardFull(params.id)
   if (!data) return { title: 'Ward not found' }
   return {
-    title: `${data.ward.name} — Ward ${data.ward.ward_number} · Sushaasan`,
+    title: `${data.ward.name} — Ward ${data.ward.ward_number}`,
     description: `Civic intelligence brief for Ward ${data.ward.ward_number}. AI-synthesised solutions, citizen partnership, and budget-checked plans.`,
   }
 }
@@ -50,9 +50,9 @@ export default async function WardPage({ params }: Props) {
   const { ward, clusters, solutions, hasRealSolutions } = data
 
   const totalCost = solutions.reduce((s, x) => s + x.total_cost_est_inr, 0)
-  const budgetPct = ward.annual_budget_inr
-    ? Math.min(100, Math.round((totalCost / ward.annual_budget_inr) * 100))
-    : 0
+  const budgetRatio = ward.annual_budget_inr ? totalCost / ward.annual_budget_inr : 0
+  const budgetPct = Math.min(100, Math.round(budgetRatio * 100))
+  const budgetPctLabel = totalCost > 0 && budgetPct === 0 ? '< 1' : String(budgetPct)
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -70,13 +70,13 @@ export default async function WardPage({ params }: Props) {
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/dashboard"
-                  className="text-[11px] font-medium text-ink-3 hover:text-ink hidden sm:inline">
+                  className="text-[11px] font-medium text-ink-3 hover:text-ink">
               ← All wards
             </Link>
-            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
-               className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
-              About ↗
-            </a>
+            <Link href="/about"
+                  className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors hidden sm:inline">
+              About
+            </Link>
           </div>
         </div>
       </header>
@@ -106,7 +106,7 @@ export default async function WardPage({ params }: Props) {
               </span>
               <span className="text-xs text-ink-2">
                 <b>{fmt(totalCost)}</b> <span className="text-ink-4">/</span> {fmt(ward.annual_budget_inr)}
-                <span className="ml-2 text-ink-4">({budgetPct}%)</span>
+                <span className="ml-2 text-ink-4">({budgetPctLabel}%)</span>
               </span>
             </div>
             <div className="h-2 bg-ink/8 rounded-full overflow-hidden">
@@ -123,7 +123,7 @@ export default async function WardPage({ params }: Props) {
             <p className="text-[11px] text-ink-3 mt-2">
               {budgetPct > 100
                 ? 'Combined estimate exceeds annual allocation — phase rollout suggested.'
-                : `Resolving every active brief uses ${budgetPct}% of the ward's annual budget.`}
+                : `Resolving every active brief uses ${budgetPctLabel}% of the ward's annual budget.`}
             </p>
           </section>
         )}
@@ -160,28 +160,41 @@ export default async function WardPage({ params }: Props) {
               {clusters.length} issue{clusters.length !== 1 ? 's' : ''} reported this week
             </span>
           </div>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {clusters.map((c) => {
-              const color = ISSUE_COLOR[c.issue_tag] ?? ISSUE_COLOR.other
-              return (
-                <article key={c.id} className="bg-white rounded-2xl border border-ink/8 shadow-sm overflow-hidden">
-                  <div className="h-1" style={{ backgroundColor: color }} />
-                  <div className="p-4 space-y-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-bold tracking-[0.14em] uppercase px-2 py-0.5 rounded-full"
-                            style={{ background: `${color}18`, color, border: `1px solid ${color}40` }}>
-                        {ISSUE_LABEL[c.issue_tag] ?? c.issue_tag}
-                      </span>
-                      <span className="text-[11px] text-ink-4">{c.post_count} reports</span>
+          {clusters.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-ink/8 shadow-sm p-6 text-center space-y-2">
+              <p className="text-ink-3 text-sm">No issues reported for this ward yet.</p>
+              <p className="text-[11px] text-ink-4">
+                Sushaasan monitors public posts weekly — signals for this area will appear here once detected.
+              </p>
+              <a href="/dashboard"
+                 className="inline-block mt-2 text-[11px] font-semibold text-saffron-dark hover:underline">
+                See the pilot wards with active data →
+              </a>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-3">
+              {clusters.map((c) => {
+                const color = ISSUE_COLOR[c.issue_tag] ?? ISSUE_COLOR.other
+                return (
+                  <article key={c.id} className="bg-white rounded-2xl border border-ink/8 shadow-sm overflow-hidden">
+                    <div className="h-1" style={{ backgroundColor: color }} />
+                    <div className="p-4 space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-bold tracking-[0.14em] uppercase px-2 py-0.5 rounded-full"
+                              style={{ background: `${color}18`, color, border: `1px solid ${color}40` }}>
+                          {ISSUE_LABEL[c.issue_tag] ?? c.issue_tag}
+                        </span>
+                        <span className="text-[10px] text-ink-4">{c.post_count} reports</span>
+                      </div>
+                      <SeverityDots severity={Math.round(c.severity_avg)} />
+                      <p className="text-[13px] text-ink-2 leading-relaxed">{c.centroid_text}</p>
+                      <IssueLifecycle currentStage={c.status ?? 'signal_detected'} compact />
                     </div>
-                    <SeverityDots severity={Math.round(c.severity_avg)} />
-                    <p className="text-[13px] text-ink-2 leading-relaxed">{c.centroid_text}</p>
-                    <IssueLifecycle currentStage={c.status ?? 'signal_detected'} compact />
-                  </div>
-                </article>
-              )
-            })}
-          </div>
+                  </article>
+                )
+              })}
+            </div>
+          )}
         </section>
 
         {/* ── Sushaasan solutions ────────────────────────────────────────── */}
@@ -314,11 +327,25 @@ export default async function WardPage({ params }: Props) {
         {/* ── Footer ────────────────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-3 text-center">
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link href="/dashboard"
-                  className="px-4 py-2 rounded-full bg-saffron text-white text-[11px] font-semibold
-                             hover:bg-saffron-dark transition-colors">
-              Transparency dashboard →
-            </Link>
+            {ward.id === '46' ? (
+              <Link href="/dashboard/nibm"
+                    className="px-4 py-2 rounded-full bg-saffron text-white text-[11px] font-semibold
+                               hover:bg-saffron-dark transition-colors">
+                See full NIBM pilot brief →
+              </Link>
+            ) : ward.id === '47' ? (
+              <Link href="/dashboard/salunke-garbage"
+                    className="px-4 py-2 rounded-full bg-saffron text-white text-[11px] font-semibold
+                               hover:bg-saffron-dark transition-colors">
+                See Salunke Vihar sanitation brief →
+              </Link>
+            ) : (
+              <Link href="/dashboard"
+                    className="px-4 py-2 rounded-full bg-saffron text-white text-[11px] font-semibold
+                               hover:bg-saffron-dark transition-colors">
+                All ward briefs →
+              </Link>
+            )}
             <Link href="/dashboard"
                   className="text-[11px] font-medium text-ink-3 hover:text-ink">
               All wards

@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'E20 Ethanol Blending — National Policy Brief — Sushaasan',
-  description: 'Sushaasan extends from civic to national: 5,200+ verified posts on E20 ethanol blending, read by AI, organised into a diplomatic policy brief that the Ministry of Petroleum, BIS, NITI Aayog and OEMs can act on together.',
+  title: 'E20 Ethanol Blending — National Policy Brief',
+  description: 'Sushaasan extends from civic to national: 5,200+ verified posts on E20 ethanol blending, read by AI, organised into a structured policy brief that the Ministry of Petroleum, BIS, NITI Aayog and OEMs can act on together.',
   openGraph: {
     title: 'Sushaasan: E20 Ethanol Blending — National Policy Brief',
     description: 'Citizen sentiment → structured, costed policy advisory.',
@@ -27,10 +27,10 @@ export default function E20EthanolPage() {
             <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-ink-3 hidden sm:block">
               National Policy Pilot · E20
             </span>
-            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/"
                className="text-[11px] font-semibold text-navy hover:underline hidden sm:inline">
-              Visit website ↗
-            </a>
+              Ward map →
+            </Link>
             <Link href="/dashboard"
               className="text-xs text-ink-3 hover:text-ink transition-colors">
               ← All briefs
@@ -55,21 +55,21 @@ export default function E20EthanolPage() {
                         text-[10.5px] font-mono">
           <span className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-india-green" />
-            <span className="text-white/60">apify:</span>
-            <span>run #1842 · 4h 12m ago</span>
+            <span className="text-white/60">scraped:</span>
+            <span>06 May 2026</span>
           </span>
           <span aria-hidden="true" className="text-white/20">│</span>
-          <span><span className="text-white/60">posts seen:</span> 18,392</span>
+          <span><span className="text-white/60">posts reviewed:</span> 18,392</span>
           <span aria-hidden="true" className="text-white/20">│</span>
-          <span><span className="text-white/60">retained:</span> 5,247 <span className="text-white/40">(28.5%)</span></span>
+          <span><span className="text-white/60">verified signal:</span> 5,247 <span className="text-white/40">(28.5%)</span></span>
           <span aria-hidden="true" className="text-white/20">│</span>
-          <span><span className="text-white/60">classify:</span> sonnet-4-6 · 2.55M tok</span>
+          <span><span className="text-white/60">AI classification:</span> complete</span>
           <span aria-hidden="true" className="text-white/20">│</span>
-          <span><span className="text-white/60">synth:</span> opus-4-6 · v3.2 prompt</span>
+          <span><span className="text-white/60">AI synthesis:</span> complete</span>
           <span aria-hidden="true" className="text-white/20">│</span>
-          <span><span className="text-white/60">next regen:</span> Sun 21:00 IST</span>
+          <span><span className="text-white/60">next update:</span> Sun 21:00 IST</span>
           <span aria-hidden="true" className="text-white/20">│</span>
-          <span><span className="text-white/60">brief:</span> v1.0 · ssn_national_e20_2026-05-06</span>
+          <span><span className="text-white/60">brief:</span> v1.0</span>
         </div>
       </div>
 
@@ -88,7 +88,7 @@ export default function E20EthanolPage() {
             </span>
             <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
                              bg-india-green/8 text-india-green rounded-full border border-india-green/20">
-              Diplomatic brief
+              Civic brief
             </span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl font-semibold text-ink leading-[1.05] max-w-3xl">
@@ -235,8 +235,8 @@ export default function E20EthanolPage() {
                 Methodology &amp; AI confidence
               </div>
               <p className="text-[12.5px] text-ink-2 leading-relaxed">
-                Built by Sushaasan&rsquo;s 5-phase pipeline: <b>Apify scrape</b> → <b>Claude Sonnet 4.6 classify</b> →
-                <b> Voyage-3 embeddings</b> → <b>Perplexity policy research</b> → <b>Claude Opus 4.6 synthesis</b>.
+                Built by Sushaasan&rsquo;s 5-phase pipeline: <b>Apify scrape</b> → <b>AI classify</b> →
+                <b> Voyage-3 embeddings</b> → <b>Perplexity policy research</b> → <b>AI synthesis</b>.
                 All citations resolve to a verified public post; deduplicated by SHA-256 of normalised content.
                 Diplomatic-frame prompt v3.2 (March 2026 calibration). PII stripped at ingestion.
               </p>
@@ -289,10 +289,10 @@ export default function E20EthanolPage() {
               {/* Stages — boxes with data volumes */}
               {[
                 { x:  40, name: '01 · Listen',    sub: 'Apify · Reddit API · Telethon',    n: '18,392', unit: 'raw posts',    h: 110, color: '#FF9933', detail: '7 platforms · 90d window' },
-                { x: 222, name: '02 · Read',      sub: 'Sonnet 4.6 · classify',            n: '5,247',  unit: 'unique posts', h:  92, color: '#FF9933', detail: '94.2% dedup · embed v3' },
+                { x: 222, name: '02 · Read',      sub: 'AI · classify',                    n: '5,247',  unit: 'unique posts', h:  92, color: '#FF9933', detail: '94.2% dedup · embed v3' },
                 { x: 404, name: '03 · Cluster',   sub: 'voyage-3 · cosine ≥ 0.85',         n: '23',     unit: 'clusters',     h:  74, color: '#FF9933', detail: 'avg 228 posts/cluster' },
                 { x: 586, name: '04 · Ground',    sub: 'Perplexity · 14 official sources', n: '14',     unit: 'evidence refs', h:  62, color: '#138808', detail: 'BIS · SIAM · NFCSF +11' },
-                { x: 768, name: '05 · Suggest',   sub: 'Opus 4.6 · diplomatic v3.2',       n: '1',      unit: 'brief',        h:  50, color: '#138808', detail: '4 phases · 4 ministries' },
+                { x: 768, name: '05 · Suggest',   sub: 'AI · civic brief',            n: '1',      unit: 'brief',        h:  50, color: '#138808', detail: '4 phases · 4 ministries' },
               ].map((s, i) => {
                 const cy = 140
                 const top = cy - s.h / 2
@@ -1546,10 +1546,10 @@ export default function E20EthanolPage() {
           <div className="grid sm:grid-cols-5 gap-3 text-[11px]">
             {[
               { phase: '01', name: 'Listen',  desc: 'Apify + Reddit API + Telethon scrape across r/india, r/CarsIndia, Threads, X, Team-BHP, BusinessLine comments' },
-              { phase: '02', name: 'Read',    desc: 'Claude Sonnet 4.6 per-post classifier — issue tag, sentiment, sub-tags, sub-region, actionability' },
+              { phase: '02', name: 'Read',    desc: 'AI per-post classifier — issue tag, sentiment, sub-tags, sub-region, actionability' },
               { phase: '03', name: 'Ground',  desc: 'NFCSF FY25 procurement, SIAM circulars, BIS draft IS 2796:2025, OEM service bulletins, MoP press notes' },
               { phase: '04', name: 'Compare', desc: 'Perplexity-grounded retrieval against Brazil Pró-Álcool + US E15 dual-grade rollout DPRs and learnings' },
-              { phase: '05', name: 'Suggest', desc: 'Claude Opus 4.6 with diplomatic-frame prompt v3.2 — costed, ministry-mapped, citizen-paired advisory' },
+              { phase: '05', name: 'Suggest', desc: 'AI synthesis — costed, ministry-mapped, citizen-paired advisory' },
             ].map(p => (
               <div key={p.phase} className="space-y-1.5">
                 <div className="text-saffron font-bold font-mono">{p.phase}</div>
@@ -1572,7 +1572,7 @@ export default function E20EthanolPage() {
             </div>
             <div>
               <div className="text-white/40">prompt</div>
-              <div className="text-white/85">diplomatic-frame v3.2</div>
+              <div className="text-white/85">civic-frame brief</div>
             </div>
             <div>
               <div className="text-white/40">human review</div>
@@ -1584,11 +1584,11 @@ export default function E20EthanolPage() {
         {/* ── 8. Footer CTAs ───────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-4">
           <div className="flex flex-wrap items-center gap-3 justify-center">
-            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/"
                className="px-5 py-2.5 rounded-full bg-navy text-white text-xs font-semibold
                           hover:bg-navy/90 transition-colors">
-              Visit the full Sushaasan website ↗
-            </a>
+              ← Ward map
+            </Link>
             <Link href="/dashboard"
                   className="px-5 py-2.5 rounded-full bg-white border border-ink/10 text-ink
                              text-xs font-semibold hover:border-saffron/40 transition-colors">

@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getDashboardSnapshot } from '@/lib/supabase-data'
-import { DashboardFilters } from '@/components/dashboard/DashboardFilters'
 
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: 'Transparency Dashboard — Sushaasan',
+  title: 'Transparency Dashboard',
   description: 'Every civic issue tracked by Sushaasan: what AI surfaced, what government is doing, and how citizens are partnering for better governance.',
 }
 
@@ -110,10 +109,10 @@ export default async function DashboardPage() {
                 Refreshed {formatRefreshed(lastUpdated)}
               </span>
             )}
-            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/about"
                className="text-[11px] font-semibold text-ink-3 hover:text-saffron-dark transition-colors">
-              About ↗
-            </a>
+              About
+            </Link>
           </div>
         </div>
       </header>
@@ -125,7 +124,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[10px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
                              bg-saffron/10 text-saffron-dark rounded-full border border-saffron/20">
-              Pune civic intelligence
+              NIBM · Salunke Vihar · Wanowrie
             </span>
           </div>
           <h1 className="font-serif text-4xl sm:text-5xl font-semibold text-ink leading-[1.05] max-w-3xl">
@@ -139,9 +138,6 @@ export default async function DashboardPage() {
           </p>
         </section>
 
-        {/* ── Filters ────────────────────────────────────────────────────── */}
-        <DashboardFilters />
-
         {/* ── Pilot solution briefs — 4-card directory ───────────────────── */}
         <section className="space-y-4">
           <div className="flex items-baseline gap-3 flex-wrap">
@@ -151,7 +147,7 @@ export default async function DashboardPage() {
             <div className="flex-1 h-px bg-ink/8 min-w-[40px]" />
             <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-saffron-dark
                              bg-saffron/8 border border-saffron/20 px-2 py-1 rounded-full">
-              4 live · diplomatic frame
+              4 active briefs
             </span>
           </div>
 
@@ -184,7 +180,7 @@ export default async function DashboardPage() {
                   href:    '/dashboard/salunke-garbage',
                   tag:     'Garbage & Drainage',
                   tagColor:'#10B981',
-                  ward:    'Ward 43 · Salunke Vihar–Wanowrie',
+                  ward:    'Ward 47 · Salunke Vihar–Wanowrie',
                   title:   'Salunke Vihar sanitation',
                   blurb:   '28 verified posts · ₹2.05 Cr · 156d. Four chronic dump sites, 12 drain blocks — pre-monsoon deadline.',
                   stats:   ['28 posts', '4 dump sites', '12 drain blocks'],
@@ -440,13 +436,10 @@ export default async function DashboardPage() {
         {/* ── Footer ──────────────────────────────────────────────────── */}
         <footer className="border-t border-ink/10 pt-8 pb-4 space-y-3 text-center">
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <a href="https://sushaasan.in" target="_blank" rel="noopener noreferrer"
+            <Link href="/"
                className="px-4 py-2 rounded-full bg-navy text-white text-[11px] font-semibold
                           hover:bg-navy/90 transition-colors">
-              Visit the website ↗
-            </a>
-            <Link href="/" className="text-[11px] font-medium text-ink-3 hover:text-ink">
-              ← Public map
+              ← Ward map
             </Link>
             <Link href="/ethics" className="text-[11px] font-medium text-ink-3 hover:text-ink">
               Privacy &amp; Ethics
@@ -456,7 +449,7 @@ export default async function DashboardPage() {
             Data sourced from public posts only · AI-assisted analysis, reviewed before publication
           </p>
           <p className="text-[11px] text-ink-3">
-            Sushaasan · Pune ·{' '}
+            Sushaasan Pilot · NIBM · Salunke Vihar · Wanowrie · Pune ·{' '}
             <a href="mailto:sonawaneharsh147@gmail.com" className="underline">Contact</a>
           </p>
         </footer>

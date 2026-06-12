@@ -10,8 +10,8 @@ export const dynamic = 'force-dynamic'
 // ── Ward keyword → ward_id + lng/lat ─────────────────────────────────────────
 type WardEntry = { kw: string[]; id: string; name: string; lng: number; lat: number }
 const WARD_MAP: WardEntry[] = [
-  { kw: ['mohammadwadi', 'mohammad wadi', 'nibm', 'uruli devachi', 'undri', 'pisoli', 'handewadi', 'autadewadi'], id: '46', name: 'Mohammad Wadi - Uruli Devachi', lng: 73.9102, lat: 18.4651 },
-  { kw: ['salunke vihar', 'salunke', 'wanowrie', 'kondhwa bk', 'kondhwa budruk', 'yewalewadi'], id: '47', name: 'Kondhwa Bk - Yewalewadi', lng: 73.9015, lat: 18.4729 },
+  { kw: ['mohammadwadi', 'mohammad wadi', 'nibm', 'uruli devachi', 'undri', 'pisoli', 'handewadi', 'autadewadi'], id: '46', name: 'NIBM – Mohammadwadi', lng: 73.9102, lat: 18.4651 },
+  { kw: ['salunke vihar', 'salunke', 'wanowrie', 'kondhwa bk', 'kondhwa budruk', 'yewalewadi'], id: '47', name: 'Salunke Vihar – Wanowrie', lng: 73.9015, lat: 18.4729 },
   { kw: ['kondhwa kh', 'kondhwa khurd', 'mithanagar', 'kondhwa'], id: '41', name: 'Kondhwa Kh - Mithanagar', lng: 73.8762, lat: 18.4642 },
   { kw: ['wanawadi', 'kausar baug'], id: '43', name: 'Wanawadi - Kausar Baug', lng: 73.8985, lat: 18.4793 },
   { kw: ['ramtekadi', 'sayyadnagar'], id: '42', name: 'Ramtekadi - Sayyadnagar', lng: 73.8950, lat: 18.4750 },
@@ -159,7 +159,7 @@ const IG_BANK_A = [
 const IG_BANK_B = [
   'wanowriepune', 'salunkevihar', 'hadapsarpune', 'magarpattacity', 'koregaonpark',
   'kalyaninagarpune', 'kharadipune', 'wagholipune', 'hinjewadipune', 'banerpune',
-  'kothrудpune', 'aundهpune', 'pashanpune', 'warjepune', 'katrajpune',
+  'kothrudpune', 'aundhpune', 'pashanpune', 'warjepune', 'katrajpune',
   'punecivic', 'punewaterissue', 'puneelectricity', 'puneswm', 'puneflooding',
   'punemonsoon', 'puneinfrastructure', 'pmc411', 'punesewage', 'pmcwater',
   'nibmroadpune', 'kondhwabudruk', 'fursungipune', 'manjaripune', 'lohegaonpune',
@@ -488,6 +488,9 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
     await supabase.from('pipeline_runs').update({
       status: 'completed', phase_completed: 4, posts_scraped: unique.length,
       batches_processed: aggregates.length, completed_at: new Date().toISOString(),
+      // Per-source yield, persisted for observability — a source stuck at 0
+      // for days means its actor/API needs attention.
+      errors: { by_source: { instagram: ig.length, reddit: rd.length, twitter: tw.length, gmaps: gm.length, facebook: fb.length } },
     }).eq('id', runId)
   }
 

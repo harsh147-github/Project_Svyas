@@ -162,8 +162,9 @@ function weekStart(): string {
   return monday.toISOString().split('T')[0]
 }
 
-export async function POST(req: NextRequest) {
-  if (!isAdminAuthed(req)) return new NextResponse('Unauthorized', { status: 401 })
+type GenerateOpts = { ward_id?: string; all?: boolean; top_n?: number; force?: boolean }
+
+async function runGeneration(body: GenerateOpts) {
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 })
   }
@@ -171,9 +172,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'ANTHROPIC_API_KEY missing' }, { status: 500 })
   }
 
-  const body = (await req.json().catch(() => ({}))) as {
-    ward_id?: string; all?: boolean; top_n?: number; force?: boolean
-  }
   const topN = body.top_n ?? 4
   const force = body.force ?? false
 
@@ -209,14 +207,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 3. Load existing solutions to skip if not forcing
+  // 3. Load existing solutions to skip if not forcing.
+  // Skip-scope is the CURRENT week — one brief per (ward, issue, week), so the
+  // weekly cron naturally refreshes briefs as cluster data evolves.
+  const thisWeek = weekStart()
   const { data: existingSols } = await supabase
     .from('solutions')
-    .select('ward_id, issue_tag, status')
+    .select('ward_id, issue_tag, status, week_start')
     .in('ward_id', wardIds)
   const haveByKey = new Set(
     (existingSols ?? [])
-      .filter((s) => ['published', 'actioned', 'resolved'].includes(s.status as string))
+      .filter((s) =>
+        ['published', 'actioned', 'resolved'].includes(s.status as string) &&
+        String(s.week_start) === thisWeek)
       .map((s) => `${s.ward_id}|${s.issue_tag}`),
   )
 
@@ -287,14 +290,28 @@ export async function POST(req: NextRequest) {
   })
 }
 
+export async function POST(req: NextRequest) {
+  if (!isAdminAuthed(req)) return new NextResponse('Unauthorized', { status: 401 })
+  const body = (await req.json().catch(() => ({}))) as GenerateOpts
+  return runGeneration(body)
+}
+
 export async function GET(req: NextRequest) {
+  // Vercel cron (Sunday 21:00 IST) invokes GET with the CRON_SECRET bearer —
+  // run the weekly synthesis across every ward with active clusters.
+  const cronSecret = process.env.CRON_SECRET
+  if (cronSecret && req.headers.get('authorization') === `Bearer ${cronSecret}`) {
+    return runGeneration({ all: true, top_n: 3 })
+  }
+
   if (!isAdminAuthed(req)) return new NextResponse('Unauthorized', { status: 401 })
   return NextResponse.json({
     usage: 'POST { ward_id?: string, all?: boolean, top_n?: number (default 4), force?: boolean }',
     notes: [
       'Runs Opus to generate concrete, budgeted action plans from cluster data.',
-      'Idempotent — skips wards+issues that already have a published solution unless force:true.',
-      'Recommended initial run: POST { all: true, top_n: 3 } — ~24 Opus calls covering 8 active wards.',
+      'One brief per (ward, issue, week) — re-running within the same week skips unless force:true.',
+      'Scheduled: Vercel cron hits GET weekly (Sun 21:00 IST) with CRON_SECRET to refresh all wards.',
+      'Recommended manual run: POST { all: true, top_n: 3 }.',
     ],
   })
 }

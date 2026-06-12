@@ -74,6 +74,20 @@ function parseSteps(raw: unknown): SolutionStep[] {
   return []
 }
 
+/** Keep only the newest solution per (ward_id, issue_tag) — weekly synthesis
+ *  creates one row per week, but the UI should show a single current brief. */
+function latestPerWardIssue(rows: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+  const sorted = rows.slice().sort((a, b) =>
+    String(b.generated_at ?? '').localeCompare(String(a.generated_at ?? '')))
+  const seen = new Set<string>()
+  return sorted.filter((s) => {
+    const key = `${s.ward_id}|${s.issue_tag}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 function priorityFromCluster(c: Cluster): number {
   const sev = c.severity_avg ?? 3
   const posts = c.post_count ?? 1
@@ -230,7 +244,8 @@ export type WardFull = {
 
 export async function getWardFull(wardId: string): Promise<WardFull | null> {
   const registry = await loadWardRegistry()
-  const ward = registry.get(wardId) ?? stubWard(wardId)
+  const knownWard = registry.get(wardId)
+  const ward = knownWard ?? stubWard(wardId)
 
   let clusters: Cluster[] = []
   let solutions: Solution[] = []
@@ -254,7 +269,7 @@ export async function getWardFull(wardId: string): Promise<WardFull | null> {
           .in('status', ['open', 'in_progress', 'resolved'])
           .order('severity_avg', { ascending: false }),
         supabase.from('solutions')
-          .select('id, ward_id, cluster_id, issue_tag, summary, steps, total_cost_est_inr, timeline_days, priority_score, budget_feasible, status, actioned_at, resolved_at')
+          .select('id, ward_id, cluster_id, issue_tag, summary, steps, total_cost_est_inr, timeline_days, priority_score, budget_feasible, status, actioned_at, resolved_at, generated_at')
           .eq('ward_id', wardId)
           .in('status', ['published', 'actioned', 'resolved']),
         supabase.from('sushaasan_phase3_optimized_solutions')
@@ -299,7 +314,7 @@ export async function getWardFull(wardId: string): Promise<WardFull | null> {
 
       if (dbSolutions && dbSolutions.length > 0) {
         hasRealSolutions = true
-        solutions = (dbSolutions as Record<string, unknown>[]).map((s) => ({
+        solutions = latestPerWardIssue(dbSolutions as Record<string, unknown>[]).map((s) => ({
           id: String(s.id),
           ward_id: String(s.ward_id),
           cluster_id: String(s.cluster_id ?? ''),
@@ -347,6 +362,9 @@ export async function getWardFull(wardId: string): Promise<WardFull | null> {
       .map((c) => synthesizeSolution(c, ward))
   }
 
+  // Return 404 for wards not in the registry and with no data from any source
+  if (!knownWard && clusters.length === 0) return null
+
   return { ward, clusters, solutions, hasRealClusters, hasRealSolutions }
 }
 
@@ -377,7 +395,7 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
           .in('status', ['open', 'in_progress', 'resolved'])
           .order('severity_avg', { ascending: false }),
         supabase.from('solutions')
-          .select('id, ward_id, cluster_id, issue_tag, summary, steps, total_cost_est_inr, timeline_days, priority_score, budget_feasible, status, actioned_at, resolved_at'),
+          .select('id, ward_id, cluster_id, issue_tag, summary, steps, total_cost_est_inr, timeline_days, priority_score, budget_feasible, status, actioned_at, resolved_at, generated_at'),
       ])
 
       if (dbClusters && dbClusters.length > 0) {
@@ -401,7 +419,7 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
       }
 
       if (dbSolutions) {
-        solutions = (dbSolutions as Record<string, unknown>[]).map((s) => ({
+        solutions = latestPerWardIssue(dbSolutions as Record<string, unknown>[]).map((s) => ({
           id: String(s.id),
           ward_id: String(s.ward_id),
           cluster_id: String(s.cluster_id ?? ''),
@@ -444,10 +462,17 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
     }
   }
 
-  // Build ward list: every ward referenced by any cluster + every registry ward
+  // Dashboard shows pilot wards only; context wards appear once solutions are published
   const wardIds = new Set<string>()
-  for (const c of clusters) wardIds.add(c.ward_id)
-  for (const w of registry.values()) wardIds.add(w.id)
+  for (const w of registry.values()) {
+    if (w.tier === 'pilot') wardIds.add(w.id)
+  }
+  // Also surface any ward where a solution has been published/actioned/resolved
+  for (const s of solutions) {
+    if (s.status === 'published' || s.status === 'actioned' || s.status === 'resolved') {
+      wardIds.add(s.ward_id)
+    }
+  }
   const wards: Ward[] = Array.from(wardIds)
     .map((id) => registry.get(id) ?? stubWard(id))
     .sort((a, b) => a.ward_number - b.ward_number)

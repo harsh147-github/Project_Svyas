@@ -115,8 +115,8 @@ function severityBar(value: number) {
 
 const SEARCHABLE_WARDS = [
   { wardnum: '46', name: 'NIBM–Mohammadwadi',       areas: 'NIBM Road Mohammadwadi Corinthians' },
-  { wardnum: '47', name: 'Kondhwa Budruk',           areas: 'Kondhwa Konark Pyramid Undri' },
-  { wardnum: '43', name: 'Wanowrie–Salunke Vihar',   areas: 'Wanowrie Salunke Vihar Clover Park' },
+  { wardnum: '47', name: 'Salunke Vihar–Wanowrie',   areas: 'Salunke Vihar Wanowrie Clover Park Corinthians Lunkad Gold Coast' },
+  { wardnum: '43', name: 'Wanowrie–Kausar Baug',    areas: 'Wanowrie Gaothan Kausar Baug' },
   { wardnum: '42', name: 'Ramtekadi–Sayyadnagar',    areas: 'Ramtekadi Magarpatta' },
   { wardnum: '41', name: 'Kondhwa Khurd',            areas: 'Kondhwa Pisoli' },
   { wardnum: '44', name: 'Undri–Pisoli',             areas: 'Undri Pisoli Fursungi' },
@@ -1197,9 +1197,9 @@ function MobileWardContent({
       )}
 
       {/* CTA */}
-      {full?.ward?.id && (
+      {(full?.ward?.id ?? clusters[0]?.ward_id) && (
         <a
-          href={`/ward/${full.ward.id}`}
+          href={`/ward/${full?.ward?.id ?? clusters[0]?.ward_id}`}
           className="block text-center px-4 py-3 rounded-xl
                      bg-saffron text-white font-semibold text-[13px] tracking-wide
                      shadow-[0_4px_18px_rgba(255,153,51,0.35)]
