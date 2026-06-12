@@ -101,6 +101,23 @@ export function WardMap() {
 
     mapRef.current = map
 
+    // If the OpenFreeMap style can't be fetched (CDN outage, blocked network),
+    // swap to a plain-background style so 'load' still fires and the ward
+    // boundaries + hotspot layers (all local GeoJSON) render anyway.
+    let basemapFellBack = false
+    map.on('error', () => {
+      if (basemapFellBack || map.isStyleLoaded()) return
+      basemapFellBack = true
+      map.setStyle({
+        version: 8,
+        // required for the ward-label text layers; failed glyph fetches degrade
+        // to missing labels rather than a thrown error
+        glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+        sources: {},
+        layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#f2f2ee' } }],
+      })
+    })
+
     map.on('load', () => {
       if (map.getSource('wards-pilot')) return  // guard against double-mount
       // ── Ward sources ──────────────────────────────────────────────────────
