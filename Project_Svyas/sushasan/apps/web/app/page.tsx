@@ -59,6 +59,9 @@ export default function HomePage() {
   return (
     <main className="relative w-full h-screen overflow-hidden bg-paper">
 
+      {/* Page heading for screen readers + SEO — visually the map is the hero */}
+      <h1 className="sr-only">Sushaasan — live civic issue map of Pune wards</h1>
+
       {/* Full-screen map */}
       <WardMap />
 
