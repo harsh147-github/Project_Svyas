@@ -191,16 +191,19 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
     if (e.key !== 'Tab') return
     const el = sheetRef.current
     if (!el) return
-    const focusable = el.querySelectorAll<HTMLElement>(
+    // Intercept every Tab and cycle through the sheet's *visible* focusables —
+    // sentinel-style first/last checks leak focus to the map behind the modal
+    // because hidden file inputs and disabled buttons break the assumed order.
+    const focusable = Array.from(el.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )
-    const first = focusable[0]
-    const last  = focusable[focusable.length - 1]
-    if (e.shiftKey) {
-      if (document.activeElement === first) { e.preventDefault(); last?.focus() }
-    } else {
-      if (document.activeElement === last)  { e.preventDefault(); first?.focus() }
-    }
+    )).filter((n) => !n.hasAttribute('disabled') && n.offsetParent !== null)
+    if (focusable.length === 0) return
+    e.preventDefault()
+    const idx = focusable.indexOf(document.activeElement as HTMLElement)
+    const next = e.shiftKey
+      ? focusable[idx <= 0 ? focusable.length - 1 : idx - 1]
+      : focusable[idx === -1 || idx === focusable.length - 1 ? 0 : idx + 1]
+    next?.focus()
   }
 
   useEffect(() => {
@@ -793,7 +796,14 @@ function ComposeView({
           </div>
         ) : (
           <>
-            <label style={{
+            <label tabIndex={0} role="button" aria-label="Take a photo with camera"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  ;(e.currentTarget.querySelector('input') as HTMLInputElement | null)?.click()
+                }
+              }}
+              style={{
               display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px',
               borderRadius: 980, background: 'rgba(29,29,31,0.05)',
               border: '1px solid rgba(29,29,31,0.10)', cursor: 'pointer',
@@ -804,7 +814,14 @@ function ComposeView({
               <input type="file" accept="image/*" capture="environment"
                 onChange={onPhotoChange} style={{ display: 'none' }} />
             </label>
-            <label style={{
+            <label tabIndex={0} role="button" aria-label="Choose a photo from gallery"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  ;(e.currentTarget.querySelector('input') as HTMLInputElement | null)?.click()
+                }
+              }}
+              style={{
               display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px',
               borderRadius: 980, background: 'rgba(29,29,31,0.05)',
               border: '1px solid rgba(29,29,31,0.10)', cursor: 'pointer',
