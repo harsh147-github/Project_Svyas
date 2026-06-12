@@ -342,7 +342,9 @@ export function AddReportClient() {
               textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 320) + 'px'
             }
           }
-        } catch { /* silent */ } finally {
+        } catch {
+          setVoiceError('Voice captured but transcription failed. Please type your report below.')
+        } finally {
           setTranscribing(false)
           setVoiceActive(false)
           voiceActiveRef.current = false
@@ -622,10 +624,12 @@ export function AddReportClient() {
           </p>
         </div>
 
-        {/* Manual area picker */}
-        {location.status === 'denied' && (
+        {/* Manual area picker — shown immediately on denial, or as skip-option during detection */}
+        {(location.status === 'denied' || location.status === 'detecting') && (
           <div className="mb-6 rounded-2xl border border-saffron/30 bg-saffron/5 p-4">
-            <p className="text-[12px] font-semibold text-saffron-dark mb-2">Which area are you reporting from?</p>
+            <p className="text-[12px] font-semibold text-saffron-dark mb-2">
+              {location.status === 'detecting' ? 'Or select your area manually:' : 'Which area are you reporting from?'}
+            </p>
             <select
               onChange={(e) => {
                 const area = MANUAL_AREAS.find(a => a.ward_id === e.target.value)
