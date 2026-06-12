@@ -74,6 +74,20 @@ function parseSteps(raw: unknown): SolutionStep[] {
   return []
 }
 
+/** Keep only the newest solution per (ward_id, issue_tag) — weekly synthesis
+ *  creates one row per week, but the UI should show a single current brief. */
+function latestPerWardIssue(rows: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+  const sorted = rows.slice().sort((a, b) =>
+    String(b.generated_at ?? '').localeCompare(String(a.generated_at ?? '')))
+  const seen = new Set<string>()
+  return sorted.filter((s) => {
+    const key = `${s.ward_id}|${s.issue_tag}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 function priorityFromCluster(c: Cluster): number {
   const sev = c.severity_avg ?? 3
   const posts = c.post_count ?? 1
@@ -255,7 +269,7 @@ export async function getWardFull(wardId: string): Promise<WardFull | null> {
           .in('status', ['open', 'in_progress', 'resolved'])
           .order('severity_avg', { ascending: false }),
         supabase.from('solutions')
-          .select('id, ward_id, cluster_id, issue_tag, summary, steps, total_cost_est_inr, timeline_days, priority_score, budget_feasible, status, actioned_at, resolved_at')
+          .select('id, ward_id, cluster_id, issue_tag, summary, steps, total_cost_est_inr, timeline_days, priority_score, budget_feasible, status, actioned_at, resolved_at, generated_at')
           .eq('ward_id', wardId)
           .in('status', ['published', 'actioned', 'resolved']),
         supabase.from('sushaasan_phase3_optimized_solutions')
@@ -300,7 +314,7 @@ export async function getWardFull(wardId: string): Promise<WardFull | null> {
 
       if (dbSolutions && dbSolutions.length > 0) {
         hasRealSolutions = true
-        solutions = (dbSolutions as Record<string, unknown>[]).map((s) => ({
+        solutions = latestPerWardIssue(dbSolutions as Record<string, unknown>[]).map((s) => ({
           id: String(s.id),
           ward_id: String(s.ward_id),
           cluster_id: String(s.cluster_id ?? ''),
@@ -381,7 +395,7 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
           .in('status', ['open', 'in_progress', 'resolved'])
           .order('severity_avg', { ascending: false }),
         supabase.from('solutions')
-          .select('id, ward_id, cluster_id, issue_tag, summary, steps, total_cost_est_inr, timeline_days, priority_score, budget_feasible, status, actioned_at, resolved_at'),
+          .select('id, ward_id, cluster_id, issue_tag, summary, steps, total_cost_est_inr, timeline_days, priority_score, budget_feasible, status, actioned_at, resolved_at, generated_at'),
       ])
 
       if (dbClusters && dbClusters.length > 0) {
@@ -405,7 +419,7 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
       }
 
       if (dbSolutions) {
-        solutions = (dbSolutions as Record<string, unknown>[]).map((s) => ({
+        solutions = latestPerWardIssue(dbSolutions as Record<string, unknown>[]).map((s) => ({
           id: String(s.id),
           ward_id: String(s.ward_id),
           cluster_id: String(s.cluster_id ?? ''),
