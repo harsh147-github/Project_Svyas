@@ -39,7 +39,7 @@ export function LegendBar() {
     <div
       className="flex absolute z-40
                  left-1/2 -translate-x-1/2
-                 bottom-20
+                 bottom-20 md:bottom-[158px]
                  items-center gap-0.5
                  bg-white border border-ink/10 rounded-full
                  px-2.5 py-1.5 shadow-sm
