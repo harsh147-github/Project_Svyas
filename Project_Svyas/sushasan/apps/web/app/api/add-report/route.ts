@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
+import { scrubPII } from '@/lib/pii'
 import { randomUUID, createHash } from 'crypto'
 
 // ── In-memory rate limiter: 10 reports per IP per 10 minutes ─────────────────
@@ -280,6 +281,13 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Scrub PII from everything that reaches a public surface (map centroid,
+  // posts table, success card) — phones, emails, ids, vehicle plates.
+  synthesized.grievance_formal = scrubPII(synthesized.grievance_formal)
+  if (synthesized.civic_ask) synthesized.civic_ask = scrubPII(synthesized.civic_ask)
+  if (synthesized.translated_text_en) synthesized.translated_text_en = scrubPII(synthesized.translated_text_en)
+  const cleanTextPublic = scrubPII(cleanText)
+
   // 3. Persist to Supabase (if configured)
   let postId: string | null = null
 
@@ -311,7 +319,7 @@ export async function POST(req: NextRequest) {
           .from('posts')
           .insert({
             raw_post_id: rawPost.id,
-            text_clean: cleanText,
+            text_clean: cleanTextPublic,
             translated_text_en: synthesized.translated_text_en ?? null,
             issue_tag: synthesized.issue_tag,
             sub_tags: synthesized.sub_tags ?? [],

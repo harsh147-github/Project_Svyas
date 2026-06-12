@@ -11,6 +11,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
+import { scrubPII } from '../pii'
 
 const CLASSIFY_PROMPT = `You are a civic issue classifier for Pune, India.
 Given a social media post, extract structured civic intelligence.
@@ -100,8 +101,8 @@ export const classifyPostsWorker = inngest.createFunction(
           // Requires migration 004_classify_pipeline.sql (UNIQUE on raw_post_id)
           await db.from('posts').upsert({
             raw_post_id: post.id,
-            text_clean: post.raw_text.slice(0, 4000),
-            translated_text_en: parsed.translated_text_en ?? null,
+            text_clean: scrubPII(post.raw_text.slice(0, 4000)),
+            translated_text_en: parsed.translated_text_en ? scrubPII(parsed.translated_text_en) : null,
             issue_tag: parsed.issue_tag ?? 'other',
             sub_tags: parsed.sub_tags ?? [],
             severity: Math.min(5, Math.max(1, Number(parsed.severity) || 3)),
@@ -109,7 +110,7 @@ export const classifyPostsWorker = inngest.createFunction(
             cited_location: parsed.cited_location ?? null,
             cited_time: parsed.cited_time ?? null,
             is_actionable: Boolean(parsed.is_actionable),
-            civic_ask: parsed.civic_ask ?? null,
+            civic_ask: parsed.civic_ask ? scrubPII(parsed.civic_ask) : null,
             ward_id: parsed.ward_id ? String(parsed.ward_id) : null,
             embedding: embedding ?? null,
             classifier_ver: 'sonnet-4-6-v1',
