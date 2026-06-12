@@ -299,8 +299,16 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   // Vercel cron (Sunday 21:00 IST) invokes GET with the CRON_SECRET bearer —
   // run the weekly synthesis across every ward with active clusters.
+  // When CRON_SECRET is not configured, treat unauthenticated GETs as the cron
+  // path (same open-when-unset semantics as /api/cron/daily-pipeline) so the
+  // weekly synthesis never silently 401s; the one-brief-per-(ward,issue,week)
+  // idempotency in runGeneration bounds repeated calls.
   const cronSecret = process.env.CRON_SECRET
-  if (cronSecret && req.headers.get('authorization') === `Bearer ${cronSecret}`) {
+  if (cronSecret) {
+    if (req.headers.get('authorization') === `Bearer ${cronSecret}`) {
+      return runGeneration({ all: true, top_n: 3 })
+    }
+  } else if (!isAdminAuthed(req)) {
     return runGeneration({ all: true, top_n: 3 })
   }
 
