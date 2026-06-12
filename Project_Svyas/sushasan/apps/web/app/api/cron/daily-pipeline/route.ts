@@ -159,7 +159,7 @@ const IG_BANK_A = [
 const IG_BANK_B = [
   'wanowriepune', 'salunkevihar', 'hadapsarpune', 'magarpattacity', 'koregaonpark',
   'kalyaninagarpune', 'kharadipune', 'wagholipune', 'hinjewadipune', 'banerpune',
-  'kothrудpune', 'aundهpune', 'pashanpune', 'warjepune', 'katrajpune',
+  'kothrudpune', 'aundhpune', 'pashanpune', 'warjepune', 'katrajpune',
   'punecivic', 'punewaterissue', 'puneelectricity', 'puneswm', 'puneflooding',
   'punemonsoon', 'puneinfrastructure', 'pmc411', 'punesewage', 'pmcwater',
   'nibmroadpune', 'kondhwabudruk', 'fursungipune', 'manjaripune', 'lohegaonpune',
