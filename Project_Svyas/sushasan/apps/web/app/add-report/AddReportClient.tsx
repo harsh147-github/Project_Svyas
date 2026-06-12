@@ -100,7 +100,7 @@ const WARD_CENTROIDS = [
   { ward_id: '43', name: 'Wanawadi - Kausar Baug',                               lat: 18.4868, lng: 73.8982 },
   { ward_id: '44', name: 'Kale Boratenagar - Sasanenagar',                       lat: 18.4863, lng: 73.9393 },
   { ward_id: '45', name: 'Fursungi',                                             lat: 18.4786, lng: 73.9589 },
-  { ward_id: '46', name: 'Mohammad Wadi - Uruli Devachi',                        lat: 18.4567, lng: 73.9334 },
+  { ward_id: '46', name: 'NIBM–Mohammadwadi'         ,                        lat: 18.4567, lng: 73.9334 },
   { ward_id: '47', name: 'Kondhwa Bk - Yewalewadi',                              lat: 18.4440, lng: 73.8924 },
   { ward_id: '48', name: 'Upper Super Indiranagar',                              lat: 18.4665, lng: 73.8702 },
   { ward_id: '49', name: 'Balajinagar - Shankar Maharaj Math',                   lat: 18.4713, lng: 73.8605 },

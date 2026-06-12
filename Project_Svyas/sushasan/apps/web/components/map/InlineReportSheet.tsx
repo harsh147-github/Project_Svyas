@@ -60,7 +60,7 @@ const CENTROIDS: Record<string, [number, number, string]> = {
   '43': [18.4788, 73.8832, 'Wanowrie–Salunke Vihar'],
   '44': [18.4860, 73.9390, 'Kale Boratenagar–Amanora'],
   '45': [18.4786, 73.9589, 'Fursungi'],
-  '46': [18.4655, 73.9010, 'NIBM–Mohammadwadi'],
+  '46': [18.4567, 73.9334, 'NIBM–Mohammadwadi'],
   '47': [18.4489, 73.8780, 'Kondhwa Budruk–Yewalewadi'],
   '48': [18.4665, 73.8702, 'Indiranagar'],
   '49': [18.4713, 73.8605, 'Balajinagar–Shankar Maharaj'],
