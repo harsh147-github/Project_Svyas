@@ -10,7 +10,7 @@ interface ShareButtonsProps {
 
 export function ShareButtons({ url, title, description, compact = false }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false)
-  const fullUrl = `https://sushasan.in${url}`
+  const fullUrl = `https://sushaasan.in${url}`
   const text = description ? `${title} — ${description}` : title
 
   const shareWhatsApp = () => {

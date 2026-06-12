@@ -3,6 +3,26 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
+// Resize image to max 1024px, encode as JPEG base64
+function resizeAndEncode(file: File, maxPx = 1024): Promise<{ base64: string; mimeType: string }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height))
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.round(img.width * scale)
+      canvas.height = Math.round(img.height * scale)
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(url)
+      resolve({ base64: canvas.toDataURL('image/jpeg', 0.85).split(',')[1], mimeType: 'image/jpeg' })
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load failed')) }
+    img.src = url
+  })
+}
+
 const LANGS = [
   { code: 'en-IN', label: 'English', short: 'EN', whisper: 'en' },
   { code: 'hi-IN', label: 'हिंदी', short: 'हिं', whisper: 'hi' },
@@ -35,64 +55,64 @@ type Result = {
 }
 
 const WARD_CENTROIDS = [
-  { ward_id: '46', name: 'NIBM–Mohammadwadi',           lat: 18.4655, lng: 73.9010 },
-  { ward_id: '47', name: 'Salunke Vihar–Wanowrie',       lat: 18.4670, lng: 73.8950 },
-  { ward_id: '43', name: 'Wanowrie–Kausar Baug',        lat: 18.4788, lng: 73.8832 },
-  { ward_id: '42', name: 'Wanawadi–Ramtekadi',          lat: 18.4730, lng: 73.9140 },
-  { ward_id: '41', name: 'Kondhwa Kh–Mithanagar',       lat: 18.4520, lng: 73.8900 },
-  { ward_id: '44', name: 'Kale Boratenagar–Amanora',    lat: 18.4860, lng: 73.9390 },
-  { ward_id: '25', name: 'Hadapsar Gaothan–Satavwadi',  lat: 18.4988, lng: 73.9432 },
-  { ward_id: '26', name: 'Wanwadi–Vaiduwadi',           lat: 18.5062, lng: 73.9128 },
-  { ward_id: '1',  name: 'Dhanori–Vishrantwadi',        lat: 18.5908, lng: 73.8895 },
-  { ward_id: '2',  name: 'Tingrenagar–Sanjay Park',     lat: 18.5767, lng: 73.8985 },
-  { ward_id: '3',  name: 'Lohegaon–Viman Nagar',        lat: 18.5895, lng: 73.9254 },
-  { ward_id: '4',  name: 'East Kharadi–Wagholi',        lat: 18.5770, lng: 73.9665 },
-  { ward_id: '5',  name: 'West Kharadi–Vadgaon Sheri',  lat: 18.5511, lng: 73.9339 },
-  { ward_id: '6',  name: 'Vadgaon Sheri–Ramwadi',       lat: 18.5502, lng: 73.9203 },
-  { ward_id: '7',  name: 'Kalyani Nagar–Nagpur Chawl',  lat: 18.5527, lng: 73.9049 },
-  { ward_id: '8',  name: 'Kalas–Phulenagar',            lat: 18.5694, lng: 73.8780 },
-  { ward_id: '9',  name: 'Yerwada',                     lat: 18.5479, lng: 73.8835 },
-  { ward_id: '10', name: 'Shivajinagar–Sangamwadi',     lat: 18.5393, lng: 73.8584 },
-  { ward_id: '11', name: 'Bopodi–SPPU',                 lat: 18.5541, lng: 73.8323 },
-  { ward_id: '12', name: 'Aundh–Balewadi',              lat: 18.5639, lng: 73.7918 },
-  { ward_id: '13', name: 'Baner–Sus–Mahalunge',         lat: 18.5584, lng: 73.7680 },
-  { ward_id: '14', name: 'Pashan–Bawdhan',              lat: 18.5257, lng: 73.7775 },
-  { ward_id: '15', name: 'Gokhalenagar–Vadarwadi',      lat: 18.5307, lng: 73.8232 },
-  { ward_id: '16', name: 'Erandwane–Fergusson College', lat: 18.5114, lng: 73.8331 },
-  { ward_id: '17', name: 'Shaniwar Peth–Navi Peth',     lat: 18.5113, lng: 73.8482 },
-  { ward_id: '18', name: 'Kasba Peth–Mandai',           lat: 18.5191, lng: 73.8600 },
-  { ward_id: '19', name: 'Rasta Peth–Nana Peth',        lat: 18.5213, lng: 73.8651 },
-  { ward_id: '20', name: 'Pune Station–Ambedkar Road',  lat: 18.5255, lng: 73.8727 },
-  { ward_id: '21', name: 'Koregaon Park–Mundhwa',       lat: 18.5291, lng: 73.9035 },
-  { ward_id: '22', name: 'Manjari Bk–Shewalwadi',       lat: 18.5087, lng: 73.9714 },
-  { ward_id: '23', name: 'Sadesataranali–Hadapsar',     lat: 18.5135, lng: 73.9425 },
-  { ward_id: '24', name: 'Magarpatta–Sadhana Vidyalaya',lat: 18.5114, lng: 73.9291 },
-  { ward_id: '27', name: 'Kasewadi–Lohiyanagar',        lat: 18.5062, lng: 73.8704 },
-  { ward_id: '28', name: 'Bhavani Peth',                lat: 18.5100, lng: 73.8640 },
-  { ward_id: '29', name: 'Ghorpade Peth–Mandai',        lat: 18.5068, lng: 73.8598 },
-  { ward_id: '30', name: 'Jai Bhavaninagar–Kelewadi',   lat: 18.5145, lng: 73.8162 },
-  { ward_id: '31', name: 'Kothrud Gaothan–Shivtirthnagar', lat: 18.5042, lng: 73.8070 },
-  { ward_id: '32', name: 'Bhusari Colony–Bavdhan',      lat: 18.5113, lng: 73.7901 },
-  { ward_id: '33', name: 'Ideal Colony–Mahatma Society',lat: 18.5006, lng: 73.7953 },
-  { ward_id: '34', name: 'Warje–Kondhave Dhavde',       lat: 18.4713, lng: 73.7614 },
-  { ward_id: '35', name: 'Ramnagar–Uttamnagar',         lat: 18.4737, lng: 73.7914 },
-  { ward_id: '36', name: 'Karvenagar',                  lat: 18.4858, lng: 73.8145 },
-  { ward_id: '37', name: 'Dattawadi–Janata Vasahat',    lat: 18.4955, lng: 73.8402 },
-  { ward_id: '38', name: 'Padmavati–Shivdarshan',       lat: 18.4931, lng: 73.8521 },
-  { ward_id: '39', name: 'Market Yard–Maharshi Nagar',  lat: 18.4902, lng: 73.8636 },
-  { ward_id: '40', name: 'Bibvewadi–Gangadham',         lat: 18.4839, lng: 73.8759 },
-  { ward_id: '45', name: 'Fursungi',                    lat: 18.4786, lng: 73.9589 },
-  { ward_id: '48', name: 'Indiranagar',                 lat: 18.4665, lng: 73.8702 },
-  { ward_id: '49', name: 'Balajinagar–Shankar Maharaj', lat: 18.4713, lng: 73.8605 },
-  { ward_id: '50', name: 'Sahakarnagar–Taljai',         lat: 18.4820, lng: 73.8479 },
-  { ward_id: '51', name: 'Vadgaon Bk–Manikbaug',        lat: 18.4746, lng: 73.8311 },
-  { ward_id: '52', name: 'Nanded City–Sun City',        lat: 18.4746, lng: 73.8169 },
-  { ward_id: '53', name: 'Narhe–Khadakwasla',           lat: 18.4364, lng: 73.7958 },
-  { ward_id: '54', name: 'Dhayari–Ambegaon',            lat: 18.4362, lng: 73.8274 },
-  { ward_id: '55', name: 'Dhankawadi–Ambegaon Pathar',  lat: 18.4605, lng: 73.8376 },
-  { ward_id: '56', name: 'Bharati Vidyapeeth',          lat: 18.4601, lng: 73.8519 },
-  { ward_id: '57', name: 'Sukhsagarnagar',              lat: 18.4513, lng: 73.8668 },
-  { ward_id: '58', name: 'Katraj–Gokulnagar',           lat: 18.4389, lng: 73.8632 },
+  { ward_id: '1',  name: 'Dhanori - Vishrantwadi',                               lat: 18.5908, lng: 73.8895 },
+  { ward_id: '2',  name: 'Tingrenagar - Sanjay Park',                            lat: 18.5767, lng: 73.8985 },
+  { ward_id: '3',  name: 'Lohegaon - Vimannagar',                                lat: 18.5895, lng: 73.9254 },
+  { ward_id: '4',  name: 'East Kharadi - Wagholi',                               lat: 18.5770, lng: 73.9665 },
+  { ward_id: '5',  name: 'West Kharadi - Vadgaon Sheri',                         lat: 18.5511, lng: 73.9339 },
+  { ward_id: '6',  name: 'Vadgaon Sheri - Ramwadi',                              lat: 18.5502, lng: 73.9203 },
+  { ward_id: '7',  name: 'Kalyaninagar - Nagpur Chawl',                          lat: 18.5527, lng: 73.9049 },
+  { ward_id: '8',  name: 'Kalas - Phulenagar',                                   lat: 18.5694, lng: 73.8780 },
+  { ward_id: '9',  name: 'Yerwada',                                              lat: 18.5479, lng: 73.8835 },
+  { ward_id: '10', name: 'Shivajinagar Gaothan - Sangamwadi',                    lat: 18.5393, lng: 73.8584 },
+  { ward_id: '11', name: 'Bopodi - Savitribai Phule Pune University',            lat: 18.5541, lng: 73.8323 },
+  { ward_id: '12', name: 'Aundh - Balewadi',                                     lat: 18.5639, lng: 73.7918 },
+  { ward_id: '13', name: 'Baner - Sus - Mahalunge',                              lat: 18.5584, lng: 73.7680 },
+  { ward_id: '14', name: 'Pashan - Bawdhan',                                     lat: 18.5257, lng: 73.7775 },
+  { ward_id: '15', name: 'Gokhalenagar - Vadarwadi',                             lat: 18.5307, lng: 73.8232 },
+  { ward_id: '16', name: 'Fergusson College - Erandwane',                        lat: 18.5114, lng: 73.8331 },
+  { ward_id: '17', name: 'Shaniwar Peth - Navi Peth',                            lat: 18.5113, lng: 73.8482 },
+  { ward_id: '18', name: 'Shaniwarwada - Kasba Peth',                            lat: 18.5191, lng: 73.8600 },
+  { ward_id: '19', name: 'CSM Stadium - Rasta Peth',                             lat: 18.5213, lng: 73.8651 },
+  { ward_id: '20', name: 'Pune Station - Ramabai Ambedkar Road',                 lat: 18.5255, lng: 73.8727 },
+  { ward_id: '21', name: 'Koregaon Park - Mundhwa',                              lat: 18.5291, lng: 73.9035 },
+  { ward_id: '22', name: 'Manjari Bk - Shewalwadi',                              lat: 18.5087, lng: 73.9714 },
+  { ward_id: '23', name: 'Sadesataranali - Aakashwani',                          lat: 18.5135, lng: 73.9425 },
+  { ward_id: '24', name: 'Magarpatta - Sadhana Vidyalaya',                       lat: 18.5114, lng: 73.9291 },
+  { ward_id: '25', name: 'Hadapsar Gaothan - Satavwadi',                         lat: 18.4975, lng: 73.9395 },
+  { ward_id: '26', name: 'Wanwadi Gaothan - Vaiduwadi',                          lat: 18.5072, lng: 73.9087 },
+  { ward_id: '27', name: 'Kasewadi - Lohiyanagar',                               lat: 18.5062, lng: 73.8704 },
+  { ward_id: '28', name: 'Bhavani Peth - Mahatma Phule Smarak',                  lat: 18.5100, lng: 73.8640 },
+  { ward_id: '29', name: 'Ghorpade Peth - Mahatma Phule Mandai',                 lat: 18.5068, lng: 73.8598 },
+  { ward_id: '30', name: 'Jai Bhavaninagar - Kelewadi',                          lat: 18.5145, lng: 73.8162 },
+  { ward_id: '31', name: 'Kothrud Gaothan - Shivtirthnagar',                     lat: 18.5042, lng: 73.8070 },
+  { ward_id: '32', name: 'Bhusari Colony - Bavdhan Khurd',                       lat: 18.5113, lng: 73.7901 },
+  { ward_id: '33', name: 'Ideal Colony - Mahatma Society',                       lat: 18.5006, lng: 73.7953 },
+  { ward_id: '34', name: 'Warje - Kondhave Dhavde',                              lat: 18.4713, lng: 73.7614 },
+  { ward_id: '35', name: 'Ramnagar - Uttamnagar Shivane',                        lat: 18.4737, lng: 73.7914 },
+  { ward_id: '36', name: 'Karvenagar',                                           lat: 18.4858, lng: 73.8145 },
+  { ward_id: '37', name: 'Janata Vasahat - Dattawadi',                           lat: 18.4955, lng: 73.8402 },
+  { ward_id: '38', name: 'Shivdarshan - Padmavati',                              lat: 18.4931, lng: 73.8521 },
+  { ward_id: '39', name: 'Market Yard - Maharshinagar',                          lat: 18.4902, lng: 73.8636 },
+  { ward_id: '40', name: 'Bibvewadi - Gangadham',                                lat: 18.4839, lng: 73.8759 },
+  { ward_id: '41', name: 'Kondhwa Kh - Mithanagar',                              lat: 18.4726, lng: 73.8840 },
+  { ward_id: '42', name: 'Ramtekadi - Sayyadnagar',                              lat: 18.4775, lng: 73.9118 },
+  { ward_id: '43', name: 'Wanawadi - Kausar Baug',                               lat: 18.4868, lng: 73.8982 },
+  { ward_id: '44', name: 'Kale Boratenagar - Sasanenagar',                       lat: 18.4863, lng: 73.9393 },
+  { ward_id: '45', name: 'Fursungi',                                             lat: 18.4786, lng: 73.9589 },
+  { ward_id: '46', name: 'Mohammad Wadi - Uruli Devachi',                        lat: 18.4567, lng: 73.9334 },
+  { ward_id: '47', name: 'Kondhwa Bk - Yewalewadi',                              lat: 18.4440, lng: 73.8924 },
+  { ward_id: '48', name: 'Upper Super Indiranagar',                              lat: 18.4665, lng: 73.8702 },
+  { ward_id: '49', name: 'Balajinagar - Shankar Maharaj Math',                   lat: 18.4713, lng: 73.8605 },
+  { ward_id: '50', name: 'Sahakarnagar - Taljai',                                lat: 18.4820, lng: 73.8479 },
+  { ward_id: '51', name: 'Vadgaon Bk - Manikbaug',                              lat: 18.4746, lng: 73.8311 },
+  { ward_id: '52', name: 'Nanded City - Sun City',                               lat: 18.4746, lng: 73.8169 },
+  { ward_id: '53', name: 'Khadakwasla - Narhe',                                  lat: 18.4364, lng: 73.7958 },
+  { ward_id: '54', name: 'Dhayari - Ambegaon',                                   lat: 18.4362, lng: 73.8274 },
+  { ward_id: '55', name: 'Dhankawadi - Ambegaon Pathar',                         lat: 18.4605, lng: 73.8376 },
+  { ward_id: '56', name: 'Chaitanyanagar - Bharati Vidyapeeth',                  lat: 18.4601, lng: 73.8519 },
+  { ward_id: '57', name: 'Sukhsagarnagar - Rajiv Gandhinagar',                   lat: 18.4513, lng: 73.8668 },
+  { ward_id: '58', name: 'Katraj - Gokulnagar',                                  lat: 18.4389, lng: 73.8632 },
 ]
 
 function nearestWard(lat: number, lng: number) {
@@ -105,70 +125,71 @@ function nearestWard(lat: number, lng: number) {
 }
 
 const MANUAL_AREAS = [
-  // North-East Pune
+  // Pilot wards — data-dense
+  { ward_id: '46', name: 'NIBM Road / Mohammadwadi / Undri' },
+  { ward_id: '47', name: 'Kondhwa Budruk / Yewalewadi' },
+  { ward_id: '43', name: 'Wanawadi / Kausar Baug / Salunke Vihar' },
+  { ward_id: '42', name: 'Ramtekadi / Sayyadnagar' },
+  { ward_id: '41', name: 'Kondhwa Khurd / Mithanagar' },
+  { ward_id: '44', name: 'Kale Boratenagar / Amanora / Fursungi' },
+  { ward_id: '25', name: 'Hadapsar Gaothan / Satavwadi' },
+  { ward_id: '26', name: 'Wanwadi Gaothan / Vaiduwadi' },
+  // East Pune
+  { ward_id: '22', name: 'Manjari / Shewalwadi' },
+  { ward_id: '23', name: 'Sadesataranali / Aakashwani' },
+  { ward_id: '24', name: 'Magarpatta / Sadhana Vidyalaya' },
+  { ward_id: '45', name: 'Fursungi' },
+  { ward_id: '5',  name: 'West Kharadi / Vadgaon Sheri' },
+  { ward_id: '4',  name: 'East Kharadi / Wagholi' },
+  { ward_id: '6',  name: 'Viman Nagar / Ramwadi' },
+  { ward_id: '7',  name: 'Kalyaninagar / Kalyani Nagar' },
+  { ward_id: '21', name: 'Koregaon Park / Mundhwa' },
+  // North Pune
   { ward_id: '1',  name: 'Dhanori / Vishrantwadi' },
   { ward_id: '2',  name: 'Tingrenagar / Sanjay Park' },
-  { ward_id: '3',  name: 'Lohegaon / Viman Nagar' },
-  { ward_id: '4',  name: 'Kharadi / Wagholi' },
-  { ward_id: '5',  name: 'West Kharadi / Vadgaon Sheri' },
-  { ward_id: '6',  name: 'Ramwadi / Vadgaon Sheri' },
-  { ward_id: '7',  name: 'Kalyani Nagar' },
+  { ward_id: '3',  name: 'Lohegaon / Vimannagar' },
   { ward_id: '8',  name: 'Kalas / Phulenagar' },
   { ward_id: '9',  name: 'Yerwada' },
-  // North-West / West
   { ward_id: '10', name: 'Shivajinagar / Sangamwadi' },
-  { ward_id: '11', name: 'Bopodi / University Campus' },
+  { ward_id: '11', name: 'Bopodi / Khadki / University' },
+  { ward_id: '20', name: 'Pune Station / Camp / Ramabai Road' },
+  // West / Baner-Aundh belt
   { ward_id: '12', name: 'Aundh / Balewadi' },
   { ward_id: '13', name: 'Baner / Sus / Mahalunge' },
   { ward_id: '14', name: 'Pashan / Bawdhan' },
   { ward_id: '15', name: 'Gokhalenagar / Vadarwadi' },
-  { ward_id: '16', name: 'Erandwane / FC Road' },
-  // Central (Peths)
+  { ward_id: '16', name: 'FC Road / Erandwane' },
+  // Old City / Peths
   { ward_id: '17', name: 'Shaniwar Peth / Navi Peth' },
-  { ward_id: '18', name: 'Kasba Peth / Mandai' },
-  { ward_id: '19', name: 'Rasta Peth / Nana Peth' },
-  { ward_id: '20', name: 'Pune Station / Ambedkar Road' },
+  { ward_id: '18', name: 'Shaniwarwada / Kasba Peth' },
+  { ward_id: '19', name: 'CSM Stadium / Rasta Peth' },
   { ward_id: '27', name: 'Kasewadi / Lohiyanagar' },
-  { ward_id: '28', name: 'Bhavani Peth' },
-  { ward_id: '29', name: 'Ghorpade Peth' },
-  { ward_id: '30', name: 'Jai Bhavaninagar' },
-  // East Pune
-  { ward_id: '21', name: 'Koregaon Park / Mundhwa' },
-  { ward_id: '22', name: 'Manjari / Shewalwadi' },
-  { ward_id: '23', name: 'Sadesataranali / Hadapsar' },
-  { ward_id: '24', name: 'Magarpatta / Hadapsar South' },
-  { ward_id: '25', name: 'Hadapsar Gaothan / Satavwadi' },
-  { ward_id: '26', name: 'Wanwadi / Vaiduwadi' },
-  { ward_id: '45', name: 'Fursungi' },
-  // Kothrud / South-West
+  { ward_id: '28', name: 'Bhavani Peth / Mahatma Phule Smarak' },
+  { ward_id: '29', name: 'Ghorpade Peth / Mandai area' },
+  // Kothrud belt
+  { ward_id: '30', name: 'Jai Bhavaninagar / Kelewadi' },
   { ward_id: '31', name: 'Kothrud / Shivtirthnagar' },
-  { ward_id: '32', name: 'Bhusari Colony / Bavdhan' },
+  { ward_id: '32', name: 'Bhusari Colony / Bavdhan Khurd' },
   { ward_id: '33', name: 'Ideal Colony / Mahatma Society' },
   { ward_id: '34', name: 'Warje / Kondhave Dhavde' },
-  { ward_id: '35', name: 'Ramnagar / Uttamnagar' },
+  { ward_id: '35', name: 'Ramnagar / Uttamnagar / Shivane' },
   { ward_id: '36', name: 'Karvenagar' },
+  // South / Central belt
   { ward_id: '37', name: 'Dattawadi / Janata Vasahat' },
   { ward_id: '38', name: 'Padmavati / Shivdarshan' },
-  { ward_id: '39', name: 'Market Yard / Maharshi Nagar' },
+  { ward_id: '39', name: 'Market Yard / Maharshinagar' },
   { ward_id: '40', name: 'Bibvewadi / Gangadham' },
-  // Pilot belt — NIBM / Salunke Vihar / Wanowrie
-  { ward_id: '46', name: 'NIBM Road / Mohammadwadi' },
-  { ward_id: '47', name: 'Salunke Vihar / Wanowrie' },
-  { ward_id: '43', name: 'Wanowrie – Kausar Baug' },
-  { ward_id: '41', name: 'Kondhwa Khurd / Mithanagar' },
-  { ward_id: '44', name: 'Undri / Pisoli / Amanora' },
-  { ward_id: '42', name: 'Wanawadi / Ramtekadi' },
-  // South Pune
-  { ward_id: '48', name: 'Indiranagar' },
-  { ward_id: '49', name: 'Balajinagar / Shankar Maharaj' },
+  { ward_id: '48', name: 'Indiranagar (Upper)' },
+  { ward_id: '49', name: 'Balajinagar / Shankar Maharaj Math' },
   { ward_id: '50', name: 'Sahakarnagar / Taljai' },
   { ward_id: '51', name: 'Vadgaon Budruk / Manikbaug' },
-  { ward_id: '52', name: 'Nanded City / Nanded Village' },
+  { ward_id: '52', name: 'Nanded City / Sun City' },
+  // Far South / Narhe-Katraj belt
   { ward_id: '53', name: 'Narhe / Khadakwasla' },
   { ward_id: '54', name: 'Dhayari / Ambegaon' },
   { ward_id: '55', name: 'Dhankawadi / Ambegaon Pathar' },
-  { ward_id: '56', name: 'Bharati Vidyapeeth / Katraj' },
-  { ward_id: '57', name: 'Sukhsagarnagar' },
+  { ward_id: '56', name: 'Bharati Vidyapeeth / Chaitanyanagar' },
+  { ward_id: '57', name: 'Sukhsagarnagar / Rajiv Gandhi Nagar' },
   { ward_id: '58', name: 'Katraj / Gokulnagar' },
 ]
 
@@ -204,12 +225,15 @@ export function AddReportClient() {
   const [result, setResult] = useState<Result | null>(null)
   const [voiceActive, setVoiceActive] = useState(false)
   const [transcribing, setTranscribing] = useState(false)
+  const [voiceError, setVoiceError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
   const [mediaSupported, setMediaSupported] = useState(false)
   const [voiceLang, setVoiceLang] = useState('en-IN')
   const [textFocused, setTextFocused] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [photo, setPhoto] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const recognitionRef = useRef<any>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -326,9 +350,18 @@ export function AddReportClient() {
       }
       recorder.start()
       mediaRecorderRef.current = recorder
-    } catch {
+    } catch (err) {
       voiceActiveRef.current = false
       setVoiceActive(false)
+      if (err instanceof Error) {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setVoiceError('Microphone access denied. Please allow microphone access in your browser settings and retry.')
+        } else if (err.name === 'NotFoundError') {
+          setVoiceError('No microphone found. Please connect a microphone and retry.')
+        } else {
+          setVoiceError('Could not start recording. Please try again.')
+        }
+      }
     }
   }
 
@@ -346,11 +379,26 @@ export function AddReportClient() {
     if (useWhisper && !mediaSupported) return
     voiceActiveRef.current = true
     setVoiceActive(true)
+    setVoiceError(null)
     if (useWhisper) startWhisperRecording()
     else startBrowserRecognition(voiceLang)
   }
 
   const canSpeak = voiceSupported || mediaSupported
+
+  function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (photoPreview) URL.revokeObjectURL(photoPreview)
+    setPhoto(file)
+    setPhotoPreview(URL.createObjectURL(file))
+    e.target.value = ''
+  }
+
+  function clearPhoto() {
+    if (photoPreview) URL.revokeObjectURL(photoPreview)
+    setPhoto(null); setPhotoPreview(null)
+  }
 
   async function handleSubmit() {
     if (text.trim().length < 5 || submitState !== 'idle') return
@@ -358,11 +406,21 @@ export function AddReportClient() {
     const lat = location.status === 'found' ? location.lat : null
     const lng = location.status === 'found' ? location.lng : null
     const wardId = location.status === 'found' || location.status === 'manual' ? location.wardId : null
+
+    let photoBase64: string | null = null
+    let photoMimeType: string | null = null
+    if (photo) {
+      try {
+        const enc = await resizeAndEncode(photo)
+        photoBase64 = enc.base64; photoMimeType = enc.mimeType
+      } catch { /* skip photo */ }
+    }
+
     try {
       const res = await fetch('/api/add-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text.trim(), lat, lng, wardId }),
+        body: JSON.stringify({ text: text.trim(), lat, lng, wardId, ...(photoBase64 ? { photoBase64, photoMimeType } : {}) }),
       })
       if (!res.ok) throw new Error(`${res.status}`)
       const reportResult = await res.json()
@@ -405,9 +463,9 @@ export function AddReportClient() {
     async function handleShare() {
       const shareText = `I just flagged a civic issue in ${result!.wardName} on Sushaasan — the Pune civic intelligence map 🗺️\n\n"${result!.grievanceFormal}"\n\nSee it at sushasan.in`
       if (navigator.share) {
-        try { await navigator.share({ title: 'Sushaasan — Civic Signal', text: shareText, url: 'https://sushasan.in' }) } catch { /* dismissed */ }
+        try { await navigator.share({ title: 'Sushaasan — Civic Signal', text: shareText, url: 'https://sushaasan.in' }) } catch { /* dismissed */ }
       } else {
-        await navigator.clipboard.writeText('https://sushasan.in')
+        await navigator.clipboard.writeText('https://sushaasan.in')
         setCopied(true); setTimeout(() => setCopied(false), 2000)
       }
     }
@@ -433,7 +491,7 @@ export function AddReportClient() {
           {/* THE FORMAL GRIEVANCE — hero element */}
           <div className="rounded-2xl overflow-hidden border border-ink/10 shadow-sm bg-white">
             <div className="px-4 pt-3 pb-1 flex items-center gap-2 border-b border-ink/6">
-              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: color }} />
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
               <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-ink/35">
                 Official grievance · appearing on map
               </span>
@@ -535,8 +593,8 @@ export function AddReportClient() {
 
   return (
     <main className="min-h-screen bg-paper text-ink">
-      <div className="max-w-lg mx-auto px-5 flex flex-col"
-           style={{ minHeight: '100dvh', paddingTop: 24, paddingBottom: 40 }}>
+      <div className="w-full max-w-lg mx-auto px-5 flex flex-col"
+           style={{ minHeight: '100dvh', paddingTop: 'max(1.5rem, env(safe-area-inset-top))', paddingBottom: 40 }}>
 
         {/* Top nav */}
         <div className="flex items-center justify-between mb-10">
@@ -636,6 +694,46 @@ export function AddReportClient() {
             </div>
           </div>
 
+          {/* ── PHOTO section ────────────────────────────────────────── */}
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-[11px] font-bold tracking-[0.28em] uppercase text-ink/35">
+                Add a photo
+              </span>
+              <div className="flex-1 h-px bg-ink/10" />
+              <span className="text-ink/20 text-[10px]">optional</span>
+            </div>
+            {photoPreview ? (
+              <div className="flex items-center gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <div className="relative flex-shrink-0">
+                  <img src={photoPreview} alt="Attached"
+                    className="w-20 h-20 object-cover rounded-2xl border border-ink/10" />
+                  <button onClick={clearPhoto} aria-label="Remove photo"
+                    className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-ink/70 text-white text-xs flex items-center justify-center font-bold">
+                    ×
+                  </button>
+                </div>
+                <p className="text-[13px] text-ink/60 leading-relaxed">
+                  Photo attached — AI will read the image to write a better grievance.
+                </p>
+              </div>
+            ) : (
+              <div className="flex gap-3">
+                <label className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-ink/10 bg-white cursor-pointer hover:border-ink/20 transition-colors text-[14px] font-semibold text-ink">
+                  📷 Camera
+                  <input type="file" accept="image/*" capture="environment"
+                    onChange={handlePhotoChange} className="hidden" />
+                </label>
+                <label className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-ink/10 bg-white cursor-pointer hover:border-ink/20 transition-colors text-[14px] font-semibold text-ink">
+                  🖼 Gallery
+                  <input type="file" accept="image/*"
+                    onChange={handlePhotoChange} className="hidden" />
+                </label>
+              </div>
+            )}
+          </div>
+
           {/* ── SPEAK section ────────────────────────────────────────── */}
           {canSpeak && (
             <div>
@@ -711,6 +809,13 @@ export function AddReportClient() {
                   {useWhisperForLang && (
                     <p className="text-center text-[11px] text-india-green/80 font-medium mt-1">
                       ✦ Uses Sarvam / Whisper AI — optimised for Indian languages
+                    </p>
+                  )}
+
+                  {/* Microphone permission / device error */}
+                  {voiceError && (
+                    <p role="alert" className="text-[12px] text-red-600 mt-1 text-center leading-snug">
+                      {voiceError}
                     </p>
                   )}
                 </div>

@@ -37,7 +37,7 @@ export function LegendBar() {
 
   return (
     <div
-      className="flex absolute z-40
+      className="hidden md:flex absolute z-40
                  left-1/2 -translate-x-1/2
                  bottom-20 md:bottom-[158px]
                  items-center gap-0.5

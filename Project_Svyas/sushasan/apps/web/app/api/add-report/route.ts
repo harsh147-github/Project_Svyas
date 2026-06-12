@@ -28,7 +28,7 @@ function checkRateLimit(ip: string): boolean {
 const WARD_CENTROIDS = [
   // Pilot wards
   { ward_id: '46', name: 'NIBM–Mohammadwadi',           lat: 18.4655, lng: 73.9010 },
-  { ward_id: '47', name: 'Salunke Vihar–Wanowrie',       lat: 18.4670, lng: 73.8950 },
+  { ward_id: '47', name: 'Kondhwa Budruk–Yewalewadi',   lat: 18.4489, lng: 73.8780 },
   { ward_id: '43', name: 'Wanowrie–Kausar Baug',        lat: 18.4788, lng: 73.8832 },
   { ward_id: '42', name: 'Wanawadi–Ramtekadi',          lat: 18.4730, lng: 73.9140 },
   { ward_id: '41', name: 'Kondhwa Kh–Mithanagar',       lat: 18.4520, lng: 73.8900 },
@@ -155,14 +155,14 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  let body: { text?: string; lat?: number; lng?: number; wardId?: string }
+  let body: { text?: string; lat?: number; lng?: number; wardId?: string; photoBase64?: string; photoMimeType?: string }
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { text, lat, lng, wardId } = body
+  const { text, lat, lng, wardId, photoBase64, photoMimeType } = body
   if (!text || typeof text !== 'string' || text.trim().length < 3) {
     return NextResponse.json({ error: 'Text too short' }, { status: 400 })
   }
@@ -183,11 +183,12 @@ export async function POST(req: NextRequest) {
     resolvedLng = lng + (Math.random() - 0.5) * 0.003
     resolvedLat = lat + (Math.random() - 0.5) * 0.003
   } else if (wardId) {
-    const w = WARD_CENTROIDS.find(c => c.ward_id === wardId) ?? WARD_CENTROIDS[0]
-    resolvedWardId = wardId
-    resolvedWardName = w.name
-    resolvedLng = w.lng + (Math.random() - 0.5) * 0.006
-    resolvedLat = w.lat + (Math.random() - 0.5) * 0.006
+    const w = WARD_CENTROIDS.find(c => c.ward_id === wardId)
+    const fallback = w ?? WARD_CENTROIDS[0]
+    resolvedWardId = fallback.ward_id   // use fallback id, not the invalid incoming wardId
+    resolvedWardName = fallback.name
+    resolvedLng = (w ?? fallback).lng + (Math.random() - 0.5) * 0.006
+    resolvedLat = (w ?? fallback).lat + (Math.random() - 0.5) * 0.006
   } else {
     const w = WARD_CENTROIDS[0]
     resolvedWardId = w.ward_id
@@ -238,11 +239,34 @@ export async function POST(req: NextRequest) {
         ? `[GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)} → Ward ${resolvedWardId}, ${resolvedWardName}]\n\n`
         : `[Ward: ${resolvedWardId}, ${resolvedWardName}]\n\n`
 
+      // Whitelist photoMimeType — never pass arbitrary user-supplied strings to Claude
+      const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const
+      type AllowedImageType = typeof ALLOWED_IMAGE_TYPES[number]
+      const safePhotoMime: AllowedImageType = ALLOWED_IMAGE_TYPES.includes(photoMimeType as AllowedImageType)
+        ? (photoMimeType as AllowedImageType)
+        : 'image/jpeg'
+
+      // Build user content — text + optional photo for vision
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const userContent: any = photoBase64
+        ? [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: safePhotoMime,
+                data: photoBase64,
+              },
+            },
+            { type: 'text', text: `${context}${cleanText}\n\n[A photo of the issue has been attached above — use it to enrich the grievance description with specific visual details like exact damage, location markers, or severity indicators visible in the image.]` },
+          ]
+        : `${context}${cleanText}`
+
       const msg = await client.messages.create({
         model: 'claude-sonnet-4-6',
         max_tokens: 800,
         system: SYNTHESIZE_SYSTEM,
-        messages: [{ role: 'user', content: `${context}${cleanText}` }],
+        messages: [{ role: 'user', content: userContent }],
       })
       const raw = (msg.content[0] as { type: string; text: string }).text.trim()
       const jsonStr = raw.startsWith('```')
@@ -306,23 +330,17 @@ export async function POST(req: NextRequest) {
           console.error('[add-report] posts insert:', postErr.message)
         } else if (post) {
           postId = post.id
-          // Bump or create a cluster for this ward+issue
+          // Bump or create a cluster for this ward+issue (atomic increment via RPC)
           const { data: clusterRows } = await db
             .from('clusters')
-            .select('id, post_count')
+            .select('id')
             .eq('ward_id', resolvedWardId)
             .eq('issue_tag', synthesized.issue_tag)
             .limit(1)
 
           if (clusterRows && clusterRows.length > 0) {
-            const row = clusterRows[0] as { id: string; post_count: number }
-            await db
-              .from('clusters')
-              .update({
-                post_count: (row.post_count ?? 0) + 1,
-                updated_at: new Date().toISOString(),
-              })
-              .eq('id', row.id)
+            const row = clusterRows[0] as { id: string }
+            await db.rpc('increment_cluster_post_count', { p_cluster_id: row.id })
           } else {
             // Create a new cluster from this single report
             await db.from('clusters').insert({
@@ -331,7 +349,7 @@ export async function POST(req: NextRequest) {
               centroid_text: synthesized.grievance_formal,
               post_count: 1,
               severity_avg: synthesized.severity,
-              status: 'signal_detected',
+              status: 'open',
               lng: resolvedLng,
               lat: resolvedLat,
             })

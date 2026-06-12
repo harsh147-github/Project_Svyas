@@ -13,10 +13,19 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { wid: string } }
 ) {
-  const data = await getWardFull(params.wid)
-  if (!data) return NextResponse.json({ solutions: [] })
-  const solutions = data.solutions
-    .slice()
-    .sort((a, b) => (b.priority_score ?? 0) - (a.priority_score ?? 0))
-  return NextResponse.json({ solutions, hasRealSolutions: data.hasRealSolutions })
+  // Validate ward id is numeric
+  if (!/^\d+$/.test(params.wid)) {
+    return NextResponse.json({ error: 'Invalid ward id' }, { status: 400 })
+  }
+  try {
+    const data = await getWardFull(params.wid)
+    if (!data) return NextResponse.json({ solutions: [] }, { status: 404 })
+    const solutions = data.solutions
+      .slice()
+      .sort((a, b) => (b.priority_score ?? 0) - (a.priority_score ?? 0))
+    return NextResponse.json({ solutions, hasRealSolutions: data.hasRealSolutions })
+  } catch (err) {
+    console.error('[solution] getWardFull error:', err)
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
 }

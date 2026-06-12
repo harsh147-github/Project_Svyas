@@ -82,7 +82,8 @@ export default function EthicsPage() {
 
       {/* ── Nav ──────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-ink/10 bg-white/90 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between"
+             style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-saffron flex items-center justify-center
                             text-white font-serif font-bold text-sm">स</div>
@@ -249,7 +250,7 @@ export default function EthicsPage() {
             <Link href="/dashboard/nibm"
                   className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white border border-ink/10
                              text-ink-2 hover:border-saffron/30">
-              NIBM flagship pilot
+              View featured brief
             </Link>
             <Link href="/"
                   className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white border border-ink/10

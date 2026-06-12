@@ -14,6 +14,7 @@ export function FirstVisitOverlay() {
 
   function dismiss() {
     localStorage.setItem(STORAGE_KEY, '1')
+    sessionStorage.setItem('sush:mobile-onboarding-done', '1')
     setShow(false)
   }
 
@@ -34,6 +35,7 @@ export function FirstVisitOverlay() {
         backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '20px',
+        paddingTop: 'max(20px, env(safe-area-inset-top))',
         animation: 'fadeIn 0.3s ease',
       }}
       onClick={(e) => { if (e.target === e.currentTarget) dismiss() }}
@@ -43,20 +45,20 @@ export function FirstVisitOverlay() {
         style={{
           background: '#ffffff',
           borderRadius: 24,
-          padding: '36px 32px 28px',
+          padding: 'max(2rem, env(safe-area-inset-top)) clamp(1rem, 5vw, 2rem) 1.75rem',
           maxWidth: 440,
-          width: '100%',
+          width: 'min(440px, calc(100vw - 2rem))',
           boxShadow: '0 24px 80px rgba(11,31,58,0.22)',
           position: 'relative',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close */}
+        {/* Close — 44×44 tap target */}
         <button
           onClick={dismiss}
           style={{
-            position: 'absolute', top: 16, right: 16,
-            width: 32, height: 32, borderRadius: '50%',
+            position: 'absolute', top: 8, right: 8,
+            width: 44, height: 44, borderRadius: '50%',
             background: 'rgba(10,10,10,0.06)', border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 14, color: 'rgba(10,10,10,0.5)',
@@ -90,7 +92,7 @@ export function FirstVisitOverlay() {
           Sushaasan reads public posts about civic issues and turns them into structured, budgeted briefs for your ward office — so problems get solved, not just reported.
         </p>
 
-        {/* Pilot badge */}
+        {/* Coverage badge */}
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           background: 'rgba(255,153,51,0.08)', border: '1px solid rgba(255,153,51,0.25)',
@@ -98,7 +100,7 @@ export function FirstVisitOverlay() {
         }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#138808', display: 'inline-block' }} />
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.5)' }}>
-            Pilot · NIBM · Salunke Vihar · Wanowrie
+            All 58 PMC Wards · Pune
           </span>
         </div>
 
@@ -110,6 +112,7 @@ export function FirstVisitOverlay() {
             background: '#FF9933', color: '#fff', fontWeight: 700, fontSize: 15,
             cursor: 'pointer', letterSpacing: '0.01em',
             boxShadow: '0 4px 18px rgba(255,153,51,0.4)',
+            minHeight: 44,
           }}
         >
           See the Map ↓

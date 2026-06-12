@@ -2,8 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getDashboardSnapshot } from '@/lib/supabase-data'
 
-export const revalidate = 120
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Transparency Dashboard',
@@ -90,7 +89,8 @@ export default async function DashboardPage() {
 
       {/* ── Nav ──────────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-ink/10 bg-white/90 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between"
+             style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-saffron flex items-center justify-center
                             text-white font-serif font-bold text-sm">स</div>
@@ -101,11 +101,11 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.18em]
                              uppercase px-2.5 py-1 rounded-full bg-india-green/8 text-india-green border border-india-green/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-india-green animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-india-green" />
               {source === 'supabase' ? 'Live · auto-updated' : 'Pilot view'}
             </span>
             {lastUpdated && (
-              <span className="hidden md:inline-flex text-[10px] font-medium text-ink-3">
+              <span className="hidden md:inline-flex text-[11px] font-medium text-ink-3">
                 Refreshed {formatRefreshed(lastUpdated)}
               </span>
             )}
@@ -153,7 +153,7 @@ export default async function DashboardPage() {
 
           {/* Pune Civic Pilots */}
           <div>
-            <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-2">
+            <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-2">
               Pune civic pilots
             </div>
             <div className="grid sm:grid-cols-3 gap-3 stagger-children">
@@ -199,7 +199,7 @@ export default async function DashboardPage() {
                       Live brief
                     </span>
                   </div>
-                  <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-ink-4 mb-1">
+                  <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-ink-4 mb-1">
                     {p.ward}
                   </div>
                   <h3 className="font-serif text-xl font-semibold text-ink leading-tight mb-2 group-hover:text-saffron-dark transition-colors">
@@ -225,7 +225,7 @@ export default async function DashboardPage() {
 
           {/* National Policy Pilot — separate group */}
           <div>
-            <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-2">
+            <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-ink-3 mb-2">
               National policy pilot
             </div>
             <Link href="/dashboard/e20-ethanol"
@@ -264,7 +264,7 @@ export default async function DashboardPage() {
                   ].map((m) => (
                     <div key={m.l} className="bg-paper rounded-xl border border-ink/6 px-3 py-2">
                       <div className="font-serif text-lg font-bold text-ink leading-none">{m.v}</div>
-                      <div className="text-[10px] text-ink-3 mt-1">{m.l}</div>
+                      <div className="text-[11px] text-ink-3 mt-1">{m.l}</div>
                     </div>
                   ))}
                 </div>
@@ -287,7 +287,7 @@ export default async function DashboardPage() {
             <div key={k.label} className="stat-card bg-white rounded-2xl border border-ink/8 shadow-sm p-5">
               <div className="font-serif text-3xl font-bold text-ink leading-none">{k.value}</div>
               <div className="text-[11px] font-medium text-ink-2 mt-2 leading-snug">{k.label}</div>
-              <div className="text-[10px] text-ink-4 mt-1">{k.sub}</div>
+              <div className="text-[11px] text-ink-4 mt-1">{k.sub}</div>
             </div>
           ))}
         </section>
@@ -298,8 +298,8 @@ export default async function DashboardPage() {
             <h2 className="font-serif text-base font-semibold text-ink">
               What residents are flagging this cycle
             </h2>
-            <span className="text-[10px] text-ink-3">
-              Share of {totalReports} reports across all pilot wards
+            <span className="text-[11px] text-ink-3">
+              Share of {totalReports} reports across all active wards
             </span>
           </div>
           <div className="h-2.5 w-full bg-ink/6 rounded-full overflow-hidden flex">
@@ -315,7 +315,7 @@ export default async function DashboardPage() {
                      title={`${ISSUE_LABEL[tag]}: ${n}`} />
               ))}
           </div>
-          <div className="flex flex-wrap gap-3 text-[10px]">
+          <div className="flex flex-wrap gap-3 text-[11px]">
             {Object.entries(mixCounts)
               .sort(([, a], [, b]) => b - a)
               .map(([tag, n]) => (
@@ -338,7 +338,7 @@ export default async function DashboardPage() {
             <section key={ward.id} className="space-y-4">
               <div className="flex items-baseline justify-between flex-wrap gap-3">
                 <div>
-                  <div className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink-4">
+                  <div className="text-[11px] font-bold tracking-[0.18em] uppercase text-ink-4">
                     Ward {ward.ward_number}
                   </div>
                   <h2 className="font-serif text-2xl font-semibold text-ink leading-tight">
@@ -374,12 +374,12 @@ export default async function DashboardPage() {
                             {ISSUE_LABEL[c.issue_tag] ?? c.issue_tag}
                           </span>
                           <StatusBadge status={c.status} />
-                          <span className="text-[10px] text-ink-4 ml-auto">
-                            {c.post_count} reports · sev {c.severity_avg.toFixed(1)}
+                          <span className="text-[11px] text-ink-4 ml-auto">
+                            {c.post_count} reports · sev {(c.severity_avg ?? 0).toFixed(1)}
                           </span>
                         </div>
 
-                        <p className="text-[13px] text-ink-2 leading-relaxed">{c.centroid_text}</p>
+                        <p className="text-[13px] text-ink-2 leading-relaxed">{c.centroid_text || 'AI brief pending…'}</p>
 
                         {/* Solution preview */}
                         {sol && (
@@ -392,12 +392,12 @@ export default async function DashboardPage() {
                               {sol.summary}
                             </p>
                             <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-ink/5
-                                            text-[10px] text-ink-3">
+                                            text-[11px] text-ink-3">
                               <span><b className="text-ink-2">{fmt(sol.total_cost_est_inr)}</b> est.</span>
                               <span aria-hidden="true">·</span>
                               <span><b className="text-ink-2">{sol.timeline_days}d</b> timeline</span>
                               <span aria-hidden="true">·</span>
-                              <span><b className="text-ink-2">{sol.steps.length}</b> steps</span>
+                              <span><b className="text-ink-2">{(sol.steps ?? []).length}</b> steps</span>
                               {sol.budget_feasible && (
                                 <span className="ml-auto text-india-green font-semibold">✓ Within budget</span>
                               )}
@@ -419,17 +419,17 @@ export default async function DashboardPage() {
                             flex flex-col sm:flex-row items-start sm:items-center gap-5 justify-between">
           <div className="space-y-2 max-w-xl">
             <h3 className="font-serif text-xl font-semibold text-ink">
-              See the NIBM corridor brief in detail
+              Explore a solution brief in full detail
             </h3>
             <p className="text-[13px] text-ink-2 leading-relaxed">
-              The flagship pilot — animated map, four solution pins, citizen + government roles,
-              and the public reports the AI used as evidence.
+              Animated map, solution pins, citizen + government roles,
+              and the public reports the AI used as evidence — for any ward that has a live brief.
             </p>
           </div>
           <Link href="/dashboard/nibm"
                 className="flex-shrink-0 px-5 py-2.5 rounded-full bg-saffron text-white text-xs font-semibold
                            shadow-[0_4px_18px_rgba(255,153,51,0.35)] hover:bg-saffron-dark transition-colors">
-            Open NIBM pilot →
+            See a featured brief →
           </Link>
         </section>
 

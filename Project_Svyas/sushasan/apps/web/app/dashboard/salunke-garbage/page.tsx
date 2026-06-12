@@ -42,7 +42,7 @@ export default function SalunkeGarbagePage() {
       {/* ── Status banner ────────────────────────────────────────────────── */}
       <div className="bg-india-green/8 border-b border-india-green/20">
         <div className="max-w-6xl mx-auto px-5 py-2.5 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-india-green animate-pulse flex-shrink-0" />
+          <span className="w-2 h-2 rounded-full bg-india-green flex-shrink-0" />
           <span className="text-xs text-india-green font-medium">
             Live brief — synthesised 06 May 2026 from 28 verified citizen posts
           </span>

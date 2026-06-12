@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import crypto from 'node:crypto'
 import { createServerClient, isSupabaseConfigured } from '../../../../lib/supabase'
+import { inngest } from '../../../../lib/inngest'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -41,19 +42,30 @@ const WARD_MAP: WardEntry[] = [
 ]
 
 const ISSUE_KW: Record<string, string[]> = {
-  traffic:     ['traffic jam', 'traffic problem', 'signal not working', 'broken signal', 'junction blocked', 'congestion', 'pothole', 'illegal parking', 'gridlock', 'ambulance stuck', 'encroachment'],
-  water:       ['no water', 'water shortage', 'water supply', 'water problem', 'tanker shortage', 'pipeline burst', 'pipeline leak', 'sewage', 'water cut', 'low pressure', 'water tanker', 'drain block', 'drainage'],
-  garbage:     ['garbage overflow', 'garbage problem', 'garbage dump', 'waste dump', 'trash overflow', 'bin overflow', 'swm', 'garbage pickup', 'open dump', 'irregular pickup'],
-  electricity: ['power cut', 'no electricity', 'msedcl', 'transformer fault', 'streetlight not working', 'street light not working', 'load shedding', 'low voltage', 'electricity outage', 'no power', 'lights out'],
+  traffic:     ['traffic jam', 'traffic problem', 'signal not working', 'broken signal', 'junction blocked', 'congestion', 'pothole', 'potholes', 'illegal parking', 'gridlock', 'ambulance stuck', 'encroachment', 'road broken', 'bad road', 'road damage', 'speed breaker', 'footpath', 'divider', 'flyover', 'waterlogging road', 'open manhole', 'manhole'],
+  water:       ['no water', 'water shortage', 'water supply', 'water problem', 'tanker shortage', 'pipeline burst', 'pipeline leak', 'sewage', 'water cut', 'low pressure', 'water tanker', 'drain block', 'drainage', 'waterlogging', 'flood', 'pmc water', 'borewell', 'tap water', 'contaminated water', 'dirty water', 'water smell', 'nala'],
+  garbage:     ['garbage overflow', 'garbage problem', 'garbage dump', 'waste dump', 'trash overflow', 'bin overflow', 'swm', 'garbage pickup', 'open dump', 'irregular pickup', 'rubbish', 'litter', 'stray dogs', 'dead animal', 'burning garbage', 'plastic waste', 'garbage van', 'not collecting', 'smells bad', 'dumping ground'],
+  electricity: ['power cut', 'no electricity', 'msedcl', 'transformer fault', 'streetlight not working', 'street light not working', 'load shedding', 'low voltage', 'electricity outage', 'no power', 'lights out', 'wire hanging', 'electric pole', 'sparking wire', 'bijli nahi', 'current nahi', 'blackout'],
+  other:       ['tree fallen', 'tree fall', 'illegal construction', 'encroachment', 'noise pollution', 'hawker', 'open defecation', 'public toilet', 'park damaged', 'broken bench', 'stray cattle', 'abandoned vehicle', 'illegal hoarding', 'safety hazard'],
 }
 
-const PUNE_GATE = ['pune', 'nibm', 'kondhwa', 'mohammadwadi', 'salunke', 'wanowrie', 'hadapsar', 'magarpatta', 'pmc ', 'wanawadi', 'undri', 'mohammad wadi']
-const EXCLUDE   = ['sri lanka', 'colombo', 'srilanka', 'pakistan', 'dhaka']
+const PUNE_GATE = [
+  'pune', 'nibm', 'kondhwa', 'mohammadwadi', 'salunke', 'wanowrie', 'hadapsar',
+  'magarpatta', 'pmc', 'wanawadi', 'undri', 'mohammad wadi', 'pisoli', 'handewadi',
+  'kharadi', 'wagholi', 'viman nagar', 'koregaon park', 'kothrud', 'karve nagar',
+  'erandwane', 'aundh', 'baner', 'pashan', 'warje', 'dhayari', 'katraj', 'bibwewadi',
+  'hinjewadi', 'wakad', 'pimple saudagar', 'lohegaon', 'yerwada', 'kalyani nagar',
+  'camp pune', 'deccan', 'shivajinagar', 'kothrud', 'sinhagad', 'narhe', 'ambegaon',
+  'fursungi', 'manjari', 'yewalewadi', 'mohammadwadi', 'tingrenagar',
+]
+const EXCLUDE   = ['sri lanka', 'colombo', 'srilanka', 'pakistan', 'dhaka', 'mumbai only', 'delhi only', 'bangalore only', 'chennai only']
 const PROMO_BLOCKERS = [
   'congratulations', 'cbse', 'icse', 'admission', 'cat 2025', 'cat 2026', 'mba', 'iim', 'b-school',
   'career launcher', 'coaching', 'book now', 'appointment', 'opening soon', 'now open', 'grand opening',
-  'sale', 'offer ends', 'flat off', 'menu', 'restaurant', 'order now', 'grooming', 'spa session',
+  'sale', 'offer ends', 'flat off', 'menu', 'order now', 'grooming', 'spa session', 'spa',
   'final selection', 'student achievement', 'results announced', 'launching', 'new collection',
+  'flat for sale', 'flat for rent', 'shop for rent', 'property', 'buy now', 'invest', 'real estate',
+  'pizza', 'burger', 'cafe', 'hotel booking', 'resort', 'tour package',
 ]
 
 function hashAuthor(u: string): string {
@@ -127,23 +139,44 @@ async function apifyPost(actor: string, token: string, body: unknown, timeoutSec
   } catch (e) { console.error(`[${actor}] failed:`, e); return [] }
 }
 
-// ── Instagram ─────────────────────────────────────────────────────────────────
-const IG_HASHTAGS = [
+// ── Day-based rotation (0=Sun … 6=Sat) ───────────────────────────────────────
+// Even days (Sun/Tue/Thu/Sat): Instagram + Google Maps
+// Odd days (Mon/Wed/Fri): Instagram + Facebook
+// Twitter + Reddit run every day (cheapest / free)
+const TODAY = new Date().getDay()
+const RUN_GMAPS    = TODAY % 2 === 0   // Sun, Tue, Thu, Sat
+const RUN_FACEBOOK = TODAY % 2 === 1   // Mon, Wed, Fri
+
+// ── Instagram — two alternating hashtag banks, 35 each ───────────────────────
+const IG_BANK_A = [
   'punenews', 'punecity', 'pmcpune', 'punetraffic', 'punewatercrisis', 'punepotholes',
   'mohammadwadi', 'nibmpune', 'nibmroad', 'kondhwapune', 'kondhwa', 'wanowrie',
   'hadapsar', 'kothrud', 'baner', 'aundh', 'vimannagar', 'kharadi', 'magarpatta',
   'punecitizens', 'puneroads', 'pmcpunecity', 'nibmlife', 'kondhwalife',
+  'punepmc', 'puneproblems', 'puneissues', 'punedevelopment', 'smartcitypune',
+  'punesmart', 'punecorpn', 'punemunicipal', 'potholesindia', 'punegarbage', 'punedrain',
+]
+const IG_BANK_B = [
+  'wanowriepune', 'salunkevihar', 'hadapsarpune', 'magarpattacity', 'koregaonpark',
+  'kalyaninagarpune', 'kharadipune', 'wagholipune', 'hinjewadipune', 'banerpune',
+  'kothrудpune', 'aundهpune', 'pashanpune', 'warjepune', 'katrajpune',
+  'punecivic', 'punewaterissue', 'puneelectricity', 'puneswm', 'puneflooding',
+  'punemonsoon', 'puneinfrastructure', 'pmc411', 'punesewage', 'pmcwater',
+  'nibmroadpune', 'kondhwabudruk', 'fursungipune', 'manjaripune', 'lohegaonpune',
+  'punecitizensvoice', 'punepotholeissue', 'punenalaissue', 'punetreefall', 'punemanhole',
 ]
 
 async function scrapeInstagram(token: string): Promise<NormPost[]> {
-  const directUrls = IG_HASHTAGS.map((h) => `https://www.instagram.com/explore/tags/${h}/`)
+  // Alternate banks daily so we cover 70 unique hashtags across 2 days
+  const bank = TODAY % 2 === 0 ? IG_BANK_A : IG_BANK_B
+  const directUrls = bank.map((h) => `https://www.instagram.com/explore/tags/${h}/`)
   const items = await apifyPost('apify~instagram-scraper', token,
-    { directUrls, resultsType: 'posts', resultsLimit: 50, addParentData: false }, 200)
+    { directUrls, resultsType: 'posts', resultsLimit: 100, addParentData: false }, 240)
 
   const out: NormPost[] = []
   for (const p of items) {
     const caption = (p.caption as string | undefined) ?? ''
-    if (caption.length < 20) continue
+    if (caption.length < 15) continue
     if (!isPuneCivic(caption)) continue
     const issue = classifyIssue(caption); if (!issue) continue
     const ward = detectWard(caption); if (!ward) continue
@@ -161,28 +194,36 @@ async function scrapeInstagram(token: string): Promise<NormPost[]> {
   return out
 }
 
-// ── Twitter / X ───────────────────────────────────────────────────────────────
+// ── Twitter / X — runs every day, high query volume ──────────────────────────
 const TWITTER_QUERIES = [
-  '#PMCPune water', '#PMCPune pothole', '#PMCPune garbage',
-  'NIBM Road traffic Pune', 'Kondhwa water shortage Pune',
-  'Mohammadwadi Pune complaint', 'Hadapsar pothole signal',
-  'Wanowrie water supply', 'Salunke Vihar water',
-  'Pune PMC garbage pickup', '#PunePotholes', '#PuneTraffic',
+  // Hashtag searches
+  '#PMCPune', '#PunePotholes', '#PuneTraffic', '#PuneWater', '#PuneGarbage',
+  '#PuneElectricity', '#PuneCivic', '#PuneDrain', '#PuneFlooding', '#PuneMunicipal',
+  // Geo + issue combos
+  'NIBM Road Pune pothole', 'Kondhwa water shortage Pune', 'Mohammadwadi Pune problem',
+  'Hadapsar traffic signal Pune', 'Wanowrie water supply Pune', 'Salunke Vihar complaint',
+  'Pune PMC garbage pickup', 'Magarpatta road Pune', 'Kothrud pothole Pune',
+  'Baner Pune road problem', 'Aundh Pune water', 'Kharadi Pune traffic',
+  'Pune waterlogging 2026', 'PMC Pune complaint', 'MSEDCL Pune power cut',
+  'Pune drain overflow', 'open manhole Pune', 'street light Pune not working',
+  'PMC ward office Pune', 'Pune tree fall', 'illegal construction Pune',
+  'Pune sewage smell', 'Pune garbage van not coming', 'Pune footpath broken',
+  'Pune signal repair PMC',
 ]
 
 async function scrapeTwitter(token: string): Promise<NormPost[]> {
   const items = await apifyPost('apidojo~tweet-scraper', token, {
     searchTerms: TWITTER_QUERIES,
-    maxItems: 30,
+    maxItems: 100,
     tweetLanguage: 'en',
     searchMode: 'live',
     addUserInfo: false,
-  }, 180)
+  }, 200)
 
   const out: NormPost[] = []
   for (const p of items) {
     const text = ((p.full_text ?? p.text ?? p.rawContent ?? '') as string)
-    if (text.length < 20) continue
+    if (text.length < 15) continue
     if (!isPuneCivic(text)) continue
     const issue = classifyIssue(text); if (!issue) continue
     const ward = detectWard(text); if (!ward) continue
@@ -200,29 +241,30 @@ async function scrapeTwitter(token: string): Promise<NormPost[]> {
   return out
 }
 
-// ── Google Maps Reviews ───────────────────────────────────────────────────────
-// High-signal: 1-star reviews at PMC offices + local landmarks mention real civic problems
+// ── Google Maps Reviews — runs every other day (high signal, higher cost) ─────
 const GMAPS_SEARCHES = [
-  'PMC ward office Kondhwa Pune',
-  'PMC ward office NIBM Pune',
-  'PMC ward office Hadapsar Pune',
-  'PMC Pune water supply office',
-  'Kondhwa market Pune',
-  'NIBM Road Pune',
-  'Salunke Vihar Pune',
-  'Mohammadwadi Pune',
+  // PMC offices — guaranteed complaint context
+  'PMC ward office Kondhwa Pune', 'PMC ward office NIBM Pune',
+  'PMC ward office Hadapsar Pune', 'PMC ward office Kothrud Pune',
+  'PMC ward office Baner Pune', 'PMC Pune water supply office',
+  'PMC Pune complaint office', 'PMC Pune SWM office',
+  // High-footfall landmarks near pilot wards
+  'NIBM Road Pune', 'Salunke Vihar Pune', 'Mohammadwadi Pune',
+  'Kondhwa market Pune', 'Magarpatta City Pune', 'Wanowrie Pune',
+  'Hadapsar industrial estate Pune', 'Corinthians Club Pune',
 ]
 
 async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
+  if (!RUN_GMAPS) return []
   const items = await apifyPost('compass~crawler-google-places', token, {
     searchStringsArray: GMAPS_SEARCHES,
-    maxCrawledPlaces: 3,
-    reviewsCount: 30,
+    maxCrawledPlaces: 4,
+    reviewsCount: 50,
     reviewsSort: 'newest',
     language: 'en',
     countryCode: 'in',
     scrapeReviewerInfo: false,
-  }, 200)
+  }, 240)
 
   const out: NormPost[] = []
   for (const place of items) {
@@ -252,22 +294,26 @@ async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
   return out
 }
 
-// ── Facebook ──────────────────────────────────────────────────────────────────
-// Public civic pages — PMC Pune, Times of India Pune, local news
+// ── Facebook — runs every other day ──────────────────────────────────────────
 const FB_URLS = [
   'https://www.facebook.com/PMCPUNE/',
   'https://www.facebook.com/punemirror/',
   'https://www.facebook.com/TimesofIndiaPune/',
   'https://www.facebook.com/NibmLife/',
+  'https://www.facebook.com/punecity.in/',
+  'https://www.facebook.com/groups/punecitizensgroup/',
+  'https://www.facebook.com/groups/nibmpune/',
+  'https://www.facebook.com/SakalPune/',
 ]
 
 async function scrapeFacebook(token: string): Promise<NormPost[]> {
+  if (!RUN_FACEBOOK) return []
   const items = await apifyPost('apify~facebook-posts-scraper', token, {
     startUrls: FB_URLS.map((url) => ({ url })),
-    resultsLimit: 40,
+    resultsLimit: 80,
     commentsMode: 'RANKED_THREADED',
-    maxComments: 10,
-  }, 180)
+    maxComments: 15,
+  }, 220)
 
   const out: NormPost[] = []
   for (const p of items) {
@@ -292,12 +338,25 @@ async function scrapeFacebook(token: string): Promise<NormPost[]> {
 
 async function scrapeReddit(): Promise<NormPost[]> {
   const queries = [
-    ['pune', 'NIBM Mohammadwadi water traffic'],
-    ['pune', 'Kondhwa road drain garbage'],
-    ['pune', 'Hadapsar Magarpatta traffic'],
-    ['pune', 'pothole streetlight Pune'],
-    ['Pune_City', 'traffic water garbage'],
-    ['pune', 'PMC water supply tanker'],
+    // r/pune — civic issues
+    ['pune', 'NIBM Mohammadwadi water traffic pothole'],
+    ['pune', 'Kondhwa road drain garbage overflow'],
+    ['pune', 'Hadapsar Magarpatta traffic signal'],
+    ['pune', 'pothole streetlight Pune problem'],
+    ['pune', 'PMC water supply tanker shortage'],
+    ['pune', 'garbage van not coming Pune'],
+    ['pune', 'Wanowrie Salunke Vihar complaint'],
+    ['pune', 'power cut Pune MSEDCL'],
+    ['pune', 'waterlogging Pune monsoon'],
+    ['pune', 'open manhole drain Pune'],
+    ['pune', 'tree fall Pune road blocked'],
+    ['pune', 'PMC complaint Pune ward'],
+    // r/Pune_City
+    ['Pune_City', 'traffic water garbage electricity'],
+    ['Pune_City', 'pothole road problem PMC'],
+    ['Pune_City', 'water shortage supply Pune'],
+    // r/india with Pune filter
+    ['india', 'Pune PMC pothole traffic garbage'],
   ]
   const out: NormPost[] = []
   for (const [sub, q] of queries) {
@@ -362,15 +421,16 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   const { data: run } = await supabase.from('pipeline_runs').insert({ trigger_type: triggerType, status: 'running' }).select('id').single()
   const runId = (run as { id: string } | null)?.id
 
-  // All 5 scrapers in parallel — each returns [] on failure, never throws
+  // All scrapers in parallel — each returns [] on failure, never throws
+  // Google Maps + Facebook alternate days to spread Apify credit spend evenly
   const [ig, rd, tw, gm, fb] = await Promise.all([
     scrapeInstagram(token),
     scrapeReddit(),
     scrapeTwitter(token),
-    scrapeGoogleMaps(token),
-    scrapeFacebook(token),
+    scrapeGoogleMaps(token),    // [] on off-days (RUN_GMAPS=false)
+    scrapeFacebook(token),      // [] on off-days (RUN_FACEBOOK=false)
   ])
-  console.log(`[pipeline] raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length}`)
+  console.log(`[pipeline] day=${TODAY} gmaps=${RUN_GMAPS} fb=${RUN_FACEBOOK} raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length}`)
 
   const all: NormPost[] = [...ig, ...rd, ...tw, ...gm, ...fb]
 
@@ -379,13 +439,33 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   const unique = all.filter((p) => (seen.has(p.source_post_id) ? false : (seen.add(p.source_post_id), true)))
 
   // Write raw_posts (upsert — safe to re-run)
+  let insertedIds: string[] = []
   if (unique.length > 0) {
     const rows = unique.map((p) => ({
       source: p.source, source_post_id: p.source_post_id, raw_text: p.raw_text,
       author_hash: p.author_hash, posted_at: p.posted_at, geo_hint: p.geo_hint,
     }))
-    const { error } = await supabase.from('raw_posts').upsert(rows, { onConflict: 'source_post_id', ignoreDuplicates: true })
+    const { data: inserted, error } = await supabase
+      .from('raw_posts')
+      .upsert(rows, { onConflict: 'source_post_id', ignoreDuplicates: true })
+      .select('id')
     if (error) console.error('[raw_posts]', error.message)
+    insertedIds = (inserted ?? []).map((r: { id: string }) => r.id)
+
+    // Trigger AI classification for newly inserted posts
+    if (insertedIds.length > 0 && process.env.INNGEST_EVENT_KEY) {
+      try {
+        // Batch into chunks of 50 to stay within Inngest payload limits
+        for (let i = 0; i < insertedIds.length; i += 50) {
+          await inngest.send({
+            name: 'sushasan/posts.scraped',
+            data: { batchIds: insertedIds.slice(i, i + 50) },
+          })
+        }
+      } catch (err) {
+        console.error('[inngest emit]', err)
+      }
+    }
   }
 
   // Upsert clusters — unique constraint on (ward_id, issue_tag) handles conflicts
@@ -421,10 +501,16 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   }
 }
 
-export async function GET(request: Request) {
+function checkAuth(request: Request): boolean {
+  const cronSecret = process.env.CRON_SECRET
+  // If CRON_SECRET not configured, allow all calls (dev/staging)
+  if (!cronSecret) return true
   const authHeader = request.headers.get('authorization')
-  const expected = `Bearer ${process.env.CRON_SECRET}`
-  if (authHeader !== expected && process.env.VERCEL_ENV === 'production') {
+  return authHeader === `Bearer ${cronSecret}`
+}
+
+export async function GET(request: Request) {
+  if (!checkAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {
@@ -436,9 +522,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  const expected = `Bearer ${process.env.CRON_SECRET}`
-  if (authHeader !== expected) {
+  if (!checkAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   try {

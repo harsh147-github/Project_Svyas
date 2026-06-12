@@ -8,24 +8,27 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(req: NextRequest) {
   let audioBlob: Blob
   let language = 'en'
-  let form: FormData
+  let filename = 'audio.webm'
+  let mimeType = 'audio/webm'
 
   try {
-    form = await req.formData()
-    audioBlob = form.get('audio') as Blob
-    language = (form.get('language') as string) || 'en'
-    if (!audioBlob || audioBlob.size === 0) {
+    const form = await req.formData()
+    const audioFile = form.get('audio') as File | Blob | null
+    if (!audioFile || (audioFile as Blob).size === 0) {
       return NextResponse.json({ error: 'No audio' }, { status: 400 })
     }
+    // Guard: 25MB max (Whisper limit)
+    if ((audioFile as Blob).size > 25 * 1024 * 1024) {
+      return NextResponse.json({ error: 'Audio too large (max 25 MB)' }, { status: 413 })
+    }
+    audioBlob = audioFile as Blob
+    language = (form.get('language') as string) || 'en'
+    const providedName = audioFile instanceof File ? audioFile.name : ''
+    filename = providedName || (audioBlob.type?.includes('mp4') ? 'audio.mp4' : 'audio.webm')
+    mimeType = audioBlob.type || (filename.endsWith('.mp4') ? 'audio/mp4' : 'audio/webm')
   } catch {
     return NextResponse.json({ error: 'Invalid form data' }, { status: 400 })
   }
-
-  // Derive filename from FormData name first (set by client), fall back to content-type
-  const audioFile = form.get('audio') as File | Blob
-  const providedName = audioFile instanceof File ? audioFile.name : ''
-  const filename = providedName || (audioBlob.type?.includes('mp4') ? 'audio.mp4' : 'audio.webm')
-  const mimeType = audioBlob.type || (filename.endsWith('.mp4') ? 'audio/mp4' : 'audio/webm')
 
   // ── 1. Sarvam Saaras — Indian languages ─────────────────────────────────
   if ((language === 'hi' || language === 'mr') && process.env.SARVAM_API_KEY) {

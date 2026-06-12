@@ -42,7 +42,7 @@ export default function E20EthanolPage() {
       {/* ── Status banner ────────────────────────────────────────────────── */}
       <div className="bg-india-green/8 border-b border-india-green/20">
         <div className="max-w-6xl mx-auto px-5 py-2.5 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-india-green animate-pulse flex-shrink-0" />
+          <span className="w-2 h-2 rounded-full bg-india-green flex-shrink-0" />
           <span className="text-xs text-india-green font-medium">
             Live brief — synthesised 06 May 2026 from 5,200+ verified citizen posts across 7 platforms
           </span>
@@ -54,7 +54,7 @@ export default function E20EthanolPage() {
         <div className="max-w-6xl mx-auto px-5 py-2 flex flex-wrap items-center gap-x-5 gap-y-1.5
                         text-[10.5px] font-mono">
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-india-green animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-india-green" />
             <span className="text-white/60">scraped:</span>
             <span>06 May 2026</span>
           </span>

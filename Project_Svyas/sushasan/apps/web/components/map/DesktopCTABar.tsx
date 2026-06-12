@@ -9,7 +9,8 @@ export function DesktopCTABar() {
 
   return (
     <>
-      <div
+      <nav
+        aria-label="Main navigation"
         className="hidden md:flex absolute bottom-6 left-1/2 -translate-x-1/2 z-40
                    flex-col items-center gap-4
                    px-6 py-4 rounded-3xl
@@ -40,25 +41,24 @@ export function DesktopCTABar() {
           </button>
 
           <a
-            href="/dashboard/nibm"
+            href="/dashboard"
             className="flex items-center gap-2.5 px-6 py-2.5 rounded-full
                        bg-saffron text-white font-semibold text-xs tracking-wide
                        shadow-[0_4px_18px_rgba(255,153,51,0.45)]
                        hover:bg-[#e8891e] active:scale-95 transition-all duration-150"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse flex-shrink-0" />
-            View NIBM Pilot — AI Solution Brief
+            View AI Solution Briefs
           </a>
         </div>
 
         {/* Secondary row */}
         <div className="flex items-center gap-4">
           <a
-            href="/dashboard"
+            href="/ward/46"
             className="text-[11px] font-medium text-ink/60 hover:text-ink transition-colors
                        px-4 py-2 rounded-full bg-white border border-ink/10 shadow-sm"
           >
-            Transparency dashboard →
+            Ward analysis →
           </a>
           <a
             href="/about"
@@ -68,7 +68,7 @@ export function DesktopCTABar() {
             About Sushaasan
           </a>
         </div>
-      </div>
+      </nav>
 
       <InlineReportSheet isOpen={reportOpen} onClose={() => setReportOpen(false)} />
     </>
