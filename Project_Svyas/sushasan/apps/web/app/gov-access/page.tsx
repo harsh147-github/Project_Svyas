@@ -61,13 +61,13 @@ export default function GovAccessPage() {
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link href="/"
-                className="px-5 py-2.5 rounded-full bg-saffron text-white text-xs font-semibold
-                           shadow-[0_4px_18px_rgba(255,153,51,0.3)] hover:bg-saffron-dark transition-colors">
+                className="btn-primary-spring px-5 py-2.5 rounded-full bg-saffron text-white text-xs font-semibold
+                           shadow-[0_4px_18px_rgba(255,153,51,0.3)] hover:bg-saffron-dark">
             Back to the map ↗
           </Link>
           <Link href="/dashboard"
-                className="px-5 py-2.5 rounded-full bg-white text-ink text-xs font-semibold
-                           border border-ink/12 hover:border-ink/25 transition-colors">
+                className="btn-spring px-5 py-2.5 rounded-full bg-white text-ink text-xs font-semibold
+                           border border-ink/12 hover:border-ink/25">
             Transparency dashboard →
           </Link>
         </div>
