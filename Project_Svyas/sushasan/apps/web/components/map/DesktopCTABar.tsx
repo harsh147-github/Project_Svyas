@@ -23,11 +23,11 @@ export function DesktopCTABar() {
 
           <button
             onClick={() => setReportOpen(true)}
-            className="flex items-center gap-2.5 px-6 py-2.5 rounded-full
+            className="btn-spring flex items-center gap-2.5 px-6 py-2.5 rounded-full
                        bg-white text-ink font-semibold text-xs tracking-wide
                        border border-saffron/60
                        shadow-[0_4px_14px_rgba(255,153,51,0.18)]
-                       hover:bg-saffron/5 hover:border-saffron active:scale-95 transition-all duration-150"
+                       hover:bg-saffron/5 hover:border-saffron"
           >
             <svg
               className="w-3.5 h-3.5 text-saffron"
@@ -42,10 +42,10 @@ export function DesktopCTABar() {
 
           <a
             href="/dashboard"
-            className="flex items-center gap-2.5 px-6 py-2.5 rounded-full
+            className="btn-primary-spring flex items-center gap-2.5 px-6 py-2.5 rounded-full
                        bg-saffron text-white font-semibold text-xs tracking-wide
                        shadow-[0_4px_18px_rgba(255,153,51,0.45)]
-                       hover:bg-[#e8891e] active:scale-95 transition-all duration-150"
+                       hover:bg-[#e8891e]"
           >
             View AI Solution Briefs
           </a>
@@ -55,14 +55,14 @@ export function DesktopCTABar() {
         <div className="flex items-center gap-4">
           <a
             href="/ward/46"
-            className="text-[11px] font-medium text-ink/60 hover:text-ink transition-colors
+            className="btn-chip-spring text-[11px] font-medium text-ink/60 hover:text-ink transition-colors
                        px-4 py-2 rounded-full bg-white border border-ink/10 shadow-sm"
           >
             Ward analysis →
           </a>
           <a
             href="/about"
-            className="text-[11px] font-medium text-ink/60 hover:text-ink transition-colors
+            className="btn-chip-spring text-[11px] font-medium text-ink/60 hover:text-ink transition-colors
                        px-4 py-2 rounded-full bg-white border border-ink/10 shadow-sm"
           >
             About Sushaasan

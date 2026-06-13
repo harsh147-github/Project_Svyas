@@ -427,8 +427,8 @@ export default async function DashboardPage() {
             </p>
           </div>
           <Link href="/dashboard/nibm"
-                className="flex-shrink-0 px-5 py-2.5 rounded-full bg-saffron text-white text-xs font-semibold
-                           shadow-[0_4px_18px_rgba(255,153,51,0.35)] hover:bg-saffron-dark transition-colors">
+                className="btn-primary-spring flex-shrink-0 px-5 py-2.5 rounded-full bg-saffron text-white text-xs font-semibold
+                           shadow-[0_4px_18px_rgba(255,153,51,0.35)] hover:bg-saffron-dark">
             See a featured brief →
           </Link>
         </section>

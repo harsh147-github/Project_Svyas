@@ -56,6 +56,7 @@ export function FirstVisitOverlay() {
         {/* Close — 44×44 tap target */}
         <button
           onClick={dismiss}
+          className="btn-spring"
           style={{
             position: 'absolute', top: 8, right: 8,
             width: 44, height: 44, borderRadius: '50%',
@@ -107,6 +108,7 @@ export function FirstVisitOverlay() {
         {/* CTA */}
         <button
           onClick={dismiss}
+          className="btn-primary-spring"
           style={{
             width: '100%', padding: '14px 20px', borderRadius: 14, border: 'none',
             background: '#FF9933', color: '#fff', fontWeight: 700, fontSize: 15,

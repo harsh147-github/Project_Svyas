@@ -888,9 +888,8 @@ function MobileFilterChips() {
             onClick={() => tap(f.key)}
             data-no-min-size
             className={[
-              'flex items-center gap-1.5 flex-shrink-0 px-3.5 py-2 rounded-full',
-              'text-[12px] font-semibold whitespace-nowrap transition-all duration-150',
-              'active:scale-95',
+              'btn-chip-spring flex items-center gap-1.5 flex-shrink-0 px-3.5 py-2 rounded-full',
+              'text-[12px] font-semibold whitespace-nowrap',
             ].join(' ')}
             style={
               isActive
@@ -1001,11 +1000,9 @@ export function MobilePanel() {
           <button
             onClick={() => setReportOpen(true)}
             data-no-min-size
-            className="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-2xl
+            className="btn-primary-spring flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-2xl
                        text-[13px] font-bold text-white tracking-wide
-                       shadow-[0_4px_18px_rgba(255,153,51,0.45)]
-                       active:scale-95 active:shadow-[0_2px_8px_rgba(255,153,51,0.30)]
-                       transition-all duration-100"
+                       shadow-[0_4px_18px_rgba(255,153,51,0.45)]"
             style={{ background: 'linear-gradient(135deg,#FF9933 0%,#e8891e 100%)' }}
             aria-label="Report a civic issue"
           >
@@ -1200,10 +1197,9 @@ function MobileWardContent({
       {(full?.ward?.id ?? clusters[0]?.ward_id) && (
         <a
           href={`/ward/${full?.ward?.id ?? clusters[0]?.ward_id}`}
-          className="block text-center px-4 py-3 rounded-xl
+          className="btn-primary-spring block text-center px-4 py-3 rounded-xl
                      bg-saffron text-white font-semibold text-[13px] tracking-wide
-                     shadow-[0_4px_18px_rgba(255,153,51,0.35)]
-                     active:scale-95 transition-all"
+                     shadow-[0_4px_18px_rgba(255,153,51,0.35)]"
         >
           See full ward brief →
         </a>

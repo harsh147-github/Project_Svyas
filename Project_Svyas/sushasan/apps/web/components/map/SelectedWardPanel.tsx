@@ -96,10 +96,10 @@ export function FindMyWardButton() {
       <button
         onClick={handleClick}
         disabled={busy}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-full
+        className="btn-spring flex items-center gap-2 px-5 py-2.5 rounded-full
                    bg-white border border-ink/10 hover:border-saffron/40 shadow-sm
                    text-ink text-xs font-semibold tracking-wide
-                   transition-all active:scale-95 disabled:opacity-60"
+                   disabled:opacity-60"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
