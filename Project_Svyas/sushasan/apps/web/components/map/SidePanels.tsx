@@ -1025,7 +1025,7 @@ export function MobilePanel() {
         {/* ── Expandable content — smooth CSS height transition ── */}
         <div
           className="transition-all duration-300 ease-in-out"
-          style={{ maxHeight: expanded ? '58vh' : '0px', overflow: expanded ? 'visible' : 'hidden' }}
+          style={{ maxHeight: expanded ? '58vh' : '0px', overflow: 'hidden' }}
         >
           <div
             className="overflow-y-auto overscroll-contain px-4 pt-2 pb-6"

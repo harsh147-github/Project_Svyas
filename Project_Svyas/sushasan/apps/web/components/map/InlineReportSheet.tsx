@@ -458,8 +458,30 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
         </div>
 
         {/* Header ─────────────────────────────────────────────────────────── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px 10px' }}>
-          <div>
+        <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px 10px', gap: 8 }}>
+
+          {/* Back button — left, 44px touch target */}
+          <button
+            onClick={handleClose}
+            aria-label="Back to map"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 14, fontWeight: 600, color: '#FF9933',
+              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+              padding: '4px 8px 4px 2px', minWidth: 44, minHeight: 44,
+              borderRadius: 8, flexShrink: 0,
+            }}
+          >
+            <svg viewBox="0 0 24 24" style={{ width: 18, height: 18 }} fill="none"
+                 stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+          </button>
+
+          {/* Title + ward info — grows to fill space */}
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
               fontSize: 11, fontWeight: 700, letterSpacing: '0.20em',
               textTransform: 'uppercase', color: 'rgba(29,29,31,0.40)',
@@ -483,7 +505,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
                 </span>
               </>}
               {loc.kind === 'denied' && !loc.wardId && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
                   <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF9933', flexShrink: 0 }} />
                   <select
                     onChange={(e) => {
@@ -530,7 +552,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
               border: 'none', cursor: 'pointer', display: 'flex',
               alignItems: 'center', justifyContent: 'center',
               transition: `all 0.2s ${EASE}`,
-              minWidth: 44, minHeight: 44,   /* 44px touch target */
+              minWidth: 44, minHeight: 44, flexShrink: 0,
             }}
           >
             <svg viewBox="0 0 24 24" style={{ width: 14, height: 14 }} fill="none"
