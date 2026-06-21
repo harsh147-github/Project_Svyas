@@ -19,10 +19,12 @@ export const dynamic = 'force-dynamic'
  */
 export async function POST(req: NextRequest) {
   if (!isAdminAuthed(req)) return new NextResponse('Unauthorized', { status: 401 })
+
+  // The daily-pipeline route accepts unauthenticated calls when CRON_SECRET is
+  // unset (open-when-unset), and requires the bearer when it is set. Mirror that
+  // here so the manual "force-boot" trigger works in BOTH configurations rather
+  // than 500-ing when no secret is configured.
   const cronSecret = process.env.CRON_SECRET
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'CRON_SECRET missing on server' }, { status: 500 })
-  }
 
   // Resolve our own base URL — works on Vercel, localhost, and custom domain
   const proto = req.headers.get('x-forwarded-proto') ?? 'https'
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
   try {
     const res = await fetch(target, {
       method: 'POST',
-      headers: { authorization: `Bearer ${cronSecret}` },
+      headers: cronSecret ? { authorization: `Bearer ${cronSecret}` } : {},
     })
     const body = await res.json().catch(() => ({}))
     return NextResponse.json({
