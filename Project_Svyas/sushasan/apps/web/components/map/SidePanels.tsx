@@ -888,7 +888,7 @@ function MobileFilterChips() {
             onClick={() => tap(f.key)}
             data-no-min-size
             className={[
-              'flex items-center gap-1.5 flex-shrink-0 px-3.5 py-2 rounded-full',
+              'flex items-center gap-1.5 flex-shrink-0 px-3.5 py-2.5 rounded-full',
               'text-[12px] font-semibold whitespace-nowrap transition-all duration-150',
               'active:scale-95',
             ].join(' ')}
