@@ -892,6 +892,17 @@ function ComposeView({
           Something went wrong — please try again.
         </p>
       )}
+
+      {/* Submission consent / legal notice */}
+      <p style={{
+        textAlign: 'center', fontSize: 10.5, lineHeight: 1.5, margin: 0,
+        color: 'rgba(29,29,31,0.4)', fontFamily: '-apple-system, sans-serif',
+      }}>
+        By submitting you confirm this is a genuine civic issue with no false or personal
+        allegations, shown publicly in anonymised form. Sushaasan is an independent platform,
+        not a government body.{' '}
+        <a href="/terms" style={{ textDecoration: 'underline', color: 'inherit' }}>Terms</a>.
+      </p>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getDashboardSnapshot } from '@/lib/supabase-data'
+import { DisclaimerLine } from '@/components/legal/Disclaimer'
 
 export const revalidate = 60
 
@@ -442,15 +443,21 @@ export default async function DashboardPage() {
               ← Ward map
             </Link>
             <Link href="/ethics" className="text-[11px] font-medium text-ink-3 hover:text-ink">
-              Privacy &amp; Ethics
+              Ethics
+            </Link>
+            <Link href="/privacy" className="text-[11px] font-medium text-ink-3 hover:text-ink">
+              Privacy
+            </Link>
+            <Link href="/terms" className="text-[11px] font-medium text-ink-3 hover:text-ink">
+              Terms
             </Link>
           </div>
+          <div className="max-w-xl mx-auto">
+            <DisclaimerLine className="text-center" />
+          </div>
           <p className="text-[11px] text-ink-3">
-            Data sourced from public posts only · AI-assisted analysis, reviewed before publication
-          </p>
-          <p className="text-[11px] text-ink-3">
-            Sushaasan Pilot · NIBM · Salunke Vihar · Wanowrie · Pune ·{' '}
-            <a href="mailto:sonawaneharsh147@gmail.com" className="underline">Contact</a>
+            Sushaasan · Pune ·{' '}
+            <a href="mailto:grievance@sushaasan.in" className="underline">Contact</a>
           </p>
         </footer>
       </div>

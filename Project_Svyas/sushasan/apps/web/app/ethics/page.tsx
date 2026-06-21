@@ -64,7 +64,7 @@ const FAQ = [
   },
   {
     q: 'What if a post mentions me by name?',
-    a: 'Personal names matched against common-name and location patterns are stripped during PII removal before AI processing or database storage. If a name slips through, request takedown via privacy@sushasan.in and it will be purged within 7 days.',
+    a: 'Personal names matched against common-name and location patterns are stripped during PII removal before AI processing or database storage. If a name slips through, request takedown via privacy@sushaasan.in and it will be purged within 7 days.',
   },
   {
     q: 'Is the AI trained on my data?',
@@ -232,10 +232,10 @@ export default function EthicsPage() {
               We&rsquo;d rather over-correct than be casual about citizen trust.
             </p>
           </div>
-          <a href="mailto:privacy@sushasan.in"
+          <a href="mailto:privacy@sushaasan.in"
              className="flex-shrink-0 px-5 py-2.5 rounded-full bg-india-green text-white text-xs font-semibold
                         shadow-[0_4px_18px_rgba(19,136,8,0.25)] hover:bg-india-green/90 transition-colors">
-            privacy@sushasan.in →
+            privacy@sushaasan.in →
           </a>
         </section>
 

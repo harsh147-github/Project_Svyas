@@ -10,9 +10,21 @@ import { randomUUID, createHash } from 'crypto'
 const _rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 const RATE_LIMIT = 10
 const RATE_WINDOW_MS = 10 * 60 * 1000  // 10 minutes
+const PRUNE_THRESHOLD = 5000           // cap memory under a flood of unique IPs
+
+// Drop expired entries so a burst of unique IPs can't grow the map unbounded
+// and OOM the serverless instance. (For multi-instance durable limiting at
+// scale, front this with Upstash Redis — see docs/SCALING.md.)
+function pruneRateLimit(now: number) {
+  if (_rateLimitMap.size < PRUNE_THRESHOLD) return
+  for (const [ip, entry] of _rateLimitMap) {
+    if (now >= entry.resetAt) _rateLimitMap.delete(ip)
+  }
+}
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now()
+  pruneRateLimit(now)
   const entry = _rateLimitMap.get(ip)
   if (!entry || now >= entry.resetAt) {
     _rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS })

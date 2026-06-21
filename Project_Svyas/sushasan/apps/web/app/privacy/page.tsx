@@ -38,9 +38,19 @@ const SECTIONS = [
     body: `Raw scraped text is retained for 90 days, then deleted. Only the anonymised, PII-stripped classified posts and ward-level summaries are kept beyond that. AI-generated solution briefs are retained for 12 months for accountability and historical comparison. If you believe a post about you was collected in error, contact us and we will purge it within 7 days.`,
   },
   {
+    id: 'your-rights',
+    title: 'Your Rights (DPDP Act, 2023)',
+    body: `Under India's Digital Personal Data Protection Act, 2023, you may ask us for access to, correction of, or erasure of any personal data relating to you that we hold, and you may withdraw consent at any time. As Sushaasan only stores anonymised, PII-stripped data by design, in most cases there is no personal data to act on — but if a report or post about you was collected, email us and we will correct or delete it within 7 days. We process civic data on the lawful basis of legitimate public interest and your consent when you submit a report; we collect the minimum necessary and use it only for the civic purpose described here.`,
+  },
+  {
+    id: 'not-government',
+    title: 'We Are Not a Government Body',
+    body: `Sushaasan is an independent civic-technology platform. It is not affiliated with, endorsed by, or operated by the Pune Municipal Corporation or any government authority. Submitting a report here is not a formal government complaint. See our Terms of Use for the full position.`,
+  },
+  {
     id: 'contact',
-    title: 'Contact',
-    body: `For takedown requests, data-handling questions, or audit requests, email us at privacy@sushasan.in. We respond within 48 hours. We would rather over-correct than be casual about citizen trust.`,
+    title: 'Contact & Grievance Officer',
+    body: `For data-access, correction, or erasure requests, takedown requests, or any privacy concern, email our Grievance Officer (Harsh Sonavane) at grievance@sushaasan.in, or privacy@sushaasan.in. We acknowledge within 24 hours and resolve within 15 days, as required under the IT Rules, 2021 and the DPDP Act, 2023.`,
   },
 ]
 
@@ -128,10 +138,10 @@ export default function PrivacyPage() {
               We&rsquo;d rather over-correct than be casual about citizen trust.
             </p>
           </div>
-          <a href="mailto:privacy@sushasan.in"
+          <a href="mailto:privacy@sushaasan.in"
              className="flex-shrink-0 px-5 py-2.5 rounded-full bg-india-green text-white text-xs font-semibold
                         shadow-[0_4px_18px_rgba(19,136,8,0.25)] hover:bg-india-green/90 transition-colors whitespace-nowrap">
-            privacy@sushasan.in →
+            privacy@sushaasan.in →
           </a>
         </section>
 

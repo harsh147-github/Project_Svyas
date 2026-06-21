@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getDashboardSnapshot } from '@/lib/supabase-data'
+import { DisclaimerBox } from '@/components/legal/Disclaimer'
 import { LoopCloseButtons } from '@/components/gov/LoopCloseButtons'
 
 export const revalidate = 60
@@ -103,6 +104,8 @@ export default async function GovPage() {
       </header>
 
       <div className="max-w-6xl mx-auto px-5 py-10 space-y-10">
+
+        <DisclaimerBox variant="solution" />
 
         {/* ── Hero ───────────────────────────────────────────────────────── */}
         <section className="space-y-4">
