@@ -3,6 +3,7 @@ import { Inter, Source_Serif_4 } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
 import { SmoothScroll } from '@/components/ui/SmoothScroll'
+import { InstallPrompt } from '@/components/pwa/InstallPrompt'
 import '../styles/globals.css'
 
 const inter = Inter({
@@ -23,12 +24,27 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
+  themeColor: '#FF9933',
 }
 
 export const metadata: Metadata = {
   title: { default: 'Sushaasan — Civic Intelligence for Pune', template: '%s | Sushaasan' },
   description: 'AI-powered ward map turning public civic signal into government action across Pune — transparent, structured, and built for every ward.',
   metadataBase: new URL('https://sushaasan.in'),
+  manifest: '/manifest.webmanifest',
+  applicationName: 'Sushaasan',
+  appleWebApp: {
+    capable: true,
+    title: 'Sushaasan',
+    statusBarStyle: 'default',
+  },
+  icons: {
+    icon: [
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-icon-180.png', sizes: '180x180', type: 'image/png' }],
+  },
   openGraph: {
     siteName: 'Sushaasan',
     type: 'website',
@@ -58,6 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SmoothScroll />
         {children}
+        <InstallPrompt />
         <Analytics />
         <Toaster position="bottom-center" toastOptions={{ style: { background: '#0B1F3A', color: '#FAFAF7', border: 'none' } }} />
       </body>
