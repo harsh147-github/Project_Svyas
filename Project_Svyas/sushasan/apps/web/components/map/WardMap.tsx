@@ -79,6 +79,7 @@ export function WardMap() {
 
     const maplibregl = (await import('maplibre-gl')).default
     await import('maplibre-gl/dist/maplibre-gl.css')
+    _maplibregl = maplibregl   // expose for the report-locate confirmation marker
 
     const map = new maplibregl.Map({
       container: containerRef.current,
@@ -603,6 +604,30 @@ export function WardMap() {
     return () => window.removeEventListener('sushaasan:report-submitted', handleReportSubmitted)
   }, [])
 
+  // Instant rectification — after a citizen submits, fly to the EXACT spot their
+  // report landed and drop a brief pulsing marker so they see "my report is here".
+  useEffect(() => {
+    function handleReportLocate(ev: Event) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const m = mapRef.current as any
+      if (!m) return
+      const { lng, lat } = (ev as CustomEvent).detail as { lng: number; lat: number }
+      if (typeof lng !== 'number' || typeof lat !== 'number') return
+      m.flyTo({ center: [lng, lat], zoom: 15, speed: 1.2, curve: 1.3 })
+      if (_maplibregl) {
+        const el = document.createElement('div')
+        el.className = 'report-pulse'
+        const marker = new _maplibregl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([lng, lat])
+          .addTo(m)
+        // transient — remove after the confirmation has registered
+        window.setTimeout(() => marker.remove(), 5200)
+      }
+    }
+    window.addEventListener('sushaasan:report-locate', handleReportLocate)
+    return () => window.removeEventListener('sushaasan:report-locate', handleReportLocate)
+  }, [])
+
   // Listen for issue-filter events from LegendBar and filter hotspot layers accordingly
   useEffect(() => {
     function handleIssueFilter(ev: Event) {
@@ -748,6 +773,11 @@ export function WardMap() {
 
 // ── Optimistic user-submitted clusters (same browser session) ─────────────────
 const _userClusters: Record<string, unknown>[] = []
+
+// maplibre-gl instance, set once the map initialises — used to drop the
+// transient "your report landed here" confirmation marker.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _maplibregl: any = null
 
 // Load any cluster submitted before navigating to this page
 if (typeof window !== 'undefined') {

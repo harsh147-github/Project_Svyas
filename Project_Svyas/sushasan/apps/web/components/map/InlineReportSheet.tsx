@@ -548,10 +548,20 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
           {result
             ? <SuccessView result={result} onDone={handleClose}
                 onSeeMap={() => {
+                  // Fly to the EXACT spot the report landed (not just the ward
+                  // centre) and pulse it, so the citizen sees where it was added.
                   const e = CENTROIDS[result.wardId]
-                  if (e) window.dispatchEvent(new CustomEvent('sushaasan:auto-select-ward', {
-                    detail: { wardId: result.wardId, lat: e[0], lng: e[1] }
-                  }))
+                  const lng = typeof result.lng === 'number' ? result.lng : e?.[1]
+                  const lat = typeof result.lat === 'number' ? result.lat : e?.[0]
+                  if (typeof lng === 'number' && typeof lat === 'number') {
+                    window.dispatchEvent(new CustomEvent('sushaasan:report-locate', {
+                      detail: { lng, lat },
+                    }))
+                  } else if (e) {
+                    window.dispatchEvent(new CustomEvent('sushaasan:auto-select-ward', {
+                      detail: { wardId: result.wardId, lat: e[0], lng: e[1] },
+                    }))
+                  }
                   handleClose()
                 }} />
             : <ComposeView
@@ -1000,7 +1010,7 @@ function SuccessView({ result, onDone, onSeeMap }: {
             minHeight: 52,
           }}
         >
-          See on map →
+          See where it landed →
         </button>
         <button
           onClick={onDone}
