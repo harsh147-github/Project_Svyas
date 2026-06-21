@@ -438,8 +438,12 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   const seen = new Set<string>()
   const unique = all.filter((p) => (seen.has(p.source_post_id) ? false : (seen.add(p.source_post_id), true)))
 
-  // Write raw_posts (upsert — safe to re-run)
+  // Write raw_posts (upsert — safe to re-run). ignoreDuplicates means only
+  // genuinely-new posts (unseen source_post_id) come back — that delta is what
+  // we add to the map so counts grow by real new signal, never double-counting
+  // a post that gets re-scraped on later days.
   let insertedIds: string[] = []
+  const newSourceIds = new Set<string>()
   if (unique.length > 0) {
     const rows = unique.map((p) => ({
       source: p.source, source_post_id: p.source_post_id, raw_text: p.raw_text,
@@ -448,9 +452,10 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
     const { data: inserted, error } = await supabase
       .from('raw_posts')
       .upsert(rows, { onConflict: 'source_post_id', ignoreDuplicates: true })
-      .select('id')
+      .select('id, source_post_id')
     if (error) console.error('[raw_posts]', error.message)
     insertedIds = (inserted ?? []).map((r: { id: string }) => r.id)
+    for (const r of (inserted ?? []) as { source_post_id: string }[]) newSourceIds.add(r.source_post_id)
 
     // Trigger AI classification for newly inserted posts
     if (insertedIds.length > 0 && process.env.INNGEST_EVENT_KEY) {
@@ -468,20 +473,56 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
     }
   }
 
-  // Upsert clusters — unique constraint on (ward_id, issue_tag) handles conflicts
-  const aggregates = aggregate(unique)
+  // Cumulative cluster counts — ADD each day's new posts to the existing cluster
+  // rather than overwriting it, so the map only ever grows. This also stops the
+  // daily run from wiping citizen +1 reports (they share the (ward,issue) row).
+  // Only genuinely-new posts (newSourceIds) are counted, so re-scrapes don't
+  // inflate the total.
+  const newPosts = unique.filter((p) => newSourceIds.has(p.source_post_id))
+  const aggregates = aggregate(newPosts)
   let clustersWritten = 0
   for (const c of aggregates) {
-    const sev_avg = c.severities.reduce((a, b) => a + b, 0) / c.severities.length
-    const sources = [...c.sources].join(', ')
-    const centroid = `${c.severities.length} reports via ${sources} about ${c.issue_tag} issues in this area (last 24h). Avg severity ${sev_avg.toFixed(1)}/5.`
-    const { error } = await supabase.from('clusters').upsert({
-      ward_id: c.ward_id, issue_tag: c.issue_tag, centroid_text: centroid,
-      post_count: c.severities.length, severity_avg: sev_avg, status: 'open',
-      lng: c.lng, lat: c.lat, source_platforms: [...c.sources], updated_at: new Date().toISOString(),
-    }, { onConflict: 'ward_id,issue_tag' })
-    if (error) console.error('[clusters]', error.message)
-    else clustersWritten += 1
+    const addCount = c.severities.length
+    if (addCount === 0) continue
+    const sevSum = c.severities.reduce((a, b) => a + b, 0)
+
+    // limit(1) (not maybeSingle) so a legacy duplicate (ward,issue) row can't
+    // throw and abort the run; we accumulate into the first match.
+    const { data: existingRows } = await supabase
+      .from('clusters')
+      .select('id, post_count, severity_avg, source_platforms')
+      .eq('ward_id', c.ward_id)
+      .eq('issue_tag', c.issue_tag)
+      .order('post_count', { ascending: false })
+      .limit(1)
+    const existing = existingRows?.[0]
+
+    if (existing) {
+      // Accumulate: weighted-average severity, union of source platforms.
+      const oldCount = (existing.post_count as number) ?? 0
+      const oldAvg = (existing.severity_avg as number) ?? 0
+      const newCount = oldCount + addCount
+      const newAvg = newCount > 0 ? (oldAvg * oldCount + sevSum) / newCount : oldAvg
+      const mergedSources = [...new Set([...(((existing.source_platforms as string[]) ?? [])), ...c.sources])]
+      // Preserve the richer existing centroid_text + position; only bump counts.
+      const { error } = await supabase.from('clusters').update({
+        post_count: newCount, severity_avg: newAvg,
+        source_platforms: mergedSources, updated_at: new Date().toISOString(),
+      }).eq('id', existing.id as string)
+      if (error) console.error('[clusters update]', error.message)
+      else clustersWritten += 1
+    } else {
+      const sev_avg = sevSum / addCount
+      const sources = [...c.sources].join(', ')
+      const centroid = `${addCount} report${addCount === 1 ? '' : 's'} via ${sources} about ${c.issue_tag} issues in this area. Avg severity ${sev_avg.toFixed(1)}/5.`
+      const { error } = await supabase.from('clusters').insert({
+        ward_id: c.ward_id, issue_tag: c.issue_tag, centroid_text: centroid,
+        post_count: addCount, severity_avg: sev_avg, status: 'open',
+        lng: c.lng, lat: c.lat, source_platforms: [...c.sources], updated_at: new Date().toISOString(),
+      })
+      if (error) console.error('[clusters insert]', error.message)
+      else clustersWritten += 1
+    }
   }
 
   if (runId) {
