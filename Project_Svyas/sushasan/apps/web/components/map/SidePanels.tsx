@@ -929,6 +929,32 @@ export function MobilePanel() {
     if (active) setExpanded(true)
   }, [active?.wardnum])
 
+  // ── Drag/swipe the handle to expand & collapse ──────────────────────────────
+  // The grabber looked draggable but only toggled on tap; people instinctively
+  // swipe it. Pointer-capture so the gesture tracks even when the finger slides
+  // off the small handle. Swipe up → expand, down → collapse, tap → toggle.
+  const dragStartY = useRef<number | null>(null)
+  const didSwipe = useRef(false)
+  const SWIPE_THRESHOLD = 28
+
+  function onHandlePointerDown(e: React.PointerEvent) {
+    dragStartY.current = e.clientY
+    didSwipe.current = false
+    try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) } catch { /* unsupported */ }
+  }
+  function onHandlePointerUp(e: React.PointerEvent) {
+    if (dragStartY.current == null) return
+    const delta = dragStartY.current - e.clientY // +ve = swiped up
+    dragStartY.current = null
+    if (delta > SWIPE_THRESHOLD) { setExpanded(true); didSwipe.current = true }
+    else if (delta < -SWIPE_THRESHOLD) { setExpanded(false); didSwipe.current = true }
+  }
+  function onHandleActivate() {
+    // Suppress the synthetic click that follows a swipe; plain taps still toggle.
+    if (didSwipe.current) { didSwipe.current = false; return }
+    setExpanded((v) => !v)
+  }
+
   return (
     <div className="md:hidden absolute bottom-0 left-0 right-0 z-40 pointer-events-auto">
       {/* Inline report sheet */}
@@ -937,21 +963,27 @@ export function MobilePanel() {
       <div className="bg-white border-t border-ink/[0.07] rounded-t-3xl
                       shadow-[0_-6px_32px_rgba(10,31,58,0.13)]">
 
-        {/* ── Drag handle — full-width 40px tap zone ── */}
+        {/* ── Drag handle — swipe up/down or tap to toggle ── */}
         <button
-          onClick={() => setExpanded((v) => !v)}
-          className="w-full flex justify-center items-center h-11 rounded-t-3xl"
+          onClick={onHandleActivate}
+          onPointerDown={onHandlePointerDown}
+          onPointerUp={onHandlePointerUp}
+          style={{ touchAction: 'none' }}
+          className="w-full flex justify-center items-center h-11 rounded-t-3xl cursor-grab active:cursor-grabbing"
           data-no-min-size
           aria-label={expanded ? 'Collapse ward info' : 'Expand ward info'}
         >
-          <div className="w-10 h-[3px] rounded-full bg-ink/15" />
+          <div className="w-10 h-[4px] rounded-full bg-ink/20" />
         </button>
 
         {/* ── Header row — ward info + Report CTA ── */}
         <div className="flex items-center px-4 pb-3 gap-3">
-          {/* Left: tap to expand */}
+          {/* Left: tap to expand, or swipe up/down */}
           <button
-            onClick={() => setExpanded((v) => !v)}
+            onClick={onHandleActivate}
+            onPointerDown={onHandlePointerDown}
+            onPointerUp={onHandlePointerUp}
+            style={{ touchAction: 'pan-y' }}
             className="flex items-center gap-3 flex-1 min-w-0 text-left"
             data-no-min-size
             aria-expanded={expanded}
