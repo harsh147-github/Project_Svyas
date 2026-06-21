@@ -16,6 +16,8 @@ export function FirstVisitOverlay() {
     localStorage.setItem(STORAGE_KEY, '1')
     sessionStorage.setItem('sush:mobile-onboarding-done', '1')
     setShow(false)
+    // Let the "Add to Home Screen" prompt know it can surface now.
+    window.dispatchEvent(new CustomEvent('sushaasan:welcome-dismissed'))
   }
 
   useEffect(() => {
