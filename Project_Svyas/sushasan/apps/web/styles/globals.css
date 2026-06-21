@@ -305,6 +305,27 @@
   border-color: rgba(255, 153, 51, 0.3);
 }
 
+/* ── Report-landed confirmation marker (transient, interaction-driven) ──
+   Shown only right after a citizen submits a report, then auto-removed.
+   Points the eye to exactly where their report landed on the map. */
+.report-pulse {
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #ff9933;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+  animation: report-pulse-ring 1.5s ease-out infinite;
+}
+@keyframes report-pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 153, 51, 0.55), 0 1px 6px rgba(0,0,0,0.35); }
+  70%  { box-shadow: 0 0 0 24px rgba(255, 153, 51, 0),   0 1px 6px rgba(0,0,0,0.35); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 153, 51, 0),      0 1px 6px rgba(0,0,0,0.35); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .report-pulse { animation: none; }
+}
+
 /* ── Entrance animations ─────────────────────────────── */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(16px); }
