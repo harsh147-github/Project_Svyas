@@ -1,0 +1,15 @@
+{
+  "note": "Per-ward delivery targets for Sushaasan briefs (the 'missile'). Fill 'email' with the PMC ward officer / ward-office email to switch on automated email dispatch. 'phone' (PMC ward office, from the public registry) is used for WhatsApp delivery. 'name' is the officer's name once known. Leave email null to keep a ward in WhatsApp/link-only delivery.",
+  "schema_version": "1",
+  "default_office_email": null,
+  "wards": {
+    "46": { "name": null, "email": null, "phone": "020-26993100", "office": "Hadapsar–Mundhwa Ward Office" },
+    "47": { "name": null, "email": null, "phone": "020-26854949", "office": "Kondhwa–Wanowrie Ward Office" },
+    "43": { "name": null, "email": null, "phone": "020-26854949", "office": "Wanowrie–Ramtekdi Ward Office" },
+    "41": { "name": null, "email": null, "phone": "020-26854949", "office": "Kondhwa–Wanowrie Ward Office" },
+    "42": { "name": null, "email": null, "phone": "020-26993100", "office": "Hadapsar–Mundhwa Ward Office" },
+    "44": { "name": null, "email": null, "phone": "020-26993100", "office": "Hadapsar–Mundhwa Ward Office" },
+    "25": { "name": null, "email": null, "phone": "020-26993100", "office": "Hadapsar–Mundhwa Ward Office" },
+    "26": { "name": null, "email": null, "phone": "020-26993100", "office": "Hadapsar–Mundhwa Ward Office" }
+  }
+}
