@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { GovAccessForm } from '@/components/gov/GovAccessForm'
 
 export const metadata: Metadata = {
   title: 'Government Access',
@@ -8,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function GovAccessPage() {
   return (
-    <div className="min-h-screen bg-paper text-ink flex flex-col items-center justify-center px-5">
-      <div className="max-w-md w-full space-y-8 text-center">
+    <div className="min-h-screen bg-paper text-ink flex flex-col items-center justify-center px-5 py-12">
+      <div className="max-w-md w-full space-y-7 text-center">
 
         <div className="flex justify-center">
           <div className="w-14 h-14 rounded-2xl bg-navy flex items-center justify-center
@@ -23,27 +24,33 @@ export default function GovAccessPage() {
             Sushaasan · Government View
           </p>
           <h1 className="font-serif text-3xl font-semibold text-ink leading-tight">
-            Corporator access only
+            Ward office &amp; government access
           </h1>
           <p className="text-ink-2 text-sm leading-relaxed">
-            This area is for ward corporators and their offices.
-            It contains priority-ranked civic briefs, AI-synthesised action plans,
-            and loop-closure tools — all built in partnership with citizens.
+            A secure command centre for PMC ward officers and their offices —
+            priority-ranked civic briefs, AI-synthesised action plans with departments,
+            costs and timelines, and one-tap loop-closure that updates citizens automatically.
           </p>
         </div>
 
+        {/* Access-code entry */}
+        <div className="bg-white rounded-2xl border border-ink/8 shadow-sm p-6 text-left">
+          <GovAccessForm />
+        </div>
+
+        {/* How to get access */}
         <div className="bg-white rounded-2xl border border-ink/8 shadow-sm p-6 space-y-4 text-left">
           <div className="flex items-start gap-3">
-            <span className="text-xl flex-shrink-0 mt-0.5">📋</span>
+            <span className="text-xl flex-shrink-0 mt-0.5">🏛️</span>
             <div>
-              <div className="text-sm font-semibold text-ink">If you are a corporator</div>
+              <div className="text-sm font-semibold text-ink">For ward officers &amp; PMC officials</div>
               <div className="text-[12px] text-ink-3 mt-1 leading-relaxed">
-                Contact Harsh to receive your access link.
-                {' '}
-                <a href="mailto:sonawaneharsh147@gmail.com"
+                Request a secure access code for your ward at{' '}
+                <a href="mailto:access@sushaasan.in"
                    className="text-saffron-dark underline underline-offset-2 hover:text-saffron transition-colors">
-                  sonawaneharsh147@gmail.com
+                  access@sushaasan.in
                 </a>
+                . We verify your office and issue a code the same day.
               </div>
             </div>
           </div>
@@ -53,7 +60,7 @@ export default function GovAccessPage() {
             <div>
               <div className="text-sm font-semibold text-ink">Looking for the public map?</div>
               <div className="text-[12px] text-ink-3 mt-1">
-                The public ward map and citizen transparency dashboard are open to everyone.
+                The public ward map and citizen transparency dashboard are open to everyone — no code needed.
               </div>
             </div>
           </div>
@@ -74,7 +81,7 @@ export default function GovAccessPage() {
 
         <p className="text-[11px] text-ink-4">
           Sushaasan · Pune Civic Intelligence ·{' '}
-          <a href="mailto:sonawaneharsh147@gmail.com" className="underline">Contact</a>
+          <a href="mailto:access@sushaasan.in" className="underline">Contact</a>
         </p>
       </div>
     </div>
