@@ -57,7 +57,8 @@ const STATUS_STYLE: Record<string, string> = {
 }
 
 // ── page ────────────────────────────────────────────────────────────────────
-export default async function GovPage() {
+export default async function GovPage({ searchParams }: { searchParams: { token?: string } }) {
+  const govToken = searchParams?.token ?? ''
   const snap = await getDashboardSnapshot()
   // Show pilot wards first, then any other ward with at least one cluster
   const wards = snap.wards
@@ -311,6 +312,18 @@ export default async function GovPage() {
                             </div>
                           </div>
                         </div>
+
+                        {/* Open the War Room — full AI-assisted solving workspace */}
+                        <Link
+                          href={`/gov/war-room/${ward.id}-${s.issue_tag}${govToken ? `?token=${govToken}` : ''}`}
+                          className="flex items-center justify-center gap-2 mx-5 mt-4 px-4 py-3 rounded-xl
+                                     bg-ink text-white text-[13px] font-semibold
+                                     hover:bg-ink/90 active:scale-[0.99] transition-all
+                                     shadow-[0_4px_18px_rgba(10,10,10,0.18)]">
+                          <span aria-hidden>⚡</span>
+                          Open War Room — solve with Sushaasan AI
+                          <span aria-hidden>→</span>
+                        </Link>
 
                         {/* Loop closure CTAs */}
                         <LoopCloseButtons solutionId={s.id} wardId={ward.id} currentStatus={s.status} />
