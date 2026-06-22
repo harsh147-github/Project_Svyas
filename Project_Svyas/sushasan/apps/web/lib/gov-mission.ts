@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { getWardFull } from './supabase-data'
+import { isSupabaseConfigured, createServerClient } from './supabase'
 import type { Ward, Cluster, Solution } from './data'
 
 // A "mission" = one civic grievance dossier handed to a ward officer: the issue,
@@ -18,6 +19,8 @@ export type Incharge = {
   complaintUrl: string | null
 }
 
+export type SamplePost = { text: string; location: string | null }
+
 export type Mission = {
   id: string
   wardId: string
@@ -26,7 +29,30 @@ export type Mission = {
   incharge: Incharge
   cluster: Cluster | null
   solution: Solution | null
+  samples: SamplePost[]
   generatedAt: string
+}
+
+// A few anonymised, PII-stripped verbatim resident reports for this ward+issue —
+// the raw evidence officials trust. Empty when Supabase isn't wired (seed mode).
+async function getSamplePosts(wardId: string, issueTag: string): Promise<SamplePost[]> {
+  if (!isSupabaseConfigured()) return []
+  try {
+    const db = createServerClient()
+    const { data } = await db
+      .from('posts')
+      .select('text_clean, cited_location, created_at')
+      .eq('ward_id', wardId)
+      .eq('issue_tag', issueTag)
+      .order('created_at', { ascending: false })
+      .limit(3)
+    return (data ?? []).map((p: { text_clean?: string; cited_location?: string | null }) => ({
+      text: String(p.text_clean ?? '').slice(0, 240),
+      location: p.cited_location ?? null,
+    })).filter((s) => s.text.length > 0)
+  } catch {
+    return []
+  }
 }
 
 let _registryCache: Record<string, unknown> | null = null
@@ -89,6 +115,8 @@ export async function getMission(id: string): Promise<Mission | null> {
     (cluster ? full.solutions.find((s) => s.cluster_id === cluster.id) : null) ??
     null
 
+  const samples = await getSamplePosts(wardId, issueTag)
+
   return {
     id: missionId(wardId, issueTag),
     wardId,
@@ -97,6 +125,7 @@ export async function getMission(id: string): Promise<Mission | null> {
     incharge,
     cluster,
     solution,
+    samples,
     generatedAt: new Date().toISOString(),
   }
 }

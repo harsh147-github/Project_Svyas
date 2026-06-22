@@ -117,6 +117,22 @@ export default async function WarRoomPage({
                     <p className="text-[13px] text-white/70 leading-relaxed">{cluster.problem_simple}</p>
                   </div>
                 )}
+                {mission.samples.length > 0 && (
+                  <div>
+                    <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-white/40 mb-1.5">
+                      Verbatim resident reports
+                    </div>
+                    <div className="space-y-2">
+                      {mission.samples.map((s, i) => (
+                        <blockquote key={i} className="border-l-2 border-saffron/40 pl-3 py-0.5">
+                          <p className="text-[12px] text-white/75 leading-relaxed italic">&ldquo;{s.text}&rdquo;</p>
+                          {s.location && <p className="text-[10px] text-white/35 mt-0.5">📍 {s.location}</p>}
+                        </blockquote>
+                      ))}
+                    </div>
+                    <p className="text-[9px] text-white/30 mt-1.5">Anonymised · PII-stripped · from public posts</p>
+                  </div>
+                )}
               </>
             ) : (
               <p className="text-[13px] text-white/55">No active signal cluster found for this issue in {ward.name}.</p>
@@ -198,11 +214,19 @@ export default async function WarRoomPage({
           </section>
 
           {/* SUSHAASAN AI — JARVIS */}
-          <section className="rounded-2xl border border-saffron/25 bg-[#0E1A30]/80 overflow-hidden flex flex-col min-h-[520px]"
+          <section id="sushaasan-ai" className="scroll-mt-20 rounded-2xl border border-saffron/25 bg-[#0E1A30]/80 overflow-hidden flex flex-col min-h-[520px]"
                    style={{ boxShadow: '0 0 0 1px rgba(255,153,51,0.08), 0 20px 60px rgba(0,0,0,0.35)' }}>
             <WarRoomCopilot missionId={mission.id} token={token} />
           </section>
         </div>
+
+        {/* Mobile: one-tap jump to the AI copilot (it sits below the dossier+plan) */}
+        <a href="#sushaasan-ai"
+           className="lg:hidden fixed bottom-4 right-4 z-40 flex items-center gap-2 px-4 py-3 rounded-full
+                      bg-saffron text-white text-[13px] font-semibold shadow-[0_8px_24px_rgba(255,153,51,0.45)]
+                      active:scale-95 transition-transform">
+          <span aria-hidden>✨</span> Ask Sushaasan AI
+        </a>
 
         {/* Footer disclaimer */}
         <p className="text-[10.5px] text-white/35 leading-relaxed max-w-3xl">
