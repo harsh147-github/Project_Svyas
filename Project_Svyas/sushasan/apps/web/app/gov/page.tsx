@@ -7,7 +7,7 @@ import { LoopCloseButtons } from '@/components/gov/LoopCloseButtons'
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: 'Corporator Command Centre',
+  title: 'Ward Command Centre',
   description: 'Priority-ranked civic actions for Ward 46 + 47, Pune. AI-synthesised, budget-checked, and ready to act on — with citizens partnering on every step.',
 }
 
@@ -88,7 +88,7 @@ export default async function GovPage({ searchParams }: { searchParams: { token?
                             text-white font-serif font-bold text-sm">स</div>
             <span className="font-serif text-lg font-semibold text-ink">Sushaasan</span>
             <span className="text-ink/20 mx-1">/</span>
-            <span className="text-ink-2 text-sm hidden sm:inline">Corporator Command Centre</span>
+            <span className="text-ink-2 text-sm hidden sm:inline">Ward Command Centre</span>
           </Link>
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline-flex items-center gap-1.5 text-[9px] font-bold tracking-[0.18em]
@@ -126,7 +126,7 @@ export default async function GovPage({ searchParams }: { searchParams: { token?
           </h1>
           <p className="text-ink-2 text-base leading-relaxed max-w-2xl">
             Every issue below is drawn from public posts, ranked by AI urgency, paired with
-            a budgeted plan and a clear citizen role. Sushaasan is a partner — the corporator&rsquo;s
+            a budgeted plan and a clear citizen role. Sushaasan is a partner — the ward
             office decides; we keep the brief honest and the loop visible.
           </p>
         </section>
@@ -170,7 +170,10 @@ export default async function GovPage({ searchParams }: { searchParams: { token?
                     {ward.name}
                   </h2>
                   <div className="text-xs text-ink-3 mt-1">
-                    Corporator: {ward.corporator_name} · {wardClusters.length} active issue clusters
+                    {ward.corporator_name && !/TBD|Contact/i.test(ward.corporator_name)
+                      ? `${ward.corporator_name} · `
+                      : 'PMC Ward Office · '}
+                    {wardClusters.length} active issue clusters
                   </div>
                 </div>
                 <Link href={`/ward/${ward.id}`}
@@ -345,7 +348,7 @@ export default async function GovPage({ searchParams }: { searchParams: { token?
             Open a brief, read the citizen problem in context, decide whether to action,
             in-progress, or defer. Every status change here is published — automatically — on
             the citizen-facing transparency dashboard. That is the loop Sushaasan exists to close:
-            the corporator&rsquo;s office acts, citizens see the action, and chaos is replaced by
+            the ward office acts, citizens see the action, and chaos is replaced by
             shared progress.
           </p>
           <div className="flex flex-wrap gap-2 pt-3">

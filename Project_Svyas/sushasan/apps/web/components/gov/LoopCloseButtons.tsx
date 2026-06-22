@@ -31,8 +31,8 @@ export function LoopCloseButtons({ solutionId, wardId, currentStatus }: Props) {
           ward_id: wardId,
           status: newStatus,
           action_desc: newStatus === 'completed'
-            ? 'Marked resolved by corporator'
-            : 'Marked in progress by corporator',
+            ? 'Marked resolved by ward office'
+            : 'Marked in progress by ward office',
         }),
       })
       if (res.ok || res.status === 404) {
