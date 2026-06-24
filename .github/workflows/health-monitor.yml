@@ -1,0 +1,46 @@
+name: Health Monitor (map growth alarm)
+
+# Daily independent check that the pipeline actually ran and the map has data.
+# If the last pipeline run is stale (> 26h) or there are no clusters, this job
+# FAILS — GitHub then emails the repo owner. This is the "never silently break
+# again" safety net.
+
+on:
+  schedule:
+    - cron: '0 5 * * *'    # 05:00 UTC daily — ~90 min after the scrape
+  workflow_dispatch:
+
+env:
+  BASE_URL: https://sushaasan.in
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check /api/health
+        run: |
+          curl -sS -m 30 "$BASE_URL/api/health" -o /tmp/health.json -w 'health HTTP %{http_code}\n'
+          cat /tmp/health.json
+          node <<'EOF'
+          const h = require('/tmp/health.json')
+          const fail = (m) => { console.error('::error::' + m); process.exitCode = 1 }
+
+          if (h.supabase !== true) { fail('Supabase not connected in production (status=' + h.status + ')'); }
+
+          const c = h.counts || {}
+          if (!(c.clusters > 0)) fail('No clusters on the map (clusters=' + c.clusters + ')')
+
+          const last = h.pipeline && h.pipeline.completed_at
+          if (!last) { fail('No completed pipeline run recorded') }
+          else {
+            const ageH = (Date.now() - new Date(last).getTime()) / 3.6e6
+            console.log('last pipeline run ' + ageH.toFixed(1) + 'h ago; clusters=' + c.clusters + ', raw_posts=' + c.raw_posts)
+            if (ageH > 26) fail('Pipeline has NOT run in ' + ageH.toFixed(1) + 'h — the map is not refreshing')
+          }
+
+          const t = h.last_24h || {}
+          console.log('last 24h: scraped=' + t.raw_posts_scraped + ', classified=' + t.posts_classified)
+          if (process.exitCode === 1) console.error('Health check FAILED — see errors above')
+          else console.log('✅ Healthy: map is live and refreshing')
+          EOF

@@ -1,0 +1,42 @@
+name: Daily Scrape (map refresh)
+
+# Reliable daily data pipeline, independent of Vercel's cron tier.
+# Triggers the production scraper → new complaints land on the map every day,
+# then runs the gov brief dispatch. Also runnable on demand from the Actions tab.
+#
+# Optional repo secret CRON_SECRET: if set, sent as a Bearer token so the
+# endpoint only accepts authenticated triggers. If unset, the endpoint runs
+# open (its built-in "open when unset" mode) and this still works.
+
+on:
+  schedule:
+    - cron: '30 3 * * *'   # 03:30 UTC daily ≈ 09:00 IST
+  workflow_dispatch:        # manual "Run workflow" button
+
+env:
+  BASE_URL: https://sushaasan.in
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Trigger daily scrape pipeline
+        run: |
+          echo "Triggering scraper at $BASE_URL/api/cron/daily-pipeline …"
+          code=$(curl -sS -m 600 -o /tmp/scrape.json -w '%{http_code}' \
+            -X POST "$BASE_URL/api/cron/daily-pipeline" \
+            ${CRON_SECRET:+-H "authorization: Bearer $CRON_SECRET"})
+          echo "HTTP $code"; cat /tmp/scrape.json || true
+          if [ "$code" != "200" ]; then echo "::error::Scrape trigger failed ($code)"; exit 1; fi
+          node -e "const d=require('/tmp/scrape.json'); if(d.ok===false){console.error('pipeline error:',d.error);process.exit(1)} console.log('postsScraped='+(d.postsScraped??'?'),'clustersWritten='+(d.clustersWritten??'?'))"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Dispatch government briefs
+        run: |
+          curl -sS -m 120 -X GET "$BASE_URL/api/cron/gov-dispatch" \
+            ${CRON_SECRET:+-H "authorization: Bearer $CRON_SECRET"} -o /tmp/dispatch.json -w 'gov-dispatch HTTP %{http_code}\n' || true
+          cat /tmp/dispatch.json || true
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
