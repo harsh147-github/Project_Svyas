@@ -10,36 +10,47 @@ export const dynamic = 'force-dynamic'
 // ── Ward keyword → ward_id + lng/lat ─────────────────────────────────────────
 type WardEntry = { kw: string[]; id: string; name: string; lng: number; lat: number }
 const WARD_MAP: WardEntry[] = [
-  { kw: ['mohammadwadi', 'mohammad wadi', 'nibm', 'uruli devachi', 'undri', 'pisoli', 'handewadi', 'autadewadi'], id: '46', name: 'NIBM – Mohammadwadi', lng: 73.9102, lat: 18.4651 },
-  { kw: ['salunke vihar', 'salunke', 'wanowrie', 'kondhwa bk', 'kondhwa budruk', 'yewalewadi'], id: '47', name: 'Salunke Vihar – Wanowrie', lng: 73.9015, lat: 18.4729 },
-  { kw: ['kondhwa kh', 'kondhwa khurd', 'mithanagar', 'kondhwa'], id: '41', name: 'Kondhwa Kh - Mithanagar', lng: 73.8762, lat: 18.4642 },
-  { kw: ['wanawadi', 'kausar baug'], id: '43', name: 'Wanawadi - Kausar Baug', lng: 73.8985, lat: 18.4793 },
-  { kw: ['ramtekadi', 'sayyadnagar'], id: '42', name: 'Ramtekadi - Sayyadnagar', lng: 73.8950, lat: 18.4750 },
-  { kw: ['boratenagar', 'sasanenagar'], id: '44', name: 'Kale Boratenagar - Sasanenagar', lng: 73.9000, lat: 18.4680 },
-  { kw: ['hadapsar', 'satavwadi'], id: '25', name: 'Hadapsar Gaothan - Satavwadi', lng: 73.9265, lat: 18.5082 },
-  { kw: ['magarpatta'], id: '23', name: 'Magarpatta - Sopan Baug', lng: 73.9265, lat: 18.5082 },
-  { kw: ['amanora'], id: '24', name: 'Amanora Park Town', lng: 73.9402, lat: 18.5167 },
-  { kw: ['kharadi', 'eon it'], id: '15', name: 'Kharadi - EON IT', lng: 73.9558, lat: 18.5512 },
-  { kw: ['wagholi'], id: '14', name: 'Wagholi', lng: 73.9645, lat: 18.5578 },
-  { kw: ['viman nagar', 'phoenix marketcity'], id: '8', name: 'Viman Nagar', lng: 73.9194, lat: 18.5651 },
-  { kw: ['kalyani nagar'], id: '8', name: 'Kalyani Nagar', lng: 73.9055, lat: 18.5489 },
-  { kw: ['yerwada'], id: '7', name: 'Yerwada', lng: 73.8918, lat: 18.5495 },
-  { kw: ['koregaon park'], id: '6', name: 'Koregaon Park', lng: 73.8946, lat: 18.5365 },
-  { kw: ['camp pune', 'mg road pune', 'east street'], id: '5', name: 'Camp - MG Road', lng: 73.8788, lat: 18.5176 },
-  { kw: ['kothrud'], id: '34', name: 'Kothrud', lng: 73.8083, lat: 18.5072 },
-  { kw: ['karve nagar'], id: '35', name: 'Karve Nagar', lng: 73.8218, lat: 18.4988 },
-  { kw: ['erandwane'], id: '36', name: 'Erandwane', lng: 73.8348, lat: 18.5052 },
-  { kw: ['aundh', 'sakal nagar'], id: '37', name: 'Aundh', lng: 73.8082, lat: 18.5612 },
-  { kw: ['baner'], id: '37', name: 'Baner', lng: 73.7872, lat: 18.5482 },
-  { kw: ['pashan', 'sus road'], id: '38', name: 'Pashan - Sus', lng: 73.7775, lat: 18.5408 },
-  { kw: ['warje'], id: '39', name: 'Warje', lng: 73.7918, lat: 18.4795 },
-  { kw: ['dhayari', 'sinhagad road'], id: '40', name: 'Dhayari - Sinhagad', lng: 73.8088, lat: 18.4612 },
-  { kw: ['katraj', 'bibwewadi'], id: '42', name: 'Katraj - Bibwewadi', lng: 73.8568, lat: 18.4488 },
-  { kw: ['hinjewadi', 'hinjawadi'], id: '54', name: 'Hinjawadi IT Park', lng: 73.7252, lat: 18.5912 },
-  { kw: ['wakad'], id: '55', name: 'Wakad', lng: 73.7642, lat: 18.5985 },
-  { kw: ['pimple saudagar', 'rahatani'], id: '53', name: 'Pimple Saudagar', lng: 73.8035, lat: 18.6005 },
-  { kw: ['lohegaon'], id: '12', name: 'Lohegaon', lng: 73.9492, lat: 18.5825 },
+  { kw: ['mohammadwadi', 'mohammad wadi', 'nibm', 'nibm road', 'uruli devachi', 'undri', 'pisoli', 'handewadi', 'autadewadi', 'konark pyramid', 'clover park', 'corinthians', 'kumar park'], id: '46', name: 'NIBM – Mohammadwadi', lng: 73.9102, lat: 18.4651 },
+  { kw: ['salunke vihar', 'salunke', 'wanowrie', 'wanowarie', 'kondhwa bk', 'kondhwa budruk', 'yewalewadi', 'kausar baug'], id: '47', name: 'Salunke Vihar – Wanowrie', lng: 73.9015, lat: 18.4729 },
+  { kw: ['kondhwa kh', 'kondhwa khurd', 'mithanagar', 'kondhwa', 'khadi machine', 'medha nagar'], id: '41', name: 'Kondhwa Kh - Mithanagar', lng: 73.8762, lat: 18.4642 },
+  { kw: ['wanawadi', 'fatima nagar', 'salisbury park', 'maharshi nagar'], id: '43', name: 'Wanawadi - Kausar Baug', lng: 73.8985, lat: 18.4793 },
+  { kw: ['ramtekadi', 'sayyadnagar', 'gondhale nagar'], id: '42', name: 'Ramtekadi - Sayyadnagar', lng: 73.8950, lat: 18.4750 },
+  { kw: ['boratenagar', 'sasanenagar', 'kale borate'], id: '44', name: 'Kale Boratenagar - Sasanenagar', lng: 73.9000, lat: 18.4680 },
+  { kw: ['hadapsar', 'satavwadi', 'gadital', 'sasane nagar', 'malwadi'], id: '25', name: 'Hadapsar Gaothan - Satavwadi', lng: 73.9265, lat: 18.5082 },
+  { kw: ['magarpatta', 'sopan baug', 'mundhwa', 'keshav nagar'], id: '23', name: 'Magarpatta - Sopan Baug', lng: 73.9265, lat: 18.5082 },
+  { kw: ['amanora', 'amanora park'], id: '24', name: 'Amanora Park Town', lng: 73.9402, lat: 18.5167 },
+  { kw: ['kharadi', 'eon it', 'eon free zone', 'chandan nagar'], id: '15', name: 'Kharadi - EON IT', lng: 73.9558, lat: 18.5512 },
+  { kw: ['wagholi', 'lohegaon road'], id: '14', name: 'Wagholi', lng: 73.9645, lat: 18.5578 },
+  { kw: ['viman nagar', 'vimannagar', 'phoenix marketcity', 'phoenix mall'], id: '8', name: 'Viman Nagar', lng: 73.9194, lat: 18.5651 },
+  { kw: ['kalyani nagar', 'kalyaninagar'], id: '8', name: 'Kalyani Nagar', lng: 73.9055, lat: 18.5489 },
+  { kw: ['yerwada', 'yerawada', 'gunjan'], id: '7', name: 'Yerwada', lng: 73.8918, lat: 18.5495 },
+  { kw: ['koregaon park', 'kp pune', 'north main road', 'mundhwa road'], id: '6', name: 'Koregaon Park', lng: 73.8946, lat: 18.5365 },
+  { kw: ['camp pune', 'mg road pune', 'east street', 'pune camp', 'sachapir street'], id: '5', name: 'Camp - MG Road', lng: 73.8788, lat: 18.5176 },
+  { kw: ['kothrud', 'kothrud depot', 'paud road', 'mayur colony', 'dahanukar colony'], id: '34', name: 'Kothrud', lng: 73.8083, lat: 18.5072 },
+  { kw: ['karve nagar', 'karvenagar'], id: '35', name: 'Karve Nagar', lng: 73.8218, lat: 18.4988 },
+  { kw: ['erandwane', 'erandwana', 'mehendale garage', 'nal stop'], id: '36', name: 'Erandwane', lng: 73.8348, lat: 18.5052 },
+  { kw: ['aundh', 'sakal nagar', 'parihar chowk', 'bremen chowk', 'd p road'], id: '37', name: 'Aundh', lng: 73.8082, lat: 18.5612 },
+  { kw: ['baner', 'baner road', 'pancard club'], id: '37', name: 'Baner', lng: 73.7872, lat: 18.5482 },
+  { kw: ['pashan', 'sus road', 'sus', 'bavdhan', 'nda road'], id: '38', name: 'Pashan - Sus', lng: 73.7775, lat: 18.5408 },
+  { kw: ['warje', 'warje malwadi', 'malwadi warje'], id: '39', name: 'Warje', lng: 73.7918, lat: 18.4795 },
+  { kw: ['dhayari', 'sinhagad road', 'sinhgad road', 'nanded city', 'manik baug', 'vadgaon bk'], id: '40', name: 'Dhayari - Sinhagad', lng: 73.8088, lat: 18.4612 },
+  { kw: ['katraj', 'bibwewadi', 'bibvewadi', 'dhankawadi', 'balaji nagar', 'kondhwa road'], id: '42', name: 'Katraj - Bibwewadi', lng: 73.8568, lat: 18.4488 },
+  { kw: ['hinjewadi', 'hinjawadi', 'rajiv gandhi infotech', 'phase 1', 'phase 2', 'phase 3'], id: '54', name: 'Hinjawadi IT Park', lng: 73.7252, lat: 18.5912 },
+  { kw: ['wakad', 'kaspate vasti', 'datta mandir wakad'], id: '55', name: 'Wakad', lng: 73.7642, lat: 18.5985 },
+  { kw: ['pimple saudagar', 'pimple nilakh', 'rahatani', 'pimpri', 'chinchwad', 'pcmc'], id: '53', name: 'Pimple Saudagar', lng: 73.8035, lat: 18.6005 },
+  { kw: ['lohegaon', 'pune airport', 'airport road'], id: '12', name: 'Lohegaon', lng: 73.9492, lat: 18.5825 },
+  { kw: ['shivajinagar', 'shivaji nagar', 'jm road', 'jangli maharaj', 'fc road', 'fergusson', 'deccan', 'model colony', 'sangamwadi'], id: '10', name: 'Shivajinagar - Deccan', lng: 73.8475, lat: 18.5308 },
+  { kw: ['swargate', 'market yard', 'gultekdi', 'parvati', 'sahakar nagar', 'mukund nagar'], id: '49', name: 'Swargate - Market Yard', lng: 73.8580, lat: 18.5010 },
+  { kw: ['vishrantwadi', 'dhanori', 'tingre nagar', 'tingrenagar', 'kalas'], id: '1', name: 'Dhanori - Vishrantwadi', lng: 73.8895, lat: 18.5908 },
+  { kw: ['ghorpadi', 'wanowrie road', 'fatimanagar', 'b t kawade', 'kawade road', 'ghorpadi gaon'], id: '26', name: 'Ghorpadi - Kawade Road', lng: 73.9090, lat: 18.5050 },
+  { kw: ['balewadi', 'balewadi stadium', 'baner balewadi'], id: '13', name: 'Balewadi', lng: 73.7762, lat: 18.5740 },
+  { kw: ['peth', 'kasba peth', 'budhwar peth', 'shaniwar peth', 'narayan peth', 'sadashiv peth', 'shukrawar peth', 'tulshibaug', 'mandai'], id: '17', name: 'Peth Areas - Central Pune', lng: 73.8550, lat: 18.5130 },
 ]
+
+// Central-Pune fallback so a clearly civic Pune post that names no specific
+// area is still shown (rather than silently dropped). Quality is already gated
+// by isPuneCivic() + classifyIssue() before this is used.
+const FALLBACK_WARD: WardEntry = { kw: [], id: '10', name: 'Pune (city-wide)', lng: 73.8567, lat: 18.5204 }
 
 const ISSUE_KW: Record<string, string[]> = {
   traffic:     ['traffic jam', 'traffic problem', 'signal not working', 'broken signal', 'junction blocked', 'congestion', 'pothole', 'potholes', 'illegal parking', 'gridlock', 'ambulance stuck', 'encroachment', 'road broken', 'bad road', 'road damage', 'speed breaker', 'footpath', 'divider', 'flyover', 'waterlogging road', 'open manhole', 'manhole'],
@@ -57,6 +68,14 @@ const PUNE_GATE = [
   'hinjewadi', 'wakad', 'pimple saudagar', 'lohegaon', 'yerwada', 'kalyani nagar',
   'camp pune', 'deccan', 'shivajinagar', 'kothrud', 'sinhagad', 'narhe', 'ambegaon',
   'fursungi', 'manjari', 'yewalewadi', 'mohammadwadi', 'tingrenagar',
+  // widened coverage
+  'pimpri', 'chinchwad', 'pcmc', 'balewadi', 'bavdhan', 'sus', 'mundhwa', 'ghorpadi',
+  'swargate', 'market yard', 'parvati', 'sahakar nagar', 'dhankawadi', 'vishrantwadi',
+  'dhanori', 'kalas', 'fc road', 'jm road', 'fergusson', 'paud road', 'sadashiv peth',
+  'kasba peth', 'budhwar peth', 'mandai', 'fatima nagar', 'salisbury park', 'gultekdi',
+  'maharshi nagar', 'kondhwa road', 'b t kawade', 'kawade road', 'sopan baug',
+  'keshav nagar', 'amanora', 'chandan nagar', 'nanded city', 'manik baug', 'pune 4110',
+  'punekars', 'pune city', 'punecity', 'punctraffic', '#pune', 'pune road',
 ]
 const EXCLUDE   = ['sri lanka', 'colombo', 'srilanka', 'pakistan', 'dhaka', 'mumbai only', 'delhi only', 'bangalore only', 'chennai only']
 const PROMO_BLOCKERS = [
@@ -96,6 +115,14 @@ function detectWard(text: string): WardEntry | null {
     if (w.kw.some((k) => t.includes(k))) return w
   }
   return null
+}
+
+// Always resolves to a ward for a post that already passed isPuneCivic() +
+// classifyIssue(). Uses the specific area if named, else the city-wide bucket —
+// so genuinely civic Pune complaints are never silently dropped and the map
+// keeps growing every day.
+function resolveWard(text: string): WardEntry {
+  return detectWard(text) ?? FALLBACK_WARD
 }
 
 function severityFor(text: string): number {
@@ -179,7 +206,7 @@ async function scrapeInstagram(token: string): Promise<NormPost[]> {
     if (caption.length < 15) continue
     if (!isPuneCivic(caption)) continue
     const issue = classifyIssue(caption); if (!issue) continue
-    const ward = detectWard(caption); if (!ward) continue
+    const ward = resolveWard(caption)
     const shortCode = (p.shortCode as string | undefined) ?? (p.id as string | undefined) ?? `ig${Date.now()}`
     out.push({
       source: 'instagram', source_post_id: `ig_${shortCode}`,
@@ -226,7 +253,7 @@ async function scrapeTwitter(token: string): Promise<NormPost[]> {
     if (text.length < 15) continue
     if (!isPuneCivic(text)) continue
     const issue = classifyIssue(text); if (!issue) continue
-    const ward = detectWard(text); if (!ward) continue
+    const ward = resolveWard(text)
     const id = (p.id_str ?? p.id ?? `tw${Date.now()}`) as string
     out.push({
       source: 'twitter', source_post_id: `tw_${id}`,
@@ -277,8 +304,7 @@ async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
       const combined = `${text} ${placeName} pune`
       if (!isPuneCivic(combined)) continue
       const issue = classifyIssue(combined); if (!issue) continue
-      const ward = detectWard(`${text} ${placeName}`) ?? detectWard(placeName)
-      if (!ward) continue
+      const ward = resolveWard(`${text} ${placeName}`)
       const rId = (r.reviewId ?? r.id ?? `gm${Date.now()}${Math.random()}`) as string
       out.push({
         source: 'gmaps', source_post_id: `gm_${rId}`,
@@ -321,7 +347,7 @@ async function scrapeFacebook(token: string): Promise<NormPost[]> {
     if (text.length < 20) continue
     if (!isPuneCivic(text)) continue
     const issue = classifyIssue(text); if (!issue) continue
-    const ward = detectWard(text); if (!ward) continue
+    const ward = resolveWard(text)
     const id = (p.postId ?? p.id ?? `fb${Date.now()}`) as string
     out.push({
       source: 'facebook', source_post_id: `fb_${id}`,
@@ -373,7 +399,7 @@ async function scrapeReddit(): Promise<NormPost[]> {
         if (text.length < 20) continue
         if (!isPuneCivic(text)) continue
         const issue = classifyIssue(text); if (!issue) continue
-        const ward = detectWard(text); if (!ward) continue
+        const ward = resolveWard(text)
         out.push({
           source: 'reddit',
           source_post_id: `reddit_${d.id as string}`,

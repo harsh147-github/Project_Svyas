@@ -1,0 +1,39 @@
+name: CI
+
+# Gate every change: type-check + production build must pass before merge.
+# This is what stops a broken build (like the map regression) from ever
+# reaching main again.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+defaults:
+  run:
+    working-directory: Project_Svyas/sushasan/apps/web
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Project_Svyas/sushasan/apps/web/package-lock.json
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Production build
+        run: npm run build
+        env:
+          NODE_ENV: production
