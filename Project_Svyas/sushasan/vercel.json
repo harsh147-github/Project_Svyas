@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/gov-dispatch",
       "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/founder-digest",
+      "schedule": "30 3 * * 1"
     }
   ],
   "headers": [
