@@ -91,10 +91,18 @@ function hashAuthor(u: string): string {
   return crypto.createHash('sha256').update(`${u}|sushasan_2026_05`).digest('hex').slice(0, 32)
 }
 
+// A citizen who tags #sushaasan (or sushaasan.in / @sushaasan) is explicitly
+// asking us to amplify their report — the branded-hashtag growth loop. These
+// are picked up even if they don't name a Pune locality.
+function isTagged(text: string): boolean {
+  return /#?\s?susha+\s?san|sushaasan\.in|@sushaasan/i.test(text)
+}
+
 function isPuneCivic(text: string): boolean {
   const t = text.toLowerCase()
   if (EXCLUDE.some((e) => t.includes(e))) return false
   if (PROMO_BLOCKERS.some((b) => t.includes(b))) return false
+  if (isTagged(t)) return true   // tagged us → always include
   return PUNE_GATE.some((g) => t.includes(g))
 }
 
@@ -107,6 +115,12 @@ function classifyIssue(text: string): string | null {
     if (score > bestScore) { bestScore = score; best = issue }
   }
   return best
+}
+
+// Classify, but never drop a post that explicitly tagged #sushaasan — if it
+// matches no specific issue, file it under "other" so it still reaches the map.
+function classifyIssueOrTagged(text: string): string | null {
+  return classifyIssue(text) ?? (isTagged(text) ? 'other' : null)
 }
 
 function detectWard(text: string): WardEntry | null {
@@ -176,6 +190,7 @@ const RUN_FACEBOOK = TODAY % 2 === 1   // Mon, Wed, Fri
 
 // ── Instagram — two alternating hashtag banks, 35 each ───────────────────────
 const IG_BANK_A = [
+  'sushaasan', 'sushaasanin',
   'punenews', 'punecity', 'pmcpune', 'punetraffic', 'punewatercrisis', 'punepotholes',
   'mohammadwadi', 'nibmpune', 'nibmroad', 'kondhwapune', 'kondhwa', 'wanowrie',
   'hadapsar', 'kothrud', 'baner', 'aundh', 'vimannagar', 'kharadi', 'magarpatta',
@@ -184,6 +199,7 @@ const IG_BANK_A = [
   'punesmart', 'punecorpn', 'punemunicipal', 'potholesindia', 'punegarbage', 'punedrain',
 ]
 const IG_BANK_B = [
+  'sushaasan', 'sushaasanin',
   'wanowriepune', 'salunkevihar', 'hadapsarpune', 'magarpattacity', 'koregaonpark',
   'kalyaninagarpune', 'kharadipune', 'wagholipune', 'hinjewadipune', 'banerpune',
   'kothrudpune', 'aundhpune', 'pashanpune', 'warjepune', 'katrajpune',
@@ -205,7 +221,7 @@ async function scrapeInstagram(token: string): Promise<NormPost[]> {
     const caption = (p.caption as string | undefined) ?? ''
     if (caption.length < 15) continue
     if (!isPuneCivic(caption)) continue
-    const issue = classifyIssue(caption); if (!issue) continue
+    const issue = classifyIssueOrTagged(caption); if (!issue) continue
     const ward = resolveWard(caption)
     const shortCode = (p.shortCode as string | undefined) ?? (p.id as string | undefined) ?? `ig${Date.now()}`
     out.push({
@@ -223,6 +239,8 @@ async function scrapeInstagram(token: string): Promise<NormPost[]> {
 
 // ── Twitter / X — runs every day, high query volume ──────────────────────────
 const TWITTER_QUERIES = [
+  // Branded hashtag — citizens who tag us get amplified onto the map
+  '#Sushaasan', '#sushaasan', '@sushaasan', 'sushaasan.in',
   // Hashtag searches
   '#PMCPune', '#PunePotholes', '#PuneTraffic', '#PuneWater', '#PuneGarbage',
   '#PuneElectricity', '#PuneCivic', '#PuneDrain', '#PuneFlooding', '#PuneMunicipal',
@@ -252,7 +270,7 @@ async function scrapeTwitter(token: string): Promise<NormPost[]> {
     const text = ((p.full_text ?? p.text ?? p.rawContent ?? '') as string)
     if (text.length < 15) continue
     if (!isPuneCivic(text)) continue
-    const issue = classifyIssue(text); if (!issue) continue
+    const issue = classifyIssueOrTagged(text); if (!issue) continue
     const ward = resolveWard(text)
     const id = (p.id_str ?? p.id ?? `tw${Date.now()}`) as string
     out.push({
@@ -303,7 +321,7 @@ async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
       // Google Maps reviews are location-specific — relax the Pune gate a bit
       const combined = `${text} ${placeName} pune`
       if (!isPuneCivic(combined)) continue
-      const issue = classifyIssue(combined); if (!issue) continue
+      const issue = classifyIssueOrTagged(combined); if (!issue) continue
       const ward = resolveWard(`${text} ${placeName}`)
       const rId = (r.reviewId ?? r.id ?? `gm${Date.now()}${Math.random()}`) as string
       out.push({
@@ -346,7 +364,7 @@ async function scrapeFacebook(token: string): Promise<NormPost[]> {
     const text = ((p.text ?? p.message ?? '') as string)
     if (text.length < 20) continue
     if (!isPuneCivic(text)) continue
-    const issue = classifyIssue(text); if (!issue) continue
+    const issue = classifyIssueOrTagged(text); if (!issue) continue
     const ward = resolveWard(text)
     const id = (p.postId ?? p.id ?? `fb${Date.now()}`) as string
     out.push({
@@ -398,7 +416,7 @@ async function scrapeReddit(): Promise<NormPost[]> {
         const text = `${title} ${body}`.trim()
         if (text.length < 20) continue
         if (!isPuneCivic(text)) continue
-        const issue = classifyIssue(text); if (!issue) continue
+        const issue = classifyIssueOrTagged(text); if (!issue) continue
         const ward = resolveWard(text)
         out.push({
           source: 'reddit',
