@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import { isGovAuthed } from '@/lib/auth'
 import { getMission, missionToContext } from '@/lib/gov-mission'
+import { chat } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -66,11 +66,11 @@ export async function POST(req: NextRequest) {
   const mission = await getMission(missionId)
   if (!mission) return NextResponse.json({ error: 'Mission not found' }, { status: 404 })
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
+  // Any configured provider (Claude / Sarvam / BharatGen) is enough.
+  if (!process.env.ANTHROPIC_API_KEY && !process.env.SARVAM_API_KEY && !process.env.BHARATGEN_API_KEY) {
     return NextResponse.json({
       answer:
-        'Sushaasan AI is not configured on this environment (ANTHROPIC_API_KEY missing). In production, this copilot answers grounded in the live grievance dossier shown on the left.',
+        'Sushaasan AI is not configured on this environment yet. In production, this copilot answers grounded in the live grievance dossier shown on the left.',
       degraded: true,
     })
   }
@@ -82,20 +82,15 @@ export async function POST(req: NextRequest) {
   }))
 
   try {
-    const client = new Anthropic({ apiKey })
-    const msg = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1100,
+    const answer = await chat({
+      task: 'assist',
+      maxTokens: 1100,
       system: `${SYSTEM}\n\n=== MISSION DOSSIER ===\n${context}`,
       messages: [
         ...priorTurns,
         { role: 'user', content: String(question).slice(0, 4000) },
       ],
     })
-    const answer = msg.content
-      .map((b) => (b.type === 'text' ? (b as { text: string }).text : ''))
-      .join('\n')
-      .trim()
     return NextResponse.json({ answer })
   } catch (err) {
     console.error('[gov/assist]', err)
