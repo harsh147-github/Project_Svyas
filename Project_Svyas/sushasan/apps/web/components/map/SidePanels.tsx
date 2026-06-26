@@ -318,7 +318,7 @@ export function CitizenPanel() {
 
   return (
     <aside
-      className="hidden md:flex absolute top-20 left-5 bottom-32 z-30 w-[340px]
+      className="hidden md:flex absolute top-20 left-5 z-30 w-[340px] max-h-[min(600px,calc(100dvh-13rem))]
                  flex-col pointer-events-auto
                  bg-white/92 backdrop-blur-md border border-ink/10 rounded-2xl
                  shadow-[0_8px_30px_rgba(10,31,58,0.10)] overflow-hidden"
@@ -568,7 +568,7 @@ export function GovernmentPanel() {
 
   return (
     <aside
-      className="hidden md:flex absolute top-20 right-5 bottom-32 z-30 w-[360px]
+      className="hidden md:flex absolute top-20 right-5 z-30 w-[360px] max-h-[min(600px,calc(100dvh-13rem))]
                  flex-col pointer-events-auto
                  bg-white/92 backdrop-blur-md border border-ink/10 rounded-2xl
                  shadow-[0_8px_30px_rgba(10,31,58,0.10)] overflow-hidden"

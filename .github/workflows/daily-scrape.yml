@@ -1,17 +1,19 @@
 name: Daily Scrape (map refresh)
 
-# Reliable daily data pipeline, independent of Vercel's cron tier.
-# Triggers the production scraper → new complaints land on the map every day,
-# then runs the gov brief dispatch. Also runnable on demand from the Actions tab.
+# Reliable daily data pipeline. Two layers:
+#   1. Best-effort TRIGGER of the production scraper (uses CRON_SECRET if the
+#      repo secret is set; Vercel's own cron also triggers it independently).
+#   2. VERIFY the map is actually fresh via /api/health — this is the real
+#      success condition, so we only alarm when the map is genuinely stale
+#      (not when a redundant trigger lacks auth).
 #
-# Optional repo secret CRON_SECRET: if set, sent as a Bearer token so the
-# endpoint only accepts authenticated triggers. If unset, the endpoint runs
-# open (its built-in "open when unset" mode) and this still works.
+# To make THIS workflow the primary trigger too, add a repo secret CRON_SECRET
+# matching the value set in Vercel (Settings → Secrets and variables → Actions).
 
 on:
   schedule:
     - cron: '30 3 * * *'   # 03:30 UTC daily ≈ 09:00 IST
-  workflow_dispatch:        # manual "Run workflow" button
+  workflow_dispatch:
 
 env:
   BASE_URL: https://sushaasan.in
@@ -21,22 +23,42 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Trigger daily scrape pipeline
+      - name: Trigger daily scrape (best-effort)
+        continue-on-error: true
         run: |
-          echo "Triggering scraper at $BASE_URL/api/cron/daily-pipeline …"
+          echo "Triggering $BASE_URL/api/cron/daily-pipeline …"
           code=$(curl -sS -m 600 -o /tmp/scrape.json -w '%{http_code}' \
             -X POST "$BASE_URL/api/cron/daily-pipeline" \
-            ${CRON_SECRET:+-H "authorization: Bearer $CRON_SECRET"})
-          echo "HTTP $code"; cat /tmp/scrape.json || true
-          if [ "$code" != "200" ]; then echo "::error::Scrape trigger failed ($code)"; exit 1; fi
-          node -e "const d=require('/tmp/scrape.json'); if(d.ok===false){console.error('pipeline error:',d.error);process.exit(1)} console.log('postsScraped='+(d.postsScraped??'?'),'clustersWritten='+(d.clustersWritten??'?'))"
+            ${CRON_SECRET:+-H "authorization: Bearer $CRON_SECRET"} || echo 000)
+          echo "HTTP $code"; cat /tmp/scrape.json 2>/dev/null || true
+          if [ "$code" = "401" ]; then
+            echo "::warning::Trigger got 401 — add the CRON_SECRET repo secret (matching Vercel) to enable this trigger. Vercel's own cron still runs the scrape; verifying freshness next."
+          elif [ "$code" != "200" ]; then
+            echo "::warning::Trigger returned $code; verifying freshness via /api/health next."
+          fi
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
 
-      - name: Dispatch government briefs
+      - name: Trigger gov dispatch (best-effort)
+        continue-on-error: true
         run: |
           curl -sS -m 120 -X GET "$BASE_URL/api/cron/gov-dispatch" \
-            ${CRON_SECRET:+-H "authorization: Bearer $CRON_SECRET"} -o /tmp/dispatch.json -w 'gov-dispatch HTTP %{http_code}\n' || true
-          cat /tmp/dispatch.json || true
+            ${CRON_SECRET:+-H "authorization: Bearer $CRON_SECRET"} -o /dev/null -w 'gov-dispatch HTTP %{http_code}\n' || true
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Verify the map is fresh (the real success condition)
+        run: |
+          curl -sS -m 30 "$BASE_URL/api/health" -o /tmp/health.json -w 'health HTTP %{http_code}\n'
+          cat /tmp/health.json
+          node <<'EOF'
+          const h = require('/tmp/health.json')
+          if (h.supabase !== true) { console.error('::error::Supabase not connected in production (status='+h.status+')'); process.exit(1) }
+          const last = h.pipeline && h.pipeline.completed_at
+          if (!last) { console.error('::error::No completed pipeline run recorded'); process.exit(1) }
+          const ageH = (Date.now() - new Date(last).getTime()) / 3.6e6
+          const c = h.counts || {}
+          console.log('last pipeline run ' + ageH.toFixed(1) + 'h ago; clusters=' + c.clusters + ', raw_posts=' + c.raw_posts)
+          if (ageH > 28) { console.error('::error::Map is STALE — pipeline has not run in ' + ageH.toFixed(1) + 'h'); process.exit(1) }
+          console.log('✅ Map is fresh — pipeline ran within the last ' + Math.ceil(ageH) + 'h')
+          EOF
