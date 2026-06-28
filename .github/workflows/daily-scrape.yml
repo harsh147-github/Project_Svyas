@@ -4,9 +4,9 @@ name: Daily Scrape (map refresh)
 # Triggers the production scraper → new complaints land on the map every day,
 # then runs the gov brief dispatch. Also runnable on demand from the Actions tab.
 #
-# Optional repo secret CRON_SECRET: if set, sent as a Bearer token so the
-# endpoint only accepts authenticated triggers. If unset, the endpoint runs
-# open (its built-in "open when unset" mode) and this still works.
+# Required repo secret CRON_SECRET: must match the value set in Vercel env vars.
+# Add it at: GitHub repo → Settings → Secrets and variables → Actions → New repository secret.
+# The endpoint returns 401 if CRON_SECRET is set in Vercel but omitted here.
 
 on:
   schedule:
@@ -14,7 +14,7 @@ on:
   workflow_dispatch:        # manual "Run workflow" button
 
 env:
-  BASE_URL: https://sushaasan.in
+  BASE_URL: https://sushasan.in
 
 jobs:
   scrape:
