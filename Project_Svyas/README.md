@@ -167,6 +167,6 @@ graph TD;
 ---
 
 <div align="center">
-  <p><b>Built by Harsh Sonawane — Pune, India</b></p>
+  <p><b>Built by the Sushaasan team — Pune, India</b></p>
   <i>The capability was never the problem. The infrastructure was. Sushasan is that infrastructure. 🇮🇳</i>
 </div>

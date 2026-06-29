@@ -1,6 +1,6 @@
 # Three Solution Approaches: Integration, Partnership, and Standalone
 
-**By Harsh Sonavane**
+**By the Sushaasan team**
 
 Based on comprehensive research, here are three viable paths forward for Sushaasan. Each has different technical requirements, government buy-in needs, adoption paths, and risks.
 
@@ -355,7 +355,7 @@ Build Sushaasan as an independent civic discussion platform and convince governm
 
 ---
 
-## Action Plan for Harsh
+## Action Plan for the team
 
 ### Next 3 Months:
 1. **Build MVP** (Approach 3 architecture—standalone)
@@ -390,5 +390,5 @@ You can't walk into DARPG on Day 1 asking for CPGRAMS integration. But you can:
 
 **The sequence matters.** Each phase builds credibility for the next.
 
-**By Harsh Sonavane**  
+**By the Sushaasan team**  
 **March 2026**

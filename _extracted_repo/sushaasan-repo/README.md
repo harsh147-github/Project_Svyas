@@ -178,7 +178,7 @@ In five years, 10 million Indians will participate in collective decision-making
 ---
 
 <div align="center">
-  <p><b>Built by Harsh Sonavane — Pune, India 🇮🇳</b></p>
+  <p><b>Built by the Sushaasan team — Pune, India 🇮🇳</b></p>
   <p><em>The capability was never the problem. The infrastructure was. Sushaasan is that infrastructure.</em></p>
   <p>Startup India BHASKAR ID: IN-0326-9427IW</p>
 </div>

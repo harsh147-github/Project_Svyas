@@ -211,7 +211,7 @@ No sales angle here — purely because building this right matters for the count
 
 Would you be open to a 20-minute call or async chat?
 
-Harsh Sonawane
+the Sushaasan team
 Founder, Sushaasan
 
 ---

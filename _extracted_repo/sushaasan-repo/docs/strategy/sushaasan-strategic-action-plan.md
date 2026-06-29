@@ -1,6 +1,6 @@
 # Sushaasan: Strategic Action Plan
 
-**For: Harsh Sonavane, Founder**  
+**For: the Sushaasan team, Founder**  
 **Prepared: March 2026**
 
 ---
@@ -240,7 +240,7 @@ NextGen CPGRAMS is building better pipes. Sushaasan is bringing the water."
 
 ## Your Pitch (2-Minute Version)
 
-"I'm Harsh Sonavane. I'm building Sushaasan—India's civic collective intelligence platform.
+"I'm the Sushaasan team. I'm building Sushaasan—India's civic collective intelligence platform.
 
 **The problem:** CPGRAMS works well for the 0.19% who use it. 700M Indians discuss civic issues on social media with zero government action. The gap is massive.
 
@@ -324,7 +324,7 @@ India has the capability to solve civic problems fast—Pune spent ₹500 crores
 
 ## Final Thought
 
-Harsh—you've done the research. You understand the problem deeply. You have a clear strategy. You know the risks.
+the team—you've done the research. You understand the problem deeply. You have a clear strategy. You know the risks.
 
 **The documentation is complete. The plan is solid. Now execute.**
 
@@ -338,7 +338,7 @@ You have everything you need to convince IIT Kanpur, government partners, and in
 
 ---
 
-**Founded by: Harsh Sonavane**  
+**Founded by: the Sushaasan team**  
 **March 2026**
 
 *"NextGen CPGRAMS is building better pipes. Sushaasan is bringing the water."*

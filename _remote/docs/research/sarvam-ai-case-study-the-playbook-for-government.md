@@ -2,7 +2,7 @@
 
 **How Sarvam AI went from founding to ₹1,900+ crore valuation and IndiaAI Mission selection in 20 months**
 
-**By Harsh Sonavane**
+**By the Sushaasan team**
 
 ---
 
@@ -203,7 +203,7 @@
 
 **Current valuation (Feb 2026):** ₹1,900+ crore (~$225M)
 
-**Why this matters for Harsh:**
+**Why this matters for the team:**
 - They raised BIG money BEFORE government selection
 - VCs bet on founder pedigree + national infrastructure narrative
 - Government amplified existing momentum (didn't create it)
@@ -237,7 +237,7 @@
 
 ---
 
-## Key Lessons for Harsh (Your Playbook)
+## Key Lessons for the team (Your Playbook)
 
 ### Lesson 1: Founder Credibility is Everything
 
@@ -462,10 +462,10 @@
 
 ---
 
-**What's your next move, Harsh?**
+**What's your next move, the team?**
 
 Apply to SIIC → Build demo → Prove pilot → Raise funding → Approach government
 
 That's the playbook.
 
-**Prepared by Harsh Sonavane, March 2026**
+**Prepared by the Sushaasan team, March 2026**

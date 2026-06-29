@@ -1,6 +1,6 @@
 # Sushaasan Instagram Launch Playbook
 **Account:** [@sushaasan.in](https://www.instagram.com/sushaasan.in/)
-**Built:** 2026-05-15 · For Harsh Sonawane · Strategy + design package
+**Built:** 2026-05-15 · For the Sushaasan team · Strategy + design package
 
 ---
 
@@ -19,7 +19,7 @@ Jyothish V M's NammaKasa wasn't viral by accident. It hit five levers in sequenc
 **Within 4 days:** 230 reports, 45,000 users. Press came to *him*.
 
 **Sushaasan's parallel:**
-- Founder-as-protagonist → **Harsh, solo founder, Pune**
+- Founder-as-protagonist → **the team, solo founder, Pune**
 - Shipped before announcing → **NIBM pilot is LIVE. 19k signals. 4 ranked interventions.**
 - One-line hook → **"The signal layer for Indian governance."** (Backup: *"Chaos in. Clarity out."*)
 - Privacy as a feature → **"No login. No personal data. We listen to what you already say."**
@@ -111,7 +111,7 @@ Use **12–18 hashtags max**. Mix three buckets: broad (#DigitalIndia), niche (#
 | 2 | **The problem** | "500 million Indians are talking. Nobody is listening." | Make the gap visceral. |
 | 3 | **The demo (NIBM live)** | "We just decoded one Pune traffic jam. Here's the receipt." | Prove it works. |
 | 4 | **How it works** | "Chaos in. Clarity out. In four steps." | Educate. Build credibility. |
-| 5 | **Founder story + CTA** | "I'm Harsh. I'm 22. I built this alone." | Trigger press + DMs. |
+| 5 | **Founder story + CTA** | "I'm the team. I'm 22. I built this alone." | Trigger press + DMs. |
 
 Post **one per day at 8:30 PM IST** (peak Pune scroll window). Stories every day amplifying the live carousel.
 

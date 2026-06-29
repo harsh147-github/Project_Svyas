@@ -127,7 +127,7 @@ export const solutionWorker = inngest.createFunction(
             timeline_days:       output.timeline_days,
             priority_score:      output.priority_score,
             budget_feasible:     output.budget_feasible,
-            status:              'draft',   // Harsh reviews first 5 before publish
+            status:              'draft',   // the team reviews first 5 before publish
             generated_at:        new Date().toISOString(),
           }, {
             onConflict: 'ward_id,issue_tag,week_start',

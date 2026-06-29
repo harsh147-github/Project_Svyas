@@ -207,7 +207,7 @@ export function GovActionBrief({
             <div className="space-y-1">
               <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-[#7a766d]">From</span>
               <div className="font-medium text-[#0B1F3A]">Sushaasan Civic Intelligence Platform</div>
-              <div className="text-[#7a766d] text-[11px]">sushasan.in · sonawaneharsh147@gmail.com</div>
+              <div className="text-[#7a766d] text-[11px]">sushasan.in · contact@sushaasan.in</div>
             </div>
           </div>
 

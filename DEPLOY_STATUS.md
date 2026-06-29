@@ -20,7 +20,7 @@ _Last updated by automated task: 2026-04-30_
 **Vercel login** — the CLI has a stale/invalid token. Run these two commands in PowerShell:
 
 ```powershell
-cd "C:\Users\Harsh\OneDrive\Documents\Claude\Projects\Project-Svyas\Project_Svyas\sushasan"
+cd "C:\Users\user\OneDrive\Documents\Claude\Projects\Project-Svyas\Project_Svyas\sushasan"
 
 vercel login
 ```

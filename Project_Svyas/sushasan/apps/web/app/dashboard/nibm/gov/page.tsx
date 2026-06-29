@@ -376,8 +376,8 @@ export default async function GovBriefPage() {
           </div>
           <p className="text-[11px] text-ink-3">
             Sushaasan Civic Intelligence · Ward 46 Pune ·{' '}
-            <a href="mailto:sonawaneharsh147@gmail.com" className="underline">
-              sonawaneharsh147@gmail.com
+            <a href="mailto:contact@sushaasan.in" className="underline">
+              contact@sushaasan.in
             </a>
           </p>
         </footer>

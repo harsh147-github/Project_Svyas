@@ -95,7 +95,7 @@ Body (keep under 150 words):
 ```
 Hi [Name],
 
-I'm Harsh, a student founder from Pune building Sushaasan — the convenience layer between 500M Indians discussing civic issues online and governance systems that hear none of it.
+I'm the team, a student founder from Pune building Sushaasan — the convenience layer between 500M Indians discussing civic issues online and governance systems that hear none of it.
 
 Think Blinkit for civic participation. We aggregate existing social media data (WhatsApp, Twitter, Reddit, Instagram) and AI-synthesizes it into structured governance intelligence. Citizens don't download a new app — we capture behavior that already exists.
 
@@ -107,8 +107,8 @@ TAM: $1B+ (CXM + GovTech convergence). No existing platform does this in India.
 
 Pitch deck + technical blueprint attached.
 
-Harsh Sonavane
-+91-9373987641
+the Sushaasan team
+
 sushaasan.in
 ```
 
@@ -280,8 +280,8 @@ Pitch deck and technical architecture blueprint attached.
 
 Worth 15 minutes?
 
-Harsh Sonavane | Founder, Sushaasan
-+91-9373987641 | sushaasan.in
+the Sushaasan team | Founder, Sushaasan
+sushaasan.in
 Startup India BHASKAR ID: IN-0326-9427IW
 ```
 

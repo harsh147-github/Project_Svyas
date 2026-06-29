@@ -5,7 +5,7 @@ Writes: /tmp/inserts.sql ready for Supabase execute_sql
 """
 import json, hashlib, re, urllib.request, urllib.parse, time, sys, os
 
-TMP = "C:/Users/Harsh/AppData/Local/Temp"
+TMP = "C:/Users/user/AppData/Local/Temp"
 OUT_SQL = "C:/tmp_sql/inserts.sql"
 os.makedirs(os.path.dirname(OUT_SQL), exist_ok=True)
 
@@ -196,7 +196,7 @@ reddit_queries = [
 for sub, q in reddit_queries:
     try:
         url = f"https://www.reddit.com/r/{sub}/search.json?q={urllib.parse.quote(q)}&sort=new&t=month&limit=50&restrict_sr=on"
-        req = urllib.request.Request(url, headers={"User-Agent": "Sushasan/1.0 (civic; sonawaneharsh147@gmail.com)"})
+        req = urllib.request.Request(url, headers={"User-Agent": "Sushasan/1.0 (civic; contact@sushaasan.in)"})
         with urllib.request.urlopen(req, timeout=30) as r:
             data = json.load(r)
         for c in data.get('data', {}).get('children', []):

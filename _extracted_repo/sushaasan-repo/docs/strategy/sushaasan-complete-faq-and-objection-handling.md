@@ -1,6 +1,6 @@
 # Sushaasan: Complete FAQ and Objection Handling
 
-**By Harsh Sonavane, Founder**
+**By the Sushaasan team, Founder**
 
 *Every question an investor, incubator, or government partner will ask — with honest, evidence-based answers.*
 
@@ -578,7 +578,7 @@ Research shows **government responds to viral embarrassment, not structured inpu
 
 **Short answer:** Because I'm not building alone. IIT Kanpur institutional partnership, government connections through SIIC/SINE, and hiring domain experts de-risk the execution.
 
-**Founder: Harsh Sonavane**
+**Founder: the Sushaasan team**
 - Based in Pune (pilot city)
 - First-time founder (honest about this)
 - Applying to IIT Kanpur SIIC and IIT Bombay SINE for institutional support
@@ -586,13 +586,13 @@ Research shows **government responds to viral embarrassment, not structured inpu
 
 **Execution strategy:**
 
-**What Harsh brings:**
+**What the team brings:**
 - Vision and product direction
 - Pune local connections for pilot partnerships
 - Ability to navigate government relationships (through incubators)
 - Fundraising and stakeholder management
 
-**What Harsh needs to hire:**
+**What the team needs to hire:**
 
 **1. Co-founder / CTO (critical first hire)**
 - Full-stack + ML/NLP expertise
@@ -967,7 +967,7 @@ Research shows **government responds to viral embarrassment, not structured inpu
 
 ---
 
-## Final Note: Why Harsh Sonavane is Building This
+## Final Note: Why the Sushaasan team is Building This
 
 This isn't a startup opportunity analysis. This is personal.
 
@@ -979,7 +979,7 @@ India doesn't lack execution capacity. We lack a structured way to know what cit
 
 **That gap is Sushaasan's purpose.**
 
-I'm Harsh Sonavane. First-time founder. Pune-based. Not a serial entrepreneur with exits. Not a former FAANG executive.
+I'm the Sushaasan team. First-time founder. Pune-based. Not a serial entrepreneur with exits. Not a former FAANG executive.
 
 But I understand this: **If you give people a voice that's actually heard, they'll use it. If you give government clear citizen priorities, they'll act on them.**
 
@@ -993,5 +993,5 @@ That's what Sushaasan is. That's what I'm building.
 
 ---
 
-*This FAQ prepared by Harsh Sonavane, March 2026*  
+*This FAQ prepared by the Sushaasan team, March 2026*  
 *For inquiries: [Contact through sushaasan.in]*

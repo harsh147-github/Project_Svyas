@@ -50,7 +50,7 @@ const SECTIONS = [
   {
     id: 'contact',
     title: 'Contact & Grievance Officer',
-    body: `For data-access, correction, or erasure requests, takedown requests, or any privacy concern, email our Grievance Officer (Harsh Sonavane) at grievance@sushaasan.in, or privacy@sushaasan.in. We acknowledge within 24 hours and resolve within 15 days, as required under the IT Rules, 2021 and the DPDP Act, 2023.`,
+    body: `For data-access, correction, or erasure requests, takedown requests, or any privacy concern, email our Grievance Officer (the Sushaasan team) at grievance@sushaasan.in, or privacy@sushaasan.in. We acknowledge within 24 hours and resolve within 15 days, as required under the IT Rules, 2021 and the DPDP Act, 2023.`,
   },
 ]
 

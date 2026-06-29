@@ -304,7 +304,7 @@ Prompt: `prompts/solution_synthesis.md`
 One solution per `(ward_id, issue_tag, week_start)`. Output stored in `solutions` table.
 
 **Guardrail:** Every cited post must resolve to a real `posts.id`. Solution rejected + re-run if not.
-**Human review:** First 5 solutions reviewed by Harsh before auto-publish.
+**Human review:** First 5 solutions reviewed by the team before auto-publish.
 
 ---
 
@@ -493,7 +493,7 @@ Per ward on `/dashboard`:
 - When resolved: date + brief description of what was done
 - Budget bar: annual allocation vs. total solution cost this cycle
 
-**Design principle from Harsh:** "When citizens do not know how a problem is being solved, they create chaos and panic." Transparency eliminates this. Every status update the corporator makes flows automatically to this view.
+**Design principle from the team:** "When citizens do not know how a problem is being solved, they create chaos and panic." Transparency eliminates this. Every status update the corporator makes flows automatically to this view.
 
 ---
 
@@ -601,7 +601,7 @@ SERPAPI_KEY=
 
 ## 14. Working Style
 
-- **Harsh = vision. Claude Code = execution across all domains.** Propose complete approach. Flag only the 1-3 decisions that genuinely require Harsh.
+- **the team = vision. Claude Code = execution across all domains.** Propose complete approach. Flag only the 1-3 decisions that genuinely require the team.
 - **Never give up.** Platform blocks a source? Find another. Model misfires? Tune the prompt. Always another path.
 - **Deploy constantly.** Every week something new goes live at sushasan.in. Never >7 days without a live update.
 - **Ship narrow, ship well.** Two pilot wards. Top 2 issue types. One closed loop. Then expand.

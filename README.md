@@ -205,7 +205,7 @@ We are deliberately designing **three parallel integration models** so we aren't
 
 ## Team & Ask
 
-**Founder:** Harsh Sonavane — solo technical founder, college student (Pune). Building in public.
+**Founder:** the Sushaasan team — solo technical founder, college student (Pune). Building in public.
 
 **Looking for:**
 
@@ -250,7 +250,7 @@ Multi-track: government grants (Startup India SISFS, IndiaAI Mission), impact VC
 
 ## Contact
 
-**Harsh Sonavane** · Founder
+**the Sushaasan team** · Founder
 📧 contact@sushaasan.in · 🌐 [sushaasan.framer.website](https://sushaasan.framer.website/)
 
 *"We're not building an app. We're building infrastructure for how democracy should work in the digital age."*

@@ -2,7 +2,7 @@
 
 **Building the Collective Intelligence Platform for India**
 
-**By Harsh Sonavane & Co-founder**  
+**By the Sushaasan team & Co-founder**  
 **March 2026**
 
 ---
@@ -453,7 +453,7 @@ Like Reddit gave everyone a space to discuss anything, **Sushaasan turns those d
 ## The Team: What We Need
 
 ### Current Team (Month 0):
-- **Harsh:** Founder, product vision, strategy, college partnerships
+- **the team:** Founder, product vision, strategy, college partnerships
 - **Co-founder:** Technical co-founder (full-stack, AI/ML)
 
 ### Immediate hires (Months 1-3):
@@ -594,7 +594,7 @@ Like Reddit gave everyone a space to discuss anything, **Sushaasan turns those d
 - By the time they notice, we have 100,000 users
 
 ### 5. **Founder advantage**
-- Harsh is student (understands user deeply)
+- the team is student (understands user deeply)
 - On campus (can iterate daily)
 - Passionate about democracy (mission-driven, not just VC-chasing)
 - India-first thinking (not copying Western products)
@@ -777,7 +777,7 @@ Like Reddit gave everyone a space to discuss anything, **Sushaasan turns those d
 
 ---
 
-**Founded by Harsh Sonavane & Co-founder**  
+**Founded by the Sushaasan team & Co-founder**  
 **March 2026**
 
 *"Everyone voices. AI solves. Democracy works."*

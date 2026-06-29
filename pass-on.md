@@ -1,8 +1,8 @@
 # pass-on.md — Sushaasan MVP build handoff
 
-> **Read this first if you are a fresh Claude Code session resuming Harsh's work.**
+> **Read this first if you are a fresh Claude Code session resuming the team's work.**
 > Last updated: 2026-05-06, mid-session before context limit.
-> Working as cofounder execution: Harsh = vision, Claude = build across all domains. Never give up.
+> Working as cofounder execution: the team = vision, Claude = build across all domains. Never give up.
 
 ---
 
@@ -11,7 +11,7 @@
 **Branch:** `feature/interactive-map-v2` (created this session, not yet pushed)
 **Live site:** https://sushaasan.in (still running old code — nothing deployed yet this session)
 **Code state:** All 9 of 15 tasks DONE on disk. 4 deferred. 2 verification/maintenance tasks open.
-**Two blockers Harsh must clear** (see "Blockers for Harsh" section).
+**Two blockers the team must clear** (see "Blockers for the team" section).
 
 ---
 
@@ -19,7 +19,7 @@
 
 | Thing | Location |
 |---|---|
-| **Live deployed Next.js code** | `C:\Users\Harsh\OneDrive\Documents\Claude\Projects\Project-Svyas\Project_Svyas\sushasan\` |
+| **Live deployed Next.js code** | `C:\Users\user\OneDrive\Documents\Claude\Projects\Project-Svyas\Project_Svyas\sushasan\` |
 | **GitHub remote** | `https://github.com/harsh147-github/Project_Svyas.git` (branch in flight: `feature/interactive-map-v2`) |
 | **Vercel project root** | `Project_Svyas/sushasan` (NOT top-level) |
 | **Vercel build command** | `cd apps/web && pnpm build` |
@@ -30,7 +30,7 @@
 
 ---
 
-## Blockers for Harsh (must clear before next agent commits)
+## Blockers for the team (must clear before next agent commits)
 
 ### Blocker 1 — `.git/index.lock` is stuck
 
@@ -39,7 +39,7 @@ This blocks all git commits. Code is safe on disk; only the commit step fails.
 
 **Fix (PowerShell, on your machine):**
 ```powershell
-cd "C:\Users\Harsh\OneDrive\Documents\Claude\Projects\Project-Svyas"
+cd "C:\Users\user\OneDrive\Documents\Claude\Projects\Project-Svyas"
 Remove-Item .git\index.lock -Force
 ```
 
@@ -53,7 +53,7 @@ OneDrive sync artefact that hits when two writers race.
 
 **Fix:** truncate to valid content. PowerShell:
 ```powershell
-$path = "C:\Users\Harsh\OneDrive\Documents\Claude\Projects\Project-Svyas\Project_Svyas\sushasan\apps\web\app\page.tsx"
+$path = "C:\Users\user\OneDrive\Documents\Claude\Projects\Project-Svyas\Project_Svyas\sushasan\apps\web\app\page.tsx"
 $content = Get-Content $path -Raw
 $clean = $content.TrimEnd([char]0, "`r", "`n") + "`n"
 [System.IO.File]::WriteAllText($path, $clean, [System.Text.UTF8Encoding]::new($false))
@@ -229,7 +229,7 @@ display patterns. Save findings to `docs/references.md`.
 
 ## Verification plan for the next session (task #14)
 
-After Harsh clears the two blockers:
+After the team clears the two blockers:
 
 1. `cd Project_Svyas/sushasan/apps/web && pnpm install && pnpm build` — confirm zero TS errors and successful build.
 2. `pnpm dev` — open `http://localhost:3000/` in browser.
@@ -243,12 +243,12 @@ After Harsh clears the two blockers:
    - **Mouse fast across map:** panels keep up, no flicker, ≤80ms response.
    - **CTA cluster:** ward labels do NOT bleed through. Spacing comfortable.
    - **Roads visible:** Positron streets show through pilot ward fill.
-4. `git push origin feature/interactive-map-v2` and open PR. Squash-merge after Harsh signs off.
+4. `git push origin feature/interactive-map-v2` and open PR. Squash-merge after the team signs off.
 5. After merge: deploy to Vercel (auto on main push, OR run `vercel --prod`).
 
 ---
 
-## Open decisions awaiting Harsh
+## Open decisions awaiting the team
 
 1. **Set Supabase env vars on Vercel?** The site currently runs on seed data.
    Setting `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_KEY` would activate
@@ -277,7 +277,7 @@ After Harsh clears the two blockers:
 ## Resume instructions
 
 1. Run `TaskList` — confirm task statuses match this doc.
-2. Have Harsh clear Blocker 1 (delete `.git/index.lock`) and Blocker 2 (truncate `page.tsx` null bytes).
+2. Have the team clear Blocker 1 (delete `.git/index.lock`) and Blocker 2 (truncate `page.tsx` null bytes).
 3. Run `pnpm build` from `Project_Svyas/sushasan/apps/web` — confirm clean.
 4. If clean: `git add -A && git commit` with the message above. `git push origin feature/interactive-map-v2`.
 5. Open PR description references this pass-on.md.

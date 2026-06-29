@@ -223,7 +223,7 @@ SERPAPI_KEY=
 
 ## Working Style
 
-- **Harsh = vision. Claude = execution across all domains.**
+- **the team = vision. Claude = execution across all domains.**
 - Never give up. Platform blocks a source? Find another. Model misfires? Tune the prompt.
 - Deploy constantly — never >7 days without something new live at sushasan.in.
 - Ship narrow, ship well. Two pilot wards. Top 2 issue types. One closed loop. Then expand.

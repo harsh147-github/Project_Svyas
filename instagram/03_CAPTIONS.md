@@ -142,10 +142,10 @@ If you are a citizen of Pune who is tired of shouting into the void — follow t
 One loop. Closed. Then another. Then a thousand.
 
 —
-Harsh Sonawane · Founder, Sushaasan
+the Sushaasan team · Founder, Sushaasan
 @sushaasan.in
 sushaasan.in
-sonawaneharsh147@gmail.com
+contact@sushaasan.in
 
 #Sushaasan #SoloFounder #IndianStartup #BuildInIndia #Pune #CivicTech #GovTech #DigitalIndia #DPI #AfterUPI #SovereignAI #IndianFounder #ProductDesign #FounderStory #PuneStartup
 
@@ -161,17 +161,17 @@ sonawaneharsh147@gmail.com
 
 **Story 4 (Day 4):** Diagram of the 4-step pipeline. Text: "How it works. Swipe for the breakdown." → Post 4.
 
-**Story 5 (Day 5):** Selfie or simple text card. "Hi. I'm Harsh. I built this alone. DM open." → Post 5.
+**Story 5 (Day 5):** Selfie or simple text card. "Hi. I'm the team. I built this alone. DM open." → Post 5.
 
 ---
 
 ## Outreach DM templates (send Day 1, same time as Post 1 goes live)
 
 **To press (Better India / YourStory / Inc42 / Mint Lounge / MoneyControl):**
-> Hi — I'm Harsh Sonawane, 22, solo founder in Pune. I just launched Sushaasan — an AI signal layer that listens to scattered citizen voices on social media, in 22 languages, and gives municipal corporators a ranked queue of solvable problems with cost estimates and timelines. Live pilot in NIBM/Wanowrie/Kondhwa — 19k signals synthesized, 4 interventions drafted. Dashboard public at sushaasan.in/dashboard/NIBM. Would love to send you the one-pager. — Harsh
+> Hi — I'm the Sushaasan team, 22, solo founder in Pune. I just launched Sushaasan — an AI signal layer that listens to scattered citizen voices on social media, in 22 languages, and gives municipal corporators a ranked queue of solvable problems with cost estimates and timelines. Live pilot in NIBM/Wanowrie/Kondhwa — 19k signals synthesized, 4 interventions drafted. Dashboard public at sushaasan.in/dashboard/NIBM. Would love to send you the one-pager. — the team
 
 **To PMC / PCMC / Smart City officers:**
-> Respected sir/madam — I am Harsh Sonawane, a Pune-based engineer and founder of Sushaasan. We have built (at no cost, as a pilot) an AI participation layer for civic governance. It listens to public social conversations across Pune wards and produces governance-ready briefs — ranked issues, cost estimates, named department owners. The first pilot is live for the NIBM corridor. I would be honoured to give a 20-minute walkthrough at your convenience. — Harsh · sonawaneharsh147@gmail.com
+> Respected sir/madam — I am the Sushaasan team, a Pune-based engineer and founder of Sushaasan. We have built (at no cost, as a pilot) an AI participation layer for civic governance. It listens to public social conversations across Pune wards and produces governance-ready briefs — ranked issues, cost estimates, named department owners. The first pilot is live for the NIBM corridor. I would be honoured to give a 20-minute walkthrough at your convenience. — the team · contact@sushaasan.in
 
-**To Pune ward WhatsApp groups (sent by Harsh or invited residents):**
+**To Pune ward WhatsApp groups (sent by the team or invited residents):**
 > Built this for our ward. No login, no personal data collected — only what people already post publicly. Feedback welcome: @sushaasan.in / sushaasan.in/dashboard/NIBM
