@@ -42,7 +42,7 @@ export async function GET() {
       db.from('raw_posts').select('*', { count: 'exact', head: true }).gte('scraped_at', since24h),
       db.from('posts').select('*', { count: 'exact', head: true }).gte('created_at', since24h),
       db.from('pipeline_runs')
-        .select('id, trigger_type, status, posts_scraped, completed_at, triggered_at')
+        .select('id, trigger_type, status, posts_scraped, completed_at, triggered_at, errors')
         .order('triggered_at', { ascending: false })
         .limit(1)
         .maybeSingle(),
@@ -59,6 +59,18 @@ export async function GET() {
     const p24 = posts24h ?? 0
     const classifyKeepingPace = r24 === 0 ? null : p24 >= Math.floor(r24 * 0.5)
 
+    // Per-source yield from the most recent run — lets a monitor spot a single
+    // scraper (Apify actor / token) that has silently died while the others
+    // still return data. A source stuck at 0 across runs needs attention.
+    const lastRunRow = lastRun as
+      | { posts_scraped?: number; errors?: { by_source?: Record<string, number> } }
+      | null
+    const bySource = lastRunRow?.errors?.by_source ?? null
+    const lastRunScraped = lastRunRow?.posts_scraped ?? null
+    const deadSources = bySource
+      ? Object.entries(bySource).filter(([, n]) => !(n > 0)).map(([s]) => s)
+      : []
+
     return NextResponse.json({
       status: pipelineHealthy ? 'live' : 'idle',
       supabase: true,
@@ -72,6 +84,15 @@ export async function GET() {
         raw_posts_scraped: r24,
         posts_classified: p24,
         classification_keeping_pace: classifyKeepingPace,
+      },
+      // Yield of the most recent scrape run. last_run_scraped === 0 means every
+      // Apify actor + Reddit returned nothing (token expired / actors broken) —
+      // an unambiguous "scraper is down" signal, distinct from a quiet day where
+      // posts are scraped but dedup drops them as already-seen.
+      scrape: {
+        last_run_scraped: lastRunScraped,
+        by_source: bySource,
+        dead_sources: deadSources,
       },
       pipeline: lastRun ?? null,
       checks: {
