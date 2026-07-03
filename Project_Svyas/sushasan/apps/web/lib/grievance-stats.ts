@@ -11,7 +11,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 // writing a raw_posts row, so it is deliberately NOT counted as a new grievance
 // here — this ledger tracks distinct reports, not agreement taps.)
 
-export const SCRAPER_SOURCES = ['twitter', 'reddit', 'instagram', 'facebook', 'gmaps'] as const
+export const SCRAPER_SOURCES = ['twitter', 'reddit', 'instagram', 'facebook', 'gmaps', 'news'] as const
 export const CITIZEN_SOURCE = 'web'
 const KNOWN_SOURCES = [CITIZEN_SOURCE, ...SCRAPER_SOURCES]
 
