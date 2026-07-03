@@ -16,6 +16,7 @@ const SOURCE_LABEL: Record<string, string> = {
   instagram: 'Instagram',
   facebook: 'Facebook',
   gmaps: 'Google Maps',
+  news: 'News (RSS)',
   other: 'Other',
 }
 

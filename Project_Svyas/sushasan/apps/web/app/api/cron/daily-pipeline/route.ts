@@ -10,41 +10,61 @@ export const dynamic = 'force-dynamic'
 // ── Ward keyword → ward_id + lng/lat ─────────────────────────────────────────
 type WardEntry = { kw: string[]; id: string; name: string; lng: number; lat: number }
 const WARD_MAP: WardEntry[] = [
-  { kw: ['mohammadwadi', 'mohammad wadi', 'nibm', 'nibm road', 'uruli devachi', 'undri', 'pisoli', 'handewadi', 'autadewadi', 'konark pyramid', 'clover park', 'corinthians', 'kumar park'], id: '46', name: 'NIBM – Mohammadwadi', lng: 73.9102, lat: 18.4651 },
-  { kw: ['salunke vihar', 'salunke', 'wanowrie', 'wanowarie', 'kondhwa bk', 'kondhwa budruk', 'yewalewadi', 'kausar baug'], id: '47', name: 'Salunke Vihar – Wanowrie', lng: 73.9015, lat: 18.4729 },
-  { kw: ['kondhwa kh', 'kondhwa khurd', 'mithanagar', 'kondhwa', 'khadi machine', 'medha nagar'], id: '41', name: 'Kondhwa Kh - Mithanagar', lng: 73.8762, lat: 18.4642 },
-  { kw: ['wanawadi', 'fatima nagar', 'salisbury park', 'maharshi nagar'], id: '43', name: 'Wanawadi - Kausar Baug', lng: 73.8985, lat: 18.4793 },
+  // ── Pilot belt (NIBM / Kondhwa / Wanowrie / Hadapsar) ──────────────────────
+  { kw: ['mohammadwadi', 'mohammad wadi', 'nibm', 'nibm road', 'uruli devachi', 'undri', 'pisoli', 'handewadi', 'autadewadi', 'konark pyramid', 'clover park', 'corinthians', 'kumar park'], id: '46', name: 'Mohammad Wadi - Uruli Devachi (NIBM)', lng: 73.9102, lat: 18.4651 },
+  { kw: ['kondhwa bk', 'kondhwa budruk', 'yewalewadi'], id: '47', name: 'Kondhwa Bk - Yewalewadi', lng: 73.8780, lat: 18.4489 },
+  { kw: ['wanawadi', 'salunke vihar', 'salunke', 'wanowrie', 'wanowarie', 'kausar baug', 'fatima nagar', 'salisbury park'], id: '43', name: 'Wanawadi - Kausar Baug', lng: 73.8985, lat: 18.4793 },
+  { kw: ['kondhwa kh', 'kondhwa khurd', 'mithanagar', 'kondhwa', 'kondhwa road', 'khadi machine', 'medha nagar'], id: '41', name: 'Kondhwa Kh - Mithanagar', lng: 73.8762, lat: 18.4642 },
   { kw: ['ramtekadi', 'sayyadnagar', 'gondhale nagar'], id: '42', name: 'Ramtekadi - Sayyadnagar', lng: 73.8950, lat: 18.4750 },
   { kw: ['boratenagar', 'sasanenagar', 'kale borate'], id: '44', name: 'Kale Boratenagar - Sasanenagar', lng: 73.9000, lat: 18.4680 },
   { kw: ['hadapsar', 'satavwadi', 'gadital', 'sasane nagar', 'malwadi'], id: '25', name: 'Hadapsar Gaothan - Satavwadi', lng: 73.9265, lat: 18.5082 },
-  { kw: ['magarpatta', 'sopan baug', 'mundhwa', 'keshav nagar'], id: '23', name: 'Magarpatta - Sopan Baug', lng: 73.9265, lat: 18.5082 },
-  { kw: ['amanora', 'amanora park'], id: '24', name: 'Amanora Park Town', lng: 73.9402, lat: 18.5167 },
-  { kw: ['kharadi', 'eon it', 'eon free zone', 'chandan nagar'], id: '15', name: 'Kharadi - EON IT', lng: 73.9558, lat: 18.5512 },
-  { kw: ['wagholi', 'lohegaon road'], id: '14', name: 'Wagholi', lng: 73.9645, lat: 18.5578 },
-  { kw: ['viman nagar', 'vimannagar', 'phoenix marketcity', 'phoenix mall'], id: '8', name: 'Viman Nagar', lng: 73.9194, lat: 18.5651 },
-  { kw: ['kalyani nagar', 'kalyaninagar'], id: '8', name: 'Kalyani Nagar', lng: 73.9055, lat: 18.5489 },
-  { kw: ['yerwada', 'yerawada', 'gunjan'], id: '7', name: 'Yerwada', lng: 73.8918, lat: 18.5495 },
-  { kw: ['koregaon park', 'kp pune', 'north main road', 'mundhwa road'], id: '6', name: 'Koregaon Park', lng: 73.8946, lat: 18.5365 },
-  { kw: ['camp pune', 'mg road pune', 'east street', 'pune camp', 'sachapir street'], id: '5', name: 'Camp - MG Road', lng: 73.8788, lat: 18.5176 },
-  { kw: ['kothrud', 'kothrud depot', 'paud road', 'mayur colony', 'dahanukar colony'], id: '34', name: 'Kothrud', lng: 73.8083, lat: 18.5072 },
-  { kw: ['karve nagar', 'karvenagar'], id: '35', name: 'Karve Nagar', lng: 73.8218, lat: 18.4988 },
-  { kw: ['erandwane', 'erandwana', 'mehendale garage', 'nal stop'], id: '36', name: 'Erandwane', lng: 73.8348, lat: 18.5052 },
-  { kw: ['aundh', 'sakal nagar', 'parihar chowk', 'bremen chowk', 'd p road'], id: '37', name: 'Aundh', lng: 73.8082, lat: 18.5612 },
-  { kw: ['baner', 'baner road', 'pancard club'], id: '37', name: 'Baner', lng: 73.7872, lat: 18.5482 },
-  { kw: ['pashan', 'sus road', 'sus', 'bavdhan', 'nda road'], id: '38', name: 'Pashan - Sus', lng: 73.7775, lat: 18.5408 },
-  { kw: ['warje', 'warje malwadi', 'malwadi warje'], id: '39', name: 'Warje', lng: 73.7918, lat: 18.4795 },
-  { kw: ['dhayari', 'sinhagad road', 'sinhgad road', 'nanded city', 'manik baug', 'vadgaon bk'], id: '40', name: 'Dhayari - Sinhagad', lng: 73.8088, lat: 18.4612 },
-  { kw: ['katraj', 'bibwewadi', 'bibvewadi', 'dhankawadi', 'balaji nagar', 'kondhwa road'], id: '42', name: 'Katraj - Bibwewadi', lng: 73.8568, lat: 18.4488 },
-  { kw: ['hinjewadi', 'hinjawadi', 'rajiv gandhi infotech', 'phase 1', 'phase 2', 'phase 3'], id: '54', name: 'Hinjawadi IT Park', lng: 73.7252, lat: 18.5912 },
-  { kw: ['wakad', 'kaspate vasti', 'datta mandir wakad'], id: '55', name: 'Wakad', lng: 73.7642, lat: 18.5985 },
-  { kw: ['pimple saudagar', 'pimple nilakh', 'rahatani', 'pimpri', 'chinchwad', 'pcmc'], id: '53', name: 'Pimple Saudagar', lng: 73.8035, lat: 18.6005 },
-  { kw: ['lohegaon', 'pune airport', 'airport road'], id: '12', name: 'Lohegaon', lng: 73.9492, lat: 18.5825 },
-  { kw: ['shivajinagar', 'shivaji nagar', 'jm road', 'jangli maharaj', 'fc road', 'fergusson', 'deccan', 'model colony', 'sangamwadi'], id: '10', name: 'Shivajinagar - Deccan', lng: 73.8475, lat: 18.5308 },
-  { kw: ['swargate', 'market yard', 'gultekdi', 'parvati', 'sahakar nagar', 'mukund nagar'], id: '49', name: 'Swargate - Market Yard', lng: 73.8580, lat: 18.5010 },
-  { kw: ['vishrantwadi', 'dhanori', 'tingre nagar', 'tingrenagar', 'kalas'], id: '1', name: 'Dhanori - Vishrantwadi', lng: 73.8895, lat: 18.5908 },
-  { kw: ['ghorpadi', 'wanowrie road', 'fatimanagar', 'b t kawade', 'kawade road', 'ghorpadi gaon'], id: '26', name: 'Ghorpadi - Kawade Road', lng: 73.9090, lat: 18.5050 },
-  { kw: ['balewadi', 'balewadi stadium', 'baner balewadi'], id: '13', name: 'Balewadi', lng: 73.7762, lat: 18.5740 },
-  { kw: ['peth', 'kasba peth', 'budhwar peth', 'shaniwar peth', 'narayan peth', 'sadashiv peth', 'shukrawar peth', 'tulshibaug', 'mandai'], id: '17', name: 'Peth Areas - Central Pune', lng: 73.8550, lat: 18.5130 },
+  { kw: ['wanwadi', 'vaiduwadi'], id: '26', name: 'Wanwadi Gaothan - Vaiduwadi', lng: 73.9128, lat: 18.5058 },
+  // ── East ────────────────────────────────────────────────────────────────────
+  { kw: ['magarpatta', 'sadhana vidyalaya'], id: '24', name: 'Magarpatta - Sadhana Vidyalaya', lng: 73.9291, lat: 18.5114 },
+  { kw: ['amanora', 'amanora park', 'sadesataranali'], id: '23', name: 'Sadesataranali - Aakashwani (Amanora)', lng: 73.9402, lat: 18.5167 },
+  { kw: ['koregaon park', 'kp pune', 'north main road', 'mundhwa', 'mundhwa road', 'keshav nagar', 'sopan baug', 'ghorpadi', 'ghorpadi gaon', 'b t kawade', 'kawade road'], id: '21', name: 'Koregaon Park - Mundhwa', lng: 73.8946, lat: 18.5365 },
+  { kw: ['kharadi', 'eon it', 'eon free zone', 'wagholi'], id: '4', name: 'East Kharadi - Wagholi', lng: 73.9558, lat: 18.5512 },
+  { kw: ['chandan nagar', 'vadgaon sheri'], id: '5', name: 'West Kharadi - Vadgaon Sheri', lng: 73.9339, lat: 18.5511 },
+  { kw: ['viman nagar', 'vimannagar', 'phoenix marketcity', 'phoenix mall', 'lohegaon', 'pune airport', 'airport road'], id: '3', name: 'Lohegaon - Vimannagar', lng: 73.9194, lat: 18.5651 },
+  { kw: ['kalyani nagar', 'kalyaninagar', 'nagpur chawl'], id: '7', name: 'Kalyaninagar - Nagpur Chawl', lng: 73.9055, lat: 18.5489 },
+  { kw: ['yerwada', 'yerawada', 'gunjan'], id: '9', name: 'Yerwada', lng: 73.8918, lat: 18.5495 },
+  { kw: ['manjari', 'shewalwadi'], id: '22', name: 'Manjari Bk - Shewalwadi', lng: 73.9714, lat: 18.5087 },
+  { kw: ['fursungi'], id: '45', name: 'Fursungi', lng: 73.9589, lat: 18.4786 },
+  // ── Central ─────────────────────────────────────────────────────────────────
+  { kw: ['camp pune', 'mg road pune', 'east street', 'pune camp', 'sachapir street', 'pune station'], id: '20', name: 'Pune Station - Ambedkar Road', lng: 73.8742, lat: 18.5242 },
+  { kw: ['shivajinagar', 'shivaji nagar', 'jm road', 'jangli maharaj', 'deccan gymkhana', 'model colony', 'sangamwadi'], id: '10', name: 'Shivajinagar Gaothan - Sangamwadi', lng: 73.8475, lat: 18.5308 },
+  // 28 must precede 17: detectWard is first-match-wins and 17's bare 'peth'
+  // would otherwise swallow 'bhavani peth'.
+  { kw: ['bhavani peth', 'kasewadi', 'lohiyanagar'], id: '28', name: 'Mahatma Phule Smarak - Bhavani Peth', lng: 73.8640, lat: 18.5100 },
+  { kw: ['peth', 'kasba peth', 'budhwar peth', 'shaniwar peth', 'narayan peth', 'sadashiv peth', 'shukrawar peth', 'tulshibaug', 'mandai'], id: '17', name: 'Shaniwar Peth - Navi Peth', lng: 73.8550, lat: 18.5130 },
+  { kw: ['bopodi'], id: '11', name: 'Bopodi - SPPU', lng: 73.8323, lat: 18.5541 },
+  // ── North ───────────────────────────────────────────────────────────────────
+  { kw: ['vishrantwadi', 'dhanori'], id: '1', name: 'Dhanori - Vishrantwadi', lng: 73.8895, lat: 18.5908 },
+  { kw: ['tingre nagar', 'tingrenagar', 'sanjay park'], id: '2', name: 'Tingrenagar - Sanjay Park', lng: 73.8985, lat: 18.5767 },
+  { kw: ['kalas', 'phulenagar'], id: '8', name: 'Kalas - Phulenagar', lng: 73.8780, lat: 18.5694 },
+  // ── West ────────────────────────────────────────────────────────────────────
+  { kw: ['kothrud', 'kothrud depot', 'paud road', 'mayur colony', 'dahanukar colony'], id: '31', name: 'Kothrud Gaothan - Shivtirthnagar', lng: 73.8083, lat: 18.5072 },
+  { kw: ['karve nagar', 'karvenagar'], id: '36', name: 'Karvenagar', lng: 73.8218, lat: 18.4988 },
+  { kw: ['erandwane', 'erandwana', 'mehendale garage', 'nal stop', 'fergusson', 'fc road'], id: '16', name: 'Fergusson College - Erandwane', lng: 73.8348, lat: 18.5052 },
+  { kw: ['aundh', 'sakal nagar', 'parihar chowk', 'bremen chowk', 'balewadi', 'balewadi stadium'], id: '12', name: 'Aundh - Balewadi', lng: 73.8082, lat: 18.5612 },
+  { kw: ['baner', 'baner road', 'pancard club', 'sus road', 'sus gaon', 'mahalunge'], id: '13', name: 'Baner - Sus - Mahalunge', lng: 73.7872, lat: 18.5482 },
+  { kw: ['pashan', 'bavdhan', 'nda road'], id: '14', name: 'Pashan - Bawdhan', lng: 73.7775, lat: 18.5408 },
+  { kw: ['warje', 'warje malwadi', 'malwadi warje', 'kondhave dhavde'], id: '34', name: 'Warje - Kondhave Dhavde', lng: 73.7918, lat: 18.4795 },
+  // ── South ───────────────────────────────────────────────────────────────────
+  { kw: ['dhayari', 'sinhagad road', 'sinhgad road', 'dhayari phata'], id: '54', name: 'Dhayari - Ambegaon', lng: 73.8088, lat: 18.4612 },
+  { kw: ['vadgaon bk', 'vadgaon budruk', 'manik baug', 'manikbaug'], id: '51', name: 'Vadgaon Bk - Manikbaug', lng: 73.8311, lat: 18.4746 },
+  { kw: ['nanded city', 'sun city'], id: '52', name: 'Nanded City - Sun City', lng: 73.8169, lat: 18.4746 },
+  { kw: ['narhe', 'khadakwasla'], id: '53', name: 'Khadakwasla - Narhe', lng: 73.8008, lat: 18.4372 },
+  { kw: ['katraj', 'gokulnagar'], id: '58', name: 'Katraj - Gokulnagar', lng: 73.8578, lat: 18.4428 },
+  { kw: ['bibwewadi', 'bibvewadi', 'gangadham'], id: '40', name: 'Bibvewadi - Gangadham', lng: 73.8759, lat: 18.4839 },
+  { kw: ['dhankawadi', 'ambegaon pathar'], id: '55', name: 'Dhankawadi - Ambegaon Pathar', lng: 73.8376, lat: 18.4605 },
+  { kw: ['balaji nagar', 'balajinagar', 'shankar maharaj'], id: '49', name: 'Balajinagar - Shankar Maharaj Math', lng: 73.8605, lat: 18.4713 },
+  { kw: ['bharati vidyapeeth', 'chaitanyanagar'], id: '56', name: 'Chaitanyanagar - Bharati Vidyapeeth', lng: 73.8528, lat: 18.4588 },
+  { kw: ['sukhsagarnagar', 'rajiv gandhinagar'], id: '57', name: 'Sukhsagarnagar - Rajiv Gandhinagar', lng: 73.8652, lat: 18.4518 },
+  { kw: ['swargate', 'market yard', 'gultekdi', 'mukund nagar', 'maharshi nagar', 'maharshinagar'], id: '39', name: 'Market Yard - Maharshinagar', lng: 73.8580, lat: 18.5010 },
+  { kw: ['sahakar nagar', 'sahakarnagar', 'taljai'], id: '50', name: 'Sahakarnagar - Taljai', lng: 73.8479, lat: 18.4820 },
+  { kw: ['parvati', 'padmavati', 'shivdarshan'], id: '38', name: 'Shivdarshan - Padmavati', lng: 73.8521, lat: 18.4931 },
+  { kw: ['super indiranagar', 'upper indiranagar'], id: '48', name: 'Upper Super Indiranagar', lng: 73.8702, lat: 18.4665 },
 ]
 
 // Central-Pune fallback so a clearly civic Pune post that names no specific
@@ -60,16 +80,22 @@ const ISSUE_KW: Record<string, string[]> = {
   other:       ['tree fallen', 'tree fall', 'illegal construction', 'encroachment', 'noise pollution', 'hawker', 'open defecation', 'public toilet', 'park damaged', 'broken bench', 'stray cattle', 'abandoned vehicle', 'illegal hoarding', 'safety hazard'],
 }
 
+// PCMC localities (Hinjewadi, Wakad, Pimpri-Chinchwad…) are deliberately NOT
+// in this gate: they belong to a different municipal corporation and have no
+// PMC ward polygon, so admitting them would misattribute their complaints to
+// PMC wards. Bare 'sus' and 'deccan' are also out — 'sus' substring-matches
+// "suspect"/"sustainable" and 'deccan' matches Deccan Herald/Chronicle
+// datelines; the specific forms ('sus road', 'deccan gymkhana') remain.
 const PUNE_GATE = [
   'pune', 'nibm', 'kondhwa', 'mohammadwadi', 'salunke', 'wanowrie', 'hadapsar',
   'magarpatta', 'pmc', 'wanawadi', 'undri', 'mohammad wadi', 'pisoli', 'handewadi',
   'kharadi', 'wagholi', 'viman nagar', 'koregaon park', 'kothrud', 'karve nagar',
   'erandwane', 'aundh', 'baner', 'pashan', 'warje', 'dhayari', 'katraj', 'bibwewadi',
-  'hinjewadi', 'wakad', 'pimple saudagar', 'lohegaon', 'yerwada', 'kalyani nagar',
-  'camp pune', 'deccan', 'shivajinagar', 'kothrud', 'sinhagad', 'narhe', 'ambegaon',
-  'fursungi', 'manjari', 'yewalewadi', 'mohammadwadi', 'tingrenagar',
+  'lohegaon', 'yerwada', 'kalyani nagar',
+  'camp pune', 'deccan gymkhana', 'shivajinagar', 'sinhagad', 'narhe', 'ambegaon',
+  'fursungi', 'manjari', 'yewalewadi', 'tingrenagar',
   // widened coverage
-  'pimpri', 'chinchwad', 'pcmc', 'balewadi', 'bavdhan', 'sus', 'mundhwa', 'ghorpadi',
+  'balewadi', 'bavdhan', 'sus road', 'mundhwa', 'ghorpadi',
   'swargate', 'market yard', 'parvati', 'sahakar nagar', 'dhankawadi', 'vishrantwadi',
   'dhanori', 'kalas', 'fc road', 'jm road', 'fergusson', 'paud road', 'sadashiv peth',
   'kasba peth', 'budhwar peth', 'mandai', 'fatima nagar', 'salisbury park', 'gultekdi',
@@ -257,10 +283,12 @@ const TWITTER_QUERIES = [
 ]
 
 async function scrapeTwitter(token: string): Promise<NormPost[]> {
+  // 250/day ≈ 7.5k tweets/mo ≈ ₹250 at Apify rates — well inside the ₹2,000/mo
+  // Twitter budget. No language filter: Punekars complain in Hinglish/Marathi
+  // too, and the keyword gates downstream still control quality.
   const items = await apifyPost('apidojo~tweet-scraper', token, {
     searchTerms: TWITTER_QUERIES,
-    maxItems: 100,
-    tweetLanguage: 'en',
+    maxItems: 250,
     searchMode: 'live',
     addUserInfo: false,
   }, 200)
@@ -435,6 +463,60 @@ async function scrapeReddit(): Promise<NormPost[]> {
   return out
 }
 
+// ── Pune civic news via Google News RSS — free, genuinely new content daily ──
+// Unlike hashtag re-scrapes (mostly dedup'd), news publishes fresh articles
+// every day, so this source reliably grows the map. `when:2d` limits results
+// to the last 48h; the raw_posts upsert dedups any overlap between runs.
+const NEWS_QUERIES = [
+  'Pune PMC water supply', 'Pune pothole road repair', 'Pune traffic jam signal',
+  'Pune garbage waste PMC', 'Pune MSEDCL power cut', 'Pune waterlogging drain monsoon',
+  'Pune civic ward corporator', 'PMC Pune complaint residents',
+]
+
+function rssField(item: string, tag: string): string {
+  const m = item.match(new RegExp(`<${tag}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${tag}>`))
+  return (m?.[1] ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+async function scrapeNews(): Promise<NormPost[]> {
+  const out: NormPost[] = []
+  for (const q of NEWS_QUERIES) {
+    try {
+      const url = `https://news.google.com/rss/search?q=${encodeURIComponent(`${q} when:2d`)}&hl=en-IN&gl=IN&ceid=IN:en`
+      const r = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Sushasan civic monitor; sushaasan.in)' },
+        signal: AbortSignal.timeout(20_000),
+      })
+      if (!r.ok) continue
+      const items = (await r.text()).split('<item>').slice(1)
+      for (const item of items.slice(0, 20)) {
+        const title = rssField(item, 'title')
+        const desc = rssField(item, 'description')
+        const link = rssField(item, 'link')
+        const text = desc && !desc.startsWith(title) ? `${title}. ${desc}` : title
+        if (title.length < 15) continue
+        if (!isPuneCivic(text)) continue
+        const issue = classifyIssueOrTagged(text); if (!issue) continue
+        const ward = resolveWard(text)
+        // Stable id from the article URL so the same story dedups across runs
+        const id = crypto.createHash('sha256').update(link || title).digest('hex').slice(0, 24)
+        const pubDate = new Date(rssField(item, 'pubDate'))
+        out.push({
+          source: 'news', source_post_id: `news_${id}`,
+          raw_text: text.slice(0, 4000),
+          author_hash: hashAuthor('news-rss'),
+          posted_at: isNaN(pubDate.getTime()) ? null : pubDate.toISOString(),
+          geo_hint: ward.name,
+          ward_id: ward.id, issue_tag: issue, severity: severityFor(text),
+          ward_lng: ward.lng, ward_lat: ward.lat,
+        })
+      }
+      await new Promise((res) => setTimeout(res, 500))
+    } catch (e) { console.error(`[news] ${q}:`, e) }
+  }
+  return out
+}
+
 // ── Cluster aggregation ──────────────────────────────────────────────────────
 type ClusterAgg = { ward_id: string; issue_tag: string; lng: number; lat: number; severities: number[]; sources: Set<string>; sampleTexts: string[] }
 
@@ -467,16 +549,17 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
 
   // All scrapers in parallel — each returns [] on failure, never throws
   // Google Maps + Facebook alternate days to spread Apify credit spend evenly
-  const [ig, rd, tw, gm, fb] = await Promise.all([
+  const [ig, rd, tw, gm, fb, nw] = await Promise.all([
     scrapeInstagram(token),
     scrapeReddit(),
     scrapeTwitter(token),
     scrapeGoogleMaps(token),    // [] on off-days (RUN_GMAPS=false)
     scrapeFacebook(token),      // [] on off-days (RUN_FACEBOOK=false)
+    scrapeNews(),               // free RSS — runs every day
   ])
-  console.log(`[pipeline] day=${TODAY} gmaps=${RUN_GMAPS} fb=${RUN_FACEBOOK} raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length}`)
+  console.log(`[pipeline] day=${TODAY} gmaps=${RUN_GMAPS} fb=${RUN_FACEBOOK} raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length} nw=${nw.length}`)
 
-  const all: NormPost[] = [...ig, ...rd, ...tw, ...gm, ...fb]
+  const all: NormPost[] = [...ig, ...rd, ...tw, ...gm, ...fb, ...nw]
 
   // Dedup by source_post_id
   const seen = new Set<string>()
@@ -575,14 +658,14 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
       batches_processed: aggregates.length, completed_at: new Date().toISOString(),
       // Per-source yield, persisted for observability — a source stuck at 0
       // for days means its actor/API needs attention.
-      errors: { by_source: { instagram: ig.length, reddit: rd.length, twitter: tw.length, gmaps: gm.length, facebook: fb.length } },
+      errors: { by_source: { instagram: ig.length, reddit: rd.length, twitter: tw.length, gmaps: gm.length, facebook: fb.length, news: nw.length } },
     }).eq('id', runId)
   }
 
   return {
     runId, postsScraped: unique.length, clustersWritten,
     durationMs: Date.now() - startedAt,
-    bySource: { instagram: ig.length, reddit: rd.length, twitter: tw.length, gmaps: gm.length, facebook: fb.length },
+    bySource: { instagram: ig.length, reddit: rd.length, twitter: tw.length, gmaps: gm.length, facebook: fb.length, news: nw.length },
   }
 }
 
