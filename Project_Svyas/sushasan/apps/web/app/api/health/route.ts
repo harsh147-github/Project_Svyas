@@ -59,6 +59,19 @@ export async function GET() {
     const p24 = posts24h ?? 0
     const classifyKeepingPace = r24 === 0 ? null : p24 >= Math.floor(r24 * 0.5)
 
+    // Last authority-brief dispatch (best-effort — table may not exist yet).
+    // Lets a monitor see when briefs last went out and on which channel.
+    type DispatchRow = { dispatched_at: string; channel: string }
+    let lastDispatch: DispatchRow | null = null
+    try {
+      const { data: dl } = await db
+        .from('dispatch_log')
+        .select('dispatched_at, channel')
+        .order('dispatched_at', { ascending: false })
+        .limit(1)
+      lastDispatch = (dl?.[0] as DispatchRow | undefined) ?? null
+    } catch { /* dispatch_log not migrated yet */ }
+
     // Per-source yield from the most recent run — lets a monitor spot a single
     // scraper (Apify actor / token) that has silently died while the others
     // still return data. A source stuck at 0 across runs needs attention.
@@ -93,6 +106,10 @@ export async function GET() {
         last_run_scraped: lastRunScraped,
         by_source: bySource,
         dead_sources: deadSources,
+      },
+      dispatch: {
+        last_dispatched_at: lastDispatch?.dispatched_at ?? null,
+        last_channel: lastDispatch?.channel ?? null,
       },
       pipeline: lastRun ?? null,
       checks: {
