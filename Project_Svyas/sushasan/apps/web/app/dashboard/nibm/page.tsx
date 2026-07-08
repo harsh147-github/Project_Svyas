@@ -335,9 +335,9 @@ export default async function NIBMPilotPage() {
                 duration: '30 days', budget: '₹12L',
                 tldr: 'Flood the corridor with enforcement signal in the first 30 days — make unsafe behaviour costly and visible.',
                 govItems: [
-                  'Sign joint task-force MoU with Traffic Police (Kondhwa Division), PMC Roads, and RTO Pune',
-                  'Deploy 4 mobile CCTV units at the 3 most chronic choke points on NIBM Road',
-                  'Issue ~50 challans/day with public disclosure for accountability',
+                  'A joint task-force MoU between Traffic Police (Kondhwa Division), PMC Roads, and RTO Pune — the mechanism that anchored Hadapsar\u2019s corridor turnaround',
+                  '4 mobile CCTV units at the 3 most chronic choke points on NIBM Road',
+                  'Enforcement at ~50 challans/day with public disclosure for accountability',
                 ],
                 citizenItems: [
                   'Flag specific violations (not general complaints) via the WhatsApp rapid-response group',
@@ -351,9 +351,9 @@ export default async function NIBMPilotPage() {
                 duration: '45 days', budget: '₹1.3 Cr',
                 tldr: 'Permanently harden the most chronic spots with cameras, bollards, and signage that outlast any single enforcement drive.',
                 govItems: [
-                  'Install 24 ANPR cameras integrated with Pune Traffic Police e-Challan backend',
-                  'Place 47 crash-rated bollards (IS 14458) at encroachment hotspots',
-                  'Erect VMS boards + reflective signage; commission control room at ward office',
+                  '24 ANPR cameras integrated with the Pune Traffic Police e-Challan backend',
+                  '47 crash-rated bollards (IS 14458) at encroachment hotspots',
+                  'VMS boards + reflective signage, with a control room at the ward office',
                 ],
                 citizenItems: [
                   'Respect parking zones and bollard boundaries once they appear',
@@ -367,9 +367,9 @@ export default async function NIBMPilotPage() {
                 duration: '60 days', budget: '₹80L',
                 tldr: "Reroute heavy vehicles off NIBM Road entirely and give residents bus stops they'll actually use.",
                 govItems: [
-                  'Acquire and develop 3-acre terminal at PMC parcel near Mohammadwadi Industrial Zone (Survey 47/2)',
-                  'Fit loading bays with 30-minute QR-enforced time limits, CCTV',
-                  'Optimise 4 PMPML stops to reduce pedestrian walk distance to under 150m',
+                  'A 3-acre heavy-vehicle terminal at the PMC parcel near Mohammadwadi Industrial Zone (Survey 47/2)',
+                  'Loading bays with 30-minute QR-enforced time limits and CCTV',
+                  '4 PMPML stops repositioned so pedestrian walk distance drops under 150m',
                 ],
                 citizenItems: [
                   'Adopt the new bus stops; share routes with WhatsApp groups and apartment notice boards',
@@ -383,8 +383,8 @@ export default async function NIBMPilotPage() {
                 duration: '30 days', budget: '₹31L',
                 tldr: 'Lock in accountability — a public dashboard and citizen wardens turn this from a project into a system.',
                 govItems: [
-                  'Launch ward46traffic.pmc.gov.in: live camera feeds, monthly challan stats, encroachment before/after photos',
-                  'Commission independent third-party traffic-flow audit (quarterly cadence)',
+                  'A public dashboard (ward46traffic.pmc.gov.in): live camera feeds, monthly challan stats, encroachment before/after photos',
+                  'An independent third-party traffic-flow audit on a quarterly cadence',
                 ],
                 citizenItems: [
                   'Nominate 15 local youth as PMC-certified Traffic Wardens for school zones',
@@ -428,7 +428,7 @@ export default async function NIBMPilotPage() {
                     <div className="p-5 space-y-3 bg-navy/[0.03]">
                       <div className="flex items-center gap-2">
                         <span className="text-[9px] font-bold tracking-[0.14em] uppercase text-navy">
-                          What government does
+                          Proposed for the ward office to weigh
                         </span>
                         <span className="text-navy" aria-hidden>⚙</span>
                       </div>

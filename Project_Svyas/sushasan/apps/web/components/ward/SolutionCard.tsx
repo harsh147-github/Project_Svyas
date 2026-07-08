@@ -106,7 +106,7 @@ export function SolutionCard({ solution, wardBudget }: Props) {
                    hover:text-white/70 hover:bg-white/5 transition-all"
         aria-expanded={open}
       >
-        <span>Step-by-step plan</span>
+        <span>Suggested approach — step by step</span>
         <span className={`transition-transform ${open ? 'rotate-180' : ''}`}>▾</span>
       </button>
 

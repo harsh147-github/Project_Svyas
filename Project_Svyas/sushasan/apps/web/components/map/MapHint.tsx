@@ -80,7 +80,7 @@ export function MapHint() {
 
             <ol className="space-y-3.5">
               <DesktopStep num="1" headline="Each icon = real citizen complaints" detail="Collected from Twitter, Reddit & Instagram this week. Bigger icon = more people reported the same problem." />
-              <DesktopStep num="2" headline="Saffron-shaded wards are live" detail="These wards have an AI-generated action plan ready. The darker the shade, the more urgent the issue." />
+              <DesktopStep num="2" headline="Saffron-shaded wards are live" detail="These wards have an AI-researched solution brief ready. The darker the shade, the more urgent the issue." />
               <DesktopStep num="3" headline="Tap any icon — two views open" detail="A plain-language view for citizens, and a decision brief for the ward corporator's office." />
             </ol>
 
@@ -122,7 +122,7 @@ export function MapHint() {
 
             {/* Headline */}
             <h2 className="font-serif text-[22px] font-bold text-ink leading-[1.2] mb-5">
-              Your ward's problems.<br />Tracked &amp; solved by AI.
+              Your ward's problems.<br />Tracked, researched, solved together.
             </h2>
 
             {/* 3 bullets */}
@@ -135,12 +135,12 @@ export function MapHint() {
               <MobileBullet
                 icon="👆"
                 headline="Tap any dot"
-                detail="See a plain-language citizen view + the AI-generated action plan for the corporator."
+                detail="See a plain-language citizen view + a precedent-based decision brief prepared for the corporator's office."
               />
               <MobileBullet
                 icon="🟠"
                 headline="Saffron wards are live"
-                detail="AI solutions are ready. The darker the shade, the more urgent the issue cluster."
+                detail="AI-researched briefs are ready for the ward office. The darker the shade, the more urgent the issue cluster."
               />
             </div>
 

@@ -72,7 +72,7 @@ const FAQ = [
   },
   {
     q: 'Who has access to the corporator dashboard?',
-    a: 'Only authorised users with a shared access token. The dashboard shows the same aggregated data as the public view, plus structured action plans. No individual posts. No personal profiles.',
+    a: 'Only authorised users with a shared access token. The dashboard shows the same aggregated data as the public view, plus structured decision-support briefs. No individual posts. No personal profiles.',
   },
 ]
 

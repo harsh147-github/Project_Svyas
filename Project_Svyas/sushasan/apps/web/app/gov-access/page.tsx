@@ -27,8 +27,9 @@ export default function GovAccessPage() {
             Ward office &amp; government access
           </h1>
           <p className="text-ink-2 text-sm leading-relaxed">
-            A secure command centre for PMC ward officers and their offices —
-            priority-ranked civic briefs, AI-synthesised action plans with departments,
+            A secure workspace for PMC ward officers and their offices —
+            priority-ranked civic briefs, AI-researched solution options grounded in how
+            other Indian cities solved the same problems, with departments, indicative
             costs and timelines, and one-tap loop-closure that updates citizens automatically.
           </p>
         </div>

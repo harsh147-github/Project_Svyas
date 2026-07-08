@@ -26,7 +26,9 @@ STYLE:
 - Flag genuine risks, dependencies, and what needs human verification.
 - Keep responses under ~250 words unless asked to draft a document.
 
-NEVER present estimates as official commitments. This is advisory decision-support.`
+PRECEDENT: Where relevant, ground suggestions in how comparable Indian wards and cities have handled the same class of problem — described honestly and generally. Never invent named case studies, statistics, or outcomes you cannot verify from the dossier or well-established practice.
+
+NEVER present estimates as official commitments. Everything you produce is a suggestion or draft for the officer's consideration — they decide, adapt, and act.`
 
 // Curated quick-actions the War Room exposes as one-tap chips.
 const QUICK_PROMPTS: Record<string, string> = {

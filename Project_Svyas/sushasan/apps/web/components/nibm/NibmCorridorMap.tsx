@@ -49,7 +49,7 @@ const SOLUTIONS: Solution[] = [
     pinX: 100, pinY: 90,
     leadsTo: 'kondhwa-khurd',
     budget: '₹12L', duration: '30 days',
-    govAction: 'Joint task-force MoU with Traffic Police, PMC Roads & RTO. Deploy mobile CCTV. 50+ challans/day at chronic violation points.',
+    govAction: 'Proposed: a joint task-force MoU with Traffic Police, PMC Roads & RTO, mobile CCTV, and enforcement at 50+ challans/day at chronic violation points.',
     citizenRole: 'Use the WhatsApp rapid response group to flag violations as you see them — building the evidence base alongside the system.',
   },
   {
@@ -60,7 +60,7 @@ const SOLUTIONS: Solution[] = [
     pinX: 380, pinY: 80,
     leadsTo: 'mohammadwadi',
     budget: '₹1.3 Cr', duration: '45 days',
-    govAction: 'Install 24 ANPR cameras integrated with e-Challan. Crash-rated bollards at 47 encroachment points. Reflective signage + VMS boards.',
+    govAction: 'Proposed: 24 ANPR cameras integrated with e-Challan, crash-rated bollards at 47 encroachment points, reflective signage + VMS boards.',
     citizenRole: 'Respect demarcated parking zones once visible. Encourage RWA peers to do the same — the infrastructure works only when norms reinforce it.',
   },
   {
@@ -71,7 +71,7 @@ const SOLUTIONS: Solution[] = [
     pinX: 660, pinY: 80,
     leadsTo: 'nibm-chowk',
     budget: '₹80L', duration: '60 days',
-    govAction: 'Develop 3-acre heavy-vehicle terminal at PMC parcel near Mohammadwadi Industrial Zone. Loading bays with QR-based 30-min limits. PMPML stop optimisation.',
+    govAction: 'Proposed: a 3-acre heavy-vehicle terminal at the PMC parcel near Mohammadwadi Industrial Zone. Loading bays with QR-based 30-min limits. PMPML stop optimisation.',
     citizenRole: 'Choose new bus stops + safer pedestrian routes once they open. Word-of-mouth adoption helps the alternatives reach critical mass.',
   },
   {

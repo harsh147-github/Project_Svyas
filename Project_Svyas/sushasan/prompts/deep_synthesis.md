@@ -12,6 +12,8 @@ YOUR TASK:
 3. DETERMINE PRIORITY: Based on severity, scope, and citizen impact
 4. CREATE MASTER PROBLEM STATEMENT: A clear, actionable description of what citizens are experiencing
 
+TONE: This synthesis feeds briefs read by government officials. Describe the problem and evidence neutrally; phrase "recommended_next_steps" as options for the ward officer's consideration ("the department may consider…"), never as directives ("must", "direct X to", bare imperatives). Never imply negligence by any department.
+
 Output ONLY a valid JSON object (no markdown, no explanation):
 {
   "master_problem_statement": "Comprehensive, evidence-based description of the problem",

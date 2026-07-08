@@ -80,7 +80,7 @@ function buildDigestHtml(
       <div style="border:1px solid #eee;border-radius:12px;padding:14px 16px">
         <div style="font-size:11px;color:#FF9933;font-weight:700;text-transform:uppercase;letter-spacing:1px">Ward ${mission.ward.ward_number} · ${esc(mission.ward.name)} · ${esc(mission.issueTag)}</div>
         <div style="font-size:14px;font-weight:600;margin:6px 0 4px;line-height:1.35">${esc(c?.gov_summary || c?.centroid_text || 'New civic signal')}</div>
-        <div style="font-size:12px;color:#666">${c ? `${c.post_count} public reports · severity ${(c.severity_avg ?? 0).toFixed(1)}/5` : ''}${mission.solution ? ` · AI plan ready (priority ${mission.solution.priority_score}/100)` : ' · AI plan pending'}${rcpt.office ? ` · ${esc(rcpt.office)}` : ''}</div>
+        <div style="font-size:12px;color:#666">${c ? `${c.post_count} public reports · severity ${(c.severity_avg ?? 0).toFixed(1)}/5` : ''}${mission.solution ? ` · research brief ready (priority ${mission.solution.priority_score}/100)` : ' · research brief pending'}${rcpt.office ? ` · ${esc(rcpt.office)}` : ''}</div>
         <div style="margin-top:10px">
           <a href="${brief.link}" style="display:inline-block;background:#0B1F3A;color:#fff;text-decoration:none;font-weight:600;font-size:12px;padding:8px 14px;border-radius:999px;margin-right:8px">Open War Room →</a>
           <a href="${wa}" style="display:inline-block;background:#25D366;color:#fff;text-decoration:none;font-weight:600;font-size:12px;padding:8px 14px;border-radius:999px">Forward on WhatsApp</a>
@@ -96,9 +96,9 @@ function buildDigestHtml(
     <div style="color:#fff;font-size:18px;font-weight:600;margin-top:4px">${today} · ${rows.length} priority brief${rows.length === 1 ? '' : 's'} for Pune</div>
   </div>
   <div style="border:1px solid #eee;border-top:none;border-radius:0 0 14px 14px;padding:20px 22px">
-    <p style="font-size:13px;color:#555;margin:0 0 16px">Each card is one grievance cluster with evidence and an AI-drafted action plan. Open the War Room to dissect and act, or forward the brief to the responsible ward officer on WhatsApp in one tap.</p>
+    <p style="font-size:13px;color:#555;margin:0 0 16px">Each card is one grievance cluster with evidence and an AI-researched set of options grounded in comparable-city precedent. Open the War Room to review and decide, or forward the brief to the responsible ward officer on WhatsApp in one tap.</p>
     <table style="width:100%;border-collapse:collapse">${cards}</table>
-    <p style="font-size:11px;color:#999;margin-top:16px;line-height:1.5">Sushaasan is an independent civic-technology platform, not a government body. Briefs are AI-generated indicative advisories grounded in public reports — the officer decides and acts. Live map: <a href="${baseUrl}" style="color:#0B1F3A">${baseUrl.replace('https://', '')}</a></p>
+    <p style="font-size:11px;color:#999;margin-top:16px;line-height:1.5">Sushaasan is an independent civic-technology platform, not a government body. Briefs are AI-prepared decision support grounded in public reports and precedent from comparable cities — the officer decides and acts. Live map: <a href="${baseUrl}" style="color:#0B1F3A">${baseUrl.replace('https://', '')}</a></p>
   </div>
 </div>`.trim()
 }

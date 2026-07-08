@@ -5,7 +5,7 @@ import { isSupabaseConfigured, createServerClient } from './supabase'
 import type { Ward, Cluster, Solution } from './data'
 
 // A "mission" = one civic grievance dossier handed to a ward officer: the issue,
-// the evidence, the AI battle plan, and who owns it. Powers the War Room screen,
+// the evidence, the AI-researched options, and who owns it. Powers the War Room screen,
 // the Sushaasan-AI copilot, and the brief dispatched to the officer.
 
 export type Incharge = {

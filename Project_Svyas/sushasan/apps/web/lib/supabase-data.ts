@@ -112,12 +112,12 @@ function synthesizeSolution(c: Cluster, ward: Ward): Solution {
     c.gov_summary ||
     c.solution_summary ||
     `${c.post_count ?? 1} reports over the last week describe ${issueTitle.toLowerCase()} issues in ${ward.name}. ` +
-    `A targeted ${baseDays}-day response from ${dept.split(' + ')[0]} is recommended pending the next AI synthesis cycle.`
+    `An indicative ${baseDays}-day option set is outlined below for ${dept.split(' + ')[0]} to weigh, pending the next AI research cycle.`
 
   const steps: SolutionStep[] = [
     {
       step: 1,
-      action: `Site verification visit by ${dept.split(' + ')[0]} to confirm exact locations cited by residents`,
+      action: `A site verification visit by ${dept.split(' + ')[0]} would confirm the exact locations residents cite`,
       dept,
       timeline_days: 2,
       cost_est_inr: Math.round(stepCost * 0.2),
@@ -125,26 +125,26 @@ function synthesizeSolution(c: Cluster, ward: Ward): Solution {
     {
       step: 2,
       action: c.issue_tag === 'traffic'
-        ? 'Deploy marshals/signage at the highest-severity junction for immediate relief'
+        ? 'The department may consider marshals/signage at the highest-severity junction as interim relief — a standard first measure for chronic congestion'
         : c.issue_tag === 'water'
-        ? 'Schedule emergency tanker rotation for affected societies pending pipeline review'
+        ? 'A temporary tanker rotation for the affected societies could bridge supply while the pipeline is reviewed — the usual municipal bridging measure'
         : c.issue_tag === 'electricity'
-        ? 'File MSEDCL fault ticket and dispatch repair crew to the cited stretch'
+        ? 'An MSEDCL fault ticket for the cited stretch would put the repair in the department’s queue with a documented trail'
         : c.issue_tag === 'garbage'
-        ? 'Add a second daily lift on the affected collection route'
-        : 'Coordinate cross-department response based on verification findings',
+        ? 'A second daily lift on the affected collection route may merit evaluation — a common short-term fix for chronic overflow points'
+        : 'A cross-department assessment based on the verification findings would identify the owning department',
       dept,
       timeline_days: Math.round(baseDays * 0.4),
       cost_est_inr: Math.round(stepCost * 0.35),
     },
     {
       step: 3,
-      action: `Implement durable fix: ${
-        c.issue_tag === 'traffic' ? 're-paint lane markings + signal-cycle review'
-        : c.issue_tag === 'water' ? 'pipeline inspection on the cited feeder line'
-        : c.issue_tag === 'electricity' ? 'replace faulty pole-top fuses + check feeder load'
-        : c.issue_tag === 'garbage' ? 'install covered bins at cited spots'
-        : 'execute department-specific remediation plan'
+      action: `For a durable fix, the department could evaluate ${
+        c.issue_tag === 'traffic' ? 'lane re-marking plus a signal-cycle review — routine measures with strong precedent across Indian cities'
+        : c.issue_tag === 'water' ? 'a pipeline inspection on the cited feeder line'
+        : c.issue_tag === 'electricity' ? 'replacing faulty pole-top fuses and checking feeder load'
+        : c.issue_tag === 'garbage' ? 'covered bins at the cited spots'
+        : 'the department-specific remediation the verification supports'
       }`,
       dept,
       timeline_days: Math.round(baseDays * 0.5),
@@ -152,7 +152,7 @@ function synthesizeSolution(c: Cluster, ward: Ward): Solution {
     },
     {
       step: 4,
-      action: 'Publish resolution on Sushaasan transparency dashboard so citizens see status update',
+      action: 'Once the ward office acts, the resolution can be published on the Sushaasan transparency dashboard so citizens see the status update',
       dept: 'PMC Ward Office + Sushaasan',
       timeline_days: 1,
       cost_est_inr: Math.round(stepCost * 0.15),

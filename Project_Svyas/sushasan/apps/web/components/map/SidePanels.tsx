@@ -622,12 +622,12 @@ function GovEmpty() {
     <div className="space-y-5">
       <div>
         <div className="font-serif text-xl font-semibold text-ink leading-tight">
-          Your ward&apos;s problems. Solved on paper, ready to act.
+          Your ward&apos;s problems. Researched, costed, ready for your decision.
         </div>
         <p className="text-[13px] leading-relaxed text-ink-2 mt-2">
           This is not a complaint box. Sushaasan turns citizen reports into a
-          ready-to-use brief — department named, steps numbered, cost in ₹,
-          timeline in days. <strong className="text-ink">The corporator&apos;s office decides. We keep the brief data-driven and the loop visible.</strong>
+          decision-ready brief — evidence organised, precedents from comparable
+          cities, departments named, indicative cost in ₹, timeline in days. <strong className="text-ink">The corporator&apos;s office decides. We keep the brief data-driven and the loop visible.</strong>
         </p>
       </div>
 
@@ -1211,7 +1211,7 @@ function MobileWardContent({
       {topSolution && (
         <div className="p-3 rounded-xl bg-navy/[0.04] border border-navy/10 space-y-1.5">
           <div className="text-[10px] font-bold tracking-[0.16em] text-navy uppercase">
-            AI Action Brief
+            AI Research Brief
           </div>
           <p className="text-[12px] leading-snug text-ink-2">
             {topSolution.summary?.split('.')[0]}.

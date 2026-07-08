@@ -147,7 +147,7 @@ export default async function WarRoomPage({
 
           {/* THE BATTLE PLAN */}
           <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 space-y-4">
-            <SectionTitle n="02" title="The battle plan" sub="AI-synthesised · you decide" />
+            <SectionTitle n="02" title="The solution brief" sub="AI-researched options · you decide" />
             {solution ? (
               <>
                 <p className="text-[13px] text-white/80 leading-relaxed">{solution.summary}</p>
@@ -170,7 +170,7 @@ export default async function WarRoomPage({
 
                 {/* Steps as a field checklist */}
                 <div className="space-y-2.5">
-                  <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-white/40">Action steps</div>
+                  <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-white/40">Options for your consideration</div>
                   {solution.steps.map((s) => (
                     <div key={s.step} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
                       <div className="flex items-start gap-2.5">
@@ -196,7 +196,7 @@ export default async function WarRoomPage({
 
                 {/* HUMAN COMMAND — loop closure */}
                 <div className="pt-3 border-t border-white/10 space-y-2">
-                  <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-white/40">Human command — close the loop</div>
+                  <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-white/40">Officer&apos;s decision — close the loop</div>
                   <div className="bg-white/[0.04] rounded-xl p-3 border border-white/10">
                     <LoopCloseButtons solutionId={solution.id} wardId={ward.id} currentStatus={solution.status} />
                   </div>
@@ -207,8 +207,8 @@ export default async function WarRoomPage({
               </>
             ) : (
               <p className="text-[13px] text-white/55">
-                No AI battle plan yet for this issue. Ask Sushaasan AI on the right to draft an
-                approach, or trigger weekly synthesis from the admin tools.
+                No AI-researched brief yet for this issue. Ask Sushaasan AI on the right to
+                assemble evidence and options, or trigger weekly synthesis from the admin tools.
               </p>
             )}
           </section>
@@ -230,8 +230,10 @@ export default async function WarRoomPage({
 
         {/* Footer disclaimer */}
         <p className="text-[10.5px] text-white/35 leading-relaxed max-w-3xl">
-          Sushaasan AI is decision-support, not a decision. Estimates, timelines, and drafts are
-          indicative and must be verified by the officer against ground conditions and PMC procedure.
+          Sushaasan AI is decision-support, not a decision. Options are compiled from public
+          resident reports and research into how comparable Indian cities and wards have addressed
+          similar issues. Estimates, timelines, and drafts are indicative and are offered for
+          verification by the officer against ground conditions and PMC procedure.
           The officer is the capable actor and final authority. Sushaasan is an independent
           civic-technology platform, not a government body.
         </p>

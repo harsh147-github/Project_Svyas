@@ -324,7 +324,7 @@ export default async function GovPage({ searchParams }: { searchParams: { token?
                                      hover:bg-ink/90 active:scale-[0.99] transition-all
                                      shadow-[0_4px_18px_rgba(10,10,10,0.18)]">
                           <span aria-hidden>⚡</span>
-                          Open War Room — solve with Sushaasan AI
+                          Open War Room — work it through with Sushaasan AI
                           <span aria-hidden>→</span>
                         </Link>
 

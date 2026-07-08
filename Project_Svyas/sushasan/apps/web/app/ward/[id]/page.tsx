@@ -211,13 +211,13 @@ export default async function WardPage({ params }: Props) {
             </div>
             <div className="flex items-baseline gap-3 flex-wrap">
               <h2 className="font-serif text-xl font-semibold text-ink">
-                Ready-to-act solution plan
+                Research brief — options for the ward office
               </h2>
             </div>
 
             <p className="text-[13px] text-ink-3 max-w-2xl">
-              Data-backed. Budget-checked. Steps named by department.
-              The corporator's office decides — Sushaasan just does the groundwork.
+              Data-backed. Budget-checked. Grounded in how comparable cities handled the same
+              problems. The corporator's office decides — Sushaasan just does the groundwork.
             </p>
 
             <div className="space-y-5">

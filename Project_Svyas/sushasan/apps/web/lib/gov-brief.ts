@@ -33,8 +33,8 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
     ? `${cluster.post_count} public reports · severity ${(cluster.severity_avg ?? 0).toFixed(1)}/5`
     : 'New signal'
   const plan = solution
-    ? `Proposed: ${solution.summary} (est. ${inr(solution.total_cost_est_inr)}, ${solution.timeline_days}d, priority ${solution.priority_score}/100${solution.budget_feasible ? ', within budget' : ', needs budget review'})`
-    : 'AI plan pending — open the War Room to draft one.'
+    ? `For consideration: ${solution.summary} (est. ${inr(solution.total_cost_est_inr)}, ${solution.timeline_days}d, priority ${solution.priority_score}/100${solution.budget_feasible ? ', within budget' : ', needs budget review'})`
+    : 'AI research brief pending — open the War Room to prepare one.'
 
   const subject = `Sushaasan brief · ${label} · Ward ${ward.ward_number} ${ward.name}`
 
@@ -47,7 +47,7 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
     `Evidence: ${evidence}`,
     `${plan}`,
     ``,
-    `Open the War Room to dissect, plan with Sushaasan AI, and close the loop:`,
+    `Open the War Room to review the evidence, weigh options with Sushaasan AI, and close the loop:`,
     link,
     ``,
     `— Sushaasan (independent civic-tech). Indicative advisory; the officer decides.`,
@@ -58,10 +58,10 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
     ``,
     `*${label}:* ${headline}`,
     `📊 ${evidence}`,
-    solution ? `🛠 ${solution.summary}` : `🛠 AI plan pending`,
+    solution ? `🛠 ${solution.summary}` : `🛠 AI research brief pending`,
     solution ? `💰 ${inr(solution.total_cost_est_inr)} · ⏱ ${solution.timeline_days}d · priority ${solution.priority_score}/100` : '',
     ``,
-    `▶ Solve it with Sushaasan AI:`,
+    `▶ Review the evidence & options with Sushaasan AI:`,
     link,
   ].filter(Boolean).join('\n')
 
@@ -78,7 +78,7 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
     <p style="font-size:13px;color:#555;margin:0 0 6px">📊 ${esc(evidence)}</p>
     <p style="font-size:13px;color:#333;margin:0 0 18px">🛠 ${esc(plan)}</p>
     <a href="${link}" style="display:inline-block;background:#FF9933;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 22px;border-radius:999px">Open the War Room →</a>
-    <p style="font-size:11px;color:#999;margin-top:20px;line-height:1.5">Sushaasan is an independent civic-technology platform, not a government body. This brief is AI-generated, indicative advisory only — the officer decides and acts.</p>
+    <p style="font-size:11px;color:#999;margin-top:20px;line-height:1.5">Sushaasan is an independent civic-technology platform, not a government body. This brief is AI-prepared decision support — evidence, precedents from comparable cities, and indicative options. The officer decides and acts.</p>
   </div>
 </div>`.trim()
 

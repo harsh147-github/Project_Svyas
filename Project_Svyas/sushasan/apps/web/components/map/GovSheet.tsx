@@ -233,7 +233,7 @@ export function GovSheet() {
                   <div className="text-[11px] text-ink-3">
                     {budgetPct.toFixed(1)}% of annual allocation · {budgetPct <= 100
                       ? <span className="text-india-green font-semibold">✅ Within budget</span>
-                      : <span className="text-saffron-dark font-semibold">⚠️ Exceeds — phase rollout recommended</span>}
+                      : <span className="text-saffron-dark font-semibold">⚠️ Exceeds — a phased rollout may merit review</span>}
                   </div>
                 </div>
               )}
@@ -243,7 +243,7 @@ export function GovSheet() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="text-[11px] font-bold tracking-[0.16em] uppercase text-ink-4">
-                      Recommended action plan
+                      Options for consideration
                     </div>
                     <span
                       className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase"

@@ -218,12 +218,12 @@ const CLUSTERS: Cluster[] = [
 const SOLUTIONS: Solution[] = [
   {
     id: 's1', ward_id: '46', cluster_id: 'c2', issue_tag: 'water',
-    summary: 'Clover Park and Corinthians societies face a critical water shortage driven by a pipeline supply mismatch — PMC schedule delivers water at 5am while residents are asleep, and no storage reserve exists. Tanker dependency has tripled costs in 2 weeks. Ward officer\'s judgment is final. These are AI-generated suggestions based on public signal analysis.',
+    summary: 'Clover Park and Corinthians societies report a critical water shortage consistent with a supply-schedule mismatch — the current window lands at 5am while residents are asleep, and no storage reserve exists; tanker dependency has tripled costs in 2 weeks. The options below are AI-compiled from resident reports and measures other Indian municipal bodies have used in comparable shortages — the ward officer\'s judgment is final.',
     steps: [
-      { step: 1, action: 'The ward office may consider deploying 2 emergency water tankers daily to Clover Park society gate (morning 7–9am) and Corinthians gate (evening 5–7pm) at the ward office\'s earliest convenience', dept: 'PMC Water Supply Department', timeline_days: 1, cost_est_inr: 8000 },
-      { step: 2, action: 'Conduct pipeline inspection on the NIBM Road water main to identify the supply-schedule mismatch causing the shortage', dept: 'PMC Water Supply Engineering', timeline_days: 3, cost_est_inr: 15000 },
-      { step: 3, action: 'Notify society facility managers via PMC app of the corrected supply schedule (shift to 7am–9am) to eliminate wasted supply', dept: 'PMC Water Supply Department', timeline_days: 2, cost_est_inr: 0 },
-      { step: 4, action: 'The ward office could explore installing a 10,000-litre overhead storage buffer at the Clover Park society pump room to bridge daily supply gaps. Estimated budget: ₹95,000 (subject to ward allocation review)', dept: 'PMC Water Supply Engineering + Society', timeline_days: 7, cost_est_inr: 95000 },
+      { step: 1, action: 'The Water Supply Department may consider a temporary tanker rotation — indicatively 2 tankers daily at Clover Park gate (7–9am) and Corinthians gate (5–7pm) — the standard bridging measure municipal bodies use while a supply fault is diagnosed', dept: 'PMC Water Supply Department', timeline_days: 1, cost_est_inr: 8000 },
+      { step: 2, action: 'A pipeline inspection on the NIBM Road water main could confirm the supply-schedule mismatch residents describe — indicative estimate ₹15,000 at standard PMC rates', dept: 'PMC Water Supply Engineering', timeline_days: 3, cost_est_inr: 15000 },
+      { step: 3, action: 'If the department\'s review supports a schedule shift (residents suggest 7–9am), society facility managers could be notified via the PMC app — schedule realignment is a routine, zero-cost remedy for occupancy-driven mismatch', dept: 'PMC Water Supply Department', timeline_days: 2, cost_est_inr: 0 },
+      { step: 4, action: 'The ward office could evaluate a 10,000-litre overhead storage buffer at the Clover Park pump room to bridge daily supply gaps — indicative estimate ₹95,000, subject to ward allocation review', dept: 'PMC Water Supply Engineering + Society', timeline_days: 7, cost_est_inr: 95000 },
     ],
     total_cost_est_inr: 1_18_000,
     timeline_days: 10,
@@ -235,12 +235,12 @@ const SOLUTIONS: Solution[] = [
   },
   {
     id: 's2', ward_id: '46', cluster_id: 'c1', issue_tag: 'traffic',
-    summary: '34 posts in 7 days document peak-hour gridlock at the NIBM–Mohammadwadi junction, with ambulances blocked on at least 2 occasions. Signal timing has not been updated since 2022 and does not account for the 4 new residential towers that opened in 2024. Ward officer\'s judgment is final. These are AI-generated suggestions based on public signal analysis.',
+    summary: '34 posts in 7 days document peak-hour gridlock at the NIBM–Mohammadwadi junction, with ambulances blocked on at least 2 occasions. The signal timing appears to predate the 4 residential towers that opened in 2024. The options below are AI-compiled from resident reports and junction-management measures Indian municipal corporations have used in comparable situations — the ward officer\'s judgment is final.',
     steps: [
-      { step: 1, action: 'The ward office may consider deploying 2 traffic marshals at NIBM–Mohammadwadi junction during peak hours (8–10am, 5–8pm) at the ward office\'s earliest convenience', dept: 'Pune Traffic Police', timeline_days: 1, cost_est_inr: 12000 },
-      { step: 2, action: 'The ward office could explore requesting the Traffic Engineering Department to conduct a traffic count study at the junction over 3 days to quantify peak volume', dept: 'PMC Traffic Engineering Cell', timeline_days: 4, cost_est_inr: 8000 },
-      { step: 3, action: 'Reprogram signal cycle: increase green time on NIBM Road to 75 seconds, reduce side-road cycles to 30 seconds during 8–10am and 5–8pm', dept: 'PMC Traffic Engineering Cell', timeline_days: 2, cost_est_inr: 5000 },
-      { step: 4, action: 'Paint clear lane demarcation + no-stopping zone 50m from junction to prevent spillback. Estimated budget: ₹18,000 (subject to ward allocation review)', dept: 'PMC Roads Department', timeline_days: 3, cost_est_inr: 18000 },
+      { step: 1, action: 'The Traffic Police may consider posting 2 marshals at the NIBM–Mohammadwadi junction during peak hours (8–10am, 5–8pm) as interim relief — a standard first measure for chronic junction congestion, indicatively ₹12,000/week', dept: 'Pune Traffic Police', timeline_days: 1, cost_est_inr: 12000 },
+      { step: 2, action: 'A 3-day traffic count study at the junction, if the Traffic Engineering Cell finds merit, would quantify peak volume and give the re-timing decision a data base — indicative estimate ₹8,000', dept: 'PMC Traffic Engineering Cell', timeline_days: 4, cost_est_inr: 8000 },
+      { step: 3, action: 'The Cell may then wish to evaluate a revised signal cycle (residents\' reports suggest longer green on NIBM Road at peaks, indicatively ~75s, with side-road cycles near 30s) — junction re-timing is a routine, low-cost measure with strong precedent across Indian cities, ~₹5,000', dept: 'PMC Traffic Engineering Cell', timeline_days: 2, cost_est_inr: 5000 },
+      { step: 4, action: 'Lane demarcation and a no-stopping zone 50m from the junction could prevent spillback — indicative estimate ₹18,000 at standard PMC rates, subject to ward allocation review', dept: 'PMC Roads Department', timeline_days: 3, cost_est_inr: 18000 },
     ],
     total_cost_est_inr: 43_000,
     timeline_days: 10,
@@ -252,11 +252,11 @@ const SOLUTIONS: Solution[] = [
   },
   {
     id: 's3', ward_id: '47', cluster_id: 'c3', issue_tag: 'garbage',
-    summary: 'Three garbage collection points near Bliss Bakery and the NIBM Road service lane have been overflowing for 4+ days. The PMC collection truck route skips the service lane on Wednesdays and Fridays due to a scheduling error introduced in the last route revision. Ward officer\'s judgment is final. These are AI-generated suggestions based on public signal analysis.',
+    summary: 'Three garbage collection points near Bliss Bakery and the NIBM Road service lane have been overflowing for 4+ days. Resident reports are consistent with the collection route skipping the service lane on Wednesdays and Fridays. The options below are AI-compiled from resident reports and route-correction measures municipal SWM departments have used in comparable cases — the ward officer\'s judgment is final.',
     steps: [
-      { step: 1, action: 'The ward office may consider deploying an emergency collection vehicle to clear the 3 overflow points at the ward office\'s earliest convenience', dept: 'PMC Solid Waste Management', timeline_days: 1, cost_est_inr: 4000 },
-      { step: 2, action: 'Update PMC collection route to include the NIBM Road service lane on all 7 days (correct the Wednesday/Friday gap)', dept: 'PMC Solid Waste Management', timeline_days: 2, cost_est_inr: 0 },
-      { step: 3, action: 'The ward office could explore installing 2 covered, rodent-resistant bins (660L) at the Bliss Bakery junction to replace the overflowing open skips. Estimated budget: ₹22,000 (subject to ward allocation review)', dept: 'PMC Solid Waste Management', timeline_days: 5, cost_est_inr: 22000 },
+      { step: 1, action: 'The SWM department may consider an interim collection run to clear the 3 overflow points — indicatively ₹4,000, the usual first step while a route gap is verified', dept: 'PMC Solid Waste Management', timeline_days: 1, cost_est_inr: 4000 },
+      { step: 2, action: 'If the department\'s route records confirm the Wednesday/Friday gap residents describe, extending the route to cover the NIBM Road service lane all 7 days would close it at no cost — route corrections of this kind have typically been completed within days in comparable cases', dept: 'PMC Solid Waste Management', timeline_days: 2, cost_est_inr: 0 },
+      { step: 3, action: 'The ward office could evaluate 2 covered, rodent-resistant bins (660L) at the Bliss Bakery junction in place of the open skips — indicative estimate ₹22,000, subject to ward allocation review', dept: 'PMC Solid Waste Management', timeline_days: 5, cost_est_inr: 22000 },
     ],
     total_cost_est_inr: 26_000,
     timeline_days: 7,

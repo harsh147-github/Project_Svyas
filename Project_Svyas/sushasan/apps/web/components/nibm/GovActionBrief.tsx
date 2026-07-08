@@ -40,7 +40,7 @@ interface GovActionBriefProps {
 // ── Static brief data (NIBM Ward 46 traffic pilot) ──────────────────────────
 
 const FILE_NO = 'SUH/W46/TRF/2026/034'
-const SUBJECT = 'Persistent traffic congestion and road safety hazards at the NIBM–Mohammadwadi–Kondhwa corridor — Ward 46, Pune — Request for coordinated multi-departmental intervention'
+const SUBJECT = 'Persistent traffic congestion and road safety hazards at the NIBM–Mohammadwadi–Kondhwa corridor — Ward 46, Pune — Evidence summary and precedent-based options submitted for kind consideration'
 
 const FACTS = [
   { label: 'Reports collected', value: '19 verified public posts (Mar–May 2026)' },
@@ -133,10 +133,10 @@ const PHASES: PhaseRow[] = [
 ]
 
 const RECOMMENDED_ACTIONS = [
-  'Convene a joint meeting of PMC Roads (Zone D), Pune Traffic Police (Kondhwa Division), and RTO Pune within 7 days to sign the enforcement MoU.',
-  'Direct PMC Roads Department to initiate tender proceedings for ANPR cameras and bollards (Phase 2) under the PMC Standard Schedule of Rates.',
-  'Direct the Traffic Engineering Cell to submit revised signal-timing plans for NIBM Chowk, Mohammadwadi Phata, and Konark Pyramid Square within 15 days.',
-  'Assign a nodal officer from the Ward 46 Corporator\'s office to coordinate resident liaison and monthly Ward Traffic Coordination Committee meetings.',
+  'A joint consultation between PMC Roads (Zone D), Pune Traffic Police (Kondhwa Division), and RTO Pune may kindly be considered — the Hadapsar precedent (Para 3) began with a similar enforcement MoU and delivered a 31% congestion reduction within 6 months.',
+  'Should the office find merit, the PMC Roads Department is best placed to assess tender proceedings for ANPR cameras and bollards (Phase 2) under the PMC Standard Schedule of Rates — the same equipment mix used in the Ward 55 intervention.',
+  'The Traffic Engineering Cell may wish to evaluate revised signal-timing plans for NIBM Chowk, Mohammadwadi Phata, and Konark Pyramid Square — junction re-timing is a routine, low-cost measure with strong precedent across Indian municipal corporations.',
+  'A nodal officer from the Ward 46 office, if the Corporator considers it useful, could anchor resident liaison and a monthly Ward Traffic Coordination Committee — the mechanism that sustained the Kothrud outcome (Para 3) beyond its first year.',
 ]
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -177,7 +177,7 @@ export function GovActionBrief({
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="space-y-1">
               <div className="text-[9px] font-bold tracking-[0.2em] uppercase text-[#7a766d]">
-                Government Action Brief — Sushaasan Civic Intelligence
+                Decision-Support Brief — Sushaasan Civic Intelligence
               </div>
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="font-mono text-xs font-bold text-[#0B1F3A] bg-[#0B1F3A]/6 px-2 py-0.5 rounded border border-[#0B1F3A]/15">
@@ -192,7 +192,7 @@ export function GovActionBrief({
             <div className="bg-[#EF4444]/8 border border-[#EF4444]/25 rounded-xl px-4 py-2 text-center">
               <div className="font-serif text-2xl font-bold text-[#EF4444] leading-none">87/100</div>
               <div className="text-[9px] font-bold tracking-[0.18em] uppercase text-[#EF4444]/80 mt-0.5">
-                Priority · Action Required
+                Priority · For Kind Attention
               </div>
             </div>
           </div>
@@ -400,11 +400,15 @@ export function GovActionBrief({
         {/* Para 6 — Recommended Actions */}
         <div className="space-y-2">
           <h3 className="text-[11px] font-bold tracking-[0.16em] uppercase text-[#0B1F3A]">
-            Para 6 — Recommended Actions
+            Para 6 — Options Submitted for Kind Consideration
           </h3>
+          <p className="text-[11px] text-[#7a766d]">
+            Drawn from the precedents in Para 3 and standard PMC practice. The deciding
+            authority&apos;s assessment prevails on every point below.
+          </p>
           {recommendedAction && (
             <div className="bg-[#FF9933]/8 border border-[#FF9933]/20 rounded-xl p-4 text-[12px] text-[#3a3632] leading-relaxed mb-3">
-              <span className="font-semibold text-[#c8741a]">AI recommendation: </span>
+              <span className="font-semibold text-[#c8741a]">AI research synthesis: </span>
               {recommendedAction}
             </div>
           )}

@@ -193,7 +193,7 @@ export function CitizenSheet() {
                 ) : cluster?.status === 'in_progress' ? (
                   <p className="text-[13px] text-ink-2 leading-relaxed">🔄 The corporator&apos;s office has acknowledged this issue and is working on a fix. Check the dashboard for updates.</p>
                 ) : (
-                  <p className="text-[13px] text-ink-2 leading-relaxed">📬 Sushaasan has generated a step-by-step action brief for the ward corporator. Tap <strong>&quot;Action Brief&quot;</strong> to see it.</p>
+                  <p className="text-[13px] text-ink-2 leading-relaxed">📬 Sushaasan has prepared a research-backed decision brief for the ward corporator’s office — evidence, precedents from other cities, and options with cost estimates. Tap <strong>&quot;Action Brief&quot;</strong> to see it.</p>
                 )}
               </div>
 
