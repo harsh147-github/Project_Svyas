@@ -28,7 +28,7 @@ fi
 
 # Configure git (update with your details)
 git config user.email "contact@sushaasan.in"
-git config user.name "Harsh Sonavane"
+git config user.name "the Sushaasan team"
 
 # Stage all files
 echo ""

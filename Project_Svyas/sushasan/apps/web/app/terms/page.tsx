@@ -128,7 +128,7 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
         In accordance with Rule 3(2) of the Information Technology (Intermediary Guidelines and
         Digital Media Ethics Code) Rules, 2021, the Grievance Officer for the Platform is:
         <div className="mt-3 rounded-xl border border-ink/10 bg-white p-4 text-[13px] leading-relaxed">
-          <div><b>Grievance Officer:</b> Harsh Sonavane</div>
+          <div><b>Grievance Officer:</b> the Sushaasan team</div>
           <div><b>Email:</b> <a href="mailto:grievance@sushaasan.in" className="underline">grievance@sushaasan.in</a></div>
           <div><b>Address:</b> Pune, Maharashtra, India</div>
         </div>

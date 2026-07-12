@@ -9,7 +9,7 @@
 - **Project:** Sushaasan — Government OS for Pune. Civic AI signal layer, not a complaint box. Scrapes social chatter → classifies with Claude → clusters by ward → synthesizes step-by-step action briefs for the corporator. Citizen-side and gov-side dashboards.
 - **Live URL:** https://sushaasan.in (+ www.sushaasan.in)
 - **Live deployment:** https://project-svyas-d3lgq3ezc-harsh147-githubs-projects.vercel.app
-- **Repo root:** `C:\Users\Harsh\OneDrive\Documents\Claude\Projects\Project-Svyas`
+- **Repo root:** `C:\Users\user\OneDrive\Documents\Claude\Projects\Project-Svyas`
 - **The actual Next.js app lives at:** `Project_Svyas/sushasan/apps/web/`  ← *most edits go here*
 - **Secrets:** `.secrets/all-keys.env` (gitignored). See §Services for keys.
 - **Brand rules + product spec:** `CLAUDE.md` (repo root) and `Project_Svyas/sushasan/CLAUDE.md` — operative build documents.

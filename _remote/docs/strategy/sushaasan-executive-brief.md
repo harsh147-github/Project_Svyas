@@ -203,7 +203,7 @@ Position as the **next generation of MyGov** — bottom-up civic discussion (vs.
 - Prove the synthesis → action loop works
 
 **Why Pune:**
-- Harsh's base (local connections possible)
+- the team's base (local connections possible)
 - Bajaj Grand Tour precedent (government spent ₹500 crores in 75 days when there was clarity)
 - Active civic engagement culture
 
@@ -253,7 +253,7 @@ Position as the **next generation of MyGov** — bottom-up civic discussion (vs.
 
 ## Team requirements
 
-**Current:** Harsh (Founder)
+**Current:** the team (Founder)
 
 **Needed (6-month horizon):**
 
@@ -362,7 +362,7 @@ The technology is feasible. The precedents exist. The government wants this (AI4
 
 ## Contact
 
-**Harsh (Founder)**  
+**the team (Founder)**  
 Applying to: SIIC IIT Kanpur, SINE IIT Bombay, DPIIT Startup India  
 Website: sushaasan.in
 

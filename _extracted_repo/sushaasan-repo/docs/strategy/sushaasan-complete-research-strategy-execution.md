@@ -1,6 +1,6 @@
 # Sushaasan: Complete Research, Strategy & Execution Summary
 
-**By Harsh Sonavane & Co-founder**  
+**By the Sushaasan team & Co-founder**  
 **Comprehensive documentation of research, strategic evolution, and execution plan**  
 **March 2026**
 
@@ -1332,7 +1332,7 @@ Don't compete directly. Position as complementary (collective intelligence input
 
 ---
 
-**Prepared by Harsh Sonavane & Co-founder**  
+**Prepared by the Sushaasan team & Co-founder**  
 **March 2026**
 
 *"Everyone voices. AI solves. Democracy works."*

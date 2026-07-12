@@ -2,7 +2,7 @@
 
 > For a public, citizen-facing civic platform in India that hosts user-submitted
 > content. The goal: launch safely, stay legal, and not get banned or sued.
-> Status legend: ✅ done in code · ⚠️ needs Harsh's action · 🔲 optional / later.
+> Status legend: ✅ done in code · ⚠️ needs the team's action · 🔲 optional / later.
 
 Last updated: June 2026.
 
@@ -87,13 +87,13 @@ Last updated: June 2026.
 
 ---
 
-## The 6 things to do before a public launch push (Harsh)
+## The 6 things to do before a public launch push (the team)
 
 1. Create & monitor **grievance@sushaasan.in** + **privacy@sushaasan.in** mailboxes.
 2. Run **`ops/supabase/006_scale_indexes.sql`** in Supabase.
 3. Confirm server DB connection uses the **pooler (6543)**.
 4. Set **billing caps/alerts** on Apify / Anthropic / Vercel / Supabase.
 5. Skim **`/terms`** and **`/privacy`** and confirm the Grievance Officer name +
-   city are correct (currently "Harsh Sonavane, Pune, Maharashtra").
+   city are correct (currently "the Sushaasan team, Pune, Maharashtra").
 6. Have a **takedown + erasure** habit: when someone emails, act within the SLA
    and log it.

@@ -42,7 +42,7 @@ export default function NotFound() {
 
         <p className="text-[11px] text-ink-4">
           Sushaasan · Pune Civic Intelligence ·{' '}
-          <a href="mailto:sonawaneharsh147@gmail.com" className="underline hover:text-ink-2 transition-colors">
+          <a href="mailto:contact@sushaasan.in" className="underline hover:text-ink-2 transition-colors">
             Contact
           </a>
         </p>

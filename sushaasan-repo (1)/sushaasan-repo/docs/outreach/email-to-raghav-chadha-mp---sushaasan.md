@@ -55,7 +55,7 @@ When he raises employment questions in Parliament, imagine having:
 
 **Historic:** First MP in India using AI-synthesized collective intelligence from constituents
 
-## Who Am I (Harsh)?
+## Who Am I (the team)?
 
 - Founder of Sushaasan
 - Building with technical co-founder

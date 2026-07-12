@@ -2,7 +2,7 @@
 
 **Status:** Build-ready specification (v1.0)
 **Last updated:** 2026-04-29
-**Owner:** Harsh Sonavane (Founder) + AI Cofounder (Execution)
+**Owner:** the Sushaasan team (Founder) + AI Cofounder (Execution)
 **Pilot footprint:** NIBM + Salunke Vihar, Pune (Ward 39 / Kondhwa-Wanowrie, PIN 411048 / 411040)
 **Build target:** Public, listen-only prototype shipped within 6–8 weeks.
 
@@ -51,7 +51,7 @@ Every product decision in this MVP must pass the test: **"Does this make the exi
 | PIN codes | 411048, 411040 |
 | Ward | Ward 39 (Kondhwa-Wanowrie), PMC |
 | Population (approx.) | 30k–60k in tight core; ~150k in wider Ward 39 |
-| Why this area | (a) Harsh has direct corporator/nagar sevak relationships here, so loop-closure on the government side is wired. (b) Two acute, weekly-recurring civic problems (traffic + water) generate continuous public chatter — perfect data-density for an AI synthesis prototype. (c) Mixed demographic (NRI returnees, young professionals, long-time Marathi-speaking families, migrant labor) gives us the trilingual signal we need to validate. |
+| Why this area | (a) the team has direct corporator/nagar sevak relationships here, so loop-closure on the government side is wired. (b) Two acute, weekly-recurring civic problems (traffic + water) generate continuous public chatter — perfect data-density for an AI synthesis prototype. (c) Mixed demographic (NRI returnees, young professionals, long-time Marathi-speaking families, migrant labor) gives us the trilingual signal we need to validate. |
 
 **Geographic boundaries for the scraper:**
 The MVP listens for content tied to any of the following terms (case-insensitive, Devanagari + Roman):
@@ -388,7 +388,7 @@ Markdown only. No preamble.
 
 - Every brief is auto-fact-checked: every quoted post must resolve to a `posts.id` and its `text_clean` must contain the quoted text. If not, the brief is rejected and re-run.
 - Every brief publishes a `data_window` footer (post count, source mix, language mix) so readers can judge sample quality.
-- A human reviewer (Harsh, in MVP) approves the first ~10 briefs before auto-publish goes live.
+- A human reviewer (the team, in MVP) approves the first ~10 briefs before auto-publish goes live.
 
 ---
 
@@ -464,7 +464,7 @@ The brief is the primary deliverable to officials. Format:
 - Footer: data window, source mix, this-week's-bias-flags.
 - Sent every Monday 09:00 IST via:
   1. Email (`brief@sushaasan.in` → corporator's office)
-  2. WhatsApp (manual in MVP — Harsh sends to his contacts)
+  2. WhatsApp (manual in MVP — the team sends to his contacts)
   3. Public permalink for sharing & accountability
 
 The brief is *also* a citizen-facing artifact. There is no "internal version" with extra spice. What corporators read is what citizens read. This honesty is a feature.
@@ -478,11 +478,11 @@ Eight-week build, single-developer pace (or AI-assisted single founder).
 | Week | Theme | Deliverables |
 |---|---|---|
 | 1 | Foundations | Repo bootstrap, Vercel + Supabase wired, schema migrations, auth-less Next.js shell, brand tokens, hero with flag video. |
-| 2 | Collection layer (1) | Apify Twitter + Reddit + Telegram scrapers feeding `raw_posts`. Inngest cron. Source dashboard at `/admin/sources` (Harsh-only via env-token). |
+| 2 | Collection layer (1) | Apify Twitter + Reddit + Telegram scrapers feeding `raw_posts`. Inngest cron. Source dashboard at `/admin/sources` (the team-only via env-token). |
 | 3 | Collection layer (2) | Facebook public groups, Instagram hashtag, YouTube comments, news comments scrapers. Dedup + PII scrub. |
 | 4 | Classification | Stage-1 prompt, Sonnet integration, embeddings, posts table populated. Eval set: 100 hand-labeled posts. |
 | 5 | Clustering + UI (1) | Cluster job, basic `/traffic` and `/water` dashboards, heatmap, verbatim feed. |
-| 6 | Briefs | Stage-3 brief generation, fact-check guardrail, PDF render, permalinks, first 3 briefs hand-reviewed by Harsh. |
+| 6 | Briefs | Stage-3 brief generation, fact-check guardrail, PDF render, permalinks, first 3 briefs hand-reviewed by the team. |
 | 7 | Polish + ethics | `/ethics`, `/data`, `/about`, accessibility pass, language toggles, error monitoring. Soft launch to ~20 friendly users. |
 | 8 | Pilot launch | Public launch. First brief delivered to corporator contacts. Track: corporator engagement, citizen page-views, press pickup. Iterate. |
 
@@ -501,7 +501,7 @@ Eight-week build, single-developer pace (or AI-assisted single founder).
 | Clusters surfaced per week | 8–15 (signal, not noise) |
 | Corporator briefs delivered | 6 consecutive weeks |
 | Corporator action attributable to brief | ≥ 1 documented case |
-| Press / civic mention | ≥ 1 article or social mention by a non-Harsh-affiliated source |
+| Press / civic mention | ≥ 1 article or social mention by a non-team-affiliated source |
 | Dashboard unique visitors / week | ≥ 200 by week 8, ≥ 1000 by week 12 |
 | Right-to-forget requests received | tracked, target = handled within 24h |
 
@@ -520,7 +520,7 @@ If we hit "corporator action attributable to brief ≥ 1" plus any 5 of the rest
 | Political weaponization | Med | High | Brief tone guardrails (§9.3); no partisan framing; refuse to publish if a brief reads as anti-government rather than evidence-first. |
 | Scraping costs spike | Low | Med | Per-source budget caps in Apify; alerting at 70% of monthly cap. |
 | AI cost spike | Low | Med | Sonnet-first, Opus only for weekly brief; monthly cap monitored in `/admin/cost`. |
-| Founder burnout (Harsh solo) | High | High | This blueprint is the burnout mitigation: clear scope, clear stop-points, AI cofounder doing execution. Ship narrow, ship well. |
+| Founder burnout (the team solo) | High | High | This blueprint is the burnout mitigation: clear scope, clear stop-points, AI cofounder doing execution. Ship narrow, ship well. |
 
 **Pre-launch validation (do this in week 1, before writing a scraper):**
 Manually search Twitter, Reddit r/pune, and one Facebook group for "NIBM water" and "NIBM traffic" — count public posts in the last 30 days. If < 50 across both, expand the geo footprint to Ward 39 before committing to the build.
@@ -544,7 +544,7 @@ These all move into v2 after the MVP exit criteria are hit.
 
 ---
 
-## 17. Open Decisions Needed From Harsh
+## 17. Open Decisions Needed From the team
 
 These are the questions I need answered (or deferred to the build, with default flagged) before week 2:
 
@@ -604,7 +604,7 @@ sushaasan/
 
 (From `feedback_working_style.md` — committed.)
 
-- **Harsh = vision. AI cofounder = execution across all domains.** Default mode: I propose a complete approach, flag the 1–3 decisions only Harsh can make, and keep moving.
+- **the team = vision. AI cofounder = execution across all domains.** Default mode: I propose a complete approach, flag the 1–3 decisions only the team can make, and keep moving.
 - **Never give up.** When something looks impossible (a platform blocks, a model misclassifies, a corporator goes silent) — find another path. There is always one.
 - **Ship narrow, ship well.** Two issues, one ward, one ruthlessly polished pipeline. Resist scope creep — the v2 list is right here in §16 for a reason.
 - **Truth over comfort.** If a brief is wrong, we say so publicly and re-publish. Sushaasan's only durable moat is being trusted by both citizens and officials, and trust is built on visible honesty.

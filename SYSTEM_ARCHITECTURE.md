@@ -6,7 +6,7 @@
 ## ⚠ Three Critical Gaps (Read First)
 
 1. **Frontend reads hardcoded seed data (`lib/data.ts`), NOT Supabase** — only `/dashboard/nibm` reads the real database. The "144 reports, 7 clusters" shown on the dashboard are hardcoded numbers, not live.
-2. **Backend (Express.js) is NOT deployed anywhere** — it runs locally on Harsh's machine and must be manually triggered. There is no cron, no Inngest running, no automation.
+2. **Backend (Express.js) is NOT deployed anywhere** — it runs locally on the team's machine and must be manually triggered. There is no cron, no Inngest running, no automation.
 3. **4 Supabase tables have RLS disabled** — `sushaasan_raw_social_data`, `sushaasan_master_synthesis`, `sushaasan_gov_context`, `sushaasan_research_data` are fully exposed to anyone with the Supabase anon key.
 
 ---
@@ -14,7 +14,7 @@
 ## Git Repository
 
 **Remote:** `https://github.com/harsh147-github/Project_Svyas.git`
-**Local folder:** `C:\Users\Harsh\OneDrive\Documents\Claude\Projects\Project-Svyas`
+**Local folder:** `C:\Users\user\OneDrive\Documents\Claude\Projects\Project-Svyas`
 
 | Branch | Purpose |
 |---|---|

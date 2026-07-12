@@ -434,7 +434,7 @@ async function scrapeReddit(): Promise<NormPost[]> {
   for (const [sub, q] of queries) {
     try {
       const url = `https://www.reddit.com/r/${sub}/search.json?q=${encodeURIComponent(q)}&sort=new&t=month&limit=50&restrict_sr=on`
-      const r = await fetch(url, { headers: { 'User-Agent': 'Sushasan/1.0 (civic; sonawaneharsh147@gmail.com)' }, signal: AbortSignal.timeout(30_000) })
+      const r = await fetch(url, { headers: { 'User-Agent': 'Sushasan/1.0 (civic; contact@sushaasan.in)' }, signal: AbortSignal.timeout(30_000) })
       if (!r.ok) continue
       const data = (await r.json()) as { data?: { children?: Array<{ data: Record<string, unknown> }> } }
       for (const c of data.data?.children ?? []) {

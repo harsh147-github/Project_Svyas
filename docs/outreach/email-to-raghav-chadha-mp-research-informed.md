@@ -119,7 +119,7 @@ But if you do see potential:
 
 ## Who Am I?
 
-Harsh Sonavane, founder of Sushaasan.
+the Sushaasan team, founder of Sushaasan.
 
 **Background:**
 - Building with technical co-founder
@@ -152,7 +152,7 @@ I know you're dealing with significant political transitions right now. But I ge
 **15 minutes. Let's see if there's something here.**
 
 My contact:  
-**Harsh Sonavane**  
+**the Sushaasan team**  
 Founder, Sushaasan  
 [Your phone number]  
 [Your email]  
@@ -162,7 +162,7 @@ You said you're "a river that can turn into a flood." **Let's build the infrastr
 
 Jai Hind.
 
-**Harsh Sonavane**  
+**the Sushaasan team**  
 Founder, Sushaasan  
 *"Everyone voices. AI solves. Democracy works."*
 

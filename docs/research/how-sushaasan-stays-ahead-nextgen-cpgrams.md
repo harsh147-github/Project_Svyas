@@ -1,6 +1,6 @@
 # How Sushaasan Stays Ahead: NextGen CPGRAMS Competitive Analysis
 
-**By Harsh Sonavane, Founder**
+**By the Sushaasan team, Founder**
 
 ## Executive Summary
 
@@ -367,5 +367,5 @@ Both are necessary. Neither replaces the other.
 
 **The opportunity:** India is rebuilding its governance infrastructure with AI. Sushaasan positions itself as the citizen-facing collective intelligence layer of that infrastructure — complementing CPGRAMS, not competing with it.
 
-**Founded by:** Harsh Sonavane  
+**Founded by:** the Sushaasan team  
 **Backed by:** (IIT Kanpur SIIC pending, DPIIT Startup India application in progress)

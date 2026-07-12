@@ -172,7 +172,7 @@ NammaKasa proves:
 
 ## 10. LinkedIn DM Draft — Jyothish VM
 
-*(Drafted for Harsh to send manually via LinkedIn: https://in.linkedin.com/in/jyothish-vm)*
+*(Drafted for the team to send manually via LinkedIn: https://in.linkedin.com/in/jyothish-vm)*
 
 ---
 
@@ -184,7 +184,7 @@ Hi Jyothish,
 
 I came across NammaKasa a few weeks ago and have been following it closely — what you've built in a single weekend and the traction you've got is genuinely remarkable.
 
-I'm Harsh, a founder building Svyas — a platform focused on the same broken loop between citizens and government, but on a different civic problem. I've been researching the exact challenge you've publicly acknowledged: the loop with authorities hasn't been closed yet. That's the piece I'm obsessing over.
+I'm the team, a founder building Svyas — a platform focused on the same broken loop between citizens and government, but on a different civic problem. I've been researching the exact challenge you've publicly acknowledged: the loop with authorities hasn't been closed yet. That's the piece I'm obsessing over.
 
 I'd love to have a 20-minute conversation with you — not to pitch anything, just to learn. Specifically:
 - What's been your experience trying to engage BBMP informally?
@@ -196,7 +196,7 @@ I'm working on this from the angle of: how do you design a product where governm
 Completely understand if you're swamped — the DMs must be insane right now. But if you have 20 minutes sometime, I'd genuinely value it. This is for the betterment of the country, as you said — and I'd rather collaborate than reinvent separately.
 
 Best,
-Harsh
+the team
 Founder, Svyas
 
 ---

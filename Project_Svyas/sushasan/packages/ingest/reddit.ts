@@ -54,7 +54,7 @@ async function searchSubreddit(subreddit: string, query: string): Promise<Normal
 
   const response = await fetch(url, {
     headers: {
-      'User-Agent': 'Sushasan/1.0 (civic intelligence platform; contact: sonawaneharsh147@gmail.com)',
+      'User-Agent': 'Sushasan/1.0 (civic intelligence platform; contact: contact@sushaasan.in)',
     },
     signal: AbortSignal.timeout(30_000),
   })

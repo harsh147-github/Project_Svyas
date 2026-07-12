@@ -426,7 +426,7 @@ export default function SalunkeGarbagePage() {
           </p>
           <p className="text-[11px] text-ink-3 text-center">
             Sushaasan Salunke Vihar Pilot · Ward 47, Pune ·{' '}
-            <a href="mailto:sonawaneharsh147@gmail.com" className="underline">Contact</a>
+            <a href="mailto:contact@sushaasan.in" className="underline">Contact</a>
           </p>
         </footer>
 

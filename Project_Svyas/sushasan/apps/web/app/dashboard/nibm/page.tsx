@@ -617,7 +617,7 @@ export default async function NIBMPilotPage() {
           </p>
           <p className="text-[11px] text-ink-3 text-center">
             Sushaasan NIBM Pilot · Ward 46, Pune ·{' '}
-            <a href="mailto:sonawaneharsh147@gmail.com" className="underline">Contact</a>
+            <a href="mailto:contact@sushaasan.in" className="underline">Contact</a>
           </p>
         </footer>
 
