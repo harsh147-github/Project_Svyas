@@ -57,7 +57,12 @@ async function localiseForm(form: ApplicationForm, target: string): Promise<Appl
     form.sections.map(async (section) => ({
       ...section,
       fields: await Promise.all(
-        section.fields.map(async (f) => ({ ...f, value: await tr(f.value) })),
+        section.fields.map(async (f) => (
+          // Fields flagged untranslatable are identifiers — ward names, phone
+          // numbers, department names. They must survive verbatim so the
+          // officer can match them against PMC records.
+          f.translatable === false ? f : { ...f, value: await tr(f.value) }
+        )),
       ),
     })),
   )

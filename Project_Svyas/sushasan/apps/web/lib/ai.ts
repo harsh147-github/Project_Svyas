@@ -26,11 +26,36 @@ export type ChatArgs = {
 
 export type Provider = 'anthropic' | 'sarvam' | 'bharatgen'
 
+function hasKey(p: Provider): boolean {
+  if (p === 'sarvam') return Boolean(process.env.SARVAM_API_KEY)
+  if (p === 'bharatgen') return Boolean(process.env.BHARATGEN_API_KEY)
+  return Boolean(process.env.ANTHROPIC_API_KEY)
+}
+
+/**
+ * Providers to try, in order: the requested one first, then every other
+ * configured provider as fallback.
+ *
+ * The ordering matters more than it looks. Defaulting to Anthropic
+ * unconditionally means a Sarvam-only deployment — which is exactly where the
+ * startup credits point — silently produces degraded grievances: no issue tag,
+ * no severity, no department routing, just the citizen's raw text echoed back
+ * as if it had been synthesised. Preferring a provider that actually has a key
+ * is what makes "set one key and it works" true.
+ */
+function providerChain(): Provider[] {
+  const requested = (process.env.AI_PROVIDER ?? '').toLowerCase() as Provider
+  const all: Provider[] = ['anthropic', 'sarvam', 'bharatgen']
+  const configured = all.filter(hasKey)
+
+  if (configured.includes(requested)) {
+    return [requested, ...configured.filter((p) => p !== requested)]
+  }
+  return configured
+}
+
 export function activeProvider(): Provider {
-  const p = (process.env.AI_PROVIDER ?? 'anthropic').toLowerCase()
-  if (p === 'sarvam' && process.env.SARVAM_API_KEY) return 'sarvam'
-  if (p === 'bharatgen' && process.env.BHARATGEN_API_KEY) return 'bharatgen'
-  return 'anthropic'
+  return providerChain()[0] ?? 'anthropic'
 }
 
 // ── Anthropic (Claude) ───────────────────────────────────────────────────────
@@ -88,27 +113,35 @@ async function chatOpenAICompatible(args: ChatArgs, cfg: {
   return (data.choices?.[0]?.message?.content ?? '').trim()
 }
 
+async function callProvider(provider: Provider, args: ChatArgs): Promise<string> {
+  if (provider === 'sarvam') return chatSarvam(args)
+  if (provider === 'bharatgen') {
+    return chatOpenAICompatible(args, {
+      url: process.env.BHARATGEN_API_URL ?? '',
+      key: process.env.BHARATGEN_API_KEY!,
+      model: process.env.BHARATGEN_MODEL ?? 'bharatgen-chat',
+    })
+  }
+  return chatAnthropic(args)
+}
+
 // ── Public API ───────────────────────────────────────────────────────────────
 export async function chat(args: ChatArgs): Promise<string> {
-  const provider = activeProvider()
-  try {
-    if (provider === 'sarvam') return await chatSarvam(args)
-    if (provider === 'bharatgen') {
-      return await chatOpenAICompatible(args, {
-        url: process.env.BHARATGEN_API_URL ?? '',
-        key: process.env.BHARATGEN_API_KEY!,
-        model: process.env.BHARATGEN_MODEL ?? 'bharatgen-chat',
-      })
+  const chain = providerChain()
+  if (chain.length === 0) throw new Error('No AI provider configured')
+
+  let lastErr: unknown
+  for (const provider of chain) {
+    try {
+      return await callProvider(provider, args)
+    } catch (err) {
+      // Any configured provider can cover for any other, in either direction —
+      // a Claude outage should not stall a deployment that also has Sarvam.
+      lastErr = err
+      console.error(`[ai] ${provider} failed:`, err)
     }
-    return await chatAnthropic(args)
-  } catch (err) {
-    // Sovereign provider hiccup → fall back to Claude so the product never stalls.
-    if (provider !== 'anthropic' && process.env.ANTHROPIC_API_KEY) {
-      console.error(`[ai] ${provider} failed, falling back to anthropic:`, err)
-      return chatAnthropic(args)
-    }
-    throw err
   }
+  throw lastErr instanceof Error ? lastErr : new Error('All AI providers failed')
 }
 
 /**

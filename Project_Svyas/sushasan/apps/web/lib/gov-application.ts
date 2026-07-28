@@ -73,7 +73,18 @@ export function buildApplicationNumber(input: ApplicationNumberInput): string {
 
 // ── Form model ───────────────────────────────────────────────────────────────
 
-export type FormField = { label: string; labelMr?: string; value: string }
+export type FormField = {
+  label: string
+  labelMr?: string
+  value: string
+  /**
+   * Whether this value should be run through translation for a non-English
+   * rendering. False for proper nouns, phone numbers, reference codes and
+   * department names — translating "NIBM – Mohammadwadi (Ward 46)" or a
+   * helpline number spends credits to make a field worse.
+   */
+  translatable?: boolean
+}
 
 export type FormSection = {
   title: string
@@ -146,7 +157,10 @@ export const APPLICATION_DISCLAIMER =
   'planning only. The officer decides and acts.'
 
 function inr(n: number | null | undefined): string {
-  if (!n) return '—'
+  // A genuinely costless step ("notify facility managers via the PMC app") is
+  // different information from an unknown cost, and a work order needs to tell
+  // them apart.
+  if (n === null || n === undefined) return '—'
   return `₹${n.toLocaleString('en-IN')}`
 }
 
@@ -183,24 +197,34 @@ export function buildApplicationForm(mission: Mission, opts: { at?: Date } = {})
       title: 'A. Particulars of grievance',
       titleMr: 'अ. तक्रारीचा तपशील',
       fields: [
-        { label: 'Nature of grievance', labelMr: 'तक्रारीचे स्वरूप', value: `${issueLabel} / ${issueLabelMr}` },
+        {
+          label: 'Nature of grievance',
+          labelMr: 'तक्रारीचे स्वरूप',
+          value: `${issueLabel} / ${issueLabelMr}`,
+          translatable: false,
+        },
         { label: 'Description', labelMr: 'वर्णन', value: headline },
+        // What the residents are asking for — NOT the AI's plan. Those are
+        // different claims and the form must not blur them: an officer reading
+        // "citizen action sought" is entitled to assume a citizen said it.
         {
           label: 'Citizen action sought',
           labelMr: 'नागरिकांची मागणी',
-          value: solution?.summary ?? 'To be determined on site inspection.',
+          value: cluster?.problem_simple || cluster?.citizen_headline || 'To be determined on site inspection.',
         },
       ],
     },
     {
       title: 'B. Jurisdiction',
       titleMr: 'ब. कार्यक्षेत्र',
+      // Names, offices and numbers stay verbatim — an officer needs to match
+      // these against PMC records, and a translated department name won't.
       fields: [
-        { label: 'Ward', labelMr: 'प्रभाग', value: `${ward.name} (Ward ${ward.ward_number})` },
-        { label: 'Addressed to', labelMr: 'प्रति', value: addressedTo },
-        { label: 'Concerned department', labelMr: 'संबंधित विभाग', value: department },
-        { label: 'PMC region office', labelMr: 'क्षेत्रीय कार्यालय', value: incharge.region ?? 'Not recorded' },
-        { label: 'Region contact', labelMr: 'संपर्क', value: incharge.regionPhone ?? incharge.helpline ?? 'Not recorded' },
+        { label: 'Ward', labelMr: 'प्रभाग', value: `${ward.name} (Ward ${ward.ward_number})`, translatable: false },
+        { label: 'Addressed to', labelMr: 'प्रति', value: addressedTo, translatable: false },
+        { label: 'Concerned department', labelMr: 'संबंधित विभाग', value: department, translatable: false },
+        { label: 'PMC region office', labelMr: 'क्षेत्रीय कार्यालय', value: incharge.region ?? 'Not recorded', translatable: false },
+        { label: 'Region contact', labelMr: 'संपर्क', value: incharge.regionPhone ?? incharge.helpline ?? 'Not recorded', translatable: false },
       ],
     },
     {
@@ -221,11 +245,13 @@ export function buildApplicationForm(mission: Mission, opts: { at?: Date } = {})
           label: 'Sources',
           labelMr: 'स्रोत',
           value: (cluster?.source_platforms ?? []).join(', ') || 'Mixed public sources',
+          translatable: false,
         },
         {
           label: 'Current status',
           labelMr: 'सद्यस्थिती',
           value: cluster?.status ?? 'open',
+          translatable: false,
         },
       ],
     },
@@ -233,6 +259,12 @@ export function buildApplicationForm(mission: Mission, opts: { at?: Date } = {})
       title: 'D. Budget context',
       titleMr: 'ड. अर्थसंकल्पीय संदर्भ',
       fields: [
+        // The AI's proposal, labelled as the AI's proposal.
+        {
+          label: 'AI-proposed approach (indicative)',
+          labelMr: 'सुचवलेली कार्यपद्धती (अंदाजित)',
+          value: solution?.summary ?? 'No plan synthesised yet.',
+        },
         {
           label: 'Ward annual allocation (approx.)',
           labelMr: 'प्रभाग वार्षिक तरतूद (अंदाजे)',
