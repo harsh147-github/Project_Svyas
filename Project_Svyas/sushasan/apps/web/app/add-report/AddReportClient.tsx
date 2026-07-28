@@ -2,6 +2,8 @@
 
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import ListenButton from '@/components/ui/ListenButton'
+import DocumentAttach from '@/components/report/DocumentAttach'
 
 // Resize image to max 1024px, encode as JPEG base64
 function resizeAndEncode(file: File, maxPx = 1024): Promise<{ base64: string; mimeType: string }> {
@@ -23,11 +25,18 @@ function resizeAndEncode(file: File, maxPx = 1024): Promise<{ base64: string; mi
   })
 }
 
+// 'auto' sends no language at all — Saaras v3 detects it. That is the default
+// on purpose: a resident should be able to press record and talk, not hunt for
+// their language first. The explicit picks stay for anyone who wants to force it.
 const LANGS = [
+  { code: 'auto',  label: 'Auto', short: 'A', whisper: 'en' },
   { code: 'en-IN', label: 'English', short: 'EN', whisper: 'en' },
   { code: 'hi-IN', label: 'हिंदी', short: 'हिं', whisper: 'hi' },
   { code: 'mr-IN', label: 'मराठी', short: 'मर', whisper: 'mr' },
 ]
+
+// Sarvam TTS voices exist for these; anything else degrades to text-only.
+const TTS_CAPABLE = new Set(['en-IN', 'hi-IN', 'bn-IN', 'ta-IN', 'te-IN', 'gu-IN', 'kn-IN', 'ml-IN', 'mr-IN', 'pa-IN', 'od-IN'])
 
 const VOICE_BARS = [8, 14, 22, 28, 20, 26, 14, 20, 10]
 
@@ -45,6 +54,10 @@ type Result = {
   subTags: string[]
   severity: number
   grievanceFormal: string
+  /** Same grievance rendered in the citizen's own language, when available. */
+  grievanceLocal?: string | null
+  /** BCP-47 code of the language the citizen used. */
+  language?: string | null
   citedLocation: string | null
   civicAsk: string | null
   responsibleDept: string
@@ -52,6 +65,8 @@ type Result = {
   wardName: string
   lng: number
   lat: number
+  /** PMC-style application number this grievance was filed under. */
+  applicationNumber?: string | null
 }
 
 const WARD_CENTROIDS = [
@@ -229,7 +244,9 @@ export function AddReportClient() {
   const [copied, setCopied] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(false)
   const [mediaSupported, setMediaSupported] = useState(false)
-  const [voiceLang, setVoiceLang] = useState('en-IN')
+  const [voiceLang, setVoiceLang] = useState('auto')
+  // What Saaras detected the citizen actually spoke — drives the readback voice.
+  const [detectedLang, setDetectedLang] = useState<string | null>(null)
   const [textFocused, setTextFocused] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [photo, setPhoto] = useState<File | null>(null)
@@ -325,17 +342,22 @@ export function AddReportClient() {
         stream.getTracks().forEach(t => t.stop())
         setTranscribing(true)
         const blob = new Blob(chunks, { type: mimeType })
-        const lang = LANGS.find(l => l.code === voiceLang)?.whisper ?? 'en'
         const form = new FormData()
         form.append('audio', blob, mimeType.includes('mp4') ? 'audio.mp4' : 'audio.webm')
-        form.append('language', lang)
+        // 'auto' is passed through as-is; the route treats it as "detect it".
+        form.append('language', voiceLang)
         try {
           const controller = new AbortController()
-          const timeout = setTimeout(() => controller.abort(), 30_000)
+          // Saaras needs longer than Whisper on a slow mobile connection, and a
+          // premature abort loses a report the citizen already spoke.
+          const timeout = setTimeout(() => controller.abort(), 60_000)
           const res = await fetch('/api/transcribe', { method: 'POST', body: form, signal: controller.signal })
           clearTimeout(timeout)
-          const data = await res.json() as { text?: string }
+          const data = await res.json() as { text?: string; language?: string | null }
           if (data.text?.trim()) {
+            // Remember what the citizen actually spoke, so the grievance can be
+            // read back to them in that language rather than in the UI default.
+            if (data.language) setDetectedLang(data.language)
             setText(prev => prev ? `${prev} ${data.text!.trim()}` : data.text!.trim())
             if (textareaRef.current) {
               textareaRef.current.style.height = 'auto'
@@ -367,8 +389,6 @@ export function AddReportClient() {
     }
   }
 
-  const useWhisperForLang = voiceLang === 'hi-IN' || voiceLang === 'mr-IN'
-
   function toggleVoice() {
     if (voiceActive) {
       voiceActiveRef.current = false
@@ -377,13 +397,18 @@ export function AddReportClient() {
       setVoiceActive(false)
       return
     }
-    const useWhisper = !voiceSupported || useWhisperForLang
-    if (useWhisper && !mediaSupported) return
+    // Server-side Saaras is the default for every language now, not just
+    // Hindi/Marathi. The browser's own recogniser is markedly worse on Indian
+    // languages and code-mixed speech ("paani nahi aaya since Monday"), which
+    // is how people here actually talk — so it is the fallback, used only when
+    // the device won't give us microphone capture at all.
+    const useServer = mediaSupported
+    if (!useServer && !voiceSupported) return
     voiceActiveRef.current = true
     setVoiceActive(true)
     setVoiceError(null)
-    if (useWhisper) startWhisperRecording()
-    else startBrowserRecognition(voiceLang)
+    if (useServer) startWhisperRecording()
+    else startBrowserRecognition(voiceLang === 'auto' ? 'en-IN' : voiceLang)
   }
 
   const canSpeak = voiceSupported || mediaSupported
@@ -422,7 +447,14 @@ export function AddReportClient() {
       const res = await fetch('/api/add-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text.trim(), lat, lng, wardId, ...(photoBase64 ? { photoBase64, photoMimeType } : {}) }),
+        body: JSON.stringify({
+          text: text.trim(), lat, lng, wardId,
+          // What Saaras heard, when the report came in by voice — saves the
+          // server a language-ID call and is more reliable than guessing from
+          // typed text.
+          ...(detectedLang ? { language: detectedLang } : {}),
+          ...(photoBase64 ? { photoBase64, photoMimeType } : {}),
+        }),
       })
       if (!res.ok) throw new Error(`${res.status}`)
       const reportResult = await res.json()
@@ -502,6 +534,16 @@ export function AddReportClient() {
               <p className="text-[14px] leading-relaxed text-ink font-medium" style={{ fontFamily: 'Source Serif 4, serif' }}>
                 &ldquo;{result.grievanceFormal}&rdquo;
               </p>
+              {/* The same grievance in the citizen's own language — so what is
+                  filed in their name is legible to them, not only to the office. */}
+              {result.grievanceLocal && result.grievanceLocal !== result.grievanceFormal && (
+                <p
+                  className="text-[13px] leading-relaxed text-ink/70 mt-2.5 pt-2.5 border-t border-ink/6"
+                  lang={result.language ?? undefined}
+                >
+                  {result.grievanceLocal}
+                </p>
+              )}
             </div>
             <div className="px-4 pb-3 flex flex-wrap gap-2 items-center border-t border-ink/6 pt-3">
               {/* Issue type badge */}
@@ -515,7 +557,26 @@ export function AddReportClient() {
                   → {result.responsibleDept}
                 </span>
               )}
+              {/* Hear it before it is filed — reads the citizen's own-language
+                  version when we have one, else the formal English. */}
+              <ListenButton
+                text={result.grievanceLocal || result.grievanceFormal}
+                language={result.language ?? 'en-IN'}
+                label="Listen"
+              />
             </div>
+            {/* The receipt: an application number the citizen can quote at the
+                ward office, and the officer can look up. */}
+            {result.applicationNumber && (
+              <div className="px-4 pb-3 pt-2 border-t border-ink/6 flex items-baseline justify-between gap-2">
+                <span className="text-[10px] font-bold tracking-[0.18em] uppercase text-ink/35">
+                  Application no.
+                </span>
+                <span className="text-[12px] font-bold text-navy tracking-wide tabular-nums">
+                  {result.applicationNumber}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Severity */}
@@ -736,6 +797,14 @@ export function AddReportClient() {
                 </label>
               </div>
             )}
+
+            {/* Paper evidence — a bill, notice or work order read by Sarvam
+                Vision. Sits under the photo control because it is the same
+                gesture ("here is what I'm holding"), but a different kind of
+                proof: a photo shows the problem, a document shows the record. */}
+            <div className="mt-3">
+              <DocumentAttach language={detectedLang} />
+            </div>
           </div>
 
           {/* ── SPEAK section ────────────────────────────────────────── */}
@@ -769,7 +838,7 @@ export function AddReportClient() {
                     ))}
                   </div>
                   <p className="text-[14px] font-semibold text-red-400">
-                    {useWhisperForLang ? 'Recording… tap Stop when done' : 'Listening…'}
+                    {mediaSupported ? 'Recording… tap Stop when done' : 'Listening…'}
                   </p>
                   <button onClick={toggleVoice}
                           className="flex items-center gap-2.5 px-8 py-3.5 rounded-2xl
@@ -809,10 +878,13 @@ export function AddReportClient() {
                     ))}
                   </div>
 
-                  {/* Whisper note for Indian languages */}
-                  {useWhisperForLang && (
+                  {/* Sarvam handles all 23 languages server-side, so this note
+                      now applies to every pick — including auto-detect. */}
+                  {mediaSupported && (
                     <p className="text-center text-[11px] text-india-green/80 font-medium mt-1">
-                      ✦ Uses Sarvam / Whisper AI — optimised for Indian languages
+                      {voiceLang === 'auto'
+                        ? '✦ Speak any Indian language — Sarvam AI detects it'
+                        : '✦ Uses Sarvam AI — built for Indian languages'}
                     </p>
                   )}
 

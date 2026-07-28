@@ -6,6 +6,7 @@ import { buildBrief } from '@/lib/gov-brief'
 import { WarRoomCopilot } from '@/components/gov/WarRoomCopilot'
 import { DispatchPanel } from '@/components/gov/DispatchPanel'
 import { LoopCloseButtons } from '@/components/gov/LoopCloseButtons'
+import { ApplicationFormPanel } from '@/components/gov/ApplicationFormPanel'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'War Room', robots: { index: false, follow: false } }
@@ -212,6 +213,14 @@ export default async function WarRoomPage({
               </p>
             )}
           </section>
+
+          {/* THE FORM — reference number + printable dossier for the ward office */}
+          <ApplicationFormPanel
+            missionId={mission.id}
+            applicationNumber={brief.applicationNumber}
+            token={token}
+            title={`Ward ${ward.ward_number} · ${label}`}
+          />
 
           {/* SUSHAASAN AI — JARVIS */}
           <section id="sushaasan-ai" className="scroll-mt-20 rounded-2xl border border-saffron/25 bg-[#0E1A30]/80 overflow-hidden flex flex-col min-h-[520px]"
