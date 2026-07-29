@@ -65,8 +65,15 @@ lib/sarvam/
 │                 identifyLanguage, transliterate
 ├── llm.ts        chat completions — complete, completeJson
 ├── docs.ts       Vision doc-digitization job pipeline
+├── analytics.ts  typed question answering (/text-analytics) — triage
+├── pronunciation.ts  Pune place-name dictionary for TTS
 └── index.ts      barrel — import from '@/lib/sarvam'
 ```
+
+`packages/ai/provider.ts` is the equivalent chokepoint for the eight prompt-wrapper
+modules in `packages/ai` (classify, cluster-centroid, solution, government-brief, …).
+It exposes two tiers named for purpose rather than vendor — `callFast` (sarvam-30b) and
+`callDeep` (sarvam-105b) — so a model version bump never touches eight call sites.
 
 `client.ts` owns the two things that are easy to get wrong: the auth header is
 `api-subscription-key` (**not** `Authorization: Bearer`), and `Content-Type` must be
@@ -128,19 +135,32 @@ The codebase was previously pinned to models that are now deprecated or gone. Cu
 
 ---
 
-## 5. Switching the pipeline to Sarvam
+## 5. Sarvam is the default, not an option
+
+Setting `SARVAM_API_KEY` is enough. The provider chain is Sarvam → Anthropic → BharatGen,
+so every AI call in the product runs on Sarvam unless Sarvam is unavailable.
+
+### Sovereign mode
 
 ```bash
-AI_PROVIDER=sarvam
-SARVAM_API_KEY=...
+SARVAM_ONLY=true
 ```
 
-That single switch moves grievance synthesis, the war-room copilot and solution
-synthesis onto Sarvam models. `lib/ai.ts` falls back to Anthropic automatically on any
-error or missing key, so flipping it can never take the product down.
+With this set, Sarvam is the *only* provider. No Whisper fallback for speech, no Claude
+fallback for reasoning, no silent cross-border reroute when a call fails. A failure
+surfaces as a failure.
 
-STT, TTS, translation and document extraction do **not** depend on `AI_PROVIDER` — they
-are Sarvam-only capabilities and activate as soon as `SARVAM_API_KEY` is present.
+This is the setting that makes "Sushaasan runs on Indian models" a claim you can defend
+in a PMC room rather than a default that quietly flips under load. Two behaviours change:
+
+| Path | Normal | `SARVAM_ONLY=true` |
+|---|---|---|
+| `/api/transcribe` | Saaras → Groq Whisper → OpenAI Whisper | Saaras only; 503 `sovereignMode` on failure |
+| Photo grievance enrichment | Claude vision reads the photo | Photo dropped from synthesis; text-only grievance. The photo still reaches the officer. |
+
+The photo case is a real limitation, stated plainly: Sarvam's vision model is document
+digitisation (OCR), not general scene understanding, so there is no Sarvam-native way to
+read a photo of a pothole.
 
 ### Degradation contract
 
@@ -191,7 +211,52 @@ all exist to keep that boundary visible.
 
 ---
 
-## 8. Credit hygiene
+## 8. Triage — Sarvam text-analytics
+
+`lib/sarvam/analytics.ts` uses `/text-analytics`, which answers *typed* questions
+(boolean / enum / number / short answer) over a text. Unlike an LLM JSON blob, the shape
+is declared up front — no fence-stripping, no schema drift.
+
+It runs over the citizen's **own words**, not the AI's rewrite of them, so nothing is
+lost in the paraphrase. Its most important job is the escalation call:
+
+```
+isEmergency → severity forced to 5 → red banner on the citizen's receipt
+```
+
+A live wire or a contaminated supply cannot sit in a weekly synthesis queue, and that
+decision is too consequential to infer from prose. When the model's severity and the
+triage verdict disagree, the more cautious of the two wins — under-calling an emergency
+costs far more than over-calling one.
+
+Triage is an *enhancement, never a gate*: if it fails or Sarvam is unconfigured, the
+report is still filed, it just doesn't get the fast lane.
+
+---
+
+## 9. Pronunciation — saying Pune's names correctly
+
+`lib/sarvam/pronunciation.ts`. A TTS voice that reads "NIBM" as a word, or stresses
+"Kondhwa" wrongly, tells a Pune resident in one syllable that this product was not built
+for them. For a platform asking people to trust it with a complaint against their own
+municipality, that is a credibility failure on first contact — not a rough edge.
+
+Two layers:
+
+1. **Remote dictionary** — `createPuneDictionary()` registers ~35 entries (place names,
+   society names, PMC department terms) once against the account. Store the returned id
+   in `SARVAM_PRONUNCIATION_DICT_ID`; it is then attached to every TTS call at no
+   per-synthesis cost.
+2. **Initialism safety net** — applied client-side before synthesis, so a deployment
+   that has not run the setup step still never says "nibbem":
+
+   ```
+   "NIBM Road, PMC has issued..."  →  "N I B M Road, P M C has issued..."
+   ```
+
+---
+
+## 10. Credit hygiene
 
 Credits are finite and STT is the hungry path (audio minutes, not tokens).
 
@@ -207,7 +272,7 @@ Credits are finite and STT is the hungry path (audio minutes, not tokens).
 
 ---
 
-## 9. MCP server (build-time)
+## 11. MCP server (build-time)
 
 `.mcp.json` declares a `sarvam` stdio server (`uvx sarvam-mcp`) so Claude Code can query
 the authoritative API reference, model list, language coverage and speaker roster while

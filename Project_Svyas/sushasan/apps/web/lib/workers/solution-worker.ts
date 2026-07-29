@@ -3,7 +3,7 @@
  * Triggered weekly (Sunday 21:00 IST) or on-demand via "sushasan/solution.generate".
  * Self-contained — no cross-package imports. Lives in apps/web.
  */
-import Anthropic from '@anthropic-ai/sdk'
+import { chatJson } from '../ai'
 import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
 
@@ -63,9 +63,6 @@ export const solutionSynthesisWorker = inngest.createFunction(
   },
   async ({ step }: { step: any }) => {
     const db = createServerClient()
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set')
-    const ai = new Anthropic({ apiKey })
 
     // Get all open clusters with enough posts to synthesize
     const { data: clusters, error } = await db
@@ -122,14 +119,21 @@ export const solutionSynthesisWorker = inngest.createFunction(
         }
 
         try {
-          const msg = await ai.messages.create({
-            model: 'claude-opus-4-6',
-            max_tokens: 1024,
+          // Flagship tier — this output is what a corporator may spend
+          // public money against, so it gets the best model available.
+          const parsed = await chatJson<{
+            summary?: string
+            steps?: unknown[]
+            total_cost_est_inr?: number
+            timeline_days?: number
+            priority_score?: number
+            budget_feasible?: boolean
+          }>({
+            task: 'synthesize',
+            maxTokens: 1024,
+            system: 'You are a civic infrastructure advisor to a Pune municipal corporator. Return only valid JSON.',
             messages: [{ role: 'user', content: SOLUTION_PROMPT(ctx) }],
           })
-          const raw = (msg.content[0] as { type: string; text: string }).text?.trim() ?? ''
-          const json = raw.startsWith('{') ? raw : raw.replace(/^```json?\n?/, '').replace(/```$/, '').trim()
-          const parsed = JSON.parse(json)
 
           await db.from('solutions').upsert({
             ward_id: cluster.ward_id,

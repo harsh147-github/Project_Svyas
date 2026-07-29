@@ -1,4 +1,4 @@
-import { callOpus, parseJsonResponse } from './anthropic'
+import { callOpus, parseJsonResponse } from './provider'
 import type { MasterSynthesis } from './deep-synthesis'
 
 export interface SolutionStep {

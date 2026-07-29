@@ -63,3 +63,21 @@ export {
   type DocJobStatus,
   type DocOutputFormat,
 } from './docs'
+
+export {
+  analyze,
+  triageReport,
+  TRIAGE_QUESTIONS,
+  PMC_DEPARTMENTS,
+  type AnalyticsQuestion,
+  type Triage,
+} from './analytics'
+
+export {
+  createPuneDictionary,
+  listDictionaries,
+  configuredDictionaryId,
+  isPronunciationConfigured,
+  applyInitialismHints,
+  PUNE_PRONUNCIATIONS,
+} from './pronunciation'

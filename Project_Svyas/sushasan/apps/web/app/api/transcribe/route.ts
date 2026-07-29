@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { transcribeBilingual, isSarvamConfigured } from '@/lib/sarvam'
+import { sarvamOnly } from '@/lib/ai'
 
 /**
  * POST /api/transcribe — voice capture for the citizen report flow.
@@ -134,6 +135,16 @@ export async function POST(req: NextRequest) {
     } catch (err) {
       console.error('[transcribe] sarvam error:', err)
     }
+  }
+
+  // Sovereign mode: Saaras or nothing. A citizen's voice does not leave the
+  // Indian-model stack just because a request failed — the client degrades to
+  // typing instead, which is a worse UX but an honest one.
+  if (sarvamOnly()) {
+    return NextResponse.json(
+      { error: 'Transcription unavailable', sovereignMode: true },
+      { status: 503 },
+    )
   }
 
   // ── 2. Groq Whisper ──────────────────────────────────────────────────────

@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import { isAdminAuthed } from '@/lib/auth'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
+import { chatJson, isAiConfigured } from '@/lib/ai'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
 export const dynamic = 'force-dynamic'
-
-const MODEL = process.env.OPUS_MODEL ?? 'claude-opus-4-5'
 
 /**
  * POST /api/admin/generate-briefs
@@ -109,7 +107,6 @@ function extractJson(text: string): unknown {
 }
 
 async function generateOne(
-  anthropic: Anthropic,
   cluster: Cluster,
   ward: Ward,
 ): Promise<OpusOutput> {
@@ -137,15 +134,13 @@ async function generateOne(
 
   const prompt = SYNTH_PROMPT.replace('{INPUT_JSON}', JSON.stringify(input, null, 2))
 
-  const msg = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: 2000,
+  // Flagship tier via the provider layer — Sarvam by default.
+  const parsed = await chatJson<OpusOutput>({
+    task: 'synthesize',
+    maxTokens: 2000,
+    system: 'You are a civic infrastructure advisor to a Pune municipal corporator. Return only valid JSON.',
     messages: [{ role: 'user', content: prompt }],
   })
-
-  const textBlock = msg.content.find((b) => b.type === 'text')
-  if (!textBlock || textBlock.type !== 'text') throw new Error('No text in Opus response')
-  const parsed = extractJson(textBlock.text) as OpusOutput
 
   // Validate
   if (!parsed.summary || !Array.isArray(parsed.steps) || parsed.steps.length === 0) {
@@ -168,15 +163,14 @@ async function runGeneration(body: GenerateOpts) {
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 })
   }
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: 'ANTHROPIC_API_KEY missing' }, { status: 500 })
+  if (!isAiConfigured()) {
+    return NextResponse.json({ error: 'No AI provider configured' }, { status: 500 })
   }
 
   const topN = body.top_n ?? 4
   const force = body.force ?? false
 
   const supabase = createServerClient()
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   // 1. Resolve target wards
   let wardIds: string[] = []
@@ -249,7 +243,7 @@ async function runGeneration(body: GenerateOpts) {
       }
 
       try {
-        const sol = await generateOne(anthropic, cluster, ward)
+        const sol = await generateOne(cluster, ward)
         const { error: insertErr } = await supabase.from('solutions').upsert({
           ward_id: wardId,
           cluster_id: cluster.id,

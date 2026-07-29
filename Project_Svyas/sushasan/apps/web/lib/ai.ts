@@ -33,6 +33,19 @@ function hasKey(p: Provider): boolean {
 }
 
 /**
+ * Hard sovereign mode.
+ *
+ * With SARVAM_ONLY set, a Sarvam failure is a failure — Indian civic data is
+ * never silently rerouted to a foreign model to paper over an outage. This is
+ * the setting that makes "runs on Indian models" a claim you can defend in a
+ * PMC room rather than a default that quietly flips under load.
+ */
+export function sarvamOnly(): boolean {
+  const v = (process.env.SARVAM_ONLY ?? '').toLowerCase()
+  return v === '1' || v === 'true' || v === 'yes'
+}
+
+/**
  * Providers to try, in order: the requested one first, then every other
  * configured provider as fallback.
  *
@@ -45,8 +58,16 @@ function hasKey(p: Provider): boolean {
  */
 function providerChain(): Provider[] {
   const requested = (process.env.AI_PROVIDER ?? '').toLowerCase() as Provider
-  const all: Provider[] = ['anthropic', 'sarvam', 'bharatgen']
+
+  // Sarvam first. Sushaasan runs on Indian models by default now — Anthropic
+  // is the safety net, not the baseline.
+  const all: Provider[] = ['sarvam', 'anthropic', 'bharatgen']
   const configured = all.filter(hasKey)
+
+  // Sovereign mode: Sarvam or nothing. No silent cross-border fallback.
+  if (sarvamOnly()) {
+    return configured.includes('sarvam') ? ['sarvam'] : []
+  }
 
   if (configured.includes(requested)) {
     return [requested, ...configured.filter((p) => p !== requested)]

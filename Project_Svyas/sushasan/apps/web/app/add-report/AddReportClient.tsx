@@ -67,6 +67,11 @@ type Result = {
   lat: number
   /** PMC-style application number this grievance was filed under. */
   applicationNumber?: string | null
+  /** Independent triage read from Sarvam text-analytics. */
+  isEmergency?: boolean
+  triagedDepartment?: string | null
+  peopleAffected?: number | null
+  reportedDuration?: string | null
 }
 
 const WARD_CENTROIDS = [
@@ -521,6 +526,28 @@ export function AddReportClient() {
               Ward {result.wardId} · {result.wardName}
             </p>
           </div>
+
+          {/* Emergency acknowledgement. A resident who has just reported a live
+              wire or contaminated water needs to see that the system understood
+              the urgency — silence here reads as "nobody is coming". */}
+          {result.isEmergency && (
+            <div role="alert"
+                 className="rounded-2xl border-2 border-red-500/30 bg-red-50 px-4 py-3">
+              <div className="flex items-start gap-2.5">
+                <span aria-hidden="true" className="text-[18px] leading-none mt-0.5">⚠️</span>
+                <div>
+                  <p className="text-[13px] font-bold text-red-700 leading-snug">
+                    Flagged as urgent — escalated immediately
+                  </p>
+                  <p className="text-[11.5px] text-red-700/75 leading-snug mt-1">
+                    This report describes a safety risk, so it goes to the ward office
+                    ahead of the normal queue. For an immediate emergency, still call
+                    the PMC helpline on <a href="tel:02025501000" className="underline font-semibold">020-2550-1000</a>.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* THE FORMAL GRIEVANCE — hero element */}
           <div className="rounded-2xl overflow-hidden border border-ink/10 shadow-sm bg-white">

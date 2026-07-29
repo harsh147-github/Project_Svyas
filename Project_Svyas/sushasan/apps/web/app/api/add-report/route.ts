@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
 import { scrubPII } from '@/lib/pii'
-import { chatJson, isAiConfigured } from '@/lib/ai'
-import { identifyLanguage, translateFormal, isSarvamConfigured, toBcp47, TRANSLATE_LANGUAGES } from '@/lib/sarvam'
+import { chatJson, isAiConfigured, sarvamOnly } from '@/lib/ai'
+import { identifyLanguage, translateFormal, triageReport, isSarvamConfigured, toBcp47, TRANSLATE_LANGUAGES } from '@/lib/sarvam'
 import { buildApplicationNumber } from '@/lib/gov-application'
 import { randomUUID, createHash } from 'crypto'
 
@@ -263,7 +263,13 @@ export async function POST(req: NextRequest) {
   // photo goes to Claude. Text-only reports go through the provider layer,
   // which is what lets AI_PROVIDER=sarvam actually take over the pipeline
   // rather than being a setting that only affects the copilot.
-  if (photoBase64 && anthropicKey) {
+  // Sovereign mode disables the vision path: Sarvam's vision model is document
+  // digitisation (OCR), not general scene understanding, so there is no
+  // Sarvam-native way to read a photo of a pothole. Rather than ship a silent
+  // cross-border call, the photo is dropped from synthesis and the report is
+  // built from the citizen's text alone — the photo still reaches the officer,
+  // it just doesn't enrich the AI-written grievance.
+  if (photoBase64 && anthropicKey && !sarvamOnly()) {
     try {
       const client = new Anthropic({ apiKey: anthropicKey })
 
@@ -352,6 +358,20 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Triage, read from the citizen's own words rather than from the AI's
+  // rewrite of them. Its job is the escalation call: a live wire or a
+  // contaminated supply cannot sit in a weekly synthesis queue, and that
+  // decision is too consequential to infer from prose. Runs in parallel with
+  // nothing else because it is fast and its answer changes what happens next.
+  const triage = await triageReport(cleanText)
+
+  // The model gives a severity; triage gives an independent emergency read.
+  // When they disagree, take the more cautious of the two — under-calling an
+  // emergency costs far more than over-calling one.
+  const effectiveSeverity = triage?.isEmergency
+    ? Math.max(5, synthesized.severity)
+    : synthesized.severity
+
   // 4. Persist to Supabase (if configured)
   let postId: string | null = null
 
@@ -398,7 +418,7 @@ export async function POST(req: NextRequest) {
             translated_text_en: synthesized.translated_text_en ?? null,
             issue_tag: synthesized.issue_tag,
             sub_tags: synthesized.sub_tags ?? [],
-            severity: synthesized.severity,
+            severity: effectiveSeverity,
             sentiment: synthesized.sentiment ?? -1,
             cited_location: synthesized.cited_location ?? null,
             is_actionable: true,
@@ -431,7 +451,7 @@ export async function POST(req: NextRequest) {
               issue_tag: synthesized.issue_tag,
               centroid_text: synthesized.grievance_formal,
               post_count: 1,
-              severity_avg: synthesized.severity,
+              severity_avg: effectiveSeverity,
               status: 'open',
               lng: resolvedLng,
               lat: resolvedLat,
@@ -449,7 +469,7 @@ export async function POST(req: NextRequest) {
     issueTag: synthesized.issue_tag,
     issueTypeFree: synthesized.issue_type_free,
     subTags: synthesized.sub_tags ?? [],
-    severity: synthesized.severity,
+    severity: effectiveSeverity,
     // The formal grievance — this is the centroid_text for the map
     grievanceFormal: synthesized.grievance_formal,
     // The same grievance in the citizen's own language, when we could produce
@@ -458,6 +478,13 @@ export async function POST(req: NextRequest) {
     language: reportLanguage,
     // The receipt — quotable by the citizen, resolvable by the officer.
     applicationNumber,
+    // Independent triage read (Sarvam text-analytics). Null when unavailable —
+    // callers must treat it as an enhancement, never a gate.
+    isEmergency: triage?.isEmergency ?? false,
+    isActionable: triage?.isActionable ?? true,
+    triagedDepartment: triage?.department ?? null,
+    peopleAffected: triage?.peopleAffected ?? null,
+    reportedDuration: triage?.duration ?? null,
     citedLocation: synthesized.cited_location,
     civicAsk: synthesized.civic_ask,
     responsibleDept: synthesized.responsible_dept,

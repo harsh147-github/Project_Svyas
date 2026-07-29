@@ -1,4 +1,4 @@
-import { callSonnet, parseJsonResponse } from './anthropic'
+import { callSonnet, parseJsonResponse } from './provider'
 import type { DiplomatSolution } from './solution-diplomat'
 
 export interface CitizenDisplay {

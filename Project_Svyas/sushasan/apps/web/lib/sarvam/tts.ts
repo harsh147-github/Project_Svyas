@@ -17,6 +17,7 @@
  */
 
 import { sarvamRequest, toBcp47, TTS_LANGUAGES, type TtsLanguage } from './client'
+import { applyInitialismHints, configuredDictionaryId } from './pronunciation'
 
 export const BULBUL_MODEL = process.env.SARVAM_TTS_MODEL ?? 'bulbul:v3'
 
@@ -97,10 +98,13 @@ export async function speak(input: SpeakInput): Promise<SpeakResult> {
     throw new Error(`Sarvam TTS does not support language "${input.language}" (11 supported)`)
   }
 
-  const inputs = chunkForSpeech(input.text)
+  // Space out initialisms before chunking so "NIBM" is never read as a word.
+  // The remote dictionary handles the rest; this is the zero-setup safety net.
+  const inputs = chunkForSpeech(applyInitialismHints(input.text))
   if (inputs.length === 0) throw new Error('Sarvam TTS: empty text')
 
   const speaker = input.speaker ?? SPEAKER_CITIZEN
+  const dictionaryId = configuredDictionaryId()
 
   const data = await sarvamRequest<TtsResponse>({
     path: '/text-to-speech',
@@ -116,6 +120,8 @@ export async function speak(input: SpeakInput): Promise<SpeakResult> {
       // Normalises "₹1,50,000" and "14/07/2026" into spoken form — essential
       // when reading budget figures and deadlines out of a government brief.
       enable_preprocessing: true,
+      // Pune place names — see lib/sarvam/pronunciation.ts.
+      ...(dictionaryId ? { pronunciation_dictionary_id: dictionaryId } : {}),
     },
     timeoutMs: 90_000,
   })
