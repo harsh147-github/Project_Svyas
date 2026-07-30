@@ -1,6 +1,5 @@
 packages:
   - "apps/*"
   - "packages/*"
-  - "workers/*"
 allowBuilds:
   protobufjs: set this to true or false
