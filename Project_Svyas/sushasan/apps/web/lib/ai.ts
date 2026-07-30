@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { ASSIST_MODEL, ASSIST_SYNTH_MODEL } from './models'
 
 // Provider-agnostic LLM layer. Lets Sushaasan run its AI on Claude today and
 // switch to Sarvam AI or BharatGen (sovereign, made-in-India models) with a
@@ -34,10 +35,7 @@ export function activeProvider(): Provider {
 async function chatAnthropic(args: ChatArgs): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY missing')
-  const model =
-    args.task === 'synthesize'
-      ? (process.env.ANTHROPIC_MODEL_SYNTH ?? 'claude-sonnet-4-6')
-      : (process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6')
+  const model = args.task === 'synthesize' ? ASSIST_SYNTH_MODEL : ASSIST_MODEL
   const client = new Anthropic({ apiKey })
   const msg = await client.messages.create({
     model,

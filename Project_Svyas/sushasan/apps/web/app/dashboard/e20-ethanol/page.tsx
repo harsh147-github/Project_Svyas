@@ -410,7 +410,7 @@ export default function E20EthanolPage() {
                   <text x="30" y="48" textAnchor="middle" fontSize="6.5" fontWeight="600" fill="#7a766d">NO LABEL</text>
                   <line x1="60" y1="22" x2="76" y2="22" stroke="#F59E0B" strokeWidth="2"/>
                   <circle cx="78" cy="22" r="3" fill="#F59E0B"/>
-                  <text x="30" y="98" textAnchor="middle" fontSize="9" fill="#3a3a36">Pumps don't show</text>
+                  <text x="30" y="98" textAnchor="middle" fontSize="9" fill="#3a3a36">Pumps don&apos;t show</text>
                   <text x="30" y="110" textAnchor="middle" fontSize="9" fill="#3a3a36">E10 vs E20 grade</text>
                 </g>
 

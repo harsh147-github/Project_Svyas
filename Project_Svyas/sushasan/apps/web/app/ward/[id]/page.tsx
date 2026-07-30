@@ -217,7 +217,7 @@ export default async function WardPage({ params }: Props) {
 
             <p className="text-[13px] text-ink-3 max-w-2xl">
               Data-backed. Budget-checked. Steps named by department.
-              The corporator's office decides — Sushaasan just does the groundwork.
+              The corporator&apos;s office decides — Sushaasan just does the groundwork.
             </p>
 
             <div className="space-y-5">

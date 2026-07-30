@@ -15,7 +15,7 @@ removed the duplicate `/api/admin/generate-briefs` schedule.
 |---|---|---|---|---|
 | `/api/cron/daily-pipeline`  | `30 3 * * *` | 03:30 daily      | **09:00 daily**       | Daily |
 | `/api/cron/gov-dispatch`    | `0 5 * * *`  | 05:00 daily      | **10:30 daily**       | Daily |
-| `/api/cron/founder-digest`  | `30 3 * * 1` | 03:30 Monday     | **09:00 Monday**      | Weekly |
+| `/api/cron/founder-digest`  | `30 4 * * 1` | 04:30 Monday     | **10:00 Monday**      | Weekly |
 
 Down from 4 entries pre-phase(3). The removed entry was
 `/api/admin/generate-briefs` at `0 17 * * 0` (22:30 IST Sunday), which
@@ -151,7 +151,7 @@ Reads ward/cluster state via `lib/supabase-data`.
 
 ---
 
-### `/api/cron/founder-digest` — `30 3 * * 1` (09:00 IST Monday)
+### `/api/cron/founder-digest` — `30 4 * * 1` (10:00 IST Monday)
 
 Weekly founder summary.
 
@@ -166,36 +166,38 @@ Reads `raw_posts`, `clusters`, `solutions`.
 
 ---
 
-## 4. Findings worth acting on (no code changed in this phase)
+## 4. Findings
 
-**F1 — Monday 03:30 UTC collision.** `daily-pipeline` (`30 3 * * *`) and
-`founder-digest` (`30 3 * * 1`) are scheduled for the **same minute** every
-Monday. `founder-digest` reads `raw_posts` / `clusters` / `solutions` that
-`daily-pipeline` is concurrently writing, so the Monday digest can report
-figures from just *before* that morning's scrape lands. It is read-only, so
-there is no corruption risk — only a stale, slightly-off weekly number, and
-only on Mondays. On Hobby the fuzzed within-the-hour firing makes the
-overlap non-deterministic rather than guaranteed. Cheap fix: move the
-digest to `30 4 * * 1` (10:00 IST) so it trails the pipeline by an hour,
-mirroring the 90-minute gap already used for `gov-dispatch`.
+**F1 — Monday 03:30 UTC collision. ✅ FIXED.** `daily-pipeline`
+(`30 3 * * *`) and `founder-digest` (then `30 3 * * 1`) were scheduled for
+the **same minute** every Monday. `founder-digest` reads `raw_posts` /
+`clusters` / `solutions` that `daily-pipeline` is concurrently writing, so
+the Monday digest could report figures from just *before* that morning's
+scrape landed. Read-only, so stale numbers rather than corruption.
+Resolved by moving the digest to `30 4 * * 1` (10:00 IST), giving it a
+one-hour trail behind the pipeline — mirroring the 90-minute gap already
+used for `gov-dispatch`. Changed in both `vercel.json` files.
 
-**F2 — `CRON_SECRET` is open when unset, on all three routes.** Each
-`checkAuth` / `authed` helper returns `true` when `CRON_SECRET` is absent,
-so with no secret configured anyone can trigger the scrape and both
-dispatch routes from the public internet. This is a deliberate, documented
-"never silently 401" choice and is consistent across the codebase, but it
-means `CRON_SECRET` should be treated as **required in production**, not
-optional. It is not currently in the `REQUIRED` map in
-`apps/web/lib/env-check.ts`.
+**F2 — `CRON_SECRET` is open when unset, on all three cron routes.
+⚠️ PARTIALLY ADDRESSED — visibility only.** Each `checkAuth` / `authed`
+helper returns `true` when `CRON_SECRET` is absent, so with no secret
+configured anyone can trigger the scrape and both dispatch routes from the
+public internet. This is a deliberate "never silently 401" choice and is
+consistent across the codebase, so the auth semantics were **not** changed.
+What did change: `CRON_SECRET` is now in the `REQUIRED` map in
+`apps/web/lib/env-check.ts` and reported under `env.cron` on
+`/api/health`, so a non-empty array there is an explicit signal that these
+routes are currently publicly triggerable. **Set `CRON_SECRET` in
+production.**
 
-**F3 — Related, from phase(3):** `/api/admin/generate-briefs` no longer has
-a cron but retains its `CRON_SECRET` branch, and when `CRON_SECRET` is
-unset an unauthenticated `GET` still runs a full all-wards Opus sweep. That
-is an open, cost-bearing endpoint. Flagged there, repeated here because it
-shares root cause F2.
-
-None of these three blocks the current setup from running; all are
-follow-ups for Harsh to weigh.
+**F3 — Open, cost-bearing Opus endpoint. ✅ FIXED.**
+`/api/admin/generate-briefs` had no cron after phase(3) but retained its
+`CRON_SECRET` branch, and when `CRON_SECRET` was unset an unauthenticated
+`GET` ran a full all-wards Opus sweep. The fail-open branch existed only to
+stop the (now-removed) cron from 401-ing, so it had no remaining purpose
+and was deleted. `GET` is now `ADMIN_TOKEN`-gated and purely informational.
+No capability lost — a full sweep is still available to an authenticated
+caller via `POST { all: true, top_n: 3 }`.
 
 ---
 

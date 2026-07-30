@@ -299,23 +299,18 @@ export async function POST(req: NextRequest) {
   return runGeneration(body)
 }
 
+// GET is now purely informational and ADMIN_TOKEN-gated.
+//
+// It previously ran a full all-wards Opus sweep, and when CRON_SECRET was unset
+// it did so for ANY unauthenticated caller — a public, cost-bearing endpoint.
+// That open-when-unset branch existed so the (now-removed) Vercel cron would
+// never silently 401. Since phase(3) no cron targets this route at all, the
+// branch had no remaining purpose and is deleted rather than left as a
+// fail-open default.
+//
+// No capability is lost: a full sweep is still available to an authenticated
+// caller via POST { all: true, top_n: 3 }.
 export async function GET(req: NextRequest) {
-  // As of phase(3) NO Vercel cron targets this route — the scheduled weekly
-  // synthesis is the Inngest `solutionSynthesisWorker` (cron 30 15 * * 0).
-  // The CRON_SECRET bearer branch below is retained so an operator (or a
-  // re-added schedule) can still drive a full-sweep backfill over GET, and
-  // because removing it would change this route's logic, which phase(3)
-  // explicitly does not do. The one-brief-per-(ward,issue,week) idempotency
-  // in runGeneration bounds repeated calls.
-  const cronSecret = process.env.CRON_SECRET
-  if (cronSecret) {
-    if (req.headers.get('authorization') === `Bearer ${cronSecret}`) {
-      return runGeneration({ all: true, top_n: 3 })
-    }
-  } else if (!isAdminAuthed(req)) {
-    return runGeneration({ all: true, top_n: 3 })
-  }
-
   if (!isAdminAuthed(req)) return new NextResponse('Unauthorized', { status: 401 })
   return NextResponse.json({
     usage: 'POST { ward_id?: string, all?: boolean, top_n?: number (default 4), force?: boolean }',

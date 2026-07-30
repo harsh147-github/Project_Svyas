@@ -12,6 +12,8 @@ function envReport() {
     ai: missingEnv(REQUIRED.ai),
     scraping: missingEnv(REQUIRED.scraping),
     email: missingEnv(REQUIRED.email),
+    // Non-empty here means the /api/cron/* routes are publicly triggerable.
+    cron: missingEnv(REQUIRED.cron),
   }
 }
 

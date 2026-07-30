@@ -152,7 +152,7 @@ export default async function NIBMPilotPage() {
           </h1>
           <p className="text-ink-2 text-base leading-relaxed max-w-2xl">
             19 public posts from residents and journalists, read by AI, organised into a brief
-            the Ward 46 corporator's office and Pune Traffic Police can act on — alongside
+            the Ward 46 corporator&apos;s office and Pune Traffic Police can act on — alongside
             citizens whose civic care makes any infrastructure last.
           </p>
           <ShareButtons
@@ -242,11 +242,11 @@ export default async function NIBMPilotPage() {
                 A note from Sushaasan
               </div>
               <p className="text-ink leading-relaxed text-[14.5px]">
-                The NIBM–Kondhwa–Mohammadwadi corridor is one of Pune's fastest-growing zones,
-                and the strain shows. We don't see this as a failure of any one office —
+                The NIBM–Kondhwa–Mohammadwadi corridor is one of Pune&apos;s fastest-growing zones,
+                and the strain shows. We don&apos;t see this as a failure of any one office —
                 we see a coordination gap that the right framework can close. What follows is a
                 <span className="font-semibold text-ink"> respectful suggestion</span>, drawing on
-                what already worked in Hadapsar (Ward 55) and Kothrud (Ward 32). The corporator's
+                what already worked in Hadapsar (Ward 55) and Kothrud (Ward 32). The corporator&apos;s
                 office, PMC departments, and residents each have a clear role — and Sushaasan
                 simply makes them legible to each other.
               </p>
@@ -521,7 +521,7 @@ export default async function NIBMPilotPage() {
           <section className="space-y-4">
             <div className="flex items-center gap-3">
               <h2 className="font-serif text-2xl font-semibold text-ink">
-                For the corporator's office
+                For the corporator&apos;s office
               </h2>
               <span className="text-[9px] font-bold tracking-wide uppercase text-navy
                                bg-navy/8 border border-navy/20 px-2 py-1 rounded-full">
