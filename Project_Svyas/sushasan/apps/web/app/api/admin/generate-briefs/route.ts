@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { isAdminAuthed } from '@/lib/auth'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
+import { BRIEF_MODEL } from '@/lib/models'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
 export const dynamic = 'force-dynamic'
-
-const MODEL = process.env.OPUS_MODEL ?? 'claude-opus-4-5'
 
 /**
  * POST /api/admin/generate-briefs
@@ -138,7 +137,7 @@ async function generateOne(
   const prompt = SYNTH_PROMPT.replace('{INPUT_JSON}', JSON.stringify(input, null, 2))
 
   const msg = await anthropic.messages.create({
-    model: MODEL,
+    model: BRIEF_MODEL,
     max_tokens: 2000,
     messages: [{ role: 'user', content: prompt }],
   })

@@ -10,6 +10,7 @@
  */
 import Anthropic from '@anthropic-ai/sdk'
 import { inngest } from '../inngest'
+import { CLASSIFY_MODEL } from '../models'
 import { createServerClient } from '../supabase'
 import { scrubPII } from '../pii'
 
@@ -84,7 +85,7 @@ export const classifyPostsWorker = inngest.createFunction(
         try {
           // Step A: Claude Sonnet classification
           const msg = await ai.messages.create({
-            model: 'claude-sonnet-4-6',
+            model: CLASSIFY_MODEL,
             max_tokens: 512,
             messages: [{ role: 'user', content: `${CLASSIFY_PROMPT}\n\nPOST:\n${post.raw_text.slice(0, 2000)}` }],
           })

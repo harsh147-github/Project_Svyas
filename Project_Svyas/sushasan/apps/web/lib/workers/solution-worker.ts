@@ -6,6 +6,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
+import { SOLUTION_MODEL } from '../models'
 
 const SOLUTION_PROMPT = (ctx: {
   ward_name: string; ward_number: string; corporator_name: string
@@ -123,7 +124,7 @@ export const solutionSynthesisWorker = inngest.createFunction(
 
         try {
           const msg = await ai.messages.create({
-            model: 'claude-opus-4-6',
+            model: SOLUTION_MODEL,
             max_tokens: 1024,
             messages: [{ role: 'user', content: SOLUTION_PROMPT(ctx) }],
           })
