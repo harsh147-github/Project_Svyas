@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
 import { scrubPII } from '@/lib/pii'
+import { chatJson, isAiConfigured, sarvamOnly } from '@/lib/ai'
+import { identifyLanguage, translateFormal, triageReport, isSarvamConfigured, toBcp47, TRANSLATE_LANGUAGES } from '@/lib/sarvam'
+import { buildApplicationNumber } from '@/lib/gov-application'
+import { buildGrievanceApplication } from '@/lib/grievance-agent'
 import { randomUUID, createHash } from 'crypto'
 
 // ── In-memory rate limiter: 10 reports per IP per 10 minutes ─────────────────
@@ -168,7 +172,12 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  let body: { text?: string; lat?: number; lng?: number; wardId?: string; photoBase64?: string; photoMimeType?: string }
+  let body: {
+    text?: string; lat?: number; lng?: number; wardId?: string
+    photoBase64?: string; photoMimeType?: string
+    /** BCP-47 code Saaras detected during voice capture, when there was one. */
+    language?: string
+  }
   try {
     body = await req.json()
   } catch {
@@ -244,13 +253,26 @@ export async function POST(req: NextRequest) {
 
   let synthesized: Synthesized = buildFallback()
 
+  const context = (typeof lat === 'number' && typeof lng === 'number')
+    ? `[GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)} → Ward ${resolvedWardId}, ${resolvedWardName}]\n\n`
+    : `[Ward: ${resolvedWardId}, ${resolvedWardName}]\n\n`
+
   const anthropicKey = process.env.ANTHROPIC_API_KEY
-  if (anthropicKey) {
+
+  // Two synthesis paths. A photo requires a vision model, and of the providers
+  // wired here only Claude takes images on this endpoint — so a report with a
+  // photo goes to Claude. Text-only reports go through the provider layer,
+  // which is what lets AI_PROVIDER=sarvam actually take over the pipeline
+  // rather than being a setting that only affects the copilot.
+  // Sovereign mode disables the vision path: Sarvam's vision model is document
+  // digitisation (OCR), not general scene understanding, so there is no
+  // Sarvam-native way to read a photo of a pothole. Rather than ship a silent
+  // cross-border call, the photo is dropped from synthesis and the report is
+  // built from the citizen's text alone — the photo still reaches the officer,
+  // it just doesn't enrich the AI-written grievance.
+  if (photoBase64 && anthropicKey && !sarvamOnly()) {
     try {
       const client = new Anthropic({ apiKey: anthropicKey })
-      const context = (typeof lat === 'number' && typeof lng === 'number')
-        ? `[GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)} → Ward ${resolvedWardId}, ${resolvedWardName}]\n\n`
-        : `[Ward: ${resolvedWardId}, ${resolvedWardName}]\n\n`
 
       // Whitelist photoMimeType — never pass arbitrary user-supplied strings to Claude
       const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const
@@ -259,34 +281,41 @@ export async function POST(req: NextRequest) {
         ? (photoMimeType as AllowedImageType)
         : 'image/jpeg'
 
-      // Build user content — text + optional photo for vision
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const userContent: any = photoBase64
-        ? [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: safePhotoMime,
-                data: photoBase64,
-              },
-            },
-            { type: 'text', text: `${context}${cleanText}\n\n[A photo of the issue has been attached above — use it to enrich the grievance description with specific visual details like exact damage, location markers, or severity indicators visible in the image.]` },
-          ]
-        : `${context}${cleanText}`
-
       const msg = await client.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6',
         max_tokens: 800,
         system: SYNTHESIZE_SYSTEM,
-        messages: [{ role: 'user', content: userContent }],
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: safePhotoMime, data: photoBase64 },
+            },
+            {
+              type: 'text',
+              text: `${context}${cleanText}\n\n[A photo of the issue has been attached above — use it to enrich the grievance description with specific visual details like exact damage, location markers, or severity indicators visible in the image.]`,
+            },
+          ],
+        }],
       })
       const raw = (msg.content[0] as { type: string; text: string }).text.trim()
       const jsonStr = raw.startsWith('```')
         ? raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
         : raw
-      const parsed = JSON.parse(jsonStr) as Synthesized
-      synthesized = parsed
+      synthesized = JSON.parse(jsonStr) as Synthesized
+    } catch (err) {
+      console.error('[add-report] vision synthesis error:', err)
+      // fallback already set
+    }
+  } else if (isAiConfigured()) {
+    try {
+      synthesized = await chatJson<Synthesized>({
+        task: 'classify',
+        maxTokens: 800,
+        system: SYNTHESIZE_SYSTEM,
+        messages: [{ role: 'user', content: `${context}${cleanText}` }],
+      })
     } catch (err) {
       console.error('[add-report] synthesis error:', err)
       // fallback already set
@@ -300,13 +329,75 @@ export async function POST(req: NextRequest) {
   if (synthesized.translated_text_en) synthesized.translated_text_en = scrubPII(synthesized.translated_text_en)
   const cleanTextPublic = scrubPII(cleanText)
 
-  // 3. Persist to Supabase (if configured)
+  // 3. Resolve the citizen's language and mirror the grievance back into it.
+  //
+  // The formal grievance the AI writes is the version the ward office reads.
+  // But it is filed in the resident's name, and a resident who spoke Marathi
+  // should be able to read — or hear — what is being said on their behalf.
+  // Voice capture already tells us the language; typed reports get identified
+  // here, which is the only way the typed path stays as multilingual as the
+  // spoken one.
+  let reportLanguage: string | null = toBcp47(body.language, TRANSLATE_LANGUAGES)
+
+  if (!reportLanguage && isSarvamConfigured()) {
+    try {
+      const detected = await identifyLanguage(cleanText)
+      reportLanguage = toBcp47(detected.languageCode, TRANSLATE_LANGUAGES)
+    } catch (err) {
+      console.error('[add-report] language id failed:', err)
+    }
+  }
+
+  let grievanceLocal: string | null = null
+  if (reportLanguage && !reportLanguage.startsWith('en') && isSarvamConfigured()) {
+    try {
+      const localised = await translateFormal(synthesized.grievance_formal, reportLanguage, 'en-IN')
+      grievanceLocal = localised.text || null
+    } catch (err) {
+      // Not fatal — the English grievance still stands and still gets filed.
+      console.error('[add-report] localisation failed:', err)
+    }
+  }
+
+  // Triage, read from the citizen's own words rather than from the AI's
+  // rewrite of them. Its job is the escalation call: a live wire or a
+  // contaminated supply cannot sit in a weekly synthesis queue, and that
+  // decision is too consequential to infer from prose. Runs in parallel with
+  // nothing else because it is fast and its answer changes what happens next.
+  // The work-agent turns what the citizen said into a complete municipal
+  // application — numbered particulars, a formal prayer, a declaration — not
+  // just the one-line grievance. Runs alongside triage; both are independent
+  // reads of the same raw speech.
+  const [triage, application] = await Promise.all([
+    triageReport(cleanText),
+    buildGrievanceApplication(cleanText, { language: reportLanguage }),
+  ])
+
+  // The model gives a severity; triage gives an independent emergency read.
+  // When they disagree, take the more cautious of the two — under-calling an
+  // emergency costs far more than over-calling one.
+  const effectiveSeverity = triage?.isEmergency
+    ? Math.max(5, synthesized.severity)
+    : synthesized.severity
+
+  // 4. Persist to Supabase (if configured)
   let postId: string | null = null
+
+  // Stable per-report reference, minted before persistence so the application
+  // number is identical whether or not the database write succeeds. A citizen
+  // who screenshots their receipt must not get a different number than the one
+  // the officer later looks up.
+  const reportRef = randomUUID()
+  const applicationNumber = buildApplicationNumber({
+    wardId: resolvedWardId,
+    issueTag: synthesized.issue_tag,
+    ref: reportRef,
+  })
 
   if (isSupabaseConfigured()) {
     try {
       const db = createServerClient()
-      const sourcePostId = `web-${randomUUID()}`
+      const sourcePostId = `web-${reportRef}`
       const salt = new Date().toISOString().slice(0, 7)
       const authorHash = createHash('sha256').update(`web-anon-${salt}`).digest('hex')
 
@@ -335,7 +426,7 @@ export async function POST(req: NextRequest) {
             translated_text_en: synthesized.translated_text_en ?? null,
             issue_tag: synthesized.issue_tag,
             sub_tags: synthesized.sub_tags ?? [],
-            severity: synthesized.severity,
+            severity: effectiveSeverity,
             sentiment: synthesized.sentiment ?? -1,
             cited_location: synthesized.cited_location ?? null,
             is_actionable: true,
@@ -368,7 +459,7 @@ export async function POST(req: NextRequest) {
               issue_tag: synthesized.issue_tag,
               centroid_text: synthesized.grievance_formal,
               post_count: 1,
-              severity_avg: synthesized.severity,
+              severity_avg: effectiveSeverity,
               status: 'open',
               lng: resolvedLng,
               lat: resolvedLat,
@@ -386,9 +477,33 @@ export async function POST(req: NextRequest) {
     issueTag: synthesized.issue_tag,
     issueTypeFree: synthesized.issue_type_free,
     subTags: synthesized.sub_tags ?? [],
-    severity: synthesized.severity,
+    severity: effectiveSeverity,
     // The formal grievance — this is the centroid_text for the map
     grievanceFormal: synthesized.grievance_formal,
+    // The same grievance in the citizen's own language, when we could produce
+    // one. Drives the on-screen mirror and the spoken readback.
+    grievanceLocal,
+    language: reportLanguage,
+    // The receipt — quotable by the citizen, resolvable by the officer.
+    applicationNumber,
+    // Independent triage read (Sarvam text-analytics). Null when unavailable —
+    // callers must treat it as an enhancement, never a gate.
+    isEmergency: triage?.isEmergency ?? false,
+    isActionable: triage?.isActionable ?? true,
+    triagedDepartment: triage?.department ?? null,
+    peopleAffected: triage?.peopleAffected ?? null,
+    reportedDuration: triage?.duration ?? null,
+    // The full grievance application produced by the work-agent. Null when
+    // extraction failed — the one-line grievance above still stands.
+    application: application ? {
+      subject: application.subject,
+      preamble: application.preamble,
+      particulars: application.particulars,
+      prayer: application.prayer,
+      declaration: application.declaration,
+      localised: application.localised,
+      missing: application.missing,
+    } : null,
     citedLocation: synthesized.cited_location,
     civicAsk: synthesized.civic_ask,
     responsibleDept: synthesized.responsible_dept,

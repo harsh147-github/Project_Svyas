@@ -1,4 +1,5 @@
 import type { Mission } from './gov-mission'
+import { buildApplicationNumber } from './gov-application'
 
 // Formats a mission into the "brief that lands in the officer's inbox / WhatsApp"
 // — the delivery payload (the missile). The deep link points back to the War Room.
@@ -18,6 +19,10 @@ function inr(n: number) {
 export type Brief = {
   subject: string
   link: string
+  /** Stable Sushaasan reference the officer and citizen can both quote. */
+  applicationNumber: string
+  /** Deep link to the printable dossier for this grievance. */
+  formLink: string
   whatsappText: string
   plainText: string
   emailHtml: string
@@ -26,7 +31,18 @@ export type Brief = {
 export function buildBrief(mission: Mission, baseUrl: string, token: string): Brief {
   const { ward, cluster, solution, issueTag } = mission
   const label = ISSUE_LABEL[issueTag] ?? 'Civic'
-  const link = `${baseUrl}/gov/war-room/${mission.id}${token ? `?token=${token}` : ''}`
+  const qs = token ? `?token=${token}` : ''
+  const link = `${baseUrl}/gov/war-room/${mission.id}${qs}`
+
+  // Every dispatched brief carries its reference number. Without one, a brief
+  // is an email; with one, it is a file the officer can log and the citizen can
+  // follow up on by name.
+  const applicationNumber = buildApplicationNumber({
+    wardId: mission.wardId,
+    issueTag,
+    ref: cluster?.id ?? mission.id,
+  })
+  const formLink = `${baseUrl}/api/gov/application/${mission.id}${qs ? `${qs}&` : '?'}format=html`
 
   const headline = cluster?.gov_summary || cluster?.centroid_text || `${label} grievance in ${ward.name}`
   const evidence = cluster
@@ -40,6 +56,7 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
 
   const plainText = [
     `SUSHAASAN CIVIC BRIEF — Ward ${ward.ward_number}, ${ward.name}`,
+    `Ref: ${applicationNumber}`,
     ``,
     `Issue: ${label}`,
     `${headline}`,
@@ -50,11 +67,16 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
     `Open the War Room to dissect, plan with Sushaasan AI, and close the loop:`,
     link,
     ``,
+    `Printable dossier (full form):`,
+    formLink,
+    ``,
     `— Sushaasan (independent civic-tech). Indicative advisory; the officer decides.`,
+    `The reference above is a Sushaasan tracking reference, not a PMC-issued number.`,
   ].join('\n')
 
   const whatsappText = [
     `*Sushaasan civic brief* — Ward ${ward.ward_number}, ${ward.name}`,
+    `Ref: \`${applicationNumber}\``,
     ``,
     `*${label}:* ${headline}`,
     `📊 ${evidence}`,
@@ -63,6 +85,8 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
     ``,
     `▶ Solve it with Sushaasan AI:`,
     link,
+    ``,
+    `📄 Full dossier: ${formLink}`,
   ].filter(Boolean).join('\n')
 
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -71,6 +95,7 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
   <div style="background:#0B1F3A;padding:20px 24px;border-radius:14px 14px 0 0">
     <div style="color:#FF9933;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:700">Sushaasan civic brief</div>
     <div style="color:#fff;font-size:18px;font-weight:600;margin-top:4px">Ward ${ward.ward_number} · ${esc(ward.name)}</div>
+    <div style="color:#ffffff99;font-size:11px;margin-top:6px;font-family:ui-monospace,Menlo,monospace;letter-spacing:0.5px">Ref ${esc(applicationNumber)}</div>
   </div>
   <div style="border:1px solid #eee;border-top:none;border-radius:0 0 14px 14px;padding:22px 24px">
     <div style="font-size:11px;color:#FF9933;font-weight:700;text-transform:uppercase;letter-spacing:1px">${label}</div>
@@ -78,9 +103,10 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
     <p style="font-size:13px;color:#555;margin:0 0 6px">📊 ${esc(evidence)}</p>
     <p style="font-size:13px;color:#333;margin:0 0 18px">🛠 ${esc(plan)}</p>
     <a href="${link}" style="display:inline-block;background:#FF9933;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 22px;border-radius:999px">Open the War Room →</a>
-    <p style="font-size:11px;color:#999;margin-top:20px;line-height:1.5">Sushaasan is an independent civic-technology platform, not a government body. This brief is AI-generated, indicative advisory only — the officer decides and acts.</p>
+    <a href="${formLink}" style="display:inline-block;margin-left:8px;color:#0B1F3A;text-decoration:none;font-weight:600;font-size:13px;padding:12px 18px;border:1px solid #0B1F3A22;border-radius:999px">View full dossier</a>
+    <p style="font-size:11px;color:#999;margin-top:20px;line-height:1.5">Sushaasan is an independent civic-technology platform, not a government body. This brief is AI-generated, indicative advisory only — the officer decides and acts. The reference number is a Sushaasan tracking reference, not a PMC-issued application number.</p>
   </div>
 </div>`.trim()
 
-  return { subject, link, whatsappText, plainText, emailHtml }
+  return { subject, link, applicationNumber, formLink, whatsappText, plainText, emailHtml }
 }

@@ -68,7 +68,11 @@ const FAQ = [
   },
   {
     q: 'Is the AI trained on my data?',
-    a: 'No. We use foundation models (Claude, voyage-3) via API. Your content is sent in a request and the response is stored — your text is not used to train these models.',
+    a: 'No. We use foundation models via API — your content is sent in a request and the response is stored. Your text is not used to train these models.',
+  },
+  {
+    q: 'Which AI processes my report, and where?',
+    a: 'Sushaasan runs on Sarvam AI, an Indian provider — speech recognition, translation, the written grievance, and the plan sent to the ward office. Your words are processed by models built in India for Indian languages. Where a capability has no Indian equivalent, that is stated here rather than hidden.',
   },
   {
     q: 'Who has access to the corporator dashboard?',

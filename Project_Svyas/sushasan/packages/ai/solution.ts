@@ -1,13 +1,15 @@
 /**
  * Stage 3 — Solution synthesis
- * Uses claude-opus-4-6 (highest quality, runs weekly + on-demand)
+ *
+ * Runs on Sarvam's flagship tier (sarvam-105b). This is the one call in the
+ * pipeline whose output a corporator may actually spend public money against,
+ * so it gets the best model available and the widest token budget — reasoning
+ * quality matters more here than per-call cost.
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import { callDeep, parseJsonResponse } from './provider'
 import { readFileSync } from 'fs'
 import { join } from 'path'
-
-const client = new Anthropic()
 
 const PROMPT_TEMPLATE = readFileSync(
   join(__dirname, '../../prompts/solution_synthesis.md'),
@@ -61,21 +63,12 @@ export async function synthesizeSolution(input: SolutionInput): Promise<Solution
     .replace('{{delta}}',           input.delta)
 
   try {
-    const msg = await client.messages.create({
-      model:      'claude-opus-4-6',
-      max_tokens: 2048,
-      messages:   [{ role: 'user', content: prompt }],
-    })
-
-    const raw = msg.content
-      .filter((b) => b.type === 'text')
-      .map((b) => (b as { type: 'text'; text: string }).text)
-      .join('')
-      .trim()
-
-    // Strip markdown fences
-    const json = raw.replace(/^```json?\s*/i, '').replace(/\s*```$/, '')
-    const parsed = JSON.parse(json) as SolutionOutput
+    const raw = await callDeep(
+      'You are a civic infrastructure advisor to a Pune municipal corporator. Return only valid JSON matching the requested schema.',
+      prompt,
+      2048,
+    )
+    const parsed = parseJsonResponse<SolutionOutput>(raw)
 
     // Validate guardrail: reject if no actionable steps
     if (!parsed.steps || parsed.steps.length === 0) {

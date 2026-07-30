@@ -1,13 +1,15 @@
 /**
  * Stage 1 — Per-post classification
- * Uses claude-sonnet-4-6, ~400 tokens per call
+ *
+ * Runs on Sarvam's fast tier (sarvam-30b). This is the highest-volume call in
+ * the pipeline — one per scraped post, every hour — so it uses the cheap tier,
+ * and it benefits most from a model that natively reads Marathi, Hindi and
+ * code-mixed Pune civic chatter without translation in between.
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import { callFast, parseJsonResponse } from './provider'
 import { readFileSync } from 'fs'
 import { join } from 'path'
-
-const client = new Anthropic()
 
 const PROMPT_TEMPLATE = readFileSync(
   join(__dirname, '../../prompts/classify_post.md'),
@@ -31,21 +33,12 @@ export async function classifyPost(postText: string): Promise<ClassifiedPost | n
   const prompt = PROMPT_TEMPLATE.replace('{{post_text}}', postText)
 
   try {
-    const msg = await client.messages.create({
-      model:      'claude-sonnet-4-6',
-      max_tokens: 512,
-      messages:   [{ role: 'user', content: prompt }],
-    })
-
-    const raw = msg.content
-      .filter((b) => b.type === 'text')
-      .map((b) => (b as { type: 'text'; text: string }).text)
-      .join('')
-      .trim()
-
-    // Strip any accidental markdown fences
-    const json = raw.replace(/^```json?\s*/i, '').replace(/\s*```$/, '')
-    return JSON.parse(json) as ClassifiedPost
+    const raw = await callFast(
+      'You are a civic issue classifier for Pune, India. Return only valid JSON.',
+      prompt,
+      512,
+    )
+    return parseJsonResponse<ClassifiedPost>(raw)
   } catch (e) {
     console.error('[classify] failed:', e)
     return null

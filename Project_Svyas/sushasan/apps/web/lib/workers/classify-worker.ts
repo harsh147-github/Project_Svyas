@@ -1,19 +1,29 @@
 /**
- * Inngest worker: AI classification of raw_posts using Claude Sonnet.
+ * Inngest worker: AI classification of raw_posts.
  * Triggered by event "sushasan/posts.scraped" after each scrape batch.
- * Self-contained — no cross-package imports. Lives in apps/web.
  *
- * Steps per post:
- *   1. Claude Sonnet: classify issue_tag, severity, location, ward_id, etc.
- *   2. Voyage AI: generate 1024-dim multilingual embedding (if VOYAGE_API_KEY set)
- *   3. Supabase upsert to posts table (onConflict: raw_post_id — requires migration 004)
+ * Runs entirely on Sarvam. Steps per post:
+ *   1. Sarvam sarvam-30b: classify issue_tag, severity, location, ward_id, etc.
+ *   2. Supabase upsert to posts table (onConflict: raw_post_id — migration 004)
+ *
+ * ── On embeddings ──────────────────────────────────────────────────────────
+ * This worker used to call voyage-3 for a 1024-dim embedding, stored on
+ * posts.embedding for cosine-similarity clustering. Sarvam has no embeddings
+ * endpoint, and keeping a second vendor alive for one column is not worth it,
+ * so clustering moved to lib/clustering.ts — a lexical pre-filter with Sarvam
+ * adjudicating only the ambiguous cases. See that file for why this is better
+ * than cosine for civic reports, not merely cheaper.
+ *
+ * The posts.embedding column is left in the schema and written as null: it is
+ * nullable, dropping it would need a migration against live data, and a future
+ * embeddings provider can backfill it without a schema change.
  */
-import Anthropic from '@anthropic-ai/sdk'
 import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
 import { scrubPII } from '../pii'
+import { chatJson } from '../ai'
 
-const CLASSIFY_PROMPT = `You are a civic issue classifier for Pune, India.
+const CLASSIFY_SYSTEM = `You are a civic issue classifier for Pune, India.
 Given a social media post, extract structured civic intelligence.
 
 Respond with ONLY valid JSON — no markdown, no explanation.
@@ -38,22 +48,20 @@ Rules:
 - ward_id: PMC ward number as string if location is recognisable, else null
 - translated_text_en: English translation if post is in Hindi/Marathi, else copy original`
 
-async function getVoyageEmbedding(text: string): Promise<number[] | null> {
-  const key = process.env.VOYAGE_API_KEY
-  if (!key) return null
-  try {
-    const res = await fetch('https://api.voyageai.com/v1/embeddings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-      body: JSON.stringify({ model: 'voyage-3', input: [text.slice(0, 8000)] }),
-    })
-    if (!res.ok) return null
-    const data = await res.json() as { data?: [{ embedding: number[] }] }
-    return data.data?.[0]?.embedding ?? null
-  } catch {
-    return null
-  }
+type Classified = {
+  issue_tag?: string
+  sub_tags?: string[]
+  severity?: number
+  sentiment?: number
+  cited_location?: string | null
+  cited_time?: string | null
+  is_actionable?: boolean
+  civic_ask?: string | null
+  translated_text_en?: string | null
+  ward_id?: string | number | null
 }
+
+const VALID_TAGS = new Set(['traffic', 'water', 'electricity', 'garbage', 'other'])
 
 export const classifyPostsWorker = inngest.createFunction(
   {
@@ -67,9 +75,6 @@ export const classifyPostsWorker = inngest.createFunction(
     if (!batchIds?.length) return { classified: 0 }
 
     const db = createServerClient()
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set')
-    const ai = new Anthropic({ apiKey })
 
     const { data: posts, error } = await db
       .from('raw_posts')
@@ -79,32 +84,30 @@ export const classifyPostsWorker = inngest.createFunction(
     if (error || !posts?.length) return { classified: 0 }
 
     let classified = 0
+    let failed = 0
+
     for (const post of posts) {
       await step.run(`classify-${post.id}`, async () => {
         try {
-          // Step A: Claude Sonnet classification
-          const msg = await ai.messages.create({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 512,
-            messages: [{ role: 'user', content: `${CLASSIFY_PROMPT}\n\nPOST:\n${post.raw_text.slice(0, 2000)}` }],
+          const parsed = await chatJson<Classified>({
+            task: 'classify',
+            maxTokens: 512,
+            system: CLASSIFY_SYSTEM,
+            messages: [{ role: 'user', content: `POST:\n${post.raw_text.slice(0, 2000)}` }],
           })
-          const raw = (msg.content[0] as { type: string; text: string }).text?.trim() ?? ''
-          const json = raw.startsWith('{') ? raw : raw.replace(/^```json?\n?/, '').replace(/```$/, '').trim()
-          const parsed = JSON.parse(json)
 
-          const textForEmbed = (parsed.translated_text_en || post.raw_text).slice(0, 8000)
+          // Never trust the model's enum — an unrecognised tag would break the
+          // map legend and the department routing downstream.
+          const issueTag = VALID_TAGS.has(String(parsed.issue_tag))
+            ? String(parsed.issue_tag)
+            : 'other'
 
-          // Step B: Voyage-3 embedding (optional — skipped if VOYAGE_API_KEY not set)
-          const embedding = await getVoyageEmbedding(textForEmbed)
-
-          // Step C: Upsert to posts table
-          // Requires migration 004_classify_pipeline.sql (UNIQUE on raw_post_id)
           await db.from('posts').upsert({
             raw_post_id: post.id,
             text_clean: scrubPII(post.raw_text.slice(0, 4000)),
             translated_text_en: parsed.translated_text_en ? scrubPII(parsed.translated_text_en) : null,
-            issue_tag: parsed.issue_tag ?? 'other',
-            sub_tags: parsed.sub_tags ?? [],
+            issue_tag: issueTag,
+            sub_tags: Array.isArray(parsed.sub_tags) ? parsed.sub_tags.slice(0, 5) : [],
             severity: Math.min(5, Math.max(1, Number(parsed.severity) || 3)),
             sentiment: Math.min(2, Math.max(-2, Number(parsed.sentiment) || 0)),
             cited_location: parsed.cited_location ?? null,
@@ -112,17 +115,19 @@ export const classifyPostsWorker = inngest.createFunction(
             is_actionable: Boolean(parsed.is_actionable),
             civic_ask: parsed.civic_ask ? scrubPII(parsed.civic_ask) : null,
             ward_id: parsed.ward_id ? String(parsed.ward_id) : null,
-            embedding: embedding ?? null,
-            classifier_ver: 'sonnet-4-6-v1',
+            // See the header note — clustering no longer depends on this.
+            embedding: null,
+            classifier_ver: 'sarvam-30b-v1',
           }, { onConflict: 'raw_post_id', ignoreDuplicates: false })
 
           classified++
         } catch (err) {
+          failed++
           console.error(`[classify] post ${post.id}:`, err)
         }
       })
     }
 
-    return { classified, total: posts.length, withEmbeddings: process.env.VOYAGE_API_KEY ? classified : 0 }
+    return { classified, failed, total: posts.length, provider: 'sarvam' }
   }
 )

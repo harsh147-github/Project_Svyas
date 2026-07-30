@@ -1,4 +1,4 @@
-import { callSonnet, parseJsonResponse } from './anthropic'
+import { callSonnet, parseJsonResponse } from './provider'
 
 export interface SynthesisBatchResult {
   core_problem: string

@@ -1,13 +1,15 @@
 /**
  * Stage 2 — Cluster centroid text generation
- * Uses claude-sonnet-4-6
+ *
+ * Runs on Sarvam's fast tier. One neutral sentence summarising what a group of
+ * residents are collectively reporting — this string is what a citizen reads
+ * on the map and what an officer reads at the top of the dossier, so it is
+ * written once and reused everywhere.
  */
 
-import Anthropic from '@anthropic-ai/sdk'
+import { callFast } from './provider'
 import { readFileSync } from 'fs'
 import { join } from 'path'
-
-const client = new Anthropic()
 
 const PROMPT_TEMPLATE = readFileSync(
   join(__dirname, '../../prompts/cluster_centroid.md'),
@@ -33,17 +35,12 @@ export async function generateCentroid(cluster: ClusterInput): Promise<string | 
     .replace('{{post_samples}}', cluster.post_samples.join('\n'))
 
   try {
-    const msg = await client.messages.create({
-      model:      'claude-sonnet-4-6',
-      max_tokens: 150,
-      messages:   [{ role: 'user', content: prompt }],
-    })
-
-    return msg.content
-      .filter((b) => b.type === 'text')
-      .map((b) => (b as { type: 'text'; text: string }).text)
-      .join('')
-      .trim()
+    const text = await callFast(
+      'You summarise civic issue clusters for a Pune municipal dashboard. Reply with one neutral sentence, no preamble.',
+      prompt,
+      150,
+    )
+    return text || null
   } catch (e) {
     console.error('[cluster-centroid] failed:', e)
     return null

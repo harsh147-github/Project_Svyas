@@ -1,4 +1,4 @@
-import { callSonnet, parseJsonResponse } from './anthropic'
+import { callSonnet, parseJsonResponse } from './provider'
 import type { SynthesisBatchResult } from './citizen-synthesizer'
 
 export interface MasterSynthesis {
