@@ -1,7 +1,19 @@
 import { NextResponse } from 'next/server'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
+import { missingEnv, REQUIRED } from '@/lib/env-check'
 
 export const dynamic = 'force-dynamic'
+
+// Every reason the system could be silently degraded, in one object. Supabase
+// is reported separately via the `supabase` field, so it is not repeated here.
+// An empty array means that integration has all the env it needs.
+function envReport() {
+  return {
+    ai: missingEnv(REQUIRED.ai),
+    scraping: missingEnv(REQUIRED.scraping),
+    email: missingEnv(REQUIRED.email),
+  }
+}
 
 /**
  * GET /api/health
@@ -16,6 +28,7 @@ export async function GET() {
       status: 'seed-mode',
       message: 'Supabase not configured — running on seed data',
       supabase: false,
+      env: envReport(),
       pipeline: null,
       counts: null,
     })
@@ -87,6 +100,7 @@ export async function GET() {
     return NextResponse.json({
       status: pipelineHealthy ? 'live' : 'idle',
       supabase: true,
+      env: envReport(),
       counts: {
         raw_posts: rawPosts ?? 0,
         posts: posts ?? 0,
@@ -128,6 +142,7 @@ export async function GET() {
       status: 'error',
       error: String(err),
       supabase: true,
+      env: envReport(),
       timestamp: new Date().toISOString(),
     }, { status: 500 })
   }

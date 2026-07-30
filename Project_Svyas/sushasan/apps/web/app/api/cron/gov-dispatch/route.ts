@@ -5,6 +5,7 @@ import { getRecipient, type Recipient } from '@/lib/gov-recipients'
 import { buildBrief, type Brief } from '@/lib/gov-brief'
 import { isWhatsAppConfigured, sendWhatsApp, waShareLink } from '@/lib/whatsapp'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
+import { missingEnv, REQUIRED } from '@/lib/env-check'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -189,12 +190,20 @@ async function run() {
 }
 
 export async function GET(req: Request) {
+  const missing = missingEnv(REQUIRED.email)
+  if (missing.length) {
+    console.error(`[env] missing required keys for dispatch: ${missing.join(', ')}`)
+  }
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try { return NextResponse.json(await run()) }
   catch (e) { return NextResponse.json({ ok: false, error: String(e) }, { status: 500 }) }
 }
 
 export async function POST(req: Request) {
+  const missing = missingEnv(REQUIRED.email)
+  if (missing.length) {
+    console.error(`[env] missing required keys for dispatch: ${missing.join(', ')}`)
+  }
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try { return NextResponse.json(await run()) }
   catch (e) { return NextResponse.json({ ok: false, error: String(e) }, { status: 500 }) }

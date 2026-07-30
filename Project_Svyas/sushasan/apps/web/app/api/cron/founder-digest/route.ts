@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
+import { missingEnv, REQUIRED } from '@/lib/env-check'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -102,6 +103,10 @@ async function run(req: Request) {
 }
 
 export async function GET(req: Request) {
+  const missing = missingEnv(REQUIRED.email)
+  if (missing.length) {
+    console.error(`[env] missing required keys for dispatch: ${missing.join(', ')}`)
+  }
   if (!authed(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try { return NextResponse.json(await run(req)) }
   catch (e) { return NextResponse.json({ ok: false, error: String(e) }, { status: 500 }) }
