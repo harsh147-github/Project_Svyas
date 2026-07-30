@@ -4,6 +4,8 @@ import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import ListenButton from '@/components/ui/ListenButton'
 import DocumentAttach from '@/components/report/DocumentAttach'
+import DictationSurface from '@/components/report/DictationSurface'
+import ApplicationCard, { type ApplicationBody } from '@/components/report/ApplicationCard'
 
 // Resize image to max 1024px, encode as JPEG base64
 function resizeAndEncode(file: File, maxPx = 1024): Promise<{ base64: string; mimeType: string }> {
@@ -38,7 +40,11 @@ const LANGS = [
 // Sarvam TTS voices exist for these; anything else degrades to text-only.
 const TTS_CAPABLE = new Set(['en-IN', 'hi-IN', 'bn-IN', 'ta-IN', 'te-IN', 'gu-IN', 'kn-IN', 'ml-IN', 'mr-IN', 'pa-IN', 'od-IN'])
 
-const VOICE_BARS = [8, 14, 22, 28, 20, 26, 14, 20, 10]
+// Brand severity ramp: saffron → navy, per the brand rules. Held constant
+// across issue types on purpose — when the ramp is re-keyed to the issue colour,
+// "serious" looks different for water than for traffic and the bar stops being
+// readable as a severity at all.
+const SEVERITY_RAMP = ['#F2B872', '#FF9933', '#E07B2A', '#8A4B2A', '#0B1F3A']
 
 type LocationState =
   | { status: 'detecting' }
@@ -72,6 +78,8 @@ type Result = {
   triagedDepartment?: string | null
   peopleAffected?: number | null
   reportedDuration?: string | null
+  /** Full grievance application produced by the work-agent. */
+  application?: ApplicationBody | null
 }
 
 const WARD_CENTROIDS = [
@@ -243,11 +251,7 @@ export function AddReportClient() {
   const [text, setText] = useState('')
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
   const [result, setResult] = useState<Result | null>(null)
-  const [voiceActive, setVoiceActive] = useState(false)
-  const [transcribing, setTranscribing] = useState(false)
-  const [voiceError, setVoiceError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  const [voiceSupported, setVoiceSupported] = useState(false)
   const [mediaSupported, setMediaSupported] = useState(false)
   const [voiceLang, setVoiceLang] = useState('auto')
   // What Saaras detected the citizen actually spoke — drives the readback voice.
@@ -257,10 +261,6 @@ export function AddReportClient() {
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const recognitionRef = useRef<any>(null)
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const voiceActiveRef = useRef(false)
-  const isIOS = useRef(false)
 
   useEffect(() => {
     if (!navigator.geolocation) { setLocation({ status: 'denied' }); return }
@@ -275,12 +275,7 @@ export function AddReportClient() {
   }, [])
 
   useEffect(() => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    setVoiceSupported(!!SR)
     setMediaSupported(!!(navigator.mediaDevices?.getUserMedia))
-    const ua = navigator.userAgent
-    isIOS.current = /iPhone|iPad|iPod/i.test(ua) ||
-      (/Safari/i.test(ua) && !/Chrome|Chromium|Edg/i.test(ua))
   }, [])
 
   useEffect(() => {
@@ -295,128 +290,6 @@ export function AddReportClient() {
     el.style.height = Math.min(el.scrollHeight, 320) + 'px'
   }
 
-  function startBrowserRecognition(lang: string) {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    if (!SR) return
-    const r = new SR()
-    r.lang = lang
-    r.continuous = !isIOS.current
-    r.interimResults = !isIOS.current
-    r.onresult = (event: any) => {
-      if (isIOS.current) {
-        const chunk = (event.results[0][0].transcript as string).trim()
-        setText(prev => prev ? `${prev} ${chunk}` : chunk)
-      } else {
-        const transcript = Array.from(event.results as any[])
-          .map((res: any) => res[0].transcript).join('')
-        setText(transcript)
-      }
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto'
-        textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 320) + 'px'
-      }
-    }
-    r.onerror = (e: any) => {
-      if (e.error === 'no-speech') return
-      voiceActiveRef.current = false
-      setVoiceActive(false)
-    }
-    r.onend = () => {
-      if (isIOS.current && voiceActiveRef.current) {
-        startBrowserRecognition(lang)
-      } else if (!isIOS.current) {
-        voiceActiveRef.current = false
-        setVoiceActive(false)
-      }
-    }
-    r.start()
-    recognitionRef.current = r
-  }
-
-  async function startWhisperRecording() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
-      const recorder = new MediaRecorder(stream, { mimeType })
-      const chunks: BlobPart[] = []
-
-      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
-      recorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop())
-        setTranscribing(true)
-        const blob = new Blob(chunks, { type: mimeType })
-        const form = new FormData()
-        form.append('audio', blob, mimeType.includes('mp4') ? 'audio.mp4' : 'audio.webm')
-        // 'auto' is passed through as-is; the route treats it as "detect it".
-        form.append('language', voiceLang)
-        try {
-          const controller = new AbortController()
-          // Saaras needs longer than Whisper on a slow mobile connection, and a
-          // premature abort loses a report the citizen already spoke.
-          const timeout = setTimeout(() => controller.abort(), 60_000)
-          const res = await fetch('/api/transcribe', { method: 'POST', body: form, signal: controller.signal })
-          clearTimeout(timeout)
-          const data = await res.json() as { text?: string; language?: string | null }
-          if (data.text?.trim()) {
-            // Remember what the citizen actually spoke, so the grievance can be
-            // read back to them in that language rather than in the UI default.
-            if (data.language) setDetectedLang(data.language)
-            setText(prev => prev ? `${prev} ${data.text!.trim()}` : data.text!.trim())
-            if (textareaRef.current) {
-              textareaRef.current.style.height = 'auto'
-              textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 320) + 'px'
-            }
-          }
-        } catch {
-          setVoiceError('Voice captured but transcription failed. Please type your report below.')
-        } finally {
-          setTranscribing(false)
-          setVoiceActive(false)
-          voiceActiveRef.current = false
-        }
-      }
-      recorder.start()
-      mediaRecorderRef.current = recorder
-    } catch (err) {
-      voiceActiveRef.current = false
-      setVoiceActive(false)
-      if (err instanceof Error) {
-        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-          setVoiceError('Microphone access denied. Please allow microphone access in your browser settings and retry.')
-        } else if (err.name === 'NotFoundError') {
-          setVoiceError('No microphone found. Please connect a microphone and retry.')
-        } else {
-          setVoiceError('Could not start recording. Please try again.')
-        }
-      }
-    }
-  }
-
-  function toggleVoice() {
-    if (voiceActive) {
-      voiceActiveRef.current = false
-      mediaRecorderRef.current?.stop()
-      recognitionRef.current?.stop()
-      setVoiceActive(false)
-      return
-    }
-    // Server-side Saaras is the default for every language now, not just
-    // Hindi/Marathi. The browser's own recogniser is markedly worse on Indian
-    // languages and code-mixed speech ("paani nahi aaya since Monday"), which
-    // is how people here actually talk — so it is the fallback, used only when
-    // the device won't give us microphone capture at all.
-    const useServer = mediaSupported
-    if (!useServer && !voiceSupported) return
-    voiceActiveRef.current = true
-    setVoiceActive(true)
-    setVoiceError(null)
-    if (useServer) startWhisperRecording()
-    else startBrowserRecognition(voiceLang === 'auto' ? 'en-IN' : voiceLang)
-  }
-
-  const canSpeak = voiceSupported || mediaSupported
 
   function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -549,7 +422,20 @@ export function AddReportClient() {
             </div>
           )}
 
-          {/* THE FORMAL GRIEVANCE — hero element */}
+          {/* THE APPLICATION — the document itself. When the work-agent
+              produced a full application, that is the artefact worth showing;
+              the one-line grievance is a fallback for when it did not. */}
+          {result.application ? (
+            <ApplicationCard
+              application={result.application}
+              applicationNumber={result.applicationNumber}
+              wardName={result.wardName}
+              wardId={result.wardId}
+              department={result.triagedDepartment || result.responsibleDept}
+              language={result.language}
+              isEmergency={result.isEmergency}
+            />
+          ) : (
           <div className="rounded-2xl overflow-hidden border border-ink/10 shadow-sm bg-white">
             <div className="px-4 pt-3 pb-1 flex items-center gap-2 border-b border-ink/6">
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
@@ -605,17 +491,18 @@ export function AddReportClient() {
               </div>
             )}
           </div>
+          )}
 
           {/* Severity */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink/35">Severity</span>
-              <span className="text-[11px] font-bold" style={{ color }}>{SEV_LABEL[result.severity] ?? 'Unknown'}</span>
+              <span className="text-[11px] font-bold" style={{ color: SEVERITY_RAMP[Math.max(0, result.severity - 1)] }}>{SEV_LABEL[result.severity] ?? 'Unknown'}</span>
             </div>
             <div className="flex gap-1.5">
               {[1,2,3,4,5].map(i => (
                 <div key={i} className="flex-1 h-2 rounded-full"
-                     style={{ background: i <= result.severity ? color : `${color}18` }} />
+                     style={{ background: i <= result.severity ? SEVERITY_RAMP[i - 1] : 'rgba(10,10,10,0.08)' }} />
               ))}
             </div>
           </div>
@@ -649,8 +536,9 @@ export function AddReportClient() {
           {/* Actions */}
           <div className="space-y-2.5 pt-1">
             <button onClick={() => { window.location.href = `/?ward=${result.wardId}` }}
-                    className="w-full py-4 rounded-2xl text-[15px] font-bold text-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-                    style={{ background: color, boxShadow: `0 8px 24px ${color}40` }}>
+                    className="w-full py-4 rounded-2xl text-[15px] font-semibold text-white
+                               bg-navy hover:bg-navy/90 active:scale-[0.985]
+                               flex items-center justify-center gap-2 transition-all">
               See it on the map
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
@@ -679,7 +567,7 @@ export function AddReportClient() {
   const locationLine = location.status === 'found'
     ? `Ward ${location.wardId} · ${location.wardName}`
     : location.status === 'manual' ? location.wardName : null
-  const showCursorOverlay = text === '' && !textFocused && !voiceActive && !transcribing
+  const showCursorOverlay = text === '' && !textFocused
 
   return (
     <main className="min-h-screen bg-paper text-ink">
@@ -748,7 +636,7 @@ export function AddReportClient() {
             {/* Textarea box */}
             <div className={`relative rounded-2xl bg-white overflow-hidden transition-all duration-200
                              border-2 shadow-sm ${
-                               voiceActive || transcribing
+                               false
                                  ? 'border-ink/8'
                                  : 'border-ink/10 focus-within:border-saffron/50 focus-within:shadow-[0_0_0_4px_rgba(255,153,51,0.08)]'
                              }`}>
@@ -772,7 +660,7 @@ export function AddReportClient() {
                 onBlur={() => setTextFocused(false)}
                 placeholder=""
                 rows={5}
-                disabled={submitState === 'submitting' || transcribing}
+                disabled={submitState === 'submitting'}
                 className="w-full px-5 pt-5 pb-5 text-[15px] text-ink leading-relaxed
                            bg-transparent resize-none focus:outline-none"
                 style={{ minHeight: 148 }}
@@ -834,95 +722,37 @@ export function AddReportClient() {
             </div>
           </div>
 
-          {/* ── SPEAK section ────────────────────────────────────────── */}
-          {canSpeak && (
+          {/* ── SPEAK section — live dictation ───────────────────────── */}
+          {mediaSupported && (
             <div>
-              {/* Divider */}
               <div className="flex items-center gap-4 mb-5">
                 <div className="flex-1 h-px bg-ink/10" />
                 <span className="text-[11px] font-bold tracking-[0.28em] uppercase text-ink/30">or speak</span>
                 <div className="flex-1 h-px bg-ink/10" />
               </div>
 
-              {transcribing ? (
-                /* Transcribing spinner */
-                <div className="flex flex-col items-center gap-3 py-6">
-                  <span className="w-6 h-6 rounded-full border-2 border-saffron/25 border-t-saffron animate-spin" />
-                  <span className="text-[14px] font-medium text-ink/50">Transcribing with AI…</span>
-                </div>
-
-              ) : voiceActive ? (
-                /* Recording state */
-                <div className="flex flex-col items-center gap-4 py-4">
-                  <div className="flex items-end gap-[4px] justify-center" style={{ height: 32 }}>
-                    {VOICE_BARS.map((h, i) => (
-                      <div key={i} className="w-1 rounded-full bg-red-400"
-                           style={{
-                             height: h,
-                             transformOrigin: 'bottom center',
-                             animation: `voice-bar 0.42s ease-in-out ${(i * 0.053).toFixed(3)}s infinite alternate`,
-                           }} />
-                    ))}
-                  </div>
-                  <p className="text-[14px] font-semibold text-red-400">
-                    {mediaSupported ? 'Recording… tap Stop when done' : 'Listening…'}
-                  </p>
-                  <button onClick={toggleVoice}
-                          className="flex items-center gap-2.5 px-8 py-3.5 rounded-2xl
-                                     bg-red-500 text-white font-bold text-[15px]
-                                     shadow-lg shadow-red-500/25 active:scale-95 transition-all">
-                    <span className="w-3 h-3 rounded-sm bg-white inline-block flex-shrink-0" />
-                    Stop recording
-                  </button>
-                </div>
-
-              ) : (
-                /* Idle speak controls */
-                <div className="flex flex-col gap-3">
-
-                  {/* Big mic button */}
-                  <button onClick={toggleVoice}
-                          className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl
-                                     bg-ink/[0.05] border-2 border-ink/10 text-ink font-bold text-[16px]
-                                     hover:bg-ink/[0.08] hover:border-ink/20 active:scale-[0.99]
-                                     transition-all">
-                    <MicIcon className="w-5 h-5 text-ink/60" />
-                    Speak freely
-                  </button>
-
-                  {/* Language pills — big, bold, with backgrounds */}
-                  <div className="flex gap-2">
-                    {LANGS.map(l => (
-                      <button key={l.code} onClick={() => setVoiceLang(l.code)}
-                              className={`flex-1 py-3 rounded-xl font-bold text-[14px] transition-all
-                                          border-2 active:scale-[0.98]
-                                          ${voiceLang === l.code
-                                ? 'bg-saffron/12 text-saffron-dark border-saffron/35'
-                                : 'bg-ink/[0.04] text-ink/45 border-transparent hover:bg-ink/[0.07] hover:text-ink/60'
-                              }`}>
-                        {l.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Sarvam handles all 23 languages server-side, so this note
-                      now applies to every pick — including auto-detect. */}
-                  {mediaSupported && (
-                    <p className="text-center text-[11px] text-india-green/80 font-medium mt-1">
-                      {voiceLang === 'auto'
-                        ? '✦ Speak any Indian language — Sarvam AI detects it'
-                        : '✦ Uses Sarvam AI — built for Indian languages'}
-                    </p>
-                  )}
-
-                  {/* Microphone permission / device error */}
-                  {voiceError && (
-                    <p role="alert" className="text-[12px] text-red-600 mt-1 text-center leading-snug">
-                      {voiceError}
-                    </p>
-                  )}
-                </div>
-              )}
+              <DictationSurface
+                language={voiceLang}
+                onDraft={(t) => {
+                  // Live draft replaces the textarea contents as it forms, so
+                  // the citizen watches their words land in the field they are
+                  // about to submit — not in a separate preview they then have
+                  // to trust got copied across.
+                  setText(t)
+                  if (textareaRef.current) {
+                    textareaRef.current.style.height = 'auto'
+                    textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 320) + 'px'
+                  }
+                }}
+                onFinal={({ text: finalText, language }) => {
+                  setText(finalText)
+                  if (language) setDetectedLang(language)
+                  if (textareaRef.current) {
+                    textareaRef.current.style.height = 'auto'
+                    textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 320) + 'px'
+                  }
+                }}
+              />
             </div>
           )}
 

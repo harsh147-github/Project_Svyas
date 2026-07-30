@@ -5,6 +5,7 @@ import { scrubPII } from '@/lib/pii'
 import { chatJson, isAiConfigured, sarvamOnly } from '@/lib/ai'
 import { identifyLanguage, translateFormal, triageReport, isSarvamConfigured, toBcp47, TRANSLATE_LANGUAGES } from '@/lib/sarvam'
 import { buildApplicationNumber } from '@/lib/gov-application'
+import { buildGrievanceApplication } from '@/lib/grievance-agent'
 import { randomUUID, createHash } from 'crypto'
 
 // ── In-memory rate limiter: 10 reports per IP per 10 minutes ─────────────────
@@ -363,7 +364,14 @@ export async function POST(req: NextRequest) {
   // contaminated supply cannot sit in a weekly synthesis queue, and that
   // decision is too consequential to infer from prose. Runs in parallel with
   // nothing else because it is fast and its answer changes what happens next.
-  const triage = await triageReport(cleanText)
+  // The work-agent turns what the citizen said into a complete municipal
+  // application — numbered particulars, a formal prayer, a declaration — not
+  // just the one-line grievance. Runs alongside triage; both are independent
+  // reads of the same raw speech.
+  const [triage, application] = await Promise.all([
+    triageReport(cleanText),
+    buildGrievanceApplication(cleanText, { language: reportLanguage }),
+  ])
 
   // The model gives a severity; triage gives an independent emergency read.
   // When they disagree, take the more cautious of the two — under-calling an
@@ -485,6 +493,17 @@ export async function POST(req: NextRequest) {
     triagedDepartment: triage?.department ?? null,
     peopleAffected: triage?.peopleAffected ?? null,
     reportedDuration: triage?.duration ?? null,
+    // The full grievance application produced by the work-agent. Null when
+    // extraction failed — the one-line grievance above still stands.
+    application: application ? {
+      subject: application.subject,
+      preamble: application.preamble,
+      particulars: application.particulars,
+      prayer: application.prayer,
+      declaration: application.declaration,
+      localised: application.localised,
+      missing: application.missing,
+    } : null,
     citedLocation: synthesized.cited_location,
     civicAsk: synthesized.civic_ask,
     responsibleDept: synthesized.responsible_dept,
