@@ -9,10 +9,6 @@
       "schedule": "30 3 * * *"
     },
     {
-      "path": "/api/admin/generate-briefs",
-      "schedule": "0 17 * * 0"
-    },
-    {
       "path": "/api/cron/gov-dispatch",
       "schedule": "0 5 * * *"
     },
