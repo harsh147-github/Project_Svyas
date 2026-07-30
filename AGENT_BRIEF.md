@@ -112,7 +112,8 @@ Project-Svyas/                              ← repo root (this directory)
 │
 ├── Project_Svyas/sushaasan-backend/        ← backend service (port 3000)
 ├── nibm_traffic_data/                      ← raw scraped data for pilot
-├── instagram/, docs/, _remote/             ← marketing + research artifacts
+├── instagram/, docs/                       ← marketing + research artifacts
+├── _archive/                               ← historical snapshots, never built
 └── (many top-level .md, .docx, .pptx)      ← pitch decks, playbooks, applications
 ```
 
@@ -183,7 +184,7 @@ Full rules in `CLAUDE.md` (root) and `Project_Svyas/sushasan/CLAUDE.md`.
 - **Vercel CLI not installed.** Several agent workflows assume `vercel env pull` works — install first.
 - **`.cursor/mcp.json` is gitignored** (contained leaked Apify token, scrubbed 2026-05-23). Real token lives in `.secrets/all-keys.env`. Cursor still reads it locally.
 - **Three near-duplicate dirs at repo root:** `sushasan/`, `Project_Svyas/sushasan/`, `Project_Svyas/sushaasan-backend/`. The deployed app is `Project_Svyas/sushasan/apps/web/`. The others are older/sibling work.
-- **Git status is noisy:** many untracked top-level `.md`, `.docx`, `.pptx`, and scratch dirs (`_extracted_repo/`, `_remote/`, `_tmp_*`) are intentional artifacts, not WIP code. Don't blindly `git add -A` without scanning first.
+- **Git status is noisy:** many untracked top-level `.md`, `.docx`, `.pptx`, and scratch dirs (`_archive/`, `_tmp_*`) are intentional artifacts, not WIP code. Don't blindly `git add -A` without scanning first.
 - **`Champion Playbook For Sushaasan.md`** and similar top-level docs use *Sushaasan* with double-a; the product also goes by *Sushasan* (single a) in code. Both are valid.
 
 ---
@@ -191,7 +192,7 @@ Full rules in `CLAUDE.md` (root) and `Project_Svyas/sushasan/CLAUDE.md`.
 ## When you need more context
 
 - Product story + pitch: `Sushaasan_SIIC_Pitch.pdf`, `Sushaasan-Funding-Action-Plan-May2026.docx`
-- Research & strategy: `_remote/docs/research/`, `_remote/docs/strategy/`
+- Research & strategy: `_archive/_remote/docs/research/`, `_archive/_remote/docs/strategy/`
 - Pipeline details: `Project_Svyas/sushasan/docs/`
 - Per-app spec: `Project_Svyas/sushasan/CLAUDE.md`
 
