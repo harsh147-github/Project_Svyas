@@ -8,7 +8,24 @@
  *   2. Voyage AI: generate 1024-dim multilingual embedding (if VOYAGE_API_KEY set)
  *   3. Supabase upsert to posts table (onConflict: raw_post_id — requires migration 004)
  */
-import { chat, activeProvider } from '../ai'
+import { chatJSON, activeProvider } from '../ai'
+
+// Shape the classifier prompt is contracted to return. Everything except
+// issue_tag is optional because a model may legitimately omit a field it
+// couldn't infer — the upsert below supplies a default for each. issue_tag is
+// enforced by the chatJSON validator, so it is the one field always present.
+type ClassifiedPost = {
+  issue_tag: string
+  translated_text_en?: string
+  sub_tags?: string[]
+  severity?: number | string
+  sentiment?: number | string
+  cited_location?: string
+  cited_time?: string
+  is_actionable?: boolean
+  civic_ask?: string
+  ward_id?: string | number
+}
 import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
 import { scrubPII } from '../pii'
@@ -94,16 +111,19 @@ export const classifyPostsWorker = inngest.createFunction(
           // The prompt is the system argument and the post is the sole user
           // message (previously concatenated into one user turn) — this is the
           // shape OpenAI-compatible providers expect.
-          const raw = (
-            await chat({
+          // chatJSON parses, validates, and retries once with a repair prompt
+          // before throwing — so a provider that fences its JSON (common on
+          // OpenAI-compatible models) cannot silently write a wrong issue_tag.
+          // The validator enforces the one field the ward map depends on.
+          const parsed = await chatJSON<ClassifiedPost>(
+            {
               task: 'classify',
               system: CLASSIFY_PROMPT,
               maxTokens: 512,
               messages: [{ role: 'user', content: `POST:\n${post.raw_text.slice(0, 2000)}` }],
-            })
-          ).trim()
-          const json = raw.startsWith('{') ? raw : raw.replace(/^```json?\n?/, '').replace(/```$/, '').trim()
-          const parsed = JSON.parse(json)
+            },
+            (v) => !!v && typeof v === 'object' && typeof (v as { issue_tag?: unknown }).issue_tag === 'string',
+          )
 
           const textForEmbed = (parsed.translated_text_en || post.raw_text).slice(0, 8000)
 

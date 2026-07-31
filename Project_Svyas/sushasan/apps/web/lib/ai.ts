@@ -72,6 +72,56 @@ async function chatOpenAICompatible(args: ChatArgs, cfg: {
   return (data.choices?.[0]?.message?.content ?? '').trim()
 }
 
+/**
+ * Extract a JSON object from a model response. Providers differ in how much
+ * they wrap output: Claude usually returns bare JSON, OpenAI-compatible models
+ * (Sarvam / BharatGen) frequently fence it or add a sentence of preamble.
+ */
+export function extractJson(raw: string): string {
+  const t = raw.trim()
+  if (t.startsWith('{') || t.startsWith('[')) return t
+  // strip ``` / ```json fences
+  const unfenced = t.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim()
+  if (unfenced.startsWith('{') || unfenced.startsWith('[')) return unfenced
+  // last resort: first balanced-looking object in the text
+  const match = unfenced.match(/\{[\s\S]*\}/)
+  return match ? match[0] : unfenced
+}
+
+/**
+ * chat() that must return parseable JSON.
+ *
+ * This exists because the pipeline writes model output straight into Postgres.
+ * A malformed classification does not throw — without this it would write a
+ * wrong issue_tag and silently skew the ward map. So: parse, and on failure
+ * retry ONCE with an explicit repair instruction before giving up. `validate`
+ * lets the caller reject structurally-valid-but-wrong output too.
+ *
+ * Throws if both attempts fail, so the Inngest step retries rather than
+ * persisting garbage.
+ */
+export async function chatJSON<T = unknown>(
+  args: ChatArgs,
+  validate?: (v: unknown) => boolean,
+): Promise<T> {
+  const attempt = async (extra?: string): Promise<T> => {
+    const raw = await chat(
+      extra ? { ...args, messages: [...args.messages, { role: 'user', content: extra }] } : args,
+    )
+    const parsed = JSON.parse(extractJson(raw)) as T
+    if (validate && !validate(parsed)) throw new Error('validation failed')
+    return parsed
+  }
+  try {
+    return await attempt()
+  } catch (first) {
+    console.error(`[ai] JSON parse/validate failed on ${activeProvider()}, retrying once:`, first)
+    return await attempt(
+      'Your previous reply was not valid JSON matching the required shape. Reply again with ONLY the JSON object — no prose, no markdown fences.',
+    )
+  }
+}
+
 // ── Public API ───────────────────────────────────────────────────────────────
 export async function chat(args: ChatArgs): Promise<string> {
   const provider = activeProvider()

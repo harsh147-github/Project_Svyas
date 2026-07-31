@@ -3,7 +3,7 @@
  * Triggered weekly (Sunday 21:00 IST) or on-demand via "sushasan/solution.generate".
  * Self-contained — no cross-package imports. Lives in apps/web.
  */
-import { chat, activeProvider } from '../ai'
+import { chatJSON, activeProvider } from '../ai'
 import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
 
@@ -133,18 +133,20 @@ export const solutionSynthesisWorker = inngest.createFunction(
           // Synthesis via the provider-agnostic layer. The built prompt becomes
           // the system argument; the user turn is a minimal trigger, since
           // OpenAI-compatible providers require at least one user message.
-          const raw = (
-            await chat({
+          // chatJSON parses + retries once on malformed output. `steps` must be
+          // an array because it is written to a jsonb column the gov dashboard
+          // renders directly — a string there would break the brief silently.
+          const parsed = await chatJSON<Record<string, unknown>>(
+            {
               task: 'synthesize',
               system: SOLUTION_PROMPT(ctx),
               maxTokens: 1024,
               messages: [
                 { role: 'user', content: 'Generate the solution JSON for the ward and cluster described above. Output JSON only.' },
               ],
-            })
-          ).trim()
-          const json = raw.startsWith('{') ? raw : raw.replace(/^```json?\n?/, '').replace(/```$/, '').trim()
-          const parsed = JSON.parse(json)
+            },
+            (v) => !!v && typeof v === 'object' && Array.isArray((v as { steps?: unknown }).steps),
+          )
 
           await db.from('solutions').upsert({
             ward_id: cluster.ward_id,

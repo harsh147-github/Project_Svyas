@@ -189,6 +189,57 @@ type NormPost = {
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
+/**
+ * Reddit app-only OAuth token, or null when unconfigured.
+ *
+ * Reddit blocks unauthenticated .json traffic from datacenter IPs — which is
+ * what Vercel serverless is — and that is the leading hypothesis for why this
+ * source returns zero. Setting REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET
+ * (https://www.reddit.com/prefs/apps, "script" type) activates this path.
+ * Never throws: a failure here degrades to the unauthenticated endpoint.
+ */
+async function redditToken(): Promise<string | null> {
+  const id = process.env.REDDIT_CLIENT_ID
+  const secret = process.env.REDDIT_CLIENT_SECRET
+  if (!id || !secret) return null
+  try {
+    const r = await fetch('https://www.reddit.com/api/v1/access_token', {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${id}:${secret}`).toString('base64')}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': process.env.REDDIT_USER_AGENT ?? 'Sushasan/1.0 (civic)',
+      },
+      body: 'grant_type=client_credentials',
+      signal: AbortSignal.timeout(15_000),
+    })
+    if (!r.ok) {
+      console.error(`[reddit] oauth token ${r.status}: ${(await r.text().catch(() => '')).slice(0, 300)}`)
+      return null
+    }
+    const j = (await r.json()) as { access_token?: string }
+    return j.access_token ?? null
+  } catch (e) {
+    console.error('[reddit] oauth token request threw:', e)
+    return null
+  }
+}
+
+/**
+ * Per-actor Apify timeout, overridable by env.
+ *
+ * If the logs show an AbortError for an actor, the fix is "raise this actor's
+ * timeout" — which should be a Vercel env change, not a code change and
+ * redeploy. Clamped to 280s: the route's maxDuration is 300 and apifyPost adds
+ * a 20s grace on top, so anything higher would be cut off by the platform
+ * before the actor's own timeout fired.
+ */
+function envTimeout(key: string, fallback: number): number {
+  const n = Number(process.env[key])
+  if (!Number.isFinite(n) || n <= 0) return fallback
+  return Math.min(n, 280)
+}
+
 function apifyUrl(actor: string, token: string, timeoutSec: number) {
   return `https://api.apify.com/v2/acts/${actor}/run-sync-get-dataset-items?token=${token}&timeout=${timeoutSec}`
 }
@@ -303,7 +354,7 @@ async function scrapeTwitter(token: string): Promise<NormPost[]> {
     maxItems: 250,
     searchMode: 'live',
     addUserInfo: false,
-  }, 200)
+  }, envTimeout('TWITTER_TIMEOUT_SEC', 200))
 
   const out: NormPost[] = []
   for (const p of items) {
@@ -349,7 +400,7 @@ async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
     language: 'en',
     countryCode: 'in',
     scrapeReviewerInfo: false,
-  }, 240)
+  }, envTimeout('GMAPS_TIMEOUT_SEC', 240))
 
   const out: NormPost[] = []
   for (const place of items) {
@@ -443,10 +494,22 @@ async function scrapeReddit(): Promise<NormPost[]> {
     ['india', 'Pune PMC pothole traffic garbage'],
   ]
   const out: NormPost[] = []
+  // OAuth is the documented fix for datacenter-IP blocking. This obtains a
+  // token ONLY if REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET are set; otherwise it
+  // returns null and we fall back to the unauthenticated .json endpoint exactly
+  // as before. So registering the Reddit app is a config change, not a code
+  // change — nothing here breaks while those vars are unset.
+  const token = await redditToken()
+  const base = token ? 'https://oauth.reddit.com' : 'https://www.reddit.com'
+  const ua = process.env.REDDIT_USER_AGENT ?? 'Sushasan/1.0 (civic; sonawaneharsh147@gmail.com)'
+  if (token) console.log('[reddit] using authenticated OAuth endpoint')
+
   for (const [sub, q] of queries) {
     try {
-      const url = `https://www.reddit.com/r/${sub}/search.json?q=${encodeURIComponent(q)}&sort=new&t=month&limit=50&restrict_sr=on`
-      const r = await fetch(url, { headers: { 'User-Agent': 'Sushasan/1.0 (civic; sonawaneharsh147@gmail.com)' }, signal: AbortSignal.timeout(30_000) })
+      const url = `${base}/r/${sub}/search.json?q=${encodeURIComponent(q)}&sort=new&t=month&limit=50&restrict_sr=on`
+      const headers: Record<string, string> = { 'User-Agent': ua }
+      if (token) headers.Authorization = `Bearer ${token}`
+      const r = await fetch(url, { headers, signal: AbortSignal.timeout(30_000) })
       // Reddit's unauthenticated .json endpoint rate-limits and blocks
       // datacenter IPs (which is exactly what Vercel serverless is). Silently
       // `continue`-ing here is why this source reads as "0 results" rather than
