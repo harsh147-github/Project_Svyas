@@ -1,141 +1,393 @@
-# Go-live checklist — everything only Harsh can do
+# Go-live checklist — every key, where to get it, where to paste it
 
-Generated 2026-07-31. Every item below requires an account, a dashboard, a
-payment method, or a DNS record — none of it can be done from code.
+Last updated 2026-07-31. Everything here needs an account, a dashboard, a
+payment method, or a DNS record. None of it can be done from code.
 
-**Where env vars go, unless stated otherwise:**
-Vercel → project **`project-svyas`** (team `harsh147-githubs-projects`) →
-**Settings → Environment Variables** → add with **Production** ticked
-(tick **Preview** too if you want PR previews to work against real data).
-**A new variable does not apply to the running app until you redeploy** —
-Deployments → latest → ⋯ → Redeploy.
-
-Verify anything in this file by opening **`https://sushaasan.in/api/health`**.
-It reports `supabase`, plus an `env` object with `ai`, `scraping`, `email`,
-and `cron` arrays. **An empty array means that integration is fully
-configured.** Anything listed there is still missing.
+Work top to bottom. Dashboard labels shift occasionally — the navigation paths
+below were accurate at time of writing, so if a label has moved, look for the
+nearest equivalent rather than assuming the step is wrong.
 
 ---
 
-## TIER 0 — Do this first, or nothing else matters
+## Quick reference — Table 1: values you paste into Vercel
 
-| # | Task | Where | What exactly |
+All of these go to the **same place** (procedure in §A below).
+
+| ✅ | Variable | Where to get it | Format |
 |---|---|---|---|
-| 0.1 | **Merge PR #64** | GitHub → [PR #64](https://github.com/harsh147-github/Project_Svyas/pull/64) | Every fix below — uptime alerts, dispatch error logging, scraper diagnostics, the command agent — exists only on branch `claude/goal-izf2vh`. Until this merges, production runs the old code and the scrapers/dispatch stay broken. Merging triggers a Vercel deploy of `main` automatically. |
+| 🔴 | `CRON_SECRET` | Generate yourself | 64 hex chars |
+| 🔴 | `RESEND_API_KEY` | resend.com → API Keys | `re_...` |
+| 🔴 | `FOUNDER_EMAIL` | Your own inbox | an email address |
+| 🔴 | `ANTHROPIC_API_KEY` | console.anthropic.com → API Keys | `sk-ant-api03-...` |
+| 🔴 | `APIFY_API_TOKEN` | console.apify.com → Settings → Integrations | `apify_api_...` |
+| 🔴 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API | `https://xxxx.supabase.co` |
+| 🔴 | `SUPABASE_SERVICE_KEY` | Same page → `service_role` | long JWT |
+| 🔴 | `INNGEST_EVENT_KEY` | app.inngest.com → Manage → Event Keys | random string |
+| 🔴 | `INNGEST_SIGNING_KEY` | Same page → Signing Key | `signkey-prod-...` |
+| 🟡 | `REDDIT_CLIENT_ID` | reddit.com/prefs/apps | ~14 chars |
+| 🟡 | `REDDIT_CLIENT_SECRET` | Same app | ~27 chars |
+| 🟡 | `REDDIT_USER_AGENT` | Type it yourself | `Sushasan/1.0 (civic; you@email.com)` |
+| 🟡 | `GOV_ACCESS_TOKEN` | Generate yourself | 48 hex chars |
+| 🟡 | `ADMIN_TOKEN` | Generate yourself | 48 hex chars |
+| 🟢 | `VOYAGE_API_KEY` | dash.voyageai.com | `pa-...` |
+| 🟢 | `PUBLIC_BASE_URL` | Type it yourself | `https://sushaasan.in` |
+| 🟢 | `AUTHORITY_DIGEST_EMAILS` | Ward-officer inboxes | `a@x.com,b@y.com` |
+| 🟢 | `SARVAM_API_KEY` | dashboard.sarvam.ai | enables voice notes |
+| 🟢 | `WHATSAPP_ACCESS_TOKEN` | Meta Business console | see `docs/OUTREACH.md` |
+| 🟢 | `WHATSAPP_PHONE_NUMBER_ID` | Same Meta console | numeric |
+
+🔴 required · 🟡 fixes something currently broken · 🟢 optional
+
+## Quick reference — Table 2: things that are not a paste
+
+| ✅ | Task | Where | Why it matters |
+|---|---|---|---|
+| 🔴 | Verify `sushaasan.in` domain | Resend → Domains → then DNS at your registrar | Most likely reason dispatch has never sent |
+| 🔴 | Anthropic credit + billing alert | console.anthropic.com → Billing | Recurring. Zero → pipeline silently stops |
+| 🔴 | Apify credit | console.apify.com → Billing | Recurring. Empty looks identical to a broken scraper |
+| 🟡 | Confirm `dispatch_log` migration ran | Supabase → SQL Editor | A committed file ≠ an applied migration |
+| 🟡 | Vercel Hobby → Pro (~$20/mo) | Vercel → Settings → Billing | Hobby is non-commercial per ToS **and** caps crons at once/day |
+| 🟢 | Supabase Free → Pro (~$25/mo) | Supabase → Billing | Free tier pauses when idle = site down |
 
 ---
 
-## TIER 1 — Required for the pipeline to run 24/7
+# §A. How to add an environment variable in Vercel
 
-| # | Key / task | Where to get it | Where to put it | Notes |
-|---|---|---|---|---|
-| 1.1 | `CRON_SECRET` | Generate your own: `openssl rand -hex 32` | Vercel env vars | **Security-critical.** Every `/api/cron/*` route treats an unset secret as "open", so today anyone on the internet can trigger your scrape and dispatch. Vercel automatically attaches this as `Authorization: Bearer …` on its own cron calls, so you set it and nothing else changes. Verify: `env.cron` on `/api/health` becomes `[]`. |
-| 1.2 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → project → Settings → API → Project URL | Vercel env vars | Should already be set (health shows `supabase: true`). Re-check only if health says otherwise. |
-| 1.3 | `SUPABASE_SERVICE_KEY` | Supabase → Settings → API → **`service_role`** secret | Vercel env vars | Server-only. Never expose to the browser, never prefix with `NEXT_PUBLIC_`. |
-| 1.4 | `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) → API Keys | Vercel env vars | Powers classification, synthesis, briefs, copilot. Verify: `env.ai` on `/api/health` becomes `[]`. |
-| 1.5 | **Anthropic credit balance** | console.anthropic.com → Billing | — | Recurring, not one-off. If this hits zero, classification and synthesis stop and the pipeline silently produces nothing. **Set a billing alert.** |
-| 1.6 | `APIFY_API_TOKEN` | [console.apify.com](https://console.apify.com) → Settings → Integrations → API token | Vercel env vars | Drives Instagram / Twitter / Facebook / Google Maps. Verify: `env.scraping` → `[]`. |
-| 1.7 | **Apify credit balance** | console.apify.com → Billing | — | Also recurring. Apify actors consume compute units per run; an exhausted balance looks identical to a broken scraper. |
-| 1.8 | `INNGEST_EVENT_KEY` + `INNGEST_SIGNING_KEY` | [app.inngest.com](https://app.inngest.com) → your app → Manage → Keys | Vercel env vars | Without these the classify + solution workers never fire, so posts scrape but never get classified. `INNGEST_SIGNING_KEY` is read by the Inngest SDK itself, not by our code — it still must be set. |
+You will do this ~9 times. The procedure is identical every time.
 
----
+1. Go to **https://vercel.com** and sign in.
+2. Top-left, make sure the **team** selector shows `harsh147-githubs-projects`
+   (not your personal account).
+3. Click the project **`project-svyas`**.
+4. Top navigation → **Settings**.
+5. Left sidebar → **Environment Variables**.
+6. Fill the form:
+   - **Key** — the variable name, exactly as spelled in this doc. Case matters.
+     No quotes, no spaces.
+   - **Value** — paste the value. No surrounding quotes.
+   - **Environments** — tick **Production**. Also tick **Preview** if you want
+     PR preview deployments to work against real data.
+7. Click **Save**.
+8. **Repeat for every variable, then redeploy once at the end.**
 
-## TIER 2 — Fixes the three things currently broken in production
+### Redeploying (required — new variables do nothing until you do this)
 
-### 2A. Government dispatch has never sent (`last_dispatched_at: null`)
-
-| # | Task | Where | What exactly |
-|---|---|---|---|
-| 2.1 | `RESEND_API_KEY` | [resend.com](https://resend.com) → API Keys | Vercel env vars | |
-| 2.2 | `FOUNDER_EMAIL` | — | Vercel env vars | Your address. Receives the weekly digest, the daily war-room digest fallback, **and all uptime alerts**. |
-| 2.3 | **Verify the `sushaasan.in` domain in Resend** | Resend → Domains → Add Domain → then add the shown **DKIM/SPF DNS records at your domain registrar** | DNS | ⚠️ **This is my leading suspicion for why dispatch has never worked.** Every send is `from: briefs@sushaasan.in`; until Resend shows that domain as `verified`, it rejects 100% of sends. Nothing in code can fix this. |
-| 2.4 | Confirm migration `007_dispatch_log.sql` actually ran | Supabase → SQL Editor → `select * from dispatch_log limit 1;` | Supabase | A committed migration file does not mean it was applied. If this errors, run the file's contents in the SQL editor. |
-
-**After 2.1–2.4:** merge, then manually hit `/api/cron/gov-dispatch` with your
-`CRON_SECRET` bearer, and check Vercel logs. The new error logging now prints
-the exact Resend rejection body instead of swallowing it.
-
-### 2B. Reddit scraper returns zero
-
-| # | Task | Where | What exactly |
-|---|---|---|---|
-| 2.5 | Register a Reddit app | [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps) → **create another app…** → type **`script`** | — | Redirect URI can be `http://localhost`. It is not used by app-only OAuth. |
-| 2.6 | `REDDIT_CLIENT_ID` | The string **under** the app name on that page | Vercel env vars | Not the app name itself. |
-| 2.7 | `REDDIT_CLIENT_SECRET` | The `secret` field on that page | Vercel env vars | |
-| 2.8 | `REDDIT_USER_AGENT` | — | Vercel env vars | Format Reddit expects: `Sushasan/1.0 (civic; you@example.com)`. Optional but recommended. |
-
-**Why:** Reddit blocks unauthenticated `.json` traffic from datacenter IPs,
-which is exactly what Vercel serverless is. The code already contains the OAuth
-path — it activates the moment 2.6 and 2.7 exist and falls back safely while
-they don't. Confirm from logs: you should see `[reddit] using authenticated
-OAuth endpoint`.
-
-### 2C. Twitter + Google Maps scrapers return zero
-
-| # | Task | Where | What exactly |
-|---|---|---|---|
-| 2.9 | Read the logs first | Vercel → project → Logs, after one `daily-pipeline` run | The new logging distinguishes three different causes that previously all looked like "0 results": actor ran and found nothing / actor broken or renamed / actor timed out. **Do not change anything until you know which.** |
-| 2.10 | If **timeout**: `TWITTER_TIMEOUT_SEC` / `GMAPS_TIMEOUT_SEC` | — | Vercel env vars | Defaults 200 / 240, hard cap 280 (route `maxDuration` is 300). Raise only if logs show `AbortError`. |
-| 2.11 | If **auth error**: regenerate the Apify token | console.apify.com | Vercel env vars | Replace `APIFY_API_TOKEN`. |
-| 2.12 | If **actor renamed/removed**: tell me | — | — | Actor IDs are hardcoded in `daily-pipeline/route.ts`. I'll look up the current equivalent and patch — don't guess an ID. |
+1. Top navigation → **Deployments**.
+2. Find the most recent **Production** deployment (top of the list).
+3. Click the **⋯** menu on its right → **Redeploy**.
+4. If offered, leave "Use existing Build Cache" **unchecked**.
+5. Wait for the status to go **Ready**.
 
 ---
 
-## TIER 3 — Decisions with cost or quality implications
+# §B. Step-by-step for each value
 
-| # | Task | Where | What exactly |
-|---|---|---|---|
-| 3.1 | **Vercel Hobby → Pro** (~$20/mo) | Vercel → Settings → Billing | Two separate reasons. (a) **Hobby is non-commercial per Vercel's ToS** — a public civic product arguably breaches it. (b) Hobby caps crons at **once per day**, which is why `uptime-check` is scheduled daily rather than 6-hourly. On Pro you can tighten it to `0 */6 * * *` in both `vercel.json` files. |
-| 3.2 | Supabase Free → Pro (~$25/mo) | Supabase → Billing | Recommended before real traffic: free-tier projects pause when idle, which would take the site down. Also gives daily backups. |
-| 3.3 | **Do NOT flip `AI_PROVIDER=sarvam` yet** | — | The wiring and a JSON safety net are in place, but the quality comparison has never been run — I had no API keys. A bad Sarvam classification does **not** error; it writes a wrong `issue_tag` and silently skews the ward map. Run the comparison in `docs/SOVEREIGN_AI_MIGRATION.md` first. |
-| 3.4 | `SARVAM_API_KEY` | [dashboard.sarvam.ai](https://dashboard.sarvam.ai) | Vercel env vars | Safe to set **without** setting `AI_PROVIDER` — it stays inert, and it enables Hindi/Marathi voice transcription (below) on its own. |
+## B1. `CRON_SECRET` 🔴 — do this first
+
+**Why:** every `/api/cron/*` route treats an unset secret as "open". Right now
+anyone on the internet can trigger your scraper and your dispatch. Vercel
+automatically attaches this secret as an `Authorization: Bearer` header on its
+own cron calls, so setting it locks the routes without breaking the schedule.
+
+**Generate it** — in a terminal:
+```bash
+openssl rand -hex 32
+```
+Copy the whole 64-character output.
+
+**Paste it:** §A, Key = `CRON_SECRET`, Value = that string.
+
+**Keep a copy** — you need it to trigger crons manually later (§C).
 
 ---
 
-## TIER 4 — Optional, feature-by-feature
+## B2. Resend — email delivery 🔴
 
-| Key | Enables | Where to get it |
+This is two separate jobs: the API key, and verifying the domain. **The domain
+is the part that is most likely broken today.**
+
+### B2a. Get `RESEND_API_KEY`
+
+1. Go to **https://resend.com** and sign in.
+2. Left sidebar → **API Keys**.
+3. Click **Create API Key**.
+4. Name it something like `sushaasan-production`.
+5. Permission: **Full access** (or Sending access — sending is all we use).
+6. Click **Add** / **Create**.
+7. **Copy the key immediately** — it starts `re_` and is shown only once. If
+   you lose it, delete the key and make a new one.
+
+**Paste it:** §A, Key = `RESEND_API_KEY`.
+
+### B2b. Set `FOUNDER_EMAIL`
+
+Your own address. This receives the weekly digest, the daily war-room digest
+fallback, **and every uptime alert**.
+
+**Paste it:** §A, Key = `FOUNDER_EMAIL`, Value = e.g. `you@sushaasan.in`.
+
+### B2c. Verify the `sushaasan.in` domain ⚠️ most important step in this file
+
+Every email the app sends is `from: briefs@sushaasan.in`. Until Resend has
+verified that you control that domain, it **rejects 100% of sends**. This
+matches the symptom exactly: `dispatch.last_dispatched_at` has always been
+null.
+
+1. In Resend, left sidebar → **Domains**.
+2. Click **Add Domain**.
+3. Enter `sushaasan.in`. Pick the region closest to your users.
+4. Resend now shows a set of **DNS records** — typically one MX, one TXT for
+   SPF, and one TXT for DKIM. Leave this page open.
+5. In a second tab, open your **domain registrar** (wherever you bought
+   `sushaasan.in`) and find its **DNS settings / DNS records** page.
+6. Add each record Resend listed. Copy **Type**, **Name/Host**, and
+   **Value/Content** exactly.
+   - If your registrar auto-appends the domain, enter the Name as the prefix
+     only (e.g. `resend._domainkey`, not
+     `resend._domainkey.sushaasan.in`) — double-appending is the single most
+     common mistake here.
+7. Save at the registrar.
+8. Back in Resend, click **Verify DNS Records**.
+9. Wait — DNS propagation is usually minutes but can take up to ~48h. Re-check
+   until the domain shows **Verified**.
+
+**Done when:** the domain row in Resend reads `verified`.
+
+---
+
+## B3. `ANTHROPIC_API_KEY` 🔴 + credit
+
+**The key:**
+1. Go to **https://console.anthropic.com** and sign in.
+2. Left sidebar (or top-right account menu) → **API Keys**.
+3. Click **Create Key**.
+4. Name it `sushaasan-production`, create it.
+5. **Copy immediately** — starts `sk-ant-api03-`, shown once only.
+
+**Paste it:** §A, Key = `ANTHROPIC_API_KEY`.
+
+**The credit (recurring — this is the one people forget):**
+1. Same console → **Billing** / **Plans & Billing**.
+2. Add a payment method and buy credit.
+3. **Set a usage/balance alert.** When this hits zero, classification and
+   synthesis stop and the pipeline produces nothing — with no obvious error on
+   the site.
+
+---
+
+## B4. `APIFY_API_TOKEN` 🔴 + credit
+
+**The token:**
+1. Go to **https://console.apify.com** and sign in.
+2. Bottom-left, click your **avatar / account name** → **Settings**.
+3. Open the **Integrations** tab (sometimes shown as "API & Integrations").
+4. Find **Personal API tokens** and copy the token (starts `apify_api_`). Use
+   the eye/reveal icon if it's masked.
+
+**Paste it:** §A, Key = `APIFY_API_TOKEN`.
+
+**The credit (recurring):** same console → **Billing**. Apify actors burn
+compute units per run; an exhausted balance produces exactly the same symptom
+as a broken scraper (zero results, no error).
+
+---
+
+## B5. Supabase 🔴
+
+Both values come from one page.
+
+1. Go to **https://supabase.com/dashboard** and sign in.
+2. Select your project (`nrsoxitgxgpljhjkcpiz`).
+3. Left sidebar bottom → the **gear icon / Project Settings**.
+4. Click **API**.
+
+From that page:
+- **Project URL** → paste as `NEXT_PUBLIC_SUPABASE_URL`
+  (looks like `https://nrsoxitgxgpljhjkcpiz.supabase.co`)
+- **Project API keys → `service_role`** → click **Reveal**, copy → paste as
+  `SUPABASE_SERVICE_KEY`
+
+> ⚠️ Take the **`service_role`** key, not `anon`. The `anon` key cannot write,
+> so the pipeline would fail to insert anything.
+>
+> ⚠️ Never prefix this one with `NEXT_PUBLIC_` — that would ship a
+> database-admin credential to every visitor's browser.
+>
+> Newer Supabase projects may present these as "publishable" and "secret" keys
+> instead. If so, the **secret** key is the `service_role` equivalent.
+
+**Also confirm the dispatch migration actually ran:**
+1. Left sidebar → **SQL Editor** → **New query**.
+2. Run:
+   ```sql
+   select * from dispatch_log limit 1;
+   ```
+3. Empty result = fine (table exists, no rows yet). An error saying the
+   relation does not exist = the migration never ran: open
+   `ops/supabase/007_dispatch_log.sql` in this repo, paste its contents into
+   the SQL editor, and run it.
+
+---
+
+## B6. Inngest 🔴
+
+Without these, posts get scraped but **never classified** — the workers never
+fire.
+
+1. Go to **https://app.inngest.com** and sign in.
+2. Select your app, and make sure the environment selector says **Production**
+   (not Branch/Dev).
+3. Open **Manage** → **Keys**.
+4. Copy the **Event Key** → paste as `INNGEST_EVENT_KEY`.
+5. Copy the **Signing Key** (starts `signkey-prod-`) → paste as
+   `INNGEST_SIGNING_KEY`.
+
+> `INNGEST_SIGNING_KEY` never appears in our code — the Inngest SDK reads it
+> from the environment itself. It still must be set.
+
+---
+
+## B7. Reddit OAuth 🟡
+
+**Why:** Reddit blocks unauthenticated `.json` requests from datacenter IPs,
+which is exactly what Vercel serverless is. That is the leading explanation for
+this source returning zero. The OAuth code path is already deployed — it
+switches on automatically the moment these two values exist, and falls back to
+current behaviour while they don't.
+
+1. Go to **https://www.reddit.com/prefs/apps** (signed in).
+2. Scroll to the bottom → **are you a developer? create an app…**
+3. Fill in:
+   - **name**: `Sushaasan`
+   - **type**: select **`script`** ← important, not "web app"
+   - **description**: optional
+   - **redirect uri**: `http://localhost:8080` (unused for app-only auth, but
+     the form requires something)
+4. Click **create app**.
+5. On the resulting card:
+   - The **client ID** is the short string directly **under the app name**,
+     just below the words "personal use script". It is *not* the app name.
+   - The **secret** is the field explicitly labelled `secret`.
+
+**Paste:** `REDDIT_CLIENT_ID` and `REDDIT_CLIENT_SECRET`.
+
+**Also set** `REDDIT_USER_AGENT` to something identifying, in Reddit's expected
+format — they rate-limit generic agents harder:
+```
+Sushasan/1.0 (civic; your-email@example.com)
+```
+
+**Confirm it worked:** after a pipeline run, the Vercel logs should contain
+`[reddit] using authenticated OAuth endpoint`.
+
+---
+
+## B8. Access tokens 🟡
+
+Two secrets you invent yourself. They gate the government and admin surfaces.
+
+```bash
+openssl rand -hex 24   # run once for each
+```
+
+- `GOV_ACCESS_TOKEN` → unlocks `/gov`, `/gov/war-room/...`, `/gov/command`.
+  You'll use it as `https://sushaasan.in/gov?token=YOUR_TOKEN`.
+- `ADMIN_TOKEN` → unlocks `/api/admin/*`, including manual brief generation.
+
+Treat the gov token as the link you hand to a ward officer — anyone with it has
+the dashboard.
+
+---
+
+## B9. Optional extras 🟢
+
+| Variable | How to get it | What it buys you |
 |---|---|---|
-| `GOV_ACCESS_TOKEN` | `/gov` dashboard + War Room + Command Agent access via `?token=` | Generate your own (`openssl rand -hex 24`) |
-| `ADMIN_TOKEN` | `/api/admin/*` incl. manual brief generation | Generate your own |
-| `VOYAGE_API_KEY` | voyage-3 embeddings → better clustering | [dash.voyageai.com](https://dash.voyageai.com) |
-| `AUTHORITY_DIGEST_EMAILS` | Sends the daily digest to real ward officers instead of only you | Comma-separated list. Only set once you've verified those inboxes. |
-| `DISPATCH_FROM` | Custom sender name | Default `Sushaasan <briefs@sushaasan.in>` — must match the Resend-verified domain (2.3) |
-| `WHATSAPP_ACCESS_TOKEN` + `WHATSAPP_PHONE_NUMBER_ID` | WhatsApp dispatch to officers | Meta WhatsApp Business Cloud API — see `docs/OUTREACH.md`. Falls back to `wa.me` share links when unset. |
-| `SARVAM_API_KEY` | Hindi/Marathi voice-note transcription (Saaras) | Works independently of `AI_PROVIDER` |
-| `GROQ_API_KEY` or `OPENAI_API_KEY` | Whisper transcription fallback for other languages | groq.com / platform.openai.com |
-| `PUBLIC_BASE_URL` | Absolute links in dispatch emails | Set to `https://sushaasan.in` |
-| `PLAUSIBLE_DOMAIN` | Analytics | `sushaasan.in` |
+| `VOYAGE_API_KEY` | **dash.voyageai.com** → sign in → **API Keys** → create | voyage-3 embeddings → noticeably better issue clustering. Classification works without it. |
+| `PUBLIC_BASE_URL` | Just type `https://sushaasan.in` | Correct absolute links inside dispatch emails |
+| `AUTHORITY_DIGEST_EMAILS` | The real ward-officer inboxes, comma-separated | Sends the daily digest to officials instead of only you. **Only set once you've confirmed those addresses** — this is what makes the product actually reach government. |
+| `DISPATCH_FROM` | Type it | Custom sender name. Must stay on the Resend-verified domain, e.g. `Sushaasan <briefs@sushaasan.in>` |
+| `SARVAM_API_KEY` | **dashboard.sarvam.ai** → API keys | Hindi/Marathi voice-note transcription (Sarvam Saaras). Works on its own — see the warning below. |
+| `GROQ_API_KEY` / `OPENAI_API_KEY` | console.groq.com / platform.openai.com | Whisper fallback for transcription in other languages |
+| `WHATSAPP_ACCESS_TOKEN` + `WHATSAPP_PHONE_NUMBER_ID` | Meta WhatsApp Business Cloud API — see `docs/OUTREACH.md` | Direct WhatsApp dispatch. Without it the app falls back to `wa.me` share links, which still work. |
+
+> ⚠️ **Setting `SARVAM_API_KEY` is safe. Setting `AI_PROVIDER=sarvam` is not —
+> not yet.** The key alone only enables voice transcription. The `AI_PROVIDER`
+> switch would move your entire classification pipeline onto Sarvam, and that
+> comparison has never been run. A bad classification does not throw an error;
+> it writes a wrong `issue_tag` and silently skews the ward map. See
+> `docs/SOVEREIGN_AI_MIGRATION.md` for the evaluation to run first.
 
 ---
 
-## Final verification — run in this order
+# §C. Verify it all worked
 
-1. `https://sushaasan.in/api/health` → `supabase: true`, and `env.ai`,
-   `env.scraping`, `env.email`, `env.cron` are **all `[]`**.
-2. Trigger a scrape:
-   `curl -X POST https://sushaasan.in/api/cron/daily-pipeline -H "Authorization: Bearer $CRON_SECRET"`
-   → then check `/api/health`: `scrape.dead_sources` should be shrinking, and
-   `scrape.last_run_scraped` > 0.
-3. Trigger a dispatch:
-   `curl https://sushaasan.in/api/cron/gov-dispatch -H "Authorization: Bearer $CRON_SECRET"`
-   → then `/api/health`: `dispatch.last_dispatched_at` should **no longer be
-   null**. If it still is, the Vercel logs now contain the exact Resend error.
-4. Confirm `/gov/command` returns 401 without a token, and loads with
-   `?token=$GOV_ACCESS_TOKEN`.
+### 1. Check configuration
 
-**You are "running 24/7" when:** step 1 is all-empty, step 2 shows a non-zero
-scrape, step 3 writes a `dispatch_log` row, and the daily `uptime-check` cron
-emails you the moment any of that stops being true.
+Open **https://sushaasan.in/api/health** in a browser. Look for:
+
+```json
+"supabase": true,
+"env": { "ai": [], "scraping": [], "email": [], "cron": [] }
+```
+
+**All four arrays empty = fully configured.** Any variable still listed there
+is still missing or misspelled.
+
+### 2. Test the scraper
+
+```bash
+curl -X POST https://sushaasan.in/api/cron/daily-pipeline \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
+Then re-open `/api/health` and check `scrape.last_run_scraped` is above zero
+and `scrape.dead_sources` has shrunk.
+
+### 3. Test dispatch — the important one
+
+```bash
+curl https://sushaasan.in/api/cron/gov-dispatch \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
+Then check `/api/health` → `dispatch.last_dispatched_at` should **no longer be
+null**.
+
+If it's still null, the reason is now in **Vercel → your project → Logs** — the
+code prints the exact Resend rejection body instead of swallowing it, which it
+used to do. Search the logs for `[gov-dispatch] resend`.
+
+### 4. Test the gov surfaces
+
+- `https://sushaasan.in/gov?token=YOUR_GOV_ACCESS_TOKEN` → loads
+- `https://sushaasan.in/gov/command` with no token → should be refused
 
 ---
 
-## Recurring, not one-time
+# §D. What "running 24/7" actually means here
 
-These are the things that silently take the system down weeks later:
+You are there when all of these are true:
 
-- **Anthropic credit** — set a billing alert.
-- **Apify credit** — actors consume compute units per run.
-- **Resend domain** — stays verified unless DNS changes at your registrar.
-- **Reddit OAuth** — app-only tokens are fetched per run, nothing to rotate.
-- **Supabase free-tier pausing** — resolved by 3.2.
+- [ ] `/api/health` shows `supabase: true` and four empty `env` arrays
+- [ ] A pipeline run scrapes a non-zero number of posts
+- [ ] `dispatch.last_dispatched_at` is not null
+- [ ] Resend shows `sushaasan.in` as **verified**
+- [ ] Anthropic and Apify both have credit, with alerts set
+- [ ] The daily `uptime-check` cron has your `FOUNDER_EMAIL`, so you get an
+      email the moment any of the above stops being true
+
+That last one is the real definition of 24/7 — not that nothing ever breaks,
+but that **you find out when it does** instead of discovering it weeks later.
+
+---
+
+# §E. Recurring — not one-time setup
+
+These are what silently take the system down later:
+
+| What | Where to watch it |
+|---|---|
+| Anthropic credit | console.anthropic.com → Billing (set an alert) |
+| Apify credit | console.apify.com → Billing |
+| Resend domain verification | Stays verified unless your registrar's DNS changes |
+| Supabase free-tier pausing | Resolved by upgrading to Pro |
+| Vercel Hobby ToS + once-daily cron cap | Resolved by upgrading to Pro |
