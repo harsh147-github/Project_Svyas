@@ -20,6 +20,14 @@ export type ChatArgs = {
   temperature?: number
   /** logical task hint, lets each provider pick its best model */
   task?: 'classify' | 'synthesize' | 'assist'
+  /**
+   * Optional image attached to the LAST user message (vision).
+   * Anthropic receives a native image block; OpenAI-compatible providers
+   * receive the standard `image_url` data-URI form. If a sovereign provider
+   * rejects images, chat()'s existing Anthropic fallback catches it, so
+   * photo-enriched grievances degrade rather than fail.
+   */
+  image?: { mediaType: string; base64: string }
 }
 
 export type Provider = 'anthropic' | 'sarvam' | 'bharatgen'
@@ -37,12 +45,33 @@ async function chatAnthropic(args: ChatArgs): Promise<string> {
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY missing')
   const model = args.task === 'synthesize' ? ASSIST_SYNTH_MODEL : ASSIST_MODEL
   const client = new Anthropic({ apiKey })
+  // Attach the image to the final user turn, as a native Anthropic image block.
+  const msgs = args.image
+    ? args.messages.map((m, i) =>
+        i === args.messages.length - 1 && m.role === 'user'
+          ? {
+              role: m.role,
+              content: [
+                {
+                  type: 'image' as const,
+                  source: {
+                    type: 'base64' as const,
+                    media_type: args.image!.mediaType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+                    data: args.image!.base64,
+                  },
+                },
+                { type: 'text' as const, text: m.content },
+              ],
+            }
+          : m,
+      )
+    : args.messages
   const msg = await client.messages.create({
     model,
     max_tokens: args.maxTokens ?? 1024,
     temperature: args.temperature,
     system: args.system,
-    messages: args.messages,
+    messages: msgs,
   })
   return msg.content.map((b) => (b.type === 'text' ? (b as { text: string }).text : '')).join('\n').trim()
 }
@@ -63,7 +92,23 @@ async function chatOpenAICompatible(args: ChatArgs, cfg: {
       model: cfg.model,
       max_tokens: args.maxTokens ?? 1024,
       temperature: args.temperature ?? 0.3,
-      messages: [{ role: 'system', content: args.system }, ...args.messages],
+      messages: [
+        { role: 'system', content: args.system },
+        // Standard OpenAI multimodal shape: content becomes an array with an
+        // image_url data URI. Providers that don't support vision reject this,
+        // which chat()'s Anthropic fallback then catches.
+        ...args.messages.map((m, i) =>
+          args.image && i === args.messages.length - 1 && m.role === 'user'
+            ? {
+                role: m.role,
+                content: [
+                  { type: 'image_url', image_url: { url: `data:${args.image.mediaType};base64,${args.image.base64}` } },
+                  { type: 'text', text: m.content },
+                ],
+              }
+            : m,
+        ),
+      ],
     }),
     signal: AbortSignal.timeout(60_000),
   })
