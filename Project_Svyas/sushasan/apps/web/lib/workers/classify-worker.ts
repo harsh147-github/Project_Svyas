@@ -8,7 +8,24 @@
  *   2. Voyage AI: generate 1024-dim multilingual embedding (if VOYAGE_API_KEY set)
  *   3. Supabase upsert to posts table (onConflict: raw_post_id — requires migration 004)
  */
-import Anthropic from '@anthropic-ai/sdk'
+import { chatJSON, activeProvider } from '../ai'
+
+// Shape the classifier prompt is contracted to return. Everything except
+// issue_tag is optional because a model may legitimately omit a field it
+// couldn't infer — the upsert below supplies a default for each. issue_tag is
+// enforced by the chatJSON validator, so it is the one field always present.
+type ClassifiedPost = {
+  issue_tag: string
+  translated_text_en?: string
+  sub_tags?: string[]
+  severity?: number | string
+  sentiment?: number | string
+  cited_location?: string
+  cited_time?: string
+  is_actionable?: boolean
+  civic_ask?: string
+  ward_id?: string | number
+}
 import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
 import { scrubPII } from '../pii'
@@ -67,9 +84,17 @@ export const classifyPostsWorker = inngest.createFunction(
     if (!batchIds?.length) return { classified: 0 }
 
     const db = createServerClient()
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set')
-    const ai = new Anthropic({ apiKey })
+    // Routed through lib/ai.ts so AI_PROVIDER can switch this worker to Sarvam
+    // or BharatGen. Defaults to Anthropic; chat() falls back to Anthropic
+    // automatically if a sovereign provider errors, so a bad provider degrades
+    // rather than halting classification.
+    if (
+      !process.env.ANTHROPIC_API_KEY &&
+      !process.env.SARVAM_API_KEY &&
+      !process.env.BHARATGEN_API_KEY
+    ) {
+      throw new Error('No AI provider configured (ANTHROPIC_API_KEY / SARVAM_API_KEY / BHARATGEN_API_KEY)')
+    }
 
     const { data: posts, error } = await db
       .from('raw_posts')
@@ -82,15 +107,23 @@ export const classifyPostsWorker = inngest.createFunction(
     for (const post of posts) {
       await step.run(`classify-${post.id}`, async () => {
         try {
-          // Step A: Claude Sonnet classification
-          const msg = await ai.messages.create({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 512,
-            messages: [{ role: 'user', content: `${CLASSIFY_PROMPT}\n\nPOST:\n${post.raw_text.slice(0, 2000)}` }],
-          })
-          const raw = (msg.content[0] as { type: string; text: string }).text?.trim() ?? ''
-          const json = raw.startsWith('{') ? raw : raw.replace(/^```json?\n?/, '').replace(/```$/, '').trim()
-          const parsed = JSON.parse(json)
+          // Step A: classification via the provider-agnostic layer.
+          // The prompt is the system argument and the post is the sole user
+          // message (previously concatenated into one user turn) — this is the
+          // shape OpenAI-compatible providers expect.
+          // chatJSON parses, validates, and retries once with a repair prompt
+          // before throwing — so a provider that fences its JSON (common on
+          // OpenAI-compatible models) cannot silently write a wrong issue_tag.
+          // The validator enforces the one field the ward map depends on.
+          const parsed = await chatJSON<ClassifiedPost>(
+            {
+              task: 'classify',
+              system: CLASSIFY_PROMPT,
+              maxTokens: 512,
+              messages: [{ role: 'user', content: `POST:\n${post.raw_text.slice(0, 2000)}` }],
+            },
+            (v) => !!v && typeof v === 'object' && typeof (v as { issue_tag?: unknown }).issue_tag === 'string',
+          )
 
           const textForEmbed = (parsed.translated_text_en || post.raw_text).slice(0, 8000)
 
@@ -113,7 +146,9 @@ export const classifyPostsWorker = inngest.createFunction(
             civic_ask: parsed.civic_ask ? scrubPII(parsed.civic_ask) : null,
             ward_id: parsed.ward_id ? String(parsed.ward_id) : null,
             embedding: embedding ?? null,
-            classifier_ver: 'sonnet-4-6-v1',
+            // Stamps which provider actually classified this row, so a later
+            // AI_PROVIDER flip is auditable in the data rather than invisible.
+            classifier_ver: `${activeProvider()}-v2`,
           }, { onConflict: 'raw_post_id', ignoreDuplicates: false })
 
           classified++

@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { isAdminAuthed } from '@/lib/auth'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
+import { BRIEF_MODEL } from '@/lib/models'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
 export const dynamic = 'force-dynamic'
-
-const MODEL = process.env.OPUS_MODEL ?? 'claude-opus-4-5'
 
 /**
  * POST /api/admin/generate-briefs
@@ -138,7 +137,7 @@ async function generateOne(
   const prompt = SYNTH_PROMPT.replace('{INPUT_JSON}', JSON.stringify(input, null, 2))
 
   const msg = await anthropic.messages.create({
-    model: MODEL,
+    model: BRIEF_MODEL,
     max_tokens: 2000,
     messages: [{ role: 'user', content: prompt }],
   })
@@ -290,35 +289,35 @@ async function runGeneration(body: GenerateOpts) {
   })
 }
 
+// Manual/on-demand only as of phase(3) hardening pass. The scheduled path
+// for weekly briefs is the Inngest `solutionSynthesisWorker`
+// (apps/web/lib/workers/solution-worker.ts, cron 30 15 * * 0). This route
+// still requires ADMIN_TOKEN and is for backfills / one-off reruns.
 export async function POST(req: NextRequest) {
   if (!isAdminAuthed(req)) return new NextResponse('Unauthorized', { status: 401 })
   const body = (await req.json().catch(() => ({}))) as GenerateOpts
   return runGeneration(body)
 }
 
+// GET is now purely informational and ADMIN_TOKEN-gated.
+//
+// It previously ran a full all-wards Opus sweep, and when CRON_SECRET was unset
+// it did so for ANY unauthenticated caller — a public, cost-bearing endpoint.
+// That open-when-unset branch existed so the (now-removed) Vercel cron would
+// never silently 401. Since phase(3) no cron targets this route at all, the
+// branch had no remaining purpose and is deleted rather than left as a
+// fail-open default.
+//
+// No capability is lost: a full sweep is still available to an authenticated
+// caller via POST { all: true, top_n: 3 }.
 export async function GET(req: NextRequest) {
-  // Vercel cron (Sunday 21:00 IST) invokes GET with the CRON_SECRET bearer —
-  // run the weekly synthesis across every ward with active clusters.
-  // When CRON_SECRET is not configured, treat unauthenticated GETs as the cron
-  // path (same open-when-unset semantics as /api/cron/daily-pipeline) so the
-  // weekly synthesis never silently 401s; the one-brief-per-(ward,issue,week)
-  // idempotency in runGeneration bounds repeated calls.
-  const cronSecret = process.env.CRON_SECRET
-  if (cronSecret) {
-    if (req.headers.get('authorization') === `Bearer ${cronSecret}`) {
-      return runGeneration({ all: true, top_n: 3 })
-    }
-  } else if (!isAdminAuthed(req)) {
-    return runGeneration({ all: true, top_n: 3 })
-  }
-
   if (!isAdminAuthed(req)) return new NextResponse('Unauthorized', { status: 401 })
   return NextResponse.json({
     usage: 'POST { ward_id?: string, all?: boolean, top_n?: number (default 4), force?: boolean }',
     notes: [
       'Runs Opus to generate concrete, budgeted action plans from cluster data.',
       'One brief per (ward, issue, week) — re-running within the same week skips unless force:true.',
-      'Scheduled: Vercel cron hits GET weekly (Sun 21:00 IST) with CRON_SECRET to refresh all wards.',
+      'Manual/on-demand only — no Vercel cron targets this route. Scheduled weekly synthesis is the Inngest solutionSynthesisWorker (cron 30 15 * * 0).',
       'Recommended manual run: POST { all: true, top_n: 3 }.',
     ],
   })

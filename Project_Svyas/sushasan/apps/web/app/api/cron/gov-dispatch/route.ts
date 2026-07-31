@@ -5,6 +5,7 @@ import { getRecipient, type Recipient } from '@/lib/gov-recipients'
 import { buildBrief, type Brief } from '@/lib/gov-brief'
 import { isWhatsAppConfigured, sendWhatsApp, waShareLink } from '@/lib/whatsapp'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
+import { missingEnv, REQUIRED } from '@/lib/env-check'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -45,8 +46,22 @@ async function sendEmail(to: string[], subject: string, html: string): Promise<b
         to, subject, html,
       }),
     })
-    return res.ok
-  } catch { return false }
+    if (!res.ok) {
+      // dispatch.last_dispatched_at has been null in production with no
+      // explanation because this used to `return res.ok` and throw the reason
+      // away. The most likely cause is an unverified sending domain — Resend
+      // rejects every send from briefs@sushaasan.in until sushaasan.in is
+      // verified in the Resend dashboard — and that only shows up in this body.
+      console.error(
+        `[gov-dispatch] resend ${res.status} sending to ${to.length} recipient(s) from "${process.env.DISPATCH_FROM ?? 'Sushaasan <briefs@sushaasan.in>'}": ${(await res.text().catch(() => '')).slice(0, 500)}`
+      )
+      return false
+    }
+    return true
+  } catch (e) {
+    console.error('[gov-dispatch] resend request threw:', e)
+    return false
+  }
 }
 
 function digestRecipients(): string[] {
@@ -189,12 +204,20 @@ async function run() {
 }
 
 export async function GET(req: Request) {
+  const missing = missingEnv(REQUIRED.email)
+  if (missing.length) {
+    console.error(`[env] missing required keys for dispatch: ${missing.join(', ')}`)
+  }
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try { return NextResponse.json(await run()) }
   catch (e) { return NextResponse.json({ ok: false, error: String(e) }, { status: 500 }) }
 }
 
 export async function POST(req: Request) {
+  const missing = missingEnv(REQUIRED.email)
+  if (missing.length) {
+    console.error(`[env] missing required keys for dispatch: ${missing.join(', ')}`)
+  }
   if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try { return NextResponse.json(await run()) }
   catch (e) { return NextResponse.json({ ok: false, error: String(e) }, { status: 500 }) }

@@ -15,9 +15,20 @@ what to have ready.
   case studies and your valuation later).
 
 ## Phase 1 — Stop paying for AI: switch to sovereign models
-> **Already wired.** `lib/ai.ts` makes the AI provider a single env var.
-> Set `AI_PROVIDER=sarvam` (+ `SARVAM_API_KEY`) or `bharatgen` and the whole
-> engine runs on Indian AI — copilot, classification, synthesis — no rewrite.
+> **Partially wired — see [SOVEREIGN_AI_MIGRATION.md](SOVEREIGN_AI_MIGRATION.md).**
+> `lib/ai.ts` is a working provider-agnostic adapter, and `AI_PROVIDER=sarvam`
+> (+ `SARVAM_API_KEY`) genuinely switches providers — but today only **one**
+> call site imports it: the `/api/gov/assist` War Room copilot.
+>
+> Classification, solution synthesis, brief generation and report intake each
+> construct the Anthropic SDK directly and stay on Claude regardless of
+> `AI_PROVIDER`. Those are where essentially all AI spend is, so flipping the
+> switch today does **not** yet cut burn. The migration doc tracks the
+> remaining steps in dependency order.
+>
+> Already sovereign and live: **Sarvam Saaras** (`saarika:v2`) powers
+> Hindi/Marathi speech-to-text in `/api/transcribe`, independent of
+> `AI_PROVIDER`.
 
 - **Sarvam AI** — Indian LLM, strong in Indian languages (huge for citizen
   grievances in Hindi/Marathi). Apply to their startup/partner program; pitch

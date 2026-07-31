@@ -122,7 +122,7 @@ export function MapHint() {
 
             {/* Headline */}
             <h2 className="font-serif text-[22px] font-bold text-ink leading-[1.2] mb-5">
-              Your ward's problems.<br />Tracked &amp; solved by AI.
+              Your ward&apos;s problems.<br />Tracked &amp; solved by AI.
             </h2>
 
             {/* 3 bullets */}

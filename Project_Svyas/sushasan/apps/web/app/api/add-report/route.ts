@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
 import { scrubPII } from '@/lib/pii'
+import { INTAKE_MODEL } from '@/lib/models'
 import { randomUUID, createHash } from 'crypto'
 
 // ── In-memory rate limiter: 10 reports per IP per 10 minutes ─────────────────
@@ -276,7 +277,7 @@ export async function POST(req: NextRequest) {
         : `${context}${cleanText}`
 
       const msg = await client.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: INTAKE_MODEL,
         max_tokens: 800,
         system: SYNTHESIZE_SYSTEM,
         messages: [{ role: 'user', content: userContent }],

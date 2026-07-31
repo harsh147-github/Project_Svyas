@@ -91,7 +91,9 @@ sushasan/
 ├── packages/
 │   ├── ai/                      # Claude prompt wrappers (classify, cluster, solution)
 │   └── db/                      # Drizzle ORM schema + migrations
-├── workers/                     # Inngest jobs (scrape, classify, cluster, solution)
+├── apps/web/lib/workers/        # Inngest jobs — THE live ones (classify-worker,
+│                                #   solution-worker), registered by
+│                                #   apps/web/app/api/inngest/route.ts
 ├── prompts/                     # classify_post.md, cluster_centroid.md, solution_synthesis.md
 ├── public/geojson/              # Real PMC ward boundary GeoJSON files
 │   ├── wards-pilot.geojson      # Wards 46, 47 (NIBM + Salunke Vihar)

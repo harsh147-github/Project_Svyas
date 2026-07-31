@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
+import { missingEnv, REQUIRED } from '@/lib/env-check'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -25,8 +26,18 @@ async function send(html: string, subject: string): Promise<boolean> {
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: process.env.DISPATCH_FROM ?? 'Sushaasan <briefs@sushaasan.in>', to: [to], subject, html }),
     })
-    return r.ok
-  } catch { return false }
+    if (!r.ok) {
+      // Same swallowed-error bug as gov-dispatch had: without this body the
+      // weekly digest fails silently and indistinguishably from "nothing to
+      // send". An unverified sushaasan.in domain in Resend surfaces here.
+      console.error(`[founder-digest] resend ${r.status}: ${(await r.text().catch(() => '')).slice(0, 500)}`)
+      return false
+    }
+    return true
+  } catch (e) {
+    console.error('[founder-digest] resend request threw:', e)
+    return false
+  }
 }
 
 async function build() {
@@ -102,6 +113,10 @@ async function run(req: Request) {
 }
 
 export async function GET(req: Request) {
+  const missing = missingEnv(REQUIRED.email)
+  if (missing.length) {
+    console.error(`[env] missing required keys for dispatch: ${missing.join(', ')}`)
+  }
   if (!authed(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try { return NextResponse.json(await run(req)) }
   catch (e) { return NextResponse.json({ ok: false, error: String(e) }, { status: 500 }) }
