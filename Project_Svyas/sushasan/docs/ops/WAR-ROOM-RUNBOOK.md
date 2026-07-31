@@ -169,6 +169,25 @@ git push -u origin claude/warroom-<yyyy-mm-dd>
 Then open a **draft** PR describing what broke, how you diagnosed it, and what
 you changed. Do not merge.
 
+### Tooling fallback — read this before assuming a step is impossible
+
+Routine-fired sessions currently run **without GitHub MCP tools**
+(`mcp__github__*`). Plan for that:
+
+| If you need to… | With MCP tools | Without them (the fallback) |
+|---|---|---|
+| Push a fix | either | `git push -u origin <branch>` — the git proxy is authenticated, this works |
+| Open a PR | `create_pull_request` | **Push the branch, then put this URL in your report** for the founder to click:<br>`https://github.com/harsh147-github/Project_Svyas/compare/main...<branch>?expand=1` |
+| Check CI on `main` | `pull_request_read` / `actions_list` | Not directly available — say "could not verify CI" and rely on your own local `build` + `lint`, which are the same checks CI runs |
+| Read Vercel logs | — | Not available from the sandbox. Report which log line the founder should search for (e.g. `[gov-dispatch] resend`) rather than guessing the cause |
+
+**Pushing the branch is the part that matters** — the work is preserved and
+reviewable either way. Never skip a fix because you cannot open the PR; push
+it and hand over the compare link.
+
+If a run needs GitHub or Vercel tools regularly, the Routine can be recreated
+from the claude.ai Routines UI with those connectors granted.
+
 ---
 
 ## Step 8 — Report
