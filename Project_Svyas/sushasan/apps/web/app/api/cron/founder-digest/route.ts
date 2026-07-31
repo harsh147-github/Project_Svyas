@@ -26,8 +26,18 @@ async function send(html: string, subject: string): Promise<boolean> {
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: process.env.DISPATCH_FROM ?? 'Sushaasan <briefs@sushaasan.in>', to: [to], subject, html }),
     })
-    return r.ok
-  } catch { return false }
+    if (!r.ok) {
+      // Same swallowed-error bug as gov-dispatch had: without this body the
+      // weekly digest fails silently and indistinguishably from "nothing to
+      // send". An unverified sushaasan.in domain in Resend surfaces here.
+      console.error(`[founder-digest] resend ${r.status}: ${(await r.text().catch(() => '')).slice(0, 500)}`)
+      return false
+    }
+    return true
+  } catch (e) {
+    console.error('[founder-digest] resend request threw:', e)
+    return false
+  }
 }
 
 async function build() {

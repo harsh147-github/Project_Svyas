@@ -3,10 +3,9 @@
  * Triggered weekly (Sunday 21:00 IST) or on-demand via "sushasan/solution.generate".
  * Self-contained — no cross-package imports. Lives in apps/web.
  */
-import Anthropic from '@anthropic-ai/sdk'
+import { chat, activeProvider } from '../ai'
 import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
-import { SOLUTION_MODEL } from '../models'
 
 const SOLUTION_PROMPT = (ctx: {
   ward_name: string; ward_number: string; corporator_name: string
@@ -64,9 +63,17 @@ export const solutionSynthesisWorker = inngest.createFunction(
   },
   async ({ step }: { step: any }) => {
     const db = createServerClient()
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set')
-    const ai = new Anthropic({ apiKey })
+    // Routed through lib/ai.ts so AI_PROVIDER can switch this worker to Sarvam
+    // or BharatGen. Defaults to Anthropic; chat() falls back to Anthropic
+    // automatically if a sovereign provider errors.
+    if (
+      !process.env.ANTHROPIC_API_KEY &&
+      !process.env.SARVAM_API_KEY &&
+      !process.env.BHARATGEN_API_KEY
+    ) {
+      throw new Error('No AI provider configured (ANTHROPIC_API_KEY / SARVAM_API_KEY / BHARATGEN_API_KEY)')
+    }
+    console.log(`[solution-worker] ai provider=${activeProvider()}`)
 
     // Get all open clusters with enough posts to synthesize
     const { data: clusters, error } = await db
@@ -123,12 +130,19 @@ export const solutionSynthesisWorker = inngest.createFunction(
         }
 
         try {
-          const msg = await ai.messages.create({
-            model: SOLUTION_MODEL,
-            max_tokens: 1024,
-            messages: [{ role: 'user', content: SOLUTION_PROMPT(ctx) }],
-          })
-          const raw = (msg.content[0] as { type: string; text: string }).text?.trim() ?? ''
+          // Synthesis via the provider-agnostic layer. The built prompt becomes
+          // the system argument; the user turn is a minimal trigger, since
+          // OpenAI-compatible providers require at least one user message.
+          const raw = (
+            await chat({
+              task: 'synthesize',
+              system: SOLUTION_PROMPT(ctx),
+              maxTokens: 1024,
+              messages: [
+                { role: 'user', content: 'Generate the solution JSON for the ward and cluster described above. Output JSON only.' },
+              ],
+            })
+          ).trim()
           const json = raw.startsWith('{') ? raw : raw.replace(/^```json?\n?/, '').replace(/```$/, '').trim()
           const parsed = JSON.parse(json)
 

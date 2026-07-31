@@ -202,8 +202,20 @@ async function apifyPost(actor: string, token: string, body: unknown, timeoutSec
       signal: AbortSignal.timeout((timeoutSec + 20) * 1000),
     })
     if (!res.ok) { console.error(`[${actor}] ${res.status}: ${await res.text().catch(() => '')}`); return [] }
-    return await res.json()
-  } catch (e) { console.error(`[${actor}] failed:`, e); return [] }
+    const items = await res.json()
+    // Distinguishes "actor ran and legitimately found nothing" from "actor is
+    // broken/renamed/timing out" — both previously looked identical (0 rows) in
+    // pipeline_runs.errors.by_source.
+    console.log(`[${actor}] ok, ${Array.isArray(items) ? items.length : 0} items (timeout ${timeoutSec}s)`)
+    return items
+  } catch (e) {
+    // AbortError here means the actor exceeded timeoutSec+20 — i.e. the
+    // timeout is too short for this actor's current runtime, not that the
+    // actor is broken. That distinction is the whole Phase 8 diagnosis.
+    const name = e instanceof Error ? e.name : 'Error'
+    console.error(`[${actor}] failed (${name}, timeout was ${timeoutSec}s):`, e)
+    return []
+  }
 }
 
 // ── Day-based rotation (0=Sun … 6=Sat) ───────────────────────────────────────
@@ -435,7 +447,15 @@ async function scrapeReddit(): Promise<NormPost[]> {
     try {
       const url = `https://www.reddit.com/r/${sub}/search.json?q=${encodeURIComponent(q)}&sort=new&t=month&limit=50&restrict_sr=on`
       const r = await fetch(url, { headers: { 'User-Agent': 'Sushasan/1.0 (civic; sonawaneharsh147@gmail.com)' }, signal: AbortSignal.timeout(30_000) })
-      if (!r.ok) continue
+      // Reddit's unauthenticated .json endpoint rate-limits and blocks
+      // datacenter IPs (which is exactly what Vercel serverless is). Silently
+      // `continue`-ing here is why this source reads as "0 results" rather than
+      // "blocked" — log the real status and body so the next production run
+      // self-diagnoses. A 403/429 here means the fix is Reddit OAuth.
+      if (!r.ok) {
+        console.error(`[reddit] r/${sub} q="${q}" -> HTTP ${r.status}: ${(await r.text().catch(() => '')).slice(0, 300)}`)
+        continue
+      }
       const data = (await r.json()) as { data?: { children?: Array<{ data: Record<string, unknown> }> } }
       for (const c of data.data?.children ?? []) {
         const d = c.data

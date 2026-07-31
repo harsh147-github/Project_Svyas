@@ -46,8 +46,22 @@ async function sendEmail(to: string[], subject: string, html: string): Promise<b
         to, subject, html,
       }),
     })
-    return res.ok
-  } catch { return false }
+    if (!res.ok) {
+      // dispatch.last_dispatched_at has been null in production with no
+      // explanation because this used to `return res.ok` and throw the reason
+      // away. The most likely cause is an unverified sending domain — Resend
+      // rejects every send from briefs@sushaasan.in until sushaasan.in is
+      // verified in the Resend dashboard — and that only shows up in this body.
+      console.error(
+        `[gov-dispatch] resend ${res.status} sending to ${to.length} recipient(s) from "${process.env.DISPATCH_FROM ?? 'Sushaasan <briefs@sushaasan.in>'}": ${(await res.text().catch(() => '')).slice(0, 500)}`
+      )
+      return false
+    }
+    return true
+  } catch (e) {
+    console.error('[gov-dispatch] resend request threw:', e)
+    return false
+  }
 }
 
 function digestRecipients(): string[] {

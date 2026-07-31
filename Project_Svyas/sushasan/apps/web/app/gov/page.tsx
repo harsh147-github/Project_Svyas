@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getDashboardSnapshot } from '@/lib/supabase-data'
+import { getDashboardSnapshot, type Ward } from '@/lib/supabase-data'
 import { DisclaimerBox } from '@/components/legal/Disclaimer'
 import { LoopCloseButtons } from '@/components/gov/LoopCloseButtons'
 
@@ -8,7 +8,7 @@ export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Ward Command Centre',
-  description: 'Priority-ranked civic actions for Ward 46 + 47, Pune. AI-synthesised, budget-checked, and ready to act on — with citizens partnering on every step.',
+  description: 'Priority-ranked civic actions for the most active PMC wards, Pune. AI-synthesised, budget-checked, and ready to act on — with citizens partnering on every step.',
 }
 
 
@@ -19,6 +19,32 @@ function formatINR(n: number) {
   if (n >= 1_00_000)    return `₹${(n / 1_00_000).toFixed(1)} L`
   if (n >= 1000)        return `₹${(n / 1000).toFixed(0)}K`
   return `₹${n}`
+}
+
+// How many wards the command centre renders by default, overridable via ?wards=N
+const DEFAULT_WARD_LIMIT = 10
+const MAX_WARD_LIMIT = 50
+
+function parseWardLimit(raw?: string) {
+  const n = Number.parseInt(raw ?? '', 10)
+  if (!Number.isFinite(n)) return DEFAULT_WARD_LIMIT
+  return Math.min(MAX_WARD_LIMIT, Math.max(1, n))
+}
+
+/** Minimal ward record for a ward_id that clusters/solutions reference but the
+ *  ward registry has never heard of — keeps it visible instead of dropping it.
+ *  annual_budget_inr stays 0 so no allocation figure is invented. */
+function stubWard(wardId: string): Ward {
+  const num = Number(wardId) || 0
+  return {
+    id: wardId,
+    name: num ? `Ward ${num}` : wardId,
+    corporator_name: '',
+    party: '',
+    ward_number: num,
+    annual_budget_inr: 0,
+    tier: 'context',
+  }
 }
 
 const ISSUE_COLOR: Record<string, string> = {
@@ -57,18 +83,54 @@ const STATUS_STYLE: Record<string, string> = {
 }
 
 // ── page ────────────────────────────────────────────────────────────────────
-export default async function GovPage({ searchParams }: { searchParams: { token?: string } }) {
+export default async function GovPage({ searchParams }: { searchParams: { token?: string; wards?: string } }) {
   const govToken = searchParams?.token ?? ''
+  const wardLimit = parseWardLimit(searchParams?.wards)
   const snap = await getDashboardSnapshot()
-  // Show pilot wards first, then any other ward with at least one cluster
-  const wards = snap.wards
-    .filter((w) => w.tier === 'pilot' || snap.clusters.some((c) => c.ward_id === w.id))
-    .sort((a, b) => {
-      if (a.tier === 'pilot' && b.tier !== 'pilot') return -1
-      if (b.tier === 'pilot' && a.tier !== 'pilot') return 1
-      return a.ward_number - b.ward_number
-    })
   const { solutions, clusters } = snap
+
+  // Ward metadata index straight off the snapshot (Supabase-backed, or the seed
+  // registry when Supabase is unconfigured — the snapshot handles that fallback).
+  const wardById = new Map(snap.wards.map((w) => [w.id, w]))
+
+  // Activity roll-up per ward: cluster count, citizen report volume, brief count.
+  type WardActivity = { ward: Ward; clusterCount: number; reportCount: number; solutionCount: number }
+  const activity = new Map<string, WardActivity>()
+  const touch = (id: string): WardActivity => {
+    let a = activity.get(id)
+    if (!a) {
+      a = { ward: wardById.get(id) ?? stubWard(id), clusterCount: 0, reportCount: 0, solutionCount: 0 }
+      activity.set(id, a)
+    }
+    return a
+  }
+  for (const w of snap.wards) touch(w.id)
+  for (const c of clusters) {
+    const a = touch(c.ward_id)
+    a.clusterCount += 1
+    a.reportCount += c.post_count ?? 0
+  }
+  for (const s of solutions) touch(s.ward_id).solutionCount += 1
+
+  // Rank: pilot wards first (they are the committed footprint), then every other
+  // ward by citizen report volume → cluster count → brief count → ward number.
+  const rankedWards = Array.from(activity.values())
+    .filter((a) => a.ward.tier === 'pilot' || a.clusterCount > 0 || a.solutionCount > 0)
+    .sort((a, b) => {
+      if (a.ward.tier === 'pilot' && b.ward.tier !== 'pilot') return -1
+      if (b.ward.tier === 'pilot' && a.ward.tier !== 'pilot') return 1
+      if (b.reportCount !== a.reportCount) return b.reportCount - a.reportCount
+      if (b.clusterCount !== a.clusterCount) return b.clusterCount - a.clusterCount
+      if (b.solutionCount !== a.solutionCount) return b.solutionCount - a.solutionCount
+      return a.ward.ward_number - b.ward.ward_number
+    })
+
+  const totalActiveWards = rankedWards.length
+  const wards = rankedWards.slice(0, wardLimit).map((a) => a.ward)
+  const pilotWardNumbers = snap.wards
+    .filter((w) => w.tier === 'pilot')
+    .map((w) => w.ward_number)
+    .sort((a, b) => a - b)
 
   // Top-line metrics
   const totalSolutions = solutions.length
@@ -113,7 +175,9 @@ export default async function GovPage({ searchParams }: { searchParams: { token?
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
                              bg-saffron/10 text-saffron-dark rounded-full border border-saffron/20">
-              Pilot · Wards 46 · 47
+              {pilotWardNumbers.length > 0
+                ? `Pilot · Ward${pilotWardNumbers.length > 1 ? 's' : ''} ${pilotWardNumbers.join(' · ')}`
+                : 'Pilot wards'}
             </span>
             <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-1
                              bg-india-green/8 text-india-green rounded-full border border-india-green/20">
@@ -146,6 +210,38 @@ export default async function GovPage({ searchParams }: { searchParams: { token?
             </div>
           ))}
         </section>
+
+        {/* ── City-wide Command Agent entry point ─────────────────────────── */}
+        <section className="bg-white rounded-2xl border border-saffron/30 shadow-sm p-5 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="font-serif text-lg font-bold text-ink leading-tight">
+              Ask across every ward
+            </h2>
+            <p className="text-[12px] text-ink-2 mt-1 max-w-xl leading-snug">
+              This page ranks wards. The Command Agent answers questions that span them —
+              &ldquo;which wards have the worst water issues&rdquo;, &ldquo;has anything been
+              dispatched this week&rdquo;. Read-only: it researches and drafts, it cannot send
+              or change anything.
+            </p>
+          </div>
+          <a
+            href={`/gov/command${govToken ? `?token=${govToken}` : ''}`}
+            className="shrink-0 rounded-full bg-navy text-white text-[12px] font-medium px-5 py-2.5 hover:bg-navy/90 transition-colors"
+          >
+            Open Command Agent →
+          </a>
+        </section>
+
+        {/* ── Scope note ──────────────────────────────────────────────────── */}
+        <p className="text-[11px] text-ink-3 -mb-4">
+          Showing top <b className="text-ink">{wards.length}</b> of{' '}
+          <b className="text-ink">{totalActiveWards}</b> active ward{totalActiveWards === 1 ? '' : 's'} —
+          pilot wards first, then ranked by citizen report volume.
+          {totalActiveWards > wards.length && (
+            <> Add <b className="text-ink">wards={Math.min(MAX_WARD_LIMIT, totalActiveWards)}</b> to this
+            page&rsquo;s URL to widen the list (max {MAX_WARD_LIMIT}).</>
+          )}
+        </p>
 
         {/* ── Per-ward priority matrix ────────────────────────────────────── */}
         {wards.map((ward) => {
