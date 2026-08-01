@@ -100,9 +100,11 @@ report the blocker.
    should be one of traffic/water/electricity/garbage/other, `severity` 1–5,
    `ward_id` populated. A flood of `other` with null wards means the classifier
    prompt or the model is misbehaving.
-4. **Which provider ran?** `posts.classifier_ver` records `<provider>-v2`.
-   `sarvam-v2` is the target state. A run of `anthropic-v2` rows while
-   `AI_PROVIDER=sarvam` means classification is falling back — go to Step 3b.
+4. **Which provider ran?** `posts.classifier_ver` records the provider that
+   actually answered — `sarvam-v2` for scraped posts, `sarvam-intake-v2` for
+   citizen reports, and `fallback-intake-v2` when no AI ran at all. Anything
+   starting `anthropic` while `AI_PROVIDER=sarvam` means it is falling back —
+   go to Step 3b.
 5. **Are solutions being generated?** `counts.solutions` should grow after the
    Sunday `30 15 * * 0` Inngest cron.
 
@@ -138,9 +140,20 @@ Then act by `error_kind` — each one has a different owner and a different fix:
 | `bad_request` | Our payload shape is wrong for Sarvam — e.g. an unsupported field, or vision on a text-only model | **Yours to fix.** Check what `lib/ai.ts` sent for that task |
 
 **Quality, not just success.** A call that returns valid JSON can still be
-wrong. Once a day, sample ~10 recent `posts` rows with `classifier_ver =
-'sarvam-v2'` and check: is `issue_tag` right for the text, is `ward_id` a real
-pilot ward, is `severity` proportionate? A drift toward `other` with null wards
+wrong. Once a day, sample ~10 recent `posts` rows written by the sovereign
+provider and check: is `issue_tag` right for the text, is `ward_id` a real
+pilot ward, is `severity` proportionate?
+
+```sql
+select classifier_ver, issue_tag, severity, ward_id, cited_location, text_clean
+from posts
+where classifier_ver like 'sarvam%'          -- 'sarvam-v2' (scraped) and
+order by created_at desc limit 10;           -- 'sarvam-intake-v2' (citizen)
+```
+
+Use the prefix, not equality — scraped posts and citizen reports are stamped
+differently, and matching only `'sarvam-v2'` would exclude every grievance a
+real person filed. A drift toward `other` with null wards
 means the classify prompt needs Sarvam-specific work even though nothing is
 "failing". Report what you sampled and what you found — with counts.
 
