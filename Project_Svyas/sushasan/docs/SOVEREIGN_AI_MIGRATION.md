@@ -90,7 +90,28 @@ sweep executes. In short:
 | `rate_limit` | founder | QPS ceiling or credits |
 | `server` | Sarvam | transient; act only if sustained |
 
-Most of the early backlog will be `bad_json`, and that is good news: it is the
+### What we already do to prevent `bad_json`
+
+Two mitigations ship ahead of the backlog rather than waiting for it:
+
+1. **Native JSON mode.** `chatJSON` sets `response_format: {type:'json_object'}`
+   on OpenAI-compatible providers, which removes fenced/prefaced output at the
+   source instead of parsing around it. A `400` retries once without the field,
+   so a deployment that doesn't support it degrades to `extractJson` rather than
+   failing.
+2. **Prompts written for a literal reader.** The classify prompt now carries a
+   worked example, the closed sub-tag vocabulary, and the valid ward list.
+   Smaller models follow a concrete example far more reliably than a schema
+   sketch — and a placeholder like `"severity": 1-5` is something a weaker model
+   will occasionally echo back verbatim.
+
+On top of that, `issue_tag`, `sub_tags`, and `ward_id` are validated against
+closed sets before they reach Postgres. A model that answers `"Traffic"` or
+invents ward `"88"` cannot corrupt the map — and `ward_id` prefers `null` over a
+guess, because a fabricated ward is indistinguishable from a real one after the
+fact.
+
+Most of the remaining backlog will still be `bad_json`, and that is good news: it is the
 class we can fix ourselves, in a prompt, in an afternoon. Sarvam follows format
 instructions well when they are literal and exemplified — the prompts in this
 repo were written for Claude, which is more forgiving about being told a schema

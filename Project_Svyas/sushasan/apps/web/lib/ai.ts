@@ -46,6 +46,21 @@ export type ChatArgs = {
   image?: { mediaType: string; base64: string }
   /** where this call came from, e.g. "classify-worker" — for the sovereignty ledger */
   callSite?: string
+  /**
+   * The reply must be a JSON object. Set automatically by chatJSON().
+   * OpenAI-compatible providers get native JSON mode, which eliminates the
+   * fenced/prefaced-output failure class at the source rather than parsing
+   * around it. Ignored by the Anthropic path, which is already reliable here.
+   */
+  json?: boolean
+  /**
+   * Called with the provider that actually produced the answer — which is not
+   * always the intended one, because chat() falls back to Claude on a sovereign
+   * failure. Callers that persist provenance (classify-worker stamps
+   * posts.classifier_ver) must use this rather than activeProvider(), or a
+   * fallback row gets labelled as sovereign work and the audit trail lies.
+   */
+  onServed?: (provider: Provider) => void
 }
 
 export type Provider = 'anthropic' | 'sarvam' | 'bharatgen'
@@ -149,13 +164,20 @@ async function chatOpenAICompatible(args: ChatArgs, cfg: {
   if (cfg.keyHeader === 'api-subscription-key') headers['api-subscription-key'] = cfg.key
   else headers['Authorization'] = `Bearer ${cfg.key}`
 
-  const res = await fetch(cfg.url, {
+  // `bad_json` is the failure class we expect to dominate early on Sarvam:
+  // the model answers correctly but wraps it in prose or fences. Native JSON
+  // mode removes that whole class at the source, so ask for it whenever the
+  // caller needs JSON. Not every OpenAI-compatible deployment supports the
+  // field, so a 400 retries once without it rather than counting as a failure.
+  const withJsonMode = !!args.json
+  const send = (jsonMode: boolean) => fetch(cfg.url, {
     method: 'POST',
     headers,
     body: JSON.stringify({
       model: cfg.model,
       max_tokens: args.maxTokens ?? 1024,
       temperature: args.temperature ?? 0.3,
+      ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
       messages: [
         { role: 'system', content: args.system },
         // Standard OpenAI multimodal shape: content becomes an array with an
@@ -174,11 +196,30 @@ async function chatOpenAICompatible(args: ChatArgs, cfg: {
         ),
       ],
     }),
-    signal: AbortSignal.timeout(60_000),
+    signal: AbortSignal.timeout(envTimeoutMs()),
   })
+
+  let res = await send(withJsonMode)
+  if (!res.ok && res.status === 400 && withJsonMode) {
+    // Most likely the deployment doesn't know `response_format`. Retry plain so
+    // a capability gap degrades to the extractJson path instead of an outage.
+    console.warn(`[ai] ${cfg.model} rejected response_format (400) — retrying without JSON mode`)
+    res = await send(false)
+  }
   if (!res.ok) throw new Error(`${cfg.model} ${res.status}: ${await res.text().catch(() => '')}`)
   const data = (await res.json()) as { choices?: { message?: { content?: string } }[] }
   return (data.choices?.[0]?.message?.content ?? '').trim()
+}
+
+/**
+ * Request timeout for sovereign providers. Sarvam can be slower than Claude on
+ * long synthesis prompts, and a timeout is a fallback — i.e. lost sovereignty.
+ * Tunable without a deploy; clamped so a typo can't exceed Vercel's own limit.
+ */
+function envTimeoutMs(): number {
+  const raw = Number(process.env.AI_TIMEOUT_SEC)
+  const sec = Number.isFinite(raw) && raw > 0 ? Math.min(raw, 280) : 60
+  return sec * 1000
 }
 
 /**
@@ -213,9 +254,12 @@ export async function chatJSON<T = unknown>(
   args: ChatArgs,
   validate?: (v: unknown) => boolean,
 ): Promise<T> {
+  const jsonArgs: ChatArgs = { ...args, json: true }
   const attempt = async (extra?: string): Promise<T> => {
     const raw = await chat(
-      extra ? { ...args, messages: [...args.messages, { role: 'user', content: extra }] } : args,
+      extra
+        ? { ...jsonArgs, messages: [...jsonArgs.messages, { role: 'user', content: extra }] }
+        : jsonArgs,
     )
     const parsed = JSON.parse(extractJson(raw)) as T
     if (validate && !validate(parsed)) throw new Error('validation failed')
@@ -279,6 +323,7 @@ export async function chat(args: ChatArgs): Promise<string> {
 
   try {
     const out = await runProvider(intended, args)
+    args.onServed?.(intended)
     await recordAiCall({
       ...base,
       servedBy: intended,
@@ -300,6 +345,7 @@ export async function chat(args: ChatArgs): Promise<string> {
     if (canFallback) {
       try {
         const out = await chatAnthropic(args)
+        args.onServed?.('anthropic')
         await recordAiCall({
           ...base,
           servedBy: 'anthropic',
