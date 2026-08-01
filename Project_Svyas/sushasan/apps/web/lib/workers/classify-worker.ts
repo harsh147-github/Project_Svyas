@@ -10,6 +10,7 @@
  *   3. Supabase upsert to posts table (onConflict: raw_post_id — requires migration 004)
  */
 import { chatJSON, activeProvider, type Provider } from '../ai'
+import { toBool, toInt } from '../coerce'
 
 // Closed vocabularies. The `posts` table and the ward map key off issue_tag,
 // so a model returning "Traffic", "roads", or a sentence would silently create
@@ -38,18 +39,6 @@ function normaliseSubTags(tags: unknown, issueTag: string): string[] {
   if (!Array.isArray(tags)) return []
   const allowed = new Set(SUB_TAGS[issueTag] ?? [])
   return [...new Set(tags.map((t) => String(t).trim().toLowerCase()).filter((t) => allowed.has(t)))]
-}
-
-/**
- * Models that emit JSON as text sometimes return `"false"` as a string. Plain
- * Boolean() turns that into true — so a post the classifier explicitly judged
- * NOT actionable would be flagged as an actionable civic problem and reach a
- * ward officer. Coerce on the string, not on truthiness.
- */
-function toBool(v: unknown): boolean {
-  if (typeof v === 'boolean') return v
-  if (typeof v === 'string') return ['true', 'yes', '1'].includes(v.trim().toLowerCase())
-  return v === 1
 }
 
 /**
@@ -226,8 +215,8 @@ export const classifyPostsWorker = inngest.createFunction(
             translated_text_en: parsed.translated_text_en ? scrubPII(parsed.translated_text_en) : null,
             issue_tag: issueTag,
             sub_tags: normaliseSubTags(parsed.sub_tags, issueTag),
-            severity: Math.min(5, Math.max(1, Number(parsed.severity) || 3)),
-            sentiment: Math.min(2, Math.max(-2, Number(parsed.sentiment) || 0)),
+            severity: toInt(parsed.severity, 1, 5, 3),
+            sentiment: toInt(parsed.sentiment, -2, 2, 0),
             cited_location: parsed.cited_location ?? null,
             cited_time: parsed.cited_time ?? null,
             is_actionable: toBool(parsed.is_actionable),
