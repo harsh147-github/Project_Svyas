@@ -131,7 +131,7 @@ Then act by `error_kind` — each one has a different owner and a different fix:
 | `error_kind` | What it means | What to do |
 |---|---|---|
 | `bad_json` | Sarvam answered, but wrapped the JSON in prose or fences, or missed a required field | **This is yours to fix, and it is the most common one.** Tighten the system prompt for that `task` — explicit schema, "JSON only", a worked example. Sarvam follows format instructions well when they are literal. PR the prompt change. |
-| `timeout` | Sarvam slower than the route's budget | Raise the timeout in `chatOpenAICompatible` (currently 60s) or shorten the prompt. If it's the classify path, smaller batches. |
+| `timeout` | Sarvam slower than the route's budget | Raise `AI_TIMEOUT_SEC` (default 60, max 280) — an env change, so **escalate** with the value you want. If it is the classify path, shortening the prompt or the batch is the code-side fix you can PR. |
 | `auth` | `SARVAM_API_KEY` wrong, revoked, or lacking access to `SARVAM_MODEL` | **Escalate** — dashboard action |
 | `rate_limit` | QPS ceiling or credits exhausted | Add spacing between calls in the worker; if credits, **escalate** |
 | `server` | Sarvam 5xx | Usually transient. Report the rate; only act if sustained across days |
