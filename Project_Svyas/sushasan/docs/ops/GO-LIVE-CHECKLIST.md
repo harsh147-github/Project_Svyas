@@ -18,6 +18,7 @@ All of these go to the **same place** (procedure in §A below).
 | 🔴 | `CRON_SECRET` | Generate yourself | 64 hex chars |
 | 🔴 | `RESEND_API_KEY` | resend.com → API Keys | `re_...` |
 | 🔴 | `FOUNDER_EMAIL` | Your own inbox | an email address |
+| 🔴 | `SARVAM_API_KEY` | dashboard.sarvam.ai → API keys | subscription key |
 | 🔴 | `ANTHROPIC_API_KEY` | console.anthropic.com → API Keys | `sk-ant-api03-...` |
 | 🔴 | `APIFY_API_TOKEN` | console.apify.com → Settings → Integrations | `apify_api_...` |
 | 🔴 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API | `https://xxxx.supabase.co` |
@@ -32,7 +33,6 @@ All of these go to the **same place** (procedure in §A below).
 | 🟢 | `VOYAGE_API_KEY` | dash.voyageai.com | `pa-...` |
 | 🟢 | `PUBLIC_BASE_URL` | Type it yourself | `https://sushaasan.in` |
 | 🟢 | `AUTHORITY_DIGEST_EMAILS` | Ward-officer inboxes | `a@x.com,b@y.com` |
-| 🟢 | `SARVAM_API_KEY` | dashboard.sarvam.ai | enables voice notes |
 | 🟢 | `WHATSAPP_ACCESS_TOKEN` | Meta Business console | see `docs/OUTREACH.md` |
 | 🟢 | `WHATSAPP_PHONE_NUMBER_ID` | Same Meta console | numeric |
 
@@ -155,7 +155,42 @@ null.
 
 ---
 
+## B3a. `SARVAM_API_KEY` 🔴 — the sovereign engine
+
+This is the key Sushaasan's AI actually runs on. Without it, `AI_PROVIDER`
+defaults to `sarvam` but has nothing to authenticate with, so every call falls
+through to Claude and the platform is not sovereign at all.
+
+1. Go to **https://dashboard.sarvam.ai** and sign in.
+2. Left sidebar → **API Keys** (some accounts show it as **Subscriptions**).
+3. Click **Create / Generate key**.
+4. Copy the value. Sarvam calls it a *subscription key* — it is sent in an
+   `api-subscription-key` header, **not** as a `Bearer` token. You do not need
+   to do anything about that; `lib/ai.ts` already handles it.
+5. Check your credit balance on the same dashboard while you're there.
+
+**Paste it:** §A, Key = `SARVAM_API_KEY`.
+
+**Then verify it took effect** — this is the step that catches the silent
+failure. After redeploying, open `https://sushaasan.in/api/health` and look at
+the `ai` block:
+
+- `"active": "sarvam"` → sovereign, working
+- `"misconfigured"` non-null → the key didn't land; re-check §A
+
+**Optional but useful:** `SARVAM_MODEL` (defaults to `sarvam-m`). Set this only
+if your account has access to a different or newer model — a model id your key
+cannot reach shows up as `auth` failures in the sovereignty ledger.
+
+---
+
 ## B3. `ANTHROPIC_API_KEY` 🔴 + credit
+
+> Anthropic is now the **fallback**, not the engine. It keeps grievance intake
+> and ward briefs working when a Sarvam call fails, while those failures get
+> fixed. Once `/api/health` reports `sovereignty_pct` at 100 for two weeks,
+> this key can be removed entirely.
+
 
 **The key:**
 1. Go to **https://console.anthropic.com** and sign in.
@@ -226,6 +261,17 @@ From that page:
    relation does not exist = the migration never ran: open
    `ops/supabase/007_dispatch_log.sql` in this repo, paste its contents into
    the SQL editor, and run it.
+
+**And the sovereignty ledger:**
+
+```sql
+select count(*) from ai_provider_events;
+```
+
+Same rule — if that errors, run `ops/supabase/008_ai_provider_events.sql` in the
+SQL editor. Without this table you cannot see how often Sushaasan is falling
+back off Sarvam, and `/api/health` will honestly report `sovereignty_pct` as
+not measured rather than pretending it is 100.
 
 ---
 
@@ -307,16 +353,19 @@ the dashboard.
 | `PUBLIC_BASE_URL` | Just type `https://sushaasan.in` | Correct absolute links inside dispatch emails |
 | `AUTHORITY_DIGEST_EMAILS` | The real ward-officer inboxes, comma-separated | Sends the daily digest to officials instead of only you. **Only set once you've confirmed those addresses** — this is what makes the product actually reach government. |
 | `DISPATCH_FROM` | Type it | Custom sender name. Must stay on the Resend-verified domain, e.g. `Sushaasan <briefs@sushaasan.in>` |
-| `SARVAM_API_KEY` | **dashboard.sarvam.ai** → API keys | Hindi/Marathi voice-note transcription (Sarvam Saaras). Works on its own — see the warning below. |
 | `GROQ_API_KEY` / `OPENAI_API_KEY` | console.groq.com / platform.openai.com | Whisper fallback for transcription in other languages |
 | `WHATSAPP_ACCESS_TOKEN` + `WHATSAPP_PHONE_NUMBER_ID` | Meta WhatsApp Business Cloud API — see `docs/OUTREACH.md` | Direct WhatsApp dispatch. Without it the app falls back to `wa.me` share links, which still work. |
 
-> ⚠️ **Setting `SARVAM_API_KEY` is safe. Setting `AI_PROVIDER=sarvam` is not —
-> not yet.** The key alone only enables voice transcription. The `AI_PROVIDER`
-> switch would move your entire classification pipeline onto Sarvam, and that
-> comparison has never been run. A bad classification does not throw an error;
-> it writes a wrong `issue_tag` and silently skews the ward map. See
-> `docs/SOVEREIGN_AI_MIGRATION.md` for the evaluation to run first.
+> ℹ️ **`SARVAM_API_KEY` is now required, not optional.** Sushaasan defaults to
+> running its entire AI pipeline on Sarvam — sovereign, made-in-India inference.
+> Without this key every AI call silently runs on Claude instead, and
+> `/api/health` will say so under `ai.misconfigured`.
+>
+> Expect rough edges early: Sarvam is not yet as strong as Claude at every task
+> here. That is planned for, not ignored. Failures fall back to Claude so users
+> never see a break, every fallback is recorded, and `/api/health` reports
+> `ai.last_24h.sovereignty_pct` — the number the daily war-room sweep works to
+> push to 100. See `docs/SOVEREIGN_AI_MIGRATION.md`.
 
 ---
 

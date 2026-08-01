@@ -21,8 +21,12 @@ The Routine reports only when something needs *you* specifically.
    say so explicitly rather than quoting figures from a previous run or a doc.
 4. **One fix, one commit, one PR.** Never push to `main`. Branch from the
    latest `main`, commit with a clear message, push, open a **draft** PR.
-5. **Never flip `AI_PROVIDER` to a non-Anthropic value.** That decision needs a
-   human-reviewed quality comparison — see `SOVEREIGN_AI_MIGRATION.md`.
+5. **Sarvam is the destination, not an experiment.** Sushaasan is committed to
+   running entirely on sovereign Indian inference. Every Anthropic fallback is
+   a defect with a cause, and finding those causes is a primary job of this
+   sweep — not an anomaly to escalate. Never "fix" a Sarvam problem by
+   switching `AI_PROVIDER` back to `anthropic`; fix the actual cause and leave
+   the fallback to do its job in the meantime.
 6. **Never disable a failing check to make the sweep look green.** A red check
    that is correctly red is a success of this system, not a failure.
 
@@ -40,7 +44,11 @@ Read these fields:
 |---|---|---|
 | `status` | `"live"` | `"seed-mode"` = Supabase unconfigured; `"error"` = read `error` |
 | `supabase` | `true` | Supabase env vars missing/wrong → escalate |
-| `env.ai` | `[]` | lists missing `ANTHROPIC_API_KEY` → escalate |
+| `env.ai` | `[]` | missing `SARVAM_API_KEY` = not sovereign at all; missing `ANTHROPIC_API_KEY` = no safety net → escalate |
+| `ai.misconfigured` | `null` | **non-null is the highest-priority finding on this page** — it means `AI_PROVIDER` asks for Sarvam but the key is absent, so 100% of calls silently run on Claude while everything looks fine |
+| `ai.active` | `"sarvam"` | `"anthropic"` means sovereignty is off → read `ai.misconfigured` |
+| `ai.last_24h.sovereignty_pct` | `100` | anything less is the day's work — see Step 3b |
+| `ai.last_24h.top_failures` | `[]` | this **is** the upgrade list, ranked |
 | `env.scraping` | `[]` | lists missing `APIFY_API_TOKEN` → escalate |
 | `env.email` | `[]` | dispatch cannot send → escalate |
 | `env.cron` | `[]` | **`CRON_SECRET` unset = cron routes publicly triggerable → escalate as security** |
@@ -91,11 +99,52 @@ report the blocker.
    should be one of traffic/water/electricity/garbage/other, `severity` 1–5,
    `ward_id` populated. A flood of `other` with null wards means the classifier
    prompt or the model is misbehaving.
-4. **Which provider ran?** `posts.classifier_ver` records
-   `<provider>-v2`. If this ever reads `sarvam-*` without a human decision
-   having been made, that is a misconfiguration — escalate immediately.
+4. **Which provider ran?** `posts.classifier_ver` records `<provider>-v2`.
+   `sarvam-v2` is the target state. A run of `anthropic-v2` rows while
+   `AI_PROVIDER=sarvam` means classification is falling back — go to Step 3b.
 5. **Are solutions being generated?** `counts.solutions` should grow after the
    Sunday `30 15 * * 0` Inngest cron.
+
+---
+
+## Step 3b — Sovereignty triage (the daily upgrade list)
+
+**This is the step that moves Sushaasan toward its goal.** Everything else in
+this runbook keeps the site alive; this one makes it sovereign.
+
+Sushaasan runs on Sarvam. When a Sarvam call fails, `lib/ai.ts` falls back to
+Claude so the citizen's grievance is still processed — and records the fallback
+in `ai_provider_events`. Those records are the backlog.
+
+Read `ai.last_24h` from `/api/health`, or query directly:
+
+```sql
+select error_kind, task, call_site, count(*)
+from ai_provider_events
+where created_at > now() - interval '24 hours' and outcome <> 'ok'
+group by 1,2,3 order by count desc;
+```
+
+Then act by `error_kind` — each one has a different owner and a different fix:
+
+| `error_kind` | What it means | What to do |
+|---|---|---|
+| `bad_json` | Sarvam answered, but wrapped the JSON in prose or fences, or missed a required field | **This is yours to fix, and it is the most common one.** Tighten the system prompt for that `task` — explicit schema, "JSON only", a worked example. Sarvam follows format instructions well when they are literal. PR the prompt change. |
+| `timeout` | Sarvam slower than the route's budget | Raise the timeout in `chatOpenAICompatible` (currently 60s) or shorten the prompt. If it's the classify path, smaller batches. |
+| `auth` | `SARVAM_API_KEY` wrong, revoked, or lacking access to `SARVAM_MODEL` | **Escalate** — dashboard action |
+| `rate_limit` | QPS ceiling or credits exhausted | Add spacing between calls in the worker; if credits, **escalate** |
+| `server` | Sarvam 5xx | Usually transient. Report the rate; only act if sustained across days |
+| `bad_request` | Our payload shape is wrong for Sarvam — e.g. an unsupported field, or vision on a text-only model | **Yours to fix.** Check what `lib/ai.ts` sent for that task |
+
+**Quality, not just success.** A call that returns valid JSON can still be
+wrong. Once a day, sample ~10 recent `posts` rows with `classifier_ver =
+'sarvam-v2'` and check: is `issue_tag` right for the text, is `ward_id` a real
+pilot ward, is `severity` proportionate? A drift toward `other` with null wards
+means the classify prompt needs Sarvam-specific work even though nothing is
+"failing". Report what you sampled and what you found — with counts.
+
+**Report the trend, not just today.** `sovereignty_pct` over the last few days
+is the headline number of this project. Say whether it moved.
 
 ---
 
@@ -199,6 +248,7 @@ be able to read it in fifteen seconds and know whether to act.
 SUSHAASAN WAR ROOM — <date>
 
 STATUS: healthy | degraded | down | could-not-verify
+SOVEREIGNTY: <pct>% on <provider> (<n> calls, <n> fallbacks) — <up|down|flat> vs yesterday
 
 WORKING
   - <check> ✓ <the actual number or evidence>
@@ -208,6 +258,9 @@ BROKEN
 
 FIXED THIS RUN
   - <what> → PR #<n>
+
+SOVEREIGNTY BACKLOG (ranked, from ai_provider_events)
+  - <error_kind> on <task> ×<n> — <the fix, or "fixed this run → PR #n">
 
 NEEDS YOU (cannot be fixed from code)
   - <exact action, which dashboard, which value>
@@ -219,6 +272,9 @@ COULD NOT VERIFY
 **If everything is green and nothing was fixed, say so in two lines.** Do not
 manufacture work to look busy, and do not email the founder just to say
 "all fine" — the daily `uptime-check` cron already covers silent failure.
+
+The exception: **while `sovereignty_pct < 100`, there is always work.** A
+"nothing to report" day at 84% sovereign means the sweep did not do Step 3b.
 
 ---
 

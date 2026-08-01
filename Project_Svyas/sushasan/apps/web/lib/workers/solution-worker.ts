@@ -139,6 +139,7 @@ export const solutionSynthesisWorker = inngest.createFunction(
           const parsed = await chatJSON<Record<string, unknown>>(
             {
               task: 'synthesize',
+              callSite: 'solution-worker',
               system: SOLUTION_PROMPT(ctx),
               maxTokens: 1024,
               messages: [

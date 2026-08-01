@@ -1,16 +1,32 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { ASSIST_MODEL, ASSIST_SYNTH_MODEL } from './models'
+import { recordAiCall, classifyError, errorDetail } from './ai-telemetry'
 
-// Provider-agnostic LLM layer. Lets Sushaasan run its AI on Claude today and
-// switch to Sarvam AI or BharatGen (sovereign, made-in-India models) with a
-// single env var — no code changes at the call sites. This is the lever for
-// "stop burning" (Indian-AI credit programs / cheaper inference) and for the
-// B2G story (data sovereignty + Indian-language strength).
+// Provider-agnostic LLM layer, and the mechanism of Sushaasan's sovereignty.
 //
-//   AI_PROVIDER = anthropic (default) | sarvam | bharatgen
+// Target state: Sushaasan runs entirely on Sarvam (made-in-India models, Indian
+// data residency). That is a product commitment, not a cost optimisation — a
+// civic platform that governments depend on should not sit on foreign
+// inference. So Sarvam is the DEFAULT here, not an opt-in.
+//
+//   AI_PROVIDER = sarvam (default) | bharatgen | anthropic
 //
 // Sarvam / BharatGen expose OpenAI-style chat-completions, so one adapter
-// covers both. Falls back to Anthropic if the chosen provider isn't configured.
+// covers both.
+//
+// ── On the Anthropic fallback ────────────────────────────────────────────────
+// Getting to 100% Sarvam is an iteration loop: prompts tuned per model, JSON
+// discipline, timeouts. During that loop a sovereign-provider failure falls
+// back to Claude so citizens never hit a broken form and ward officers never
+// miss a brief. But every fallback is RECORDED (see ai-telemetry.ts) and the
+// daily war-room sweep reads those records as the fix list. A silent fallback
+// would be the worst outcome available — the site would look perfectly healthy
+// while sovereignty quietly eroded.
+//
+// Set AI_STRICT_SOVEREIGN=true to remove the safety net entirely: sovereign
+// failures then surface as real errors instead of Claude answers. Use it in
+// preview/staging to find every gap fast; leave it off in production until the
+// fallback rate is already at zero.
 
 export type ChatMessage = { role: 'user' | 'assistant'; content: string }
 export type ChatArgs = {
@@ -28,15 +44,63 @@ export type ChatArgs = {
    * photo-enriched grievances degrade rather than fail.
    */
   image?: { mediaType: string; base64: string }
+  /** where this call came from, e.g. "classify-worker" — for the sovereignty ledger */
+  callSite?: string
 }
 
 export type Provider = 'anthropic' | 'sarvam' | 'bharatgen'
 
+/** What the deployment ASKED for. Sarvam unless explicitly overridden. */
+export function intendedProvider(): Provider {
+  const p = (process.env.AI_PROVIDER ?? 'sarvam').toLowerCase()
+  if (p === 'anthropic') return 'anthropic'
+  if (p === 'bharatgen') return 'bharatgen'
+  return 'sarvam'
+}
+
+/**
+ * What will actually run. Differs from intendedProvider() when the sovereign
+ * provider's key is missing — the single most likely way to think you have
+ * switched to Sarvam while running 100% on Claude. providerStatus() exposes
+ * that gap so /api/health can shout about it.
+ */
 export function activeProvider(): Provider {
-  const p = (process.env.AI_PROVIDER ?? 'anthropic').toLowerCase()
-  if (p === 'sarvam' && process.env.SARVAM_API_KEY) return 'sarvam'
-  if (p === 'bharatgen' && process.env.BHARATGEN_API_KEY) return 'bharatgen'
-  return 'anthropic'
+  const intended = intendedProvider()
+  if (intended === 'sarvam' && process.env.SARVAM_API_KEY) return 'sarvam'
+  if (intended === 'bharatgen' && process.env.BHARATGEN_API_KEY) return 'bharatgen'
+  if (intended === 'anthropic') return 'anthropic'
+  return 'anthropic' // sovereign provider requested but unconfigured
+}
+
+/** True when the Anthropic safety net is disabled and sovereign failures surface. */
+export function strictSovereign(): boolean {
+  return (process.env.AI_STRICT_SOVEREIGN ?? '').toLowerCase() === 'true'
+}
+
+export function providerStatus(): {
+  intended: Provider
+  active: Provider
+  sovereign: boolean
+  strict: boolean
+  misconfigured: string | null
+} {
+  const intended = intendedProvider()
+  const active = activeProvider()
+  const keyFor: Record<Provider, string> = {
+    sarvam: 'SARVAM_API_KEY',
+    bharatgen: 'BHARATGEN_API_KEY',
+    anthropic: 'ANTHROPIC_API_KEY',
+  }
+  return {
+    intended,
+    active,
+    sovereign: active !== 'anthropic',
+    strict: strictSovereign(),
+    misconfigured:
+      intended !== active
+        ? `AI_PROVIDER=${intended} but ${keyFor[intended]} is not set — every AI call is running on ${active}`
+        : null,
+  }
 }
 
 // ── Anthropic (Claude) ───────────────────────────────────────────────────────
@@ -160,7 +224,20 @@ export async function chatJSON<T = unknown>(
   try {
     return await attempt()
   } catch (first) {
-    console.error(`[ai] JSON parse/validate failed on ${activeProvider()}, retrying once:`, first)
+    // Distinct from a transport failure: the provider answered, but not in the
+    // shape we need. On the road to 100% Sarvam this is the most common and
+    // most fixable class of problem — it means the prompt needs tightening for
+    // this model, not that the provider is broken. Recorded separately so the
+    // daily sweep can tell "Sarvam is down" from "Sarvam is chatty".
+    await recordAiCall({
+      intendedProvider: activeProvider(),
+      servedBy: activeProvider(),
+      task: args.task,
+      callSite: args.callSite,
+      outcome: 'error',
+      errorKind: 'bad_json',
+      errorDetail: errorDetail(first),
+    })
     return await attempt(
       'Your previous reply was not valid JSON matching the required shape. Reply again with ONLY the JSON object — no prose, no markdown fences.',
     )
@@ -168,31 +245,95 @@ export async function chatJSON<T = unknown>(
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────
+
+/** The concrete model id a provider will use, for the telemetry record. */
+function modelFor(provider: Provider, args: ChatArgs): string {
+  if (provider === 'sarvam') return process.env.SARVAM_MODEL ?? 'sarvam-m'
+  if (provider === 'bharatgen') return process.env.BHARATGEN_MODEL ?? 'bharatgen-chat'
+  return args.task === 'synthesize' ? ASSIST_SYNTH_MODEL : ASSIST_MODEL
+}
+
+function runProvider(provider: Provider, args: ChatArgs): Promise<string> {
+  if (provider === 'sarvam') {
+    return chatOpenAICompatible(args, {
+      url: process.env.SARVAM_API_URL ?? 'https://api.sarvam.ai/v1/chat/completions',
+      key: process.env.SARVAM_API_KEY!,
+      model: modelFor('sarvam', args),
+      keyHeader: 'api-subscription-key',
+    })
+  }
+  if (provider === 'bharatgen') {
+    return chatOpenAICompatible(args, {
+      url: process.env.BHARATGEN_API_URL ?? '',
+      key: process.env.BHARATGEN_API_KEY!,
+      model: modelFor('bharatgen', args),
+    })
+  }
+  return chatAnthropic(args)
+}
+
 export async function chat(args: ChatArgs): Promise<string> {
-  const provider = activeProvider()
+  const intended = activeProvider()
+  const started = Date.now()
+  const base = { intendedProvider: intended, task: args.task, callSite: args.callSite }
+
   try {
-    if (provider === 'sarvam') {
-      return await chatOpenAICompatible(args, {
-        url: process.env.SARVAM_API_URL ?? 'https://api.sarvam.ai/v1/chat/completions',
-        key: process.env.SARVAM_API_KEY!,
-        model: process.env.SARVAM_MODEL ?? 'sarvam-m',
-        keyHeader: 'api-subscription-key',
-      })
-    }
-    if (provider === 'bharatgen') {
-      return await chatOpenAICompatible(args, {
-        url: process.env.BHARATGEN_API_URL ?? '',
-        key: process.env.BHARATGEN_API_KEY!,
-        model: process.env.BHARATGEN_MODEL ?? 'bharatgen-chat',
-      })
-    }
-    return await chatAnthropic(args)
+    const out = await runProvider(intended, args)
+    await recordAiCall({
+      ...base,
+      servedBy: intended,
+      outcome: 'ok',
+      model: modelFor(intended, args),
+      latencyMs: Date.now() - started,
+    })
+    return out
   } catch (err) {
-    // Sovereign provider hiccup → fall back to Claude so the product never stalls.
-    if (provider !== 'anthropic' && process.env.ANTHROPIC_API_KEY) {
-      console.error(`[ai] ${provider} failed, falling back to anthropic:`, err)
-      return chatAnthropic(args)
+    const kind = classifyError(err)
+    const detail = errorDetail(err)
+
+    // Sovereign provider failed. Fall back to Claude so a citizen's grievance
+    // still gets processed and the ward brief still goes out — but record it,
+    // loudly, as a defect to fix rather than a normal operating mode.
+    const canFallback =
+      intended !== 'anthropic' && !strictSovereign() && !!process.env.ANTHROPIC_API_KEY
+
+    if (canFallback) {
+      try {
+        const out = await chatAnthropic(args)
+        await recordAiCall({
+          ...base,
+          servedBy: 'anthropic',
+          outcome: 'fallback',
+          model: modelFor('anthropic', args),
+          errorKind: kind,
+          errorDetail: detail,
+          latencyMs: Date.now() - started,
+        })
+        return out
+      } catch (fallbackErr) {
+        // Both providers down — record the sovereign failure, then surface the
+        // fallback's error, which is the one an operator can act on.
+        await recordAiCall({
+          ...base,
+          servedBy: 'anthropic',
+          outcome: 'error',
+          errorKind: classifyError(fallbackErr),
+          errorDetail: `${intended}: ${detail} | anthropic: ${errorDetail(fallbackErr)}`,
+          latencyMs: Date.now() - started,
+        })
+        throw fallbackErr
+      }
     }
+
+    await recordAiCall({
+      ...base,
+      servedBy: intended,
+      outcome: 'error',
+      model: modelFor(intended, args),
+      errorKind: kind,
+      errorDetail: detail,
+      latencyMs: Date.now() - started,
+    })
     throw err
   }
 }

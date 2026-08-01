@@ -124,6 +124,7 @@ async function generateOne(
   const parsed = await chatJSON<OpusOutput>(
     {
       task: 'synthesize',
+      callSite: 'generate-briefs',
       system: 'You generate concrete, budgeted civic action plans. Output strict JSON only — no prose, no markdown fences.',
       maxTokens: 2000,
       messages: [{ role: 'user', content: prompt }],

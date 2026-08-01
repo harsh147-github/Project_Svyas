@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
   try {
     const answer = await chat({
       task: 'assist',
+      callSite: 'gov-assist',
       maxTokens: 1100,
       system: `${SYSTEM}\n\n=== MISSION DOSSIER ===\n${context}`,
       messages: [

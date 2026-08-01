@@ -276,6 +276,7 @@ export async function POST(req: NextRequest) {
       const parsed = await chatJSON<Synthesized>(
         {
           task: 'synthesize',
+          callSite: 'add-report',
           system: SYNTHESIZE_SYSTEM,
           maxTokens: 800,
           messages: [{ role: 'user', content: userText }],
