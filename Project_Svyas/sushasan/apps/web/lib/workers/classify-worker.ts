@@ -1,10 +1,11 @@
 /**
- * Inngest worker: AI classification of raw_posts using Claude Sonnet.
+ * Inngest worker: AI classification of raw_posts via the provider-agnostic
+ * layer (lib/ai.ts) — Sarvam by default, Claude only as a recorded fallback.
  * Triggered by event "sushasan/posts.scraped" after each scrape batch.
  * Self-contained — no cross-package imports. Lives in apps/web.
  *
  * Steps per post:
- *   1. Claude Sonnet: classify issue_tag, severity, location, ward_id, etc.
+ *   1. classify issue_tag, severity, location, ward_id, etc.
  *   2. Voyage AI: generate 1024-dim multilingual embedding (if VOYAGE_API_KEY set)
  *   3. Supabase upsert to posts table (onConflict: raw_post_id — requires migration 004)
  */
@@ -40,6 +41,18 @@ function normaliseSubTags(tags: unknown, issueTag: string): string[] {
 }
 
 /**
+ * Models that emit JSON as text sometimes return `"false"` as a string. Plain
+ * Boolean() turns that into true — so a post the classifier explicitly judged
+ * NOT actionable would be flagged as an actionable civic problem and reach a
+ * ward officer. Coerce on the string, not on truthiness.
+ */
+function toBool(v: unknown): boolean {
+  if (typeof v === 'boolean') return v
+  if (typeof v === 'string') return ['true', 'yes', '1'].includes(v.trim().toLowerCase())
+  return v === 1
+}
+
+/**
  * A ward outside the pilot GeoJSON cannot be rendered and would put a real
  * problem on no map at all. Null is the honest answer — the ward-matching pass
  * can revisit it later; a fabricated number cannot be distinguished from a
@@ -63,7 +76,7 @@ type ClassifiedPost = {
   sentiment?: number | string
   cited_location?: string
   cited_time?: string
-  is_actionable?: boolean
+  is_actionable?: boolean | string
   civic_ask?: string
   ward_id?: string | number
 }
@@ -217,7 +230,7 @@ export const classifyPostsWorker = inngest.createFunction(
             sentiment: Math.min(2, Math.max(-2, Number(parsed.sentiment) || 0)),
             cited_location: parsed.cited_location ?? null,
             cited_time: parsed.cited_time ?? null,
-            is_actionable: Boolean(parsed.is_actionable),
+            is_actionable: toBool(parsed.is_actionable),
             civic_ask: parsed.civic_ask ? scrubPII(parsed.civic_ask) : null,
             ward_id: normaliseWardId(parsed.ward_id),
             embedding: embedding ?? null,
