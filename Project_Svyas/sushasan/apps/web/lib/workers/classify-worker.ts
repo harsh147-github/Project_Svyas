@@ -1,14 +1,57 @@
 /**
- * Inngest worker: AI classification of raw_posts using Claude Sonnet.
+ * Inngest worker: AI classification of raw_posts via the provider-agnostic
+ * layer (lib/ai.ts) — Sarvam by default, Claude only as a recorded fallback.
  * Triggered by event "sushasan/posts.scraped" after each scrape batch.
  * Self-contained — no cross-package imports. Lives in apps/web.
  *
  * Steps per post:
- *   1. Claude Sonnet: classify issue_tag, severity, location, ward_id, etc.
+ *   1. classify issue_tag, severity, location, ward_id, etc.
  *   2. Voyage AI: generate 1024-dim multilingual embedding (if VOYAGE_API_KEY set)
  *   3. Supabase upsert to posts table (onConflict: raw_post_id — requires migration 004)
  */
-import { chatJSON, activeProvider } from '../ai'
+import { chatJSON, activeProvider, type Provider } from '../ai'
+import { toBool, toInt } from '../coerce'
+
+// Closed vocabularies. The `posts` table and the ward map key off issue_tag,
+// so a model returning "Traffic", "roads", or a sentence would silently create
+// a category the map cannot colour and clustering cannot group. Validate on the
+// way in and normalise on the way out — belt and braces, because this is the
+// one field the entire public product depends on.
+const ISSUE_TAGS = ['traffic', 'water', 'electricity', 'garbage', 'other'] as const
+const SUB_TAGS: Record<string, string[]> = {
+  traffic: ['junction-jam', 'signal-failure', 'parking-spillover', 'construction-blockage',
+            'encroachment', 'ambulance-blocked', 'accident', 'mall-traffic', 'wedding-traffic'],
+  water: ['tanker-shortage', 'supply-failure', 'pricing-surge', 'contamination',
+          'pipeline-burst', 'pmc-schedule-mismatch'],
+  electricity: ['outage', 'low-voltage', 'transformer-fault', 'billing-issue'],
+  garbage: ['overflow', 'irregular-pickup', 'dumping', 'drain-block'],
+  other: [],
+}
+const PILOT_WARDS = new Set(['25', '26', '41', '42', '43', '44', '46', '47'])
+
+function normaliseIssueTag(v: unknown): (typeof ISSUE_TAGS)[number] {
+  const t = String(v ?? '').trim().toLowerCase()
+  return (ISSUE_TAGS as readonly string[]).includes(t) ? (t as (typeof ISSUE_TAGS)[number]) : 'other'
+}
+
+/** Drop anything outside the controlled vocabulary rather than storing free text. */
+function normaliseSubTags(tags: unknown, issueTag: string): string[] {
+  if (!Array.isArray(tags)) return []
+  const allowed = new Set(SUB_TAGS[issueTag] ?? [])
+  return [...new Set(tags.map((t) => String(t).trim().toLowerCase()).filter((t) => allowed.has(t)))]
+}
+
+/**
+ * A ward outside the pilot GeoJSON cannot be rendered and would put a real
+ * problem on no map at all. Null is the honest answer — the ward-matching pass
+ * can revisit it later; a fabricated number cannot be distinguished from a
+ * real one after the fact.
+ */
+function normaliseWardId(v: unknown): string | null {
+  if (v === null || v === undefined || v === '') return null
+  const w = String(v).trim()
+  return PILOT_WARDS.has(w) ? w : null
+}
 
 // Shape the classifier prompt is contracted to return. Everything except
 // issue_tag is optional because a model may legitimately omit a field it
@@ -22,7 +65,7 @@ type ClassifiedPost = {
   sentiment?: number | string
   cited_location?: string
   cited_time?: string
-  is_actionable?: boolean
+  is_actionable?: boolean | string
   civic_ask?: string
   ward_id?: string | number
 }
@@ -30,30 +73,48 @@ import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
 import { scrubPII } from '../pii'
 
+// Written to be followed literally by any model, not just Claude. Sushaasan
+// runs on Sarvam, and smaller models follow a worked example far more reliably
+// than a schema sketch with `1-5` style placeholders — which some will echo
+// back verbatim. Hence: real example values, closed vocabularies, and an
+// explicit instruction to prefer null over a guess.
 const CLASSIFY_PROMPT = `You are a civic issue classifier for Pune, India.
 Given a social media post, extract structured civic intelligence.
 
-Respond with ONLY valid JSON — no markdown, no explanation.
+Output ONLY a JSON object. No markdown fences, no commentary, no preamble.
 
-{
-  "issue_tag": "traffic|water|electricity|garbage|other",
-  "sub_tags": ["string"],
-  "severity": 1-5,
-  "sentiment": -2 to 2,
-  "cited_location": "string or null",
-  "cited_time": "string or null",
-  "is_actionable": true|false,
-  "civic_ask": "string or null",
-  "translated_text_en": "string",
-  "ward_id": "string or null"
-}
+FIELDS
+- issue_tag  (required) exactly one of: traffic, water, electricity, garbage, other
+- sub_tags   array of strings, chosen ONLY from the vocabulary for that issue_tag:
+    traffic:     junction-jam, signal-failure, parking-spillover, construction-blockage,
+                 encroachment, ambulance-blocked, accident, mall-traffic, wedding-traffic
+    water:       tanker-shortage, supply-failure, pricing-surge, contamination,
+                 pipeline-burst, pmc-schedule-mismatch
+    electricity: outage, low-voltage, transformer-fault, billing-issue
+    garbage:     overflow, irregular-pickup, dumping, drain-block
+    other:       [] (leave empty)
+  Use [] if none fit. Never invent a sub_tag outside this list.
+- severity    integer 1 to 5. 1=minor annoyance, 3=recurring problem, 5=emergency or danger to life
+- sentiment   integer -2 to 2. -2=very negative, 0=neutral, 2=very positive
+- cited_location  the specific place named in the post, or null
+- cited_time      when the problem occurs, as stated, or null
+- is_actionable   true ONLY if a specific, fixable problem is described.
+                  General complaining, opinion, or news commentary is false.
+- civic_ask   one short sentence naming what should be done, or null
+- translated_text_en  English translation if the post is Hindi/Marathi; otherwise copy the original text
+- ward_id     string. Valid values: "25", "26", "41", "42", "43", "44", "46", "47".
+              "46" = NIBM / Mohammadwadi / Undri / Pisoli.
+              "47" = Salunke Vihar / Wanowrie / Kondhwa.
+              If the location does not clearly fall in a listed ward, return null.
+              Never guess a ward number — null is correct and useful; a wrong
+              ward puts the problem on the wrong map and misinforms an officer.
 
-Rules:
-- severity: 1=minor, 3=recurring problem, 5=emergency
-- sentiment: -2=very negative, 0=neutral, 2=very positive
-- is_actionable: true only if post describes a specific fixable problem
-- ward_id: PMC ward number as string if location is recognisable, else null
-- translated_text_en: English translation if post is in Hindi/Marathi, else copy original`
+EXAMPLE
+Post: "Roz subah NIBM road pe signal band rehta hai, 20 min jam. Kuch karo PMC"
+Output:
+{"issue_tag":"traffic","sub_tags":["signal-failure","junction-jam"],"severity":3,"sentiment":-2,"cited_location":"NIBM Road","cited_time":"every morning","is_actionable":true,"civic_ask":"Repair the traffic signal on NIBM Road","translated_text_en":"Every morning the signal on NIBM road stays off, 20 minute jam. Do something PMC","ward_id":"46"}
+
+Return the JSON object only.`
 
 async function getVoyageEmbedding(text: string): Promise<number[] | null> {
   const key = process.env.VOYAGE_API_KEY
@@ -115,6 +176,11 @@ export const classifyPostsWorker = inngest.createFunction(
           // before throwing — so a provider that fences its JSON (common on
           // OpenAI-compatible models) cannot silently write a wrong issue_tag.
           // The validator enforces the one field the ward map depends on.
+          // Records who actually answered — chat() may have fallen back to
+          // Claude, and stamping the intended provider would make the audit
+          // trail claim sovereign work that never happened.
+          let servedBy: Provider = activeProvider()
+
           const parsed = await chatJSON<ClassifiedPost>(
             {
               task: 'classify',
@@ -122,9 +188,19 @@ export const classifyPostsWorker = inngest.createFunction(
               system: CLASSIFY_PROMPT,
               maxTokens: 512,
               messages: [{ role: 'user', content: `POST:\n${post.raw_text.slice(0, 2000)}` }],
+              onServed: (p) => { servedBy = p },
             },
-            (v) => !!v && typeof v === 'object' && typeof (v as { issue_tag?: unknown }).issue_tag === 'string',
+            // Reject an issue_tag outside the closed set so chatJSON spends its
+            // one repair retry fixing it, instead of the row silently landing
+            // as 'other' and disappearing from the map's real categories.
+            (v) =>
+              !!v && typeof v === 'object' &&
+              (ISSUE_TAGS as readonly string[]).includes(
+                String((v as { issue_tag?: unknown }).issue_tag ?? '').trim().toLowerCase(),
+              ),
           )
+
+          const issueTag = normaliseIssueTag(parsed.issue_tag)
 
           const textForEmbed = (parsed.translated_text_en || post.raw_text).slice(0, 8000)
 
@@ -137,19 +213,20 @@ export const classifyPostsWorker = inngest.createFunction(
             raw_post_id: post.id,
             text_clean: scrubPII(post.raw_text.slice(0, 4000)),
             translated_text_en: parsed.translated_text_en ? scrubPII(parsed.translated_text_en) : null,
-            issue_tag: parsed.issue_tag ?? 'other',
-            sub_tags: parsed.sub_tags ?? [],
-            severity: Math.min(5, Math.max(1, Number(parsed.severity) || 3)),
-            sentiment: Math.min(2, Math.max(-2, Number(parsed.sentiment) || 0)),
+            issue_tag: issueTag,
+            sub_tags: normaliseSubTags(parsed.sub_tags, issueTag),
+            severity: toInt(parsed.severity, 1, 5, 3),
+            sentiment: toInt(parsed.sentiment, -2, 2, 0),
             cited_location: parsed.cited_location ?? null,
             cited_time: parsed.cited_time ?? null,
-            is_actionable: Boolean(parsed.is_actionable),
+            is_actionable: toBool(parsed.is_actionable),
             civic_ask: parsed.civic_ask ? scrubPII(parsed.civic_ask) : null,
-            ward_id: parsed.ward_id ? String(parsed.ward_id) : null,
+            ward_id: normaliseWardId(parsed.ward_id),
             embedding: embedding ?? null,
-            // Stamps which provider actually classified this row, so a later
-            // AI_PROVIDER flip is auditable in the data rather than invisible.
-            classifier_ver: `${activeProvider()}-v2`,
+            // Stamps which provider actually classified this row — the true
+            // one, including a Claude fallback — so the sovereignty ledger and
+            // the data agree with each other.
+            classifier_ver: `${servedBy}-v2`,
           }, { onConflict: 'raw_post_id', ignoreDuplicates: false })
 
           classified++

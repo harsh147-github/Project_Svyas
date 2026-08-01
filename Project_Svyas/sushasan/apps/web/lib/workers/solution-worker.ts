@@ -4,6 +4,7 @@
  * Self-contained — no cross-package imports. Lives in apps/web.
  */
 import { chatJSON, activeProvider } from '../ai'
+import { toBool, toNum } from '../coerce'
 import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
 
@@ -156,10 +157,10 @@ export const solutionSynthesisWorker = inngest.createFunction(
             issue_tag: cluster.issue_tag,
             summary: parsed.summary ?? '',
             steps: parsed.steps ?? [],
-            total_cost_est_inr: parsed.total_cost_est_inr ?? null,
-            timeline_days: parsed.timeline_days ?? null,
-            priority_score: parsed.priority_score ?? 0,
-            budget_feasible: Boolean(parsed.budget_feasible),
+            total_cost_est_inr: toNum(parsed.total_cost_est_inr),
+            timeline_days: toNum(parsed.timeline_days),
+            priority_score: toNum(parsed.priority_score, 0),
+            budget_feasible: toBool(parsed.budget_feasible),
             status: 'published',
             generated_at: new Date().toISOString(),
           }, { onConflict: 'ward_id,issue_tag,week_start' })

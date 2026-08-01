@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
 import { scrubPII } from '@/lib/pii'
-import { chatJSON } from '@/lib/ai'
+import { chatJSON, type Provider } from '@/lib/ai'
+import { toInt } from '@/lib/coerce'
 import { randomUUID, createHash } from 'crypto'
 
 // ── In-memory rate limiter: 10 reports per IP per 10 minutes ─────────────────
@@ -243,6 +244,10 @@ export async function POST(req: NextRequest) {
   }
 
   let synthesized: Synthesized = buildFallback()
+  // Which provider actually synthesised this grievance. Stays null when the
+  // fallback builder ran (no provider configured, or synthesis threw), so the
+  // stored classifier_ver distinguishes "no AI touched this" from a real run.
+  let servedBy: Provider | null = null
 
   // Any configured provider is enough — this no longer requires Anthropic
   // specifically, so citizen intake still synthesizes on a Sarvam-only deploy.
@@ -277,6 +282,7 @@ export async function POST(req: NextRequest) {
         {
           task: 'synthesize',
           callSite: 'add-report',
+          onServed: (p) => { servedBy = p },
           system: SYNTHESIZE_SYSTEM,
           maxTokens: 800,
           messages: [{ role: 'user', content: userText }],
@@ -333,13 +339,21 @@ export async function POST(req: NextRequest) {
             translated_text_en: synthesized.translated_text_en ?? null,
             issue_tag: synthesized.issue_tag,
             sub_tags: synthesized.sub_tags ?? [],
-            severity: synthesized.severity,
-            sentiment: synthesized.sentiment ?? -1,
+            // posts.severity and posts.sentiment carry CHECK constraints
+            // (1..5 and -2..2). Writing a model's number raw meant a value of
+            // 7 — or the string "high" — failed the insert, and the only
+            // consequence was a console line: the citizen's grievance was
+            // silently lost after they were told it had been filed. Clamp.
+            severity: toInt(synthesized.severity, 1, 5, 2),
+            sentiment: toInt(synthesized.sentiment, -2, 2, -1),
             cited_location: synthesized.cited_location ?? null,
             is_actionable: true,
             civic_ask: synthesized.civic_ask ?? null,
             ward_id: resolvedWardId,
-            classifier_ver: 'sonnet-4-6-synthesizer-v2',
+            // Was hardcoded 'sonnet-4-6-synthesizer-v2', which lied on a
+            // Sarvam deploy and hid every citizen report from the daily
+            // `classifier_ver = 'sarvam-v2'` quality sample.
+            classifier_ver: servedBy ? `${servedBy}-intake-v2` : 'fallback-intake-v2',
           })
           .select('id')
           .single()
