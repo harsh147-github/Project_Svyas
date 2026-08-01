@@ -58,6 +58,7 @@ Read these fields:
 | `scrape.dead_sources` | `[]` or shrinking | lists sources returning zero → Step 2 |
 | `scrape.last_run_scraped` | `> 0` | `0` = every source failed at once (usually token or credit) |
 | `dispatch.last_dispatched_at` | recent date | `null` = has never sent → Step 4 |
+| `migrations.missing` | `[]` | each entry names a file in `ops/supabase/` that was committed but never applied. **Nothing applies these automatically** — the Supabase GitHub integration watches `supabase/`, not `ops/supabase/`, and skips this repo's PRs entirely. Escalate with the exact filename |
 
 > **If the endpoint is unreachable from your sandbox** (egress is restricted in
 > some environments — `curl` returns HTTP 000), say so plainly and continue
