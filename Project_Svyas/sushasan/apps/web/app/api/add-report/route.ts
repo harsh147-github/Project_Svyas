@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
 import { scrubPII } from '@/lib/pii'
-import { INTAKE_MODEL } from '@/lib/models'
+import { chatJSON } from '@/lib/ai'
 import { randomUUID, createHash } from 'crypto'
 
 // ── In-memory rate limiter: 10 reports per IP per 10 minutes ─────────────────
@@ -245,10 +244,14 @@ export async function POST(req: NextRequest) {
 
   let synthesized: Synthesized = buildFallback()
 
-  const anthropicKey = process.env.ANTHROPIC_API_KEY
-  if (anthropicKey) {
+  // Any configured provider is enough — this no longer requires Anthropic
+  // specifically, so citizen intake still synthesizes on a Sarvam-only deploy.
+  const hasProvider =
+    !!process.env.ANTHROPIC_API_KEY ||
+    !!process.env.SARVAM_API_KEY ||
+    !!process.env.BHARATGEN_API_KEY
+  if (hasProvider) {
     try {
-      const client = new Anthropic({ apiKey: anthropicKey })
       const context = (typeof lat === 'number' && typeof lng === 'number')
         ? `[GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)} → Ward ${resolvedWardId}, ${resolvedWardName}]\n\n`
         : `[Ward: ${resolvedWardId}, ${resolvedWardName}]\n\n`
@@ -260,33 +263,27 @@ export async function POST(req: NextRequest) {
         ? (photoMimeType as AllowedImageType)
         : 'image/jpeg'
 
-      // Build user content — text + optional photo for vision
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const userContent: any = photoBase64
-        ? [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: safePhotoMime,
-                data: photoBase64,
-              },
-            },
-            { type: 'text', text: `${context}${cleanText}\n\n[A photo of the issue has been attached above — use it to enrich the grievance description with specific visual details like exact damage, location markers, or severity indicators visible in the image.]` },
-          ]
+      // Routed through the provider layer so AI_PROVIDER switches citizen
+      // intake too. The photo (when present) rides as an `image` arg: the
+      // Anthropic path sends a native image block, OpenAI-compatible providers
+      // get the standard image_url data URI. If a sovereign provider rejects
+      // vision, chat()'s Anthropic fallback catches it — a photo-enriched
+      // grievance degrades, it never fails outright.
+      const userText = photoBase64
+        ? `${context}${cleanText}\n\n[A photo of the issue has been attached — use it to enrich the grievance description with specific visual details like exact damage, location markers, or severity indicators visible in the image.]`
         : `${context}${cleanText}`
 
-      const msg = await client.messages.create({
-        model: INTAKE_MODEL,
-        max_tokens: 800,
-        system: SYNTHESIZE_SYSTEM,
-        messages: [{ role: 'user', content: userContent }],
-      })
-      const raw = (msg.content[0] as { type: string; text: string }).text.trim()
-      const jsonStr = raw.startsWith('```')
-        ? raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
-        : raw
-      const parsed = JSON.parse(jsonStr) as Synthesized
+      const parsed = await chatJSON<Synthesized>(
+        {
+          task: 'synthesize',
+          callSite: 'add-report',
+          system: SYNTHESIZE_SYSTEM,
+          maxTokens: 800,
+          messages: [{ role: 'user', content: userText }],
+          ...(photoBase64 ? { image: { mediaType: safePhotoMime, base64: photoBase64 } } : {}),
+        },
+        (v) => !!v && typeof v === 'object',
+      )
       synthesized = parsed
     } catch (err) {
       console.error('[add-report] synthesis error:', err)

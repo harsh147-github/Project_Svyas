@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
+import { providerStatus } from '@/lib/ai'
+import { sovereigntyReport } from '@/lib/ai-telemetry'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -46,6 +48,22 @@ export async function GET(request: Request) {
   if (bySource) {
     const dead = Object.entries(bySource).filter(([, n]) => !(n > 0)).map(([s]) => s)
     if (dead.length >= 4) problems.push(`${dead.length} of ${Object.keys(bySource).length} scrape sources dead: ${dead.join(', ')}`)
+  }
+
+  // Sovereignty regressions are outages of a different kind: the site stays up
+  // while Sushaasan quietly stops being sovereign. Both cases below are silent
+  // by nature, which is exactly why they belong in the always-on alert rather
+  // than only in the daily sweep.
+  const provider = providerStatus()
+  if (provider.misconfigured) problems.push(provider.misconfigured)
+
+  const sov = await sovereigntyReport(24)
+  if (sov && sov.calls >= 10 && sov.sovereignty_pct !== null && sov.sovereignty_pct < 80) {
+    const worst = sov.top_failures[0]
+    problems.push(
+      `AI sovereignty at ${sov.sovereignty_pct}% — ${sov.fallbacks} of ${sov.calls} calls fell back to Claude` +
+        (worst ? ` (top cause: ${worst.kind}${worst.task ? ` on ${worst.task}` : ''}, ${worst.count}×)` : ''),
+    )
   }
 
   let alerted = false

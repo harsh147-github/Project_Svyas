@@ -8,7 +8,13 @@ export function missingEnv(keys: string[]): string[] {
 
 export const REQUIRED = {
   supabase: ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_KEY'],
-  ai: ['ANTHROPIC_API_KEY'],
+  // Sushaasan's target state is sovereign inference on Sarvam, with Anthropic
+  // as the fallback that keeps the product up while we close the gap. Both keys
+  // are therefore "required" today: without SARVAM_API_KEY the platform is not
+  // sovereign at all, and without ANTHROPIC_API_KEY a Sarvam outage is an
+  // outage. Once the fallback rate holds at zero, ANTHROPIC_API_KEY can be
+  // dropped from this list and from the deployment.
+  ai: ['SARVAM_API_KEY', 'ANTHROPIC_API_KEY'],
   scraping: ['APIFY_API_TOKEN'],
   email: ['RESEND_API_KEY', 'FOUNDER_EMAIL'],
   // Production-required, not optional. The /api/cron/* routes treat an unset

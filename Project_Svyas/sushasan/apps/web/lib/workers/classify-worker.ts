@@ -118,6 +118,7 @@ export const classifyPostsWorker = inngest.createFunction(
           const parsed = await chatJSON<ClassifiedPost>(
             {
               task: 'classify',
+              callSite: 'classify-worker',
               system: CLASSIFY_PROMPT,
               maxTokens: 512,
               messages: [{ role: 'user', content: `POST:\n${post.raw_text.slice(0, 2000)}` }],
