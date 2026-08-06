@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import ListenButton from '@/components/ui/ListenButton'
 import DocumentAttach from '@/components/report/DocumentAttach'
 import DictationSurface from '@/components/report/DictationSurface'
@@ -253,6 +254,10 @@ export function AddReportClient() {
   const [result, setResult] = useState<Result | null>(null)
   const [copied, setCopied] = useState(false)
   const [mediaSupported, setMediaSupported] = useState(false)
+  // Client-side nav: window.location.href was a full reload — re-downloading
+  // the bundle and re-initialising the map, which is what made this CTA feel
+  // slow on a phone.
+  const router = useRouter()
   const [voiceLang, setVoiceLang] = useState('auto')
   // What Saaras detected the citizen actually spoke — drives the readback voice.
   const [detectedLang, setDetectedLang] = useState<string | null>(null)
@@ -535,7 +540,7 @@ export function AddReportClient() {
 
           {/* Actions */}
           <div className="space-y-2.5 pt-1">
-            <button onClick={() => { window.location.href = `/?ward=${result.wardId}` }}
+            <button onClick={() => router.push(`/?ward=${result.wardId}`)}
                     className="w-full py-4 rounded-2xl text-[15px] font-semibold text-white
                                bg-navy hover:bg-navy/90 active:scale-[0.985]
                                flex items-center justify-center gap-2 transition-all">
