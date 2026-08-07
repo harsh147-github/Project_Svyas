@@ -299,8 +299,9 @@ function modelFor(provider: Provider, args: ChatArgs): string {
 
 function runProvider(provider: Provider, args: ChatArgs): Promise<string> {
   if (provider === 'sarvam') {
+    const baseUrl = process.env.SARVAM_BASE_URL ?? 'https://api.sarvam.ai/v1'
     return chatOpenAICompatible(args, {
-      url: process.env.SARVAM_API_URL ?? 'https://api.sarvam.ai/v1/chat/completions',
+      url: `${baseUrl.replace(/\/+$/, '')}/chat/completions`,
       key: process.env.SARVAM_API_KEY!,
       model: modelFor('sarvam', args),
       keyHeader: 'api-subscription-key',
