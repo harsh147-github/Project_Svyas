@@ -13,7 +13,8 @@ import { isSupabaseConfigured, createServerClient } from './supabase'
 
 export type AiOutcome = 'ok' | 'fallback' | 'error'
 export type ErrorKind =
-  | 'auth' | 'rate_limit' | 'timeout' | 'server' | 'bad_request' | 'bad_json' | 'unknown'
+  | 'auth' | 'rate_limit' | 'timeout' | 'server' | 'bad_request' | 'bad_json' | 'truncation'
+  | 'circuit_open' | 'unknown'
 
 export type AiEvent = {
   intendedProvider: string
@@ -40,8 +41,20 @@ export function classifyError(err: unknown): ErrorKind {
   const msg = err instanceof Error ? err.message : String(err)
   const name = err instanceof Error ? err.name : ''
 
+  // Explicitly flagged by lib/ai.ts's continuation-retry logic — a response
+  // still truncated at max_tokens after one retry. Must be checked before
+  // the bad_json heuristic below: truncated JSON also fails JSON.parse, and
+  // used to get bucketed as 'bad_json' ("tighten the prompt") instead of
+  // 'truncation' ("raise maxTokens") — the daily fix list read the wrong
+  // diagnosis for every truncation.
+  if (err instanceof Error && (err as Error & { truncation?: boolean }).truncation) return 'truncation'
   if (name === 'AbortError' || name === 'TimeoutError' || /timeout|timed out|ETIMEDOUT/i.test(msg)) return 'timeout'
-  if (err instanceof SyntaxError || /validation failed|JSON/i.test(msg)) return 'bad_json'
+  // `JSON` alone used to match provider 400 bodies that merely mention the
+  // word (e.g. "response_format not supported: invalid json schema") and
+  // mis-bucket a config/request problem as our own parse failure. Only
+  // classifyError callers that constructed the error via chatJSON's own
+  // 'validation failed' or JSON.parse's SyntaxError should land here.
+  if (err instanceof SyntaxError || /validation failed/i.test(msg)) return 'bad_json'
 
   // Provider errors are thrown as `${model} ${status}: ${body}` by chatOpenAICompatible.
   const status = Number(msg.match(/\s(\d{3}):/)?.[1])

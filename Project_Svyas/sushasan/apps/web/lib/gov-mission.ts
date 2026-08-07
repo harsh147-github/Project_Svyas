@@ -149,9 +149,14 @@ export function missionToContext(m: Mission): string {
   if (m.ward.annual_budget_inr) lines.push(`Annual ward allocation (approx): ₹${m.ward.annual_budget_inr.toLocaleString('en-IN')}.`)
   lines.push(`ISSUE TYPE: ${m.issueTag}.`)
   if (c) {
-    lines.push(`WHAT IS HAPPENING: ${c.centroid_text}`)
+    // centroid_text/gov_summary are LLM-derived from scraped social text, not
+    // raw — but still untrusted content one hop removed. Delimited like the
+    // raw-text call sites (classify-worker, add-report) for the same reason:
+    // the gov copilot's system prompt (lib/agents SYSTEM in app/api/gov/assist)
+    // treats <post> content as data, never instructions.
+    lines.push(`WHAT IS HAPPENING: <post>${c.centroid_text}</post>`)
     lines.push(`EVIDENCE: ${c.post_count} citizen/public reports; average severity ${(c.severity_avg ?? 0).toFixed(1)}/5; sources: ${(c.source_platforms ?? []).join(', ') || 'mixed public'}; status: ${c.status}.`)
-    if (c.gov_summary) lines.push(`GOV SUMMARY: ${c.gov_summary}`)
+    if (c.gov_summary) lines.push(`GOV SUMMARY: <post>${c.gov_summary}</post>`)
   }
   if (s) {
     lines.push(`AI BATTLE PLAN (indicative): ${s.summary}`)
