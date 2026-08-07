@@ -7,6 +7,7 @@ import { chatJSON, activeProvider } from '../ai'
 import { toBool, toNum } from '../coerce'
 import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
+import { weekStart } from '../week'
 
 const SOLUTION_PROMPT = (ctx: {
   ward_name: string; ward_number: string; corporator_name: string
@@ -60,9 +61,13 @@ export const solutionSynthesisWorker = inngest.createFunction(
       // Sunday 21:00 IST = 15:30 UTC (IST is UTC+5:30)
       { cron: '30 15 * * 0' },
       { event: 'sushasan/solution.generate' },
+      // Emitted by daily-pipeline when a cluster's post_count grows ≥20% or
+      // ≥5 since its last solution — an exploding issue gets a fresh brief
+      // within hours instead of waiting for the next Sunday batch.
+      { event: 'sushasan/clusters.grew' },
     ],
   },
-  async ({ step }: { step: any }) => {
+  async ({ event, step }: { event?: { name?: string; data?: { clusterId?: string } }; step: any }) => {
     const db = createServerClient()
     // Routed through lib/ai.ts so AI_PROVIDER can switch this worker to Sarvam
     // or BharatGen. Defaults to Anthropic; chat() falls back to Anthropic
@@ -76,14 +81,24 @@ export const solutionSynthesisWorker = inngest.createFunction(
     }
     console.log(`[solution-worker] ai provider=${activeProvider()}`)
 
-    // Get all open clusters with enough posts to synthesize
-    const { data: clusters, error } = await db
-      .from('clusters')
-      .select('id, ward_id, issue_tag, centroid_text, post_count, severity_avg')
-      .in('status', ['open', 'in_progress'])
-      .gte('post_count', 3)
-      .order('severity_avg', { ascending: false })
-      .limit(20)  // Cap per run to control Opus token spend
+    // A growth-triggered run regenerates exactly the one cluster that grew,
+    // bypassing the "already generated this week" skip below — that skip
+    // exists to stop the weekly batch from redoing unchanged clusters, not
+    // to block a genuinely fresh brief for a cluster that just exploded.
+    const growthClusterId = event?.name === 'sushasan/clusters.grew' ? event?.data?.clusterId : undefined
+    const forceRegenerate = !!growthClusterId
+
+    // Get all open clusters with enough posts to synthesize — or, on a
+    // growth trigger, just the one cluster that grew.
+    const { data: clusters, error } = growthClusterId
+      ? await db.from('clusters').select('id, ward_id, issue_tag, centroid_text, post_count, severity_avg').eq('id', growthClusterId)
+      : await db
+          .from('clusters')
+          .select('id, ward_id, issue_tag, centroid_text, post_count, severity_avg')
+          .in('status', ['open', 'in_progress'])
+          .gte('post_count', 3)
+          .order('severity_avg', { ascending: false })
+          .limit(20) // Cap per run to control Opus token spend
 
     if (error || !clusters?.length) return { synthesized: 0 }
 
@@ -99,22 +114,23 @@ export const solutionSynthesisWorker = inngest.createFunction(
       corporator_name: string; annual_budget_inr: number
     }) => [w.id, w]))
 
-    const weekStart = new Date()
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay())
-    const weekStartStr = weekStart.toISOString().split('T')[0]
+    const weekStartStr = weekStart()
 
     let synthesized = 0
     for (const cluster of clusters) {
       await step.run(`synthesize-${cluster.id}`, async () => {
-        // Skip if solution already exists for this week
-        const { data: existing } = await db
-          .from('solutions')
-          .select('id')
-          .eq('ward_id', cluster.ward_id)
-          .eq('issue_tag', cluster.issue_tag)
-          .eq('week_start', weekStartStr)
-          .maybeSingle()
-        if (existing) return
+        // Skip if solution already exists for this week — unless this run
+        // was triggered by growth, in which case regenerating IS the point.
+        if (!forceRegenerate) {
+          const { data: existing } = await db
+            .from('solutions')
+            .select('id')
+            .eq('ward_id', cluster.ward_id)
+            .eq('issue_tag', cluster.issue_tag)
+            .eq('week_start', weekStartStr)
+            .maybeSingle()
+          if (existing) return
+        }
 
         const ward = wardMap.get(cluster.ward_id)
         const ctx = {
@@ -163,6 +179,7 @@ export const solutionSynthesisWorker = inngest.createFunction(
             budget_feasible: toBool(parsed.budget_feasible),
             status: 'published',
             generated_at: new Date().toISOString(),
+            post_count_at_generation: cluster.post_count ?? 0,
           }, { onConflict: 'ward_id,issue_tag,week_start' })
 
           synthesized++

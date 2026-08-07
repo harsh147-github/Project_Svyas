@@ -146,9 +146,40 @@ async function run() {
   const legacyMasterToken = process.env.GOV_ACCESS_TOKEN ?? ''
 
   const snap = await getDashboardSnapshot()
+
+  // Solution generation (weekly synthesis) used to run on a different cadence
+  // than dispatch (daily) with no memory of what was already sent — officers
+  // got the identical brief for the same solution up to 7×/week, which reads
+  // as spam and erodes exactly the trust this product needs from them.
+  // Skip any mission dispatched in the last 6 days UNLESS its solution was
+  // regenerated more recently than that dispatch (a genuinely fresh brief
+  // for an already-notified mission should still go out).
+  const lastDispatchByMission = new Map<string, string>()
+  if (isSupabaseConfigured()) {
+    try {
+      const db = createServerClient()
+      const sixDaysAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
+      const { data: recent } = await db
+        .from('dispatch_log')
+        .select('mission_id, dispatched_at')
+        .gte('dispatched_at', sixDaysAgo)
+        .order('dispatched_at', { ascending: false })
+      for (const row of (recent ?? []) as { mission_id: string; dispatched_at: string }[]) {
+        if (!lastDispatchByMission.has(row.mission_id)) lastDispatchByMission.set(row.mission_id, row.dispatched_at)
+      }
+    } catch (e) { console.error('[gov-dispatch] dispatch_log lookup:', e) }
+  }
+
   // Rank open/in-progress solutions by priority; one brief per (ward, issue).
+  // 'preview' solutions are synthesized placeholders (see
+  // getDashboardSnapshot) with made-up cost estimates — never real enough to
+  // dispatch to an officer as if they were a generated brief.
   const ranked = snap.solutions
-    .filter((s) => ['published', 'draft', 'actioned', 'in_progress', 'preview'].includes(s.status))
+    .filter((s) => ['published', 'draft', 'actioned', 'in_progress'].includes(s.status))
+    .filter((s) => {
+      const lastSent = lastDispatchByMission.get(missionId(s.ward_id, s.issue_tag))
+      return !lastSent || String(s.generated_at ?? '') > lastSent
+    })
     .sort((a, b) => (b.priority_score ?? 0) - (a.priority_score ?? 0))
     .slice(0, TOP_N)
 

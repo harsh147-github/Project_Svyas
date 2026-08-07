@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthed } from '@/lib/auth'
 import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
 import { chatJSON } from '@/lib/ai'
+import { weekStart } from '@/lib/week'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -137,14 +138,6 @@ async function generateOne(
     throw new Error('Invalid Opus output — missing summary or steps')
   }
   return parsed
-}
-
-function weekStart(): string {
-  const now = new Date()
-  const day = now.getUTCDay()
-  const diff = now.getUTCDate() - day + (day === 0 ? -6 : 1)
-  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), diff))
-  return monday.toISOString().split('T')[0]
 }
 
 type GenerateOpts = { ward_id?: string; all?: boolean; top_n?: number; force?: boolean }

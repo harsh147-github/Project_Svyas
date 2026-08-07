@@ -11,6 +11,7 @@
  */
 import { chatJSON, activeProvider, type Provider } from '../ai'
 import { toBool, toInt } from '../coerce'
+import { WARDS, isKnownWardId } from '../wards'
 
 // Closed vocabularies. The `posts` table and the ward map key off issue_tag,
 // so a model returning "Traffic", "roads", or a sentence would silently create
@@ -27,7 +28,6 @@ const SUB_TAGS: Record<string, string[]> = {
   garbage: ['overflow', 'irregular-pickup', 'dumping', 'drain-block'],
   other: [],
 }
-const PILOT_WARDS = new Set(['25', '26', '41', '42', '43', '44', '46', '47'])
 
 function normaliseIssueTag(v: unknown): (typeof ISSUE_TAGS)[number] {
   const t = String(v ?? '').trim().toLowerCase()
@@ -42,15 +42,20 @@ function normaliseSubTags(tags: unknown, issueTag: string): string[] {
 }
 
 /**
- * A ward outside the pilot GeoJSON cannot be rendered and would put a real
- * problem on no map at all. Null is the honest answer — the ward-matching pass
- * can revisit it later; a fabricated number cannot be distinguished from a
- * real one after the fact.
+ * A ward outside the real 58-ward PMC registry (lib/wards.ts) cannot be
+ * rendered and would put a real problem on no map at all. Null is the
+ * honest answer — the ward-matching pass can revisit it later; a fabricated
+ * number cannot be distinguished from a real one after the fact.
+ *
+ * This used to check against a hardcoded 8-ward PILOT_WARDS set — any post
+ * the model correctly placed in one of the other 50 real wards got
+ * silently discarded to null, and the War Room showed zero citizen evidence
+ * for those wards regardless of how much real signal existed.
  */
 function normaliseWardId(v: unknown): string | null {
   if (v === null || v === undefined || v === '') return null
   const w = String(v).trim()
-  return PILOT_WARDS.has(w) ? w : null
+  return isKnownWardId(w) ? w : null
 }
 
 // Shape the classifier prompt is contracted to return. Everything except
@@ -73,12 +78,24 @@ import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
 import { scrubPII } from '../pii'
 
+// Generated from lib/wards.ts — the single ward registry — instead of a
+// hardcoded, drifted list. This prompt used to hand the model only 8 of
+// Pune's 58 wards, with the labels for two of them simply wrong: it told
+// the model "47 = Salunke Vihar / Wanowrie" when the real PMC ward 47 is
+// Kondhwa Bk - Yewalewadi (Salunke Vihar is ward 43). Every listed ward now
+// comes straight from the registry, so this can never drift from the
+// scraper's own ward matching again.
+function wardListForPrompt(): string {
+  return WARDS.map((w) => `"${w.id}" = ${w.name}`).join('\n              ')
+}
+
 // Written to be followed literally by any model, not just Claude. Sushaasan
 // runs on Sarvam, and smaller models follow a worked example far more reliably
 // than a schema sketch with `1-5` style placeholders — which some will echo
 // back verbatim. Hence: real example values, closed vocabularies, and an
 // explicit instruction to prefer null over a guess.
-const CLASSIFY_PROMPT = `You are a civic issue classifier for Pune, India.
+function buildClassifyPrompt(): string {
+  return `You are a civic issue classifier for Pune, India.
 Given a social media post, extract structured civic intelligence.
 
 Output ONLY a JSON object. No markdown fences, no commentary, no preamble.
@@ -102,9 +119,8 @@ FIELDS
                   General complaining, opinion, or news commentary is false.
 - civic_ask   one short sentence naming what should be done, or null
 - translated_text_en  English translation if the post is Hindi/Marathi; otherwise copy the original text
-- ward_id     string. Valid values: "25", "26", "41", "42", "43", "44", "46", "47".
-              "46" = NIBM / Mohammadwadi / Undri / Pisoli.
-              "47" = Salunke Vihar / Wanowrie / Kondhwa.
+- ward_id     string. Valid values (id = PMC ward name):
+              ${wardListForPrompt()}
               If the location does not clearly fall in a listed ward, return null.
               Never guess a ward number — null is correct and useful; a wrong
               ward puts the problem on the wrong map and misinforms an officer.
@@ -115,6 +131,11 @@ Output:
 {"issue_tag":"traffic","sub_tags":["signal-failure","junction-jam"],"severity":3,"sentiment":-2,"cited_location":"NIBM Road","cited_time":"every morning","is_actionable":true,"civic_ask":"Repair the traffic signal on NIBM Road","translated_text_en":"Every morning the signal on NIBM road stays off, 20 minute jam. Do something PMC","ward_id":"46"}
 
 Return the JSON object only.`
+}
+
+// Built once per cold start (WARDS is static), not per-post — the prompt
+// text itself doesn't change within a single worker invocation.
+const CLASSIFY_PROMPT = buildClassifyPrompt()
 
 async function getVoyageEmbedding(text: string): Promise<number[] | null> {
   const key = process.env.VOYAGE_API_KEY

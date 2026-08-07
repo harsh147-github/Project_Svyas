@@ -90,6 +90,7 @@ export type Solution = {
   status: string
   actioned_at: string | null
   resolved_at: string | null
+  generated_at?: string | null
 }
 
 const WARDS: Ward[] = [
@@ -103,8 +104,11 @@ const WARDS: Ward[] = [
     tier: 'pilot',
   },
   {
+    // Real PMC ward 47 is Kondhwa Bk – Yewalewadi (see lib/wards.ts and
+    // public/geojson/wards-pilot.geojson) — this seed entry previously said
+    // "Salunke Vihar – Wanowrie", which is actually ward 43.
     id: '47',
-    name: 'Salunke Vihar – Wanowrie',
+    name: 'Kondhwa Bk – Yewalewadi',
     corporator_name: 'TBD — Contact Sushaasan',
     party: '',
     ward_number: 47,
@@ -113,12 +117,12 @@ const WARDS: Ward[] = [
   },
   {
     id: '43',
-    name: 'Wanowrie – Kausar Baug',
+    name: 'Wanawadi – Kausar Baug (Salunke Vihar)',
     corporator_name: 'TBD — Contact Sushaasan',
     party: '',
     ward_number: 43,
     annual_budget_inr: 2_70_00_000,
-    tier: 'context',
+    tier: 'pilot',
   },
   // Context wards — full ward detail page works for these too
   { id: '4',  name: 'Kharadi – EON IT Park',                 ward_number: 4,  corporator_name: 'TBD — Contact Sushaasan', party: '', annual_budget_inr: 3_10_00_000, tier: 'context' },
