@@ -182,15 +182,20 @@ function envTimeout(key: string, fallback: number): number {
   return Math.min(n, 280)
 }
 
-function apifyUrl(actor: string, token: string, timeoutSec: number) {
-  return `https://api.apify.com/v2/acts/${actor}/run-sync-get-dataset-items?token=${token}&timeout=${timeoutSec}`
+// Apify's REST API accepts the token as either a `?token=` query param or an
+// `Authorization: Bearer` header — the query-param form puts the token in
+// plain text in every upstream proxy/CDN access log this request passes
+// through. Use the header instead; only `timeout` (not a secret) stays in
+// the query string.
+function apifyUrl(actor: string, timeoutSec: number) {
+  return `https://api.apify.com/v2/acts/${actor}/run-sync-get-dataset-items?timeout=${timeoutSec}`
 }
 
 async function apifyPost(actor: string, token: string, body: unknown, timeoutSec: number): Promise<Array<Record<string, unknown>>> {
   try {
-    const res = await fetch(apifyUrl(actor, token, timeoutSec), {
+    const res = await fetch(apifyUrl(actor, timeoutSec), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout((timeoutSec + 20) * 1000),
     })

@@ -145,6 +145,7 @@ async function getVoyageEmbedding(text: string): Promise<number[] | null> {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
       body: JSON.stringify({ model: 'voyage-3', input: [text.slice(0, 8000)] }),
+      signal: AbortSignal.timeout(15_000),
     })
     if (!res.ok) return null
     const data = await res.json() as { data?: [{ embedding: number[] }] }

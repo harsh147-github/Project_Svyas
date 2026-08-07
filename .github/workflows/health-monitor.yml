@@ -4,6 +4,14 @@ name: Health Monitor (map growth alarm)
 # If the last pipeline run is stale (> 26h) or there are no clusters, this job
 # FAILS — GitHub then emails the repo owner. This is the "never silently break
 # again" safety net.
+#
+# IMPORTANT LIMITATION: GitHub auto-disables scheduled workflows after 60
+# days of repository inactivity (no commits) — this alarm can silently kill
+# itself with no notification at all, which is exactly the failure mode it
+# exists to prevent for the rest of the system. Do not treat this as the
+# only monitor: point an external prober (BetterStack, UptimeRobot,
+# cron-job.org, ...) at GET /api/health?token=<ADMIN_TOKEN> as the primary
+# always-on check, and keep this workflow as a secondary/independent one.
 
 on:
   schedule:
@@ -19,8 +27,19 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check /api/health
+        env:
+          # /api/health's public response used to be the full payload this
+          # workflow parses below; it's now `{status, timestamp}` only (an
+          # unauthenticated attack roadmap otherwise — missing env vars,
+          # whether CRON_SECRET is set, dead scrape sources, AI provider
+          # config). The detailed body this workflow needs is now
+          # ADMIN_TOKEN-gated. Add ADMIN_TOKEN as a repo secret
+          # (Settings → Secrets and variables → Actions) for this to keep
+          # working — without it every field below is undefined and every
+          # `fail(...)` check trips.
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
         run: |
-          curl -sS -m 30 "$BASE_URL/api/health" -o /tmp/health.json -w 'health HTTP %{http_code}\n'
+          curl -sS -m 30 "$BASE_URL/api/health?token=$ADMIN_TOKEN" -o /tmp/health.json -w 'health HTTP %{http_code}\n'
           cat /tmp/health.json
           node <<'EOF'
           const h = require('/tmp/health.json')

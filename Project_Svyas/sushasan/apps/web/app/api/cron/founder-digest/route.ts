@@ -21,6 +21,7 @@ async function send(html: string, subject: string): Promise<boolean> {
       method: 'POST',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: process.env.DISPATCH_FROM ?? 'Sushaasan <briefs@sushaasan.in>', to: [to], subject, html }),
+      signal: AbortSignal.timeout(15_000),
     })
     if (!r.ok) {
       // Same swallowed-error bug as gov-dispatch had: without this body the

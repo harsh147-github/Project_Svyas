@@ -41,6 +41,7 @@ async function sendEmail(to: string[], subject: string, html: string): Promise<b
         from: process.env.DISPATCH_FROM ?? 'Sushaasan <briefs@sushaasan.in>',
         to, subject, html,
       }),
+      signal: AbortSignal.timeout(15_000),
     })
     if (!res.ok) {
       // dispatch.last_dispatched_at has been null in production with no

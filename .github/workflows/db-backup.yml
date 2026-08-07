@@ -1,0 +1,62 @@
+name: Nightly Supabase backup
+
+# raw_posts is documented as immutable and posts/clusters/solutions/
+# official_actions are the entire product's data — none of it currently has
+# a backup strategy. Two options exist (see PHASE_BRIEF §3.5): enable
+# Supabase's built-in Point-in-Time-Recovery in the dashboard (Settings →
+# Database → Backups — a paid-plan feature, not something this workflow can
+# turn on), or a nightly logical dump to object storage. This workflow does
+# the latter, and is inert (skips cleanly) until the required secrets are
+# added — it does not replace enabling PITR if that's available on the
+# project's plan; use both if possible.
+#
+# Required repo secrets to activate:
+#   SUPABASE_DB_URL        postgres connection string (Supabase → Settings → Database)
+#   R2_ACCOUNT_ID           Cloudflare R2 (or S3-compatible) account id
+#   R2_ACCESS_KEY_ID
+#   R2_SECRET_ACCESS_KEY
+#   R2_BUCKET               bucket name to store dumps in
+
+on:
+  schedule:
+    - cron: '15 21 * * *'  # 21:15 UTC — after the daily pipeline + dispatch windows
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check required secrets
+        id: check
+        run: |
+          if [ -z "${{ secrets.SUPABASE_DB_URL }}" ] || [ -z "${{ secrets.R2_ACCOUNT_ID }}" ] || [ -z "${{ secrets.R2_BUCKET }}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Backup secrets not configured (SUPABASE_DB_URL / R2_ACCOUNT_ID / R2_BUCKET) — skipping. See this workflow's header for setup."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install postgresql-client
+        if: steps.check.outputs.configured == 'true'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+
+      - name: Dump database
+        if: steps.check.outputs.configured == 'true'
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          pg_dump "$SUPABASE_DB_URL" --no-owner --no-privileges -F c -f "sushasan_$(date -u +%Y%m%dT%H%M%SZ).dump"
+
+      - name: Upload to R2
+        if: steps.check.outputs.configured == 'true'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_EC2_METADATA_DISABLED: "true"
+        run: |
+          pip install --quiet awscli
+          FILE=$(ls sushasan_*.dump)
+          aws s3 cp "$FILE" "s3://${{ secrets.R2_BUCKET }}/$FILE" \
+            --endpoint-url "https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com"
+          echo "Uploaded $FILE to R2 bucket ${{ secrets.R2_BUCKET }}"

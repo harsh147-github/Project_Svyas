@@ -119,11 +119,25 @@ export function providerStatus(): {
 }
 
 // ── Anthropic (Claude) ───────────────────────────────────────────────────────
+// Hoisted to module scope with an explicit timeout + retry policy. The
+// sovereign (Sarvam/BharatGen) path has always had AbortSignal.timeout via
+// envTimeoutMs(); this is also the FALLBACK path — a hung Anthropic socket
+// with no timeout meant a Sarvam failure could be followed by an
+// indefinitely-hanging "fallback" instead of either succeeding or failing
+// fast. `new Anthropic()` per-call also skipped the SDK's connection reuse.
+let anthropicClient: Anthropic | null = null
+function getAnthropicClient(apiKey: string): Anthropic {
+  if (!anthropicClient) {
+    anthropicClient = new Anthropic({ apiKey, timeout: envTimeoutMs(), maxRetries: 2 })
+  }
+  return anthropicClient
+}
+
 async function chatAnthropic(args: ChatArgs): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY missing')
   const model = args.task === 'synthesize' ? ASSIST_SYNTH_MODEL : ASSIST_MODEL
-  const client = new Anthropic({ apiKey })
+  const client = getAnthropicClient(apiKey)
   // Attach the image to the final user turn, as a native Anthropic image block.
   const msgs = args.image
     ? args.messages.map((m, i) =>
@@ -315,6 +329,32 @@ function runProvider(provider: Provider, args: ChatArgs): Promise<string> {
     })
   }
   return chatAnthropic(args)
+}
+
+/**
+ * Direct, single-provider probe — bypasses chat()'s fallback so a caller can
+ * check one provider's health in isolation. Used by uptime-check's daily
+ * model-id canary: lib/models.ts hardcodes fallback model IDs
+ * (claude-sonnet-4-6 etc.) that silently become invalid if the model is
+ * deprecated, and every AI route degrades quietly (console logs only) when
+ * that happens. This makes the failure loud instead.
+ */
+export async function probeProvider(provider: Provider): Promise<{ ok: true } | { ok: false; error: string }> {
+  const key = provider === 'sarvam' ? process.env.SARVAM_API_KEY
+    : provider === 'bharatgen' ? process.env.BHARATGEN_API_KEY
+    : process.env.ANTHROPIC_API_KEY
+  if (!key) return { ok: false, error: `${provider}: no API key configured` }
+  try {
+    await runProvider(provider, {
+      system: 'Reply with exactly one word.',
+      messages: [{ role: 'user', content: 'ping' }],
+      maxTokens: 8,
+      task: 'assist',
+    })
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) }
+  }
 }
 
 export async function chat(args: ChatArgs): Promise<string> {
