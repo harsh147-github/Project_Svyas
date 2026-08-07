@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
 import { missingEnv, REQUIRED } from '@/lib/env-check'
 import { providerStatus } from '@/lib/ai'
 import { sovereigntyReport } from '@/lib/ai-telemetry'
+import { isAdminAuthed } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -53,16 +54,29 @@ async function migrationReport(db: ReturnType<typeof createServerClient>) {
   }
 }
 
+function noStore(body: unknown, init?: { status?: number }) {
+  const res = NextResponse.json(body, init)
+  res.headers.set('Cache-Control', 'no-store')
+  return res
+}
+
 /**
  * GET /api/health
- * Public pipeline health check — returns row counts and last pipeline run.
- * Used for autonomous monitoring without requiring auth.
+ *
+ * Public response is deliberately minimal — `{status, timestamp}` only. The
+ * full breakdown (missing env vars, whether CRON_SECRET is set, dead scrape
+ * sources, AI provider config) used to be served to anyone: an unauthenticated
+ * attack roadmap. It's still available, but only with ADMIN_TOKEN (header
+ * `x-admin-token` or `?token=`) — pass that to external monitors instead of
+ * scraping the public body.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const detailed = isAdminAuthed(req)
   const supabaseReady = isSupabaseConfigured()
 
   if (!supabaseReady) {
-    return NextResponse.json({
+    if (!detailed) return noStore({ status: 'degraded', timestamp: new Date().toISOString() })
+    return noStore({
       status: 'seed-mode',
       message: 'Supabase not configured — running on seed data',
       supabase: false,
@@ -147,7 +161,18 @@ export async function GET() {
       ? Object.entries(bySource).filter(([, n]) => !(n > 0)).map(([s]) => s)
       : []
 
-    return NextResponse.json({
+    const isOk =
+      pipelineHealthy &&
+      classifyKeepingPace !== false &&
+      !provider.misconfigured &&
+      deadSources.length < 4 &&
+      (sovereignty === null || sovereignty.calls === 0 || (sovereignty.sovereignty_pct ?? 100) >= 50)
+
+    if (!detailed) {
+      return noStore({ status: isOk ? 'ok' : 'degraded', timestamp: new Date().toISOString() })
+    }
+
+    return noStore({
       status: pipelineHealthy ? 'live' : 'idle',
       supabase: true,
       env: envReport(),
@@ -203,7 +228,8 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     })
   } catch (err) {
-    return NextResponse.json({
+    if (!detailed) return noStore({ status: 'degraded', timestamp: new Date().toISOString() }, { status: 500 })
+    return noStore({
       status: 'error',
       error: String(err),
       supabase: true,

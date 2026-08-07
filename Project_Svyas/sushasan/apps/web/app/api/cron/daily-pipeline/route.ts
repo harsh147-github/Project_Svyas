@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import crypto from 'node:crypto'
 import { createServerClient, isSupabaseConfigured } from '../../../../lib/supabase'
 import { inngest } from '../../../../lib/inngest'
+import { isCronAuthorized } from '../../../../lib/cron-auth'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -752,18 +753,9 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   }
 }
 
-function checkAuth(request: Request): boolean {
-  const cronSecret = process.env.CRON_SECRET
-  // If CRON_SECRET not configured, allow all calls (dev/staging)
-  if (!cronSecret) return true
-  const authHeader = request.headers.get('authorization')
-  return authHeader === `Bearer ${cronSecret}`
-}
-
 export async function GET(request: Request) {
-  if (!checkAuth(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = isCronAuthorized(request)
+  if (!auth.ok) return auth.response
   try {
     const result = await runPipeline('cron')
     return NextResponse.json({ ok: true, ...result, timestamp: new Date().toISOString() })
@@ -773,9 +765,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!checkAuth(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = isCronAuthorized(request)
+  if (!auth.ok) return auth.response
   try {
     const result = await runPipeline('manual')
     return NextResponse.json({ ok: true, ...result, timestamp: new Date().toISOString() })

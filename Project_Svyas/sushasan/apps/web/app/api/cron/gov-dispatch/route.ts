@@ -6,6 +6,7 @@ import { buildBrief, type Brief } from '@/lib/gov-brief'
 import { isWhatsAppConfigured, sendWhatsApp, waShareLink } from '@/lib/whatsapp'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
 import { missingEnv, REQUIRED } from '@/lib/env-check'
+import { isCronAuthorized } from '@/lib/cron-auth'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -24,15 +25,9 @@ export const dynamic = 'force-dynamic'
 //     an audit trail of what was sent to whom, when.
 //
 // Runs at 05:00 UTC — after the 03:30 scrape + classification, so briefs carry
-// today's data. Cron-gated (open when CRON_SECRET is unset, like the others).
+// today's data. Cron-gated via lib/cron-auth (fails closed in production).
 
 const TOP_N = 12
-
-function checkAuth(req: Request): boolean {
-  const secret = process.env.CRON_SECRET
-  if (!secret) return true
-  return req.headers.get('authorization') === `Bearer ${secret}`
-}
 
 async function sendEmail(to: string[], subject: string, html: string): Promise<boolean> {
   const key = process.env.RESEND_API_KEY
@@ -208,7 +203,8 @@ export async function GET(req: Request) {
   if (missing.length) {
     console.error(`[env] missing required keys for dispatch: ${missing.join(', ')}`)
   }
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = isCronAuthorized(req)
+  if (!auth.ok) return auth.response
   try { return NextResponse.json(await run()) }
   catch (e) { return NextResponse.json({ ok: false, error: String(e) }, { status: 500 }) }
 }
@@ -218,7 +214,8 @@ export async function POST(req: Request) {
   if (missing.length) {
     console.error(`[env] missing required keys for dispatch: ${missing.join(', ')}`)
   }
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = isCronAuthorized(req)
+  if (!auth.ok) return auth.response
   try { return NextResponse.json(await run()) }
   catch (e) { return NextResponse.json({ ok: false, error: String(e) }, { status: 500 }) }
 }

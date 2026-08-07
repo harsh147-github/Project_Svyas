@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
 import { missingEnv, REQUIRED } from '@/lib/env-check'
+import { isCronAuthorized } from '@/lib/cron-auth'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -8,13 +9,8 @@ export const dynamic = 'force-dynamic'
 // Weekly founder digest — the "you do nothing but stay fully informed" loop.
 // Emails a one-glance summary of the week (growth, reports, grievances solved,
 // stale hotspots that need a nudge) to FOUNDER_EMAIL via Resend. Runs on a cron;
-// degrades to JSON when email/DB aren't configured. Cron-gated (open when unset).
-
-function authed(req: Request): boolean {
-  const s = process.env.CRON_SECRET
-  if (!s) return true
-  return req.headers.get('authorization') === `Bearer ${s}`
-}
+// degrades to JSON when email/DB aren't configured. Cron-gated via
+// lib/cron-auth (fails closed in production).
 
 async function send(html: string, subject: string): Promise<boolean> {
   const key = process.env.RESEND_API_KEY
@@ -117,7 +113,8 @@ export async function GET(req: Request) {
   if (missing.length) {
     console.error(`[env] missing required keys for dispatch: ${missing.join(', ')}`)
   }
-  if (!authed(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = isCronAuthorized(req)
+  if (!auth.ok) return auth.response
   try { return NextResponse.json(await run(req)) }
   catch (e) { return NextResponse.json({ ok: false, error: String(e) }, { status: 500 }) }
 }

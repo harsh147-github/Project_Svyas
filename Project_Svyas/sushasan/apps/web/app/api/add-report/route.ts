@@ -4,37 +4,14 @@ import { scrubPII } from '@/lib/pii'
 import { chatJSON, type Provider } from '@/lib/ai'
 import { toInt } from '@/lib/coerce'
 import { randomUUID, createHash } from 'crypto'
+import { checkRateLimit, clientIp } from '@/lib/rate-limit'
 
-// ── In-memory rate limiter: 10 reports per IP per 10 minutes ─────────────────
-// Per-instance (fine for Vercel serverless — each cold start gets a fresh map).
-// For multi-instance rate limiting, wire Redis/Upstash when scaling.
-const _rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 const RATE_LIMIT = 10
-const RATE_WINDOW_MS = 10 * 60 * 1000  // 10 minutes
-const PRUNE_THRESHOLD = 5000           // cap memory under a flood of unique IPs
+const RATE_WINDOW_SEC = 10 * 60 // 10 minutes
 
-// Drop expired entries so a burst of unique IPs can't grow the map unbounded
-// and OOM the serverless instance. (For multi-instance durable limiting at
-// scale, front this with Upstash Redis — see docs/SCALING.md.)
-function pruneRateLimit(now: number) {
-  if (_rateLimitMap.size < PRUNE_THRESHOLD) return
-  for (const [ip, entry] of _rateLimitMap) {
-    if (now >= entry.resetAt) _rateLimitMap.delete(ip)
-  }
-}
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  pruneRateLimit(now)
-  const entry = _rateLimitMap.get(ip)
-  if (!entry || now >= entry.resetAt) {
-    _rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS })
-    return true
-  }
-  if (entry.count >= RATE_LIMIT) return false
-  entry.count++
-  return true
-}
+// 2MB cap on the whole request body — photoBase64 was previously unbounded
+// and forwarded straight to the LLM as an image payload.
+const MAX_BODY_BYTES = 2 * 1024 * 1024
 
 // ── Ward centroids for all 58 PMC electoral wards (from real GeoJSON) ─────────
 // Corrected from actual ward boundary centroids — GPS reports now resolve
@@ -160,18 +137,29 @@ Rules:
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  // Rate limit: 10 reports per IP per 10 minutes
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-  if (!checkRateLimit(ip)) {
+  // Rate limit: 10 reports per IP per 10 minutes (durable across serverless
+  // instances via Upstash — see lib/rate-limit.ts)
+  const ip = clientIp(req)
+  const withinLimit = await checkRateLimit('add-report', ip, { limit: RATE_LIMIT, windowSec: RATE_WINDOW_SEC })
+  if (!withinLimit) {
     return NextResponse.json(
       { error: 'Too many reports. Please wait a few minutes before submitting again.' },
       { status: 429 }
     )
   }
 
+  const contentLength = Number(req.headers.get('content-length') ?? '0')
+  if (contentLength > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: 'Request too large (max 2MB)' }, { status: 413 })
+  }
+
   let body: { text?: string; lat?: number; lng?: number; wardId?: string; photoBase64?: string; photoMimeType?: string }
   try {
-    body = await req.json()
+    const raw = await req.text()
+    if (raw.length > MAX_BODY_BYTES) {
+      return NextResponse.json({ error: 'Request too large (max 2MB)' }, { status: 413 })
+    }
+    body = JSON.parse(raw)
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
@@ -179,6 +167,9 @@ export async function POST(req: NextRequest) {
   const { text, lat, lng, wardId, photoBase64, photoMimeType } = body
   if (!text || typeof text !== 'string' || text.trim().length < 3) {
     return NextResponse.json({ error: 'Text too short' }, { status: 400 })
+  }
+  if (photoBase64 && (typeof photoBase64 !== 'string' || photoBase64.length > MAX_BODY_BYTES)) {
+    return NextResponse.json({ error: 'Photo too large' }, { status: 413 })
   }
 
   const cleanText = text.trim().slice(0, 2000)

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
 import { providerStatus } from '@/lib/ai'
 import { sovereigntyReport } from '@/lib/ai-telemetry'
+import { isCronAuthorized } from '@/lib/cron-auth'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -25,10 +26,8 @@ async function send(html: string, subject: string): Promise<boolean> {
 }
 
 export async function GET(request: Request) {
-  const cronSecret = process.env.CRON_SECRET
-  if (cronSecret && request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = isCronAuthorized(request)
+  if (!auth.ok) return auth.response
   if (!isSupabaseConfigured()) return NextResponse.json({ status: 'seed-mode', alerted: false })
 
   const db = createServerClient()
