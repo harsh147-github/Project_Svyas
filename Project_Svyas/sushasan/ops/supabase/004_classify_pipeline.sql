@@ -4,7 +4,18 @@
 -- ── Unique constraint on posts.raw_post_id ────────────────────────────────────
 -- Required for the classify worker's upsert(onConflict: 'raw_post_id') to work.
 -- Without this, every classification run inserts a new duplicate row.
-ALTER TABLE posts ADD CONSTRAINT IF NOT EXISTS posts_raw_post_id_unique UNIQUE (raw_post_id);
+--
+-- `ADD CONSTRAINT IF NOT EXISTS` is not valid PostgreSQL syntax (unlike
+-- `DROP CONSTRAINT IF EXISTS`) — it used to abort this entire migration with
+-- a syntax error, silently taking the embedding column + index below it down
+-- with it. Guarded via pg_constraint like 005 does for its own constraint.
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'posts_raw_post_id_unique'
+  ) THEN
+    ALTER TABLE posts ADD CONSTRAINT posts_raw_post_id_unique UNIQUE (raw_post_id);
+  END IF;
+END $$;
 
 -- ── Enable pgvector extension (needed for embedding column) ───────────────────
 CREATE EXTENSION IF NOT EXISTS vector;

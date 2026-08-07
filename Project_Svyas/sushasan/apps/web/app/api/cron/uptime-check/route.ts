@@ -31,6 +31,29 @@ export async function GET(request: Request) {
   if (!isSupabaseConfigured()) return NextResponse.json({ status: 'seed-mode', alerted: false })
 
   const db = createServerClient()
+
+  // Zombie-run reaper: daily-pipeline records failures itself now (see
+  // app/api/cron/daily-pipeline/route.ts), but a hard kill (function
+  // timeout, deploy replacing the instance mid-run) never runs that catch
+  // block at all — the row is stuck at status='running' forever with
+  // nothing to ever flip it. The pipeline's own maxDuration is a few
+  // minutes, so anything still 'running' after 2 hours is unambiguously
+  // dead; reap it here on every uptime-check tick rather than relying on a
+  // one-off SQL statement someone has to remember to re-run.
+  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+  const { data: zombies } = await db
+    .from('pipeline_runs')
+    .select('id, triggered_at')
+    .eq('status', 'running')
+    .lt('triggered_at', twoHoursAgo)
+  if (zombies && zombies.length > 0) {
+    await db.from('pipeline_runs').update({
+      status: 'failed',
+      completed_at: new Date().toISOString(),
+      errors: { reason: 'timeout-reaper', note: 'no completion recorded within 2h' },
+    }).in('id', zombies.map((z: { id: string }) => z.id))
+  }
+
   const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const [{ count: rawPosts24h }, { count: posts24h }, { data: lastRun }] = await Promise.all([
     db.from('raw_posts').select('*', { count: 'exact', head: true }).gte('scraped_at', since24h),
@@ -39,6 +62,7 @@ export async function GET(request: Request) {
   ])
 
   const problems: string[] = []
+  if (zombies && zombies.length > 0) problems.push(`Reaped ${zombies.length} zombie pipeline run(s) stuck at 'running' for >2h.`)
   if (!rawPosts24h) problems.push('No raw posts scraped in the last 24h.')
   const r24 = rawPosts24h ?? 0
   const p24 = posts24h ?? 0

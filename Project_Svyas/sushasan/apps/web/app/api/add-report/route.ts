@@ -353,30 +353,24 @@ export async function POST(req: NextRequest) {
           console.error('[add-report] posts insert:', postErr.message)
         } else if (post) {
           postId = post.id
-          // Bump or create a cluster for this ward+issue (atomic increment via RPC)
-          const { data: clusterRows } = await db
-            .from('clusters')
-            .select('id')
-            .eq('ward_id', resolvedWardId)
-            .eq('issue_tag', synthesized.issue_tag)
-            .limit(1)
-
-          if (clusterRows && clusterRows.length > 0) {
-            const row = clusterRows[0] as { id: string }
-            await db.rpc('increment_cluster_post_count', { p_cluster_id: row.id })
-          } else {
-            // Create a new cluster from this single report
-            await db.from('clusters').insert({
-              ward_id: resolvedWardId,
-              issue_tag: synthesized.issue_tag,
-              centroid_text: synthesized.grievance_formal,
-              post_count: 1,
-              severity_avg: synthesized.severity,
-              status: 'open',
-              lng: resolvedLng,
-              lat: resolvedLat,
-            })
-          }
+          // Same select-then-insert/update race daily-pipeline had, plus this
+          // wrote `severity_avg: synthesized.severity` unclamped straight from
+          // the model — a value outside 1..5 here doesn't hit a CHECK
+          // constraint (severity_avg has none) but corrupts the map's severity
+          // ramp. upsert_cluster_delta (ops/supabase/012_atomic_cluster_upsert.sql)
+          // does one atomic INSERT ... ON CONFLICT and clamps 1..5 itself.
+          const clampedSeverity = toInt(synthesized.severity, 1, 5, 2)
+          const { error: clusterErr } = await db.rpc('upsert_cluster_delta', {
+            p_ward_id: resolvedWardId,
+            p_issue_tag: synthesized.issue_tag,
+            p_add_count: 1,
+            p_sev_sum: clampedSeverity,
+            p_sources: ['web'],
+            p_lng: resolvedLng,
+            p_lat: resolvedLat,
+            p_centroid_text: synthesized.grievance_formal,
+          })
+          if (clusterErr) console.error('[add-report] cluster upsert:', clusterErr.message)
         }
       }
     } catch (err) {

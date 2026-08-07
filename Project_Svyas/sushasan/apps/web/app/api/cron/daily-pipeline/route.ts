@@ -118,6 +118,15 @@ function hashAuthor(u: string): string {
   return crypto.createHash('sha256').update(`${u}|sushasan_2026_05`).digest('hex').slice(0, 32)
 }
 
+// Fallback source_post_id when a provider doesn't give us a stable id.
+// A time-based fallback (`ig${Date.now()}`) defeats the upsert dedup on
+// source_post_id — the same content gets re-inserted as a "new" row on
+// every run instead of being recognized as already-seen. Content-derived
+// hashing is stable across runs for the same post.
+function deterministicId(source: string, text: string, author: string): string {
+  return crypto.createHash('sha256').update(`${source}|${text.slice(0, 500)}|${author}`).digest('hex').slice(0, 24)
+}
+
 // A citizen who tags #sushaasan (or sushaasan.in / @sushaasan) is explicitly
 // asking us to amplify their report — the branded-hashtag growth loop. These
 // are picked up even if they don't name a Pune locality.
@@ -274,9 +283,20 @@ async function apifyPost(actor: string, token: string, body: unknown, timeoutSec
 // Even days (Sun/Tue/Thu/Sat): Instagram + Google Maps
 // Odd days (Mon/Wed/Fri): Instagram + Facebook
 // Twitter + Reddit run every day (cheapest / free)
-const TODAY = new Date().getDay()
-const RUN_GMAPS    = TODAY % 2 === 0   // Sun, Tue, Thu, Sat
-const RUN_FACEBOOK = TODAY % 2 === 1   // Mon, Wed, Fri
+//
+// Computed per-call, not at module scope: a warm serverless instance can be
+// invoked on either side of midnight, and a module-scope `const` captured
+// at cold-start would keep using yesterday's rotation for the rest of that
+// instance's lifetime.
+function today(): number {
+  return new Date().getDay()
+}
+function runGmapsToday(): boolean {
+  return today() % 2 === 0
+}
+function runFacebookToday(): boolean {
+  return today() % 2 === 1
+}
 
 // ── Instagram — two alternating hashtag banks, 35 each ───────────────────────
 const IG_BANK_A = [
@@ -301,7 +321,7 @@ const IG_BANK_B = [
 
 async function scrapeInstagram(token: string): Promise<NormPost[]> {
   // Alternate banks daily so we cover 70 unique hashtags across 2 days
-  const bank = TODAY % 2 === 0 ? IG_BANK_A : IG_BANK_B
+  const bank = today() % 2 === 0 ? IG_BANK_A : IG_BANK_B
   const directUrls = bank.map((h) => `https://www.instagram.com/explore/tags/${h}/`)
   const items = await apifyPost('apify~instagram-scraper', token,
     { directUrls, resultsType: 'posts', resultsLimit: 100, addParentData: false }, 240)
@@ -313,7 +333,8 @@ async function scrapeInstagram(token: string): Promise<NormPost[]> {
     if (!isPuneCivic(caption)) continue
     const issue = classifyIssueOrTagged(caption); if (!issue) continue
     const ward = resolveWard(caption)
-    const shortCode = (p.shortCode as string | undefined) ?? (p.id as string | undefined) ?? `ig${Date.now()}`
+    const shortCode = (p.shortCode as string | undefined) ?? (p.id as string | undefined) ??
+      deterministicId('instagram', caption, (p.ownerUsername as string | undefined) ?? 'unknown')
     out.push({
       source: 'instagram', source_post_id: `ig_${shortCode}`,
       raw_text: caption.slice(0, 4000),
@@ -364,7 +385,7 @@ async function scrapeTwitter(token: string): Promise<NormPost[]> {
     if (!isPuneCivic(text)) continue
     const issue = classifyIssueOrTagged(text); if (!issue) continue
     const ward = resolveWard(text)
-    const id = (p.id_str ?? p.id ?? `tw${Date.now()}`) as string
+    const id = (p.id_str ?? p.id ?? deterministicId('twitter', text, ((p.user as Record<string,unknown>)?.screen_name as string | undefined) ?? 'unknown')) as string
     out.push({
       source: 'twitter', source_post_id: `tw_${id}`,
       raw_text: text.slice(0, 4000),
@@ -392,7 +413,7 @@ const GMAPS_SEARCHES = [
 ]
 
 async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
-  if (!RUN_GMAPS) return []
+  if (!runGmapsToday()) return []
   const items = await apifyPost('compass~crawler-google-places', token, {
     searchStringsArray: GMAPS_SEARCHES,
     maxCrawledPlaces: 4,
@@ -415,7 +436,7 @@ async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
       if (!isPuneCivic(combined)) continue
       const issue = classifyIssueOrTagged(combined); if (!issue) continue
       const ward = resolveWard(`${text} ${placeName}`)
-      const rId = (r.reviewId ?? r.id ?? `gm${Date.now()}${Math.random()}`) as string
+      const rId = (r.reviewId ?? r.id ?? deterministicId('gmaps', text, placeName)) as string
       out.push({
         source: 'gmaps', source_post_id: `gm_${rId}`,
         raw_text: `[${placeName}] ${text}`.slice(0, 4000),
@@ -443,7 +464,7 @@ const FB_URLS = [
 ]
 
 async function scrapeFacebook(token: string): Promise<NormPost[]> {
-  if (!RUN_FACEBOOK) return []
+  if (!runFacebookToday()) return []
   const items = await apifyPost('apify~facebook-posts-scraper', token, {
     startUrls: FB_URLS.map((url) => ({ url })),
     resultsLimit: 80,
@@ -458,7 +479,7 @@ async function scrapeFacebook(token: string): Promise<NormPost[]> {
     if (!isPuneCivic(text)) continue
     const issue = classifyIssueOrTagged(text); if (!issue) continue
     const ward = resolveWard(text)
-    const id = (p.postId ?? p.id ?? `fb${Date.now()}`) as string
+    const id = (p.postId ?? p.id ?? deterministicId('facebook', text, 'unknown')) as string
     out.push({
       source: 'facebook', source_post_id: `fb_${id}`,
       raw_text: text.slice(0, 4000),
@@ -502,7 +523,7 @@ async function scrapeReddit(): Promise<NormPost[]> {
   // change — nothing here breaks while those vars are unset.
   const token = await redditToken()
   const base = token ? 'https://oauth.reddit.com' : 'https://www.reddit.com'
-  const ua = process.env.REDDIT_USER_AGENT ?? 'Sushasan/1.0 (civic; sonawaneharsh147@gmail.com)'
+  const ua = process.env.REDDIT_USER_AGENT ?? 'Sushasan/1.0 (civic; contact@sushaasan.in)'
   if (token) console.log('[reddit] using authenticated OAuth endpoint')
 
   for (const [sub, q] of queries) {
@@ -535,7 +556,10 @@ async function scrapeReddit(): Promise<NormPost[]> {
           source_post_id: `reddit_${d.id as string}`,
           raw_text: text.slice(0, 4000),
           author_hash: hashAuthor(((d.author as string) ?? 'unknown').slice(0, 50)),
-          posted_at: new Date(((d.created_utc as number) ?? 0) * 1000).toISOString(),
+          // `?? 0` used to produce 1970-01-01 for any item missing
+          // created_utc; null is honest about "we don't know when this
+          // was posted" instead of a fake epoch date.
+          posted_at: typeof d.created_utc === 'number' ? new Date(d.created_utc * 1000).toISOString() : null,
           geo_hint: `r/${d.subreddit as string}`,
           ward_id: ward.id, issue_tag: issue, severity: severityFor(text),
           ward_lng: ward.lng, ward_lat: ward.lat,
@@ -631,6 +655,37 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   const { data: run } = await supabase.from('pipeline_runs').insert({ trigger_type: triggerType, status: 'running' }).select('id').single()
   const runId = (run as { id: string } | null)?.id
 
+  // Everything below used to be unguarded: a thrown error here (a scraper
+  // helper is documented to return [] on failure, but the DB writes further
+  // down are not immune to a transient Supabase error, timeout, or a killed
+  // function) fell straight through to the route handler's catch, which
+  // only returns a 500 — the pipeline_runs row inserted above stayed
+  // 'running' forever, an invisible zombie uptime-check couldn't tell apart
+  // from "still in progress". Record the failure before rethrowing so it
+  // shows up immediately instead of only via the >2h reaper.
+  try {
+    return await runPipelineBody(token, supabase, runId, startedAt)
+  } catch (err) {
+    if (runId) {
+      await supabase.from('pipeline_runs').update({
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        errors: {
+          message: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack?.slice(0, 2000) : undefined,
+        },
+      }).eq('id', runId)
+    }
+    throw err
+  }
+}
+
+async function runPipelineBody(
+  token: string,
+  supabase: ReturnType<typeof createServerClient>,
+  runId: string | undefined,
+  startedAt: number,
+) {
   // All scrapers in parallel — each returns [] on failure, never throws
   // Google Maps + Facebook alternate days to spread Apify credit spend evenly
   const [ig, rd, tw, gm, fb, nw] = await Promise.all([
@@ -641,7 +696,7 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
     scrapeFacebook(token),      // [] on off-days (RUN_FACEBOOK=false)
     scrapeNews(),               // free RSS — runs every day
   ])
-  console.log(`[pipeline] day=${TODAY} gmaps=${RUN_GMAPS} fb=${RUN_FACEBOOK} raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length} nw=${nw.length}`)
+  console.log(`[pipeline] day=${today()} gmaps=${runGmapsToday()} fb=${runFacebookToday()} raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length} nw=${nw.length}`)
 
   const all: NormPost[] = [...ig, ...rd, ...tw, ...gm, ...fb, ...nw]
 
@@ -696,44 +751,20 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
     const addCount = c.severities.length
     if (addCount === 0) continue
     const sevSum = c.severities.reduce((a, b) => a + b, 0)
+    const sources = [...c.sources].join(', ')
+    const centroid = `${addCount} report${addCount === 1 ? '' : 's'} via ${sources} about ${c.issue_tag} issues in this area. Avg severity ${(sevSum / addCount).toFixed(1)}/5.`
 
-    // limit(1) (not maybeSingle) so a legacy duplicate (ward,issue) row can't
-    // throw and abort the run; we accumulate into the first match.
-    const { data: existingRows } = await supabase
-      .from('clusters')
-      .select('id, post_count, severity_avg, source_platforms')
-      .eq('ward_id', c.ward_id)
-      .eq('issue_tag', c.issue_tag)
-      .order('post_count', { ascending: false })
-      .limit(1)
-    const existing = existingRows?.[0]
-
-    if (existing) {
-      // Accumulate: weighted-average severity, union of source platforms.
-      const oldCount = (existing.post_count as number) ?? 0
-      const oldAvg = (existing.severity_avg as number) ?? 0
-      const newCount = oldCount + addCount
-      const newAvg = newCount > 0 ? (oldAvg * oldCount + sevSum) / newCount : oldAvg
-      const mergedSources = [...new Set([...(((existing.source_platforms as string[]) ?? [])), ...c.sources])]
-      // Preserve the richer existing centroid_text + position; only bump counts.
-      const { error } = await supabase.from('clusters').update({
-        post_count: newCount, severity_avg: newAvg,
-        source_platforms: mergedSources, updated_at: new Date().toISOString(),
-      }).eq('id', existing.id as string)
-      if (error) console.error('[clusters update]', error.message)
-      else clustersWritten += 1
-    } else {
-      const sev_avg = sevSum / addCount
-      const sources = [...c.sources].join(', ')
-      const centroid = `${addCount} report${addCount === 1 ? '' : 's'} via ${sources} about ${c.issue_tag} issues in this area. Avg severity ${sev_avg.toFixed(1)}/5.`
-      const { error } = await supabase.from('clusters').insert({
-        ward_id: c.ward_id, issue_tag: c.issue_tag, centroid_text: centroid,
-        post_count: addCount, severity_avg: sev_avg, status: 'open',
-        lng: c.lng, lat: c.lat, source_platforms: [...c.sources], updated_at: new Date().toISOString(),
-      })
-      if (error) console.error('[clusters insert]', error.message)
-      else clustersWritten += 1
-    }
+    // Single atomic upsert (ops/supabase/012_atomic_cluster_upsert.sql) —
+    // replaces a select-then-update/insert that raced against concurrent
+    // runs (a retry or a manual refresh overlapping the cron) and could
+    // silently drop a delta or throw on the unique constraint.
+    const { error } = await supabase.rpc('upsert_cluster_delta', {
+      p_ward_id: c.ward_id, p_issue_tag: c.issue_tag, p_add_count: addCount,
+      p_sev_sum: sevSum, p_sources: [...c.sources], p_lng: c.lng, p_lat: c.lat,
+      p_centroid_text: centroid,
+    })
+    if (error) console.error('[clusters upsert]', error.message)
+    else clustersWritten += 1
   }
 
   if (runId) {
