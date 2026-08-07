@@ -7,6 +7,7 @@ import { isWhatsAppConfigured, sendWhatsApp, waShareLink } from '@/lib/whatsapp'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
 import { missingEnv, REQUIRED } from '@/lib/env-check'
 import { isCronAuthorized } from '@/lib/cron-auth'
+import { signGovBriefToken, isGovTokenSigningConfigured } from '@/lib/gov-token'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -135,7 +136,14 @@ async function logDispatches(items: DispatchItem[], digestEmailedTo: string[]): 
 
 async function run() {
   const baseUrl = process.env.PUBLIC_BASE_URL ?? 'https://sushaasan.in'
-  const token = process.env.GOV_ACCESS_TOKEN ?? ''
+  if (!isGovTokenSigningConfigured()) {
+    console.error(
+      '[gov-dispatch] GOV_TOKEN_SIGNING_SECRET not set — falling back to the master ' +
+        'GOV_ACCESS_TOKEN in dispatched links. Set GOV_TOKEN_SIGNING_SECRET so briefs carry ' +
+        'per-recipient, per-mission, expiring links instead of the full-access credential.',
+    )
+  }
+  const legacyMasterToken = process.env.GOV_ACCESS_TOKEN ?? ''
 
   const snap = await getDashboardSnapshot()
   // Rank open/in-progress solutions by priority; one brief per (ward, issue).
@@ -153,8 +161,13 @@ async function run() {
     const id = missionId(sol.ward_id, sol.issue_tag)
     const mission = await getMission(id)
     if (!mission) continue
-    const brief = buildBrief(mission, baseUrl, token)
     const rcpt = await getRecipient(sol.ward_id)
+    // Mission-scoped, expiring token — never the master GOV_ACCESS_TOKEN.
+    // Falls back to the master token only if signing isn't configured yet,
+    // so dispatch doesn't silently break during migration.
+    const token =
+      signGovBriefToken(id, rcpt.email || rcpt.phone || 'digest') ?? legacyMasterToken
+    const brief = buildBrief(mission, baseUrl, token)
 
     let sentMail = false
     let sentWa = false

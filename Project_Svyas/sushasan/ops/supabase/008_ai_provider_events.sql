@@ -32,10 +32,11 @@ CREATE INDEX IF NOT EXISTS ai_provider_events_time_idx
 CREATE INDEX IF NOT EXISTS ai_provider_events_outcome_idx
   ON ai_provider_events(outcome, created_at DESC);
 
+-- RLS enabled with zero policies = deny-all to anon/authenticated. No
+-- `FOR ALL TO service_role` policy is needed: service_role bypasses RLS
+-- entirely regardless of what policies exist.
 ALTER TABLE ai_provider_events ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS ai_provider_events_service ON ai_provider_events;
-CREATE POLICY ai_provider_events_service ON ai_provider_events
-  FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- Retention: this is high-volume operational telemetry, not product data.
 -- Re-run this statement (or schedule it) to keep the table small.

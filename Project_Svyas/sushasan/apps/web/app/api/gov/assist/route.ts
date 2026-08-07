@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isGovAuthed } from '@/lib/auth'
+import { isGovAuthedForMission } from '@/lib/auth'
 import { getMission, missionToContext } from '@/lib/gov-mission'
 import { chat } from '@/lib/ai'
 import { checkRateLimit, clientIp } from '@/lib/rate-limit'
@@ -42,8 +42,6 @@ const QUICK_PROMPTS: Record<string, string> = {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isGovAuthed(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
   const ip = clientIp(req)
   const withinLimit = await checkRateLimit('gov-assist', ip, { limit: 20, windowSec: 60 })
   if (!withinLimit) return NextResponse.json({ error: 'Slow down — too many requests.' }, { status: 429 })
@@ -52,6 +50,14 @@ export async function POST(req: NextRequest) {
   try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
 
   const { missionId, quickAction, history } = body
+
+  // Accepts either the master GOV_ACCESS_TOKEN or a per-mission signed token
+  // (see lib/gov-token.ts) scoped to the same missionId being asked about —
+  // a forwarded brief link's token can drive the copilot for that mission
+  // without unlocking anything else.
+  if (!missionId || !isGovAuthedForMission(req, missionId)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
   const question = (quickAction && QUICK_PROMPTS[quickAction]) || body.question
   if (!missionId || !question) return NextResponse.json({ error: 'missionId and question required' }, { status: 400 })
 

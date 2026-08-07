@@ -198,7 +198,7 @@ export default async function WarRoomPage({
                 <div className="pt-3 border-t border-white/10 space-y-2">
                   <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-white/40">Human command — close the loop</div>
                   <div className="bg-white/[0.04] rounded-xl p-3 border border-white/10">
-                    <LoopCloseButtons solutionId={solution.id} wardId={ward.id} currentStatus={solution.status} />
+                    <LoopCloseButtons solutionId={solution.id} wardId={ward.id} missionId={mission.id} currentStatus={solution.status} />
                   </div>
                   <p className="text-[10.5px] text-white/35 leading-relaxed">
                     Marking progress updates the public citizen dashboard automatically — closing the loop transparently.

@@ -20,7 +20,9 @@ CREATE TABLE IF NOT EXISTS dispatch_log (
 CREATE INDEX IF NOT EXISTS dispatch_log_mission_idx ON dispatch_log(mission_id, dispatched_at DESC);
 CREATE INDEX IF NOT EXISTS dispatch_log_time_idx ON dispatch_log(dispatched_at DESC);
 
+-- RLS enabled with zero policies = deny-all to anon/authenticated. No
+-- `FOR ALL TO service_role` policy is needed or created: service_role
+-- bypasses RLS entirely regardless of what policies exist, so such a policy
+-- would be a no-op that just implies (incorrectly) it's doing something.
 ALTER TABLE dispatch_log ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS dispatch_log_service ON dispatch_log;
-CREATE POLICY dispatch_log_service ON dispatch_log
-  FOR ALL TO service_role USING (true) WITH CHECK (true);

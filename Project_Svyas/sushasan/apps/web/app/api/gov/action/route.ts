@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isGovAuthed } from '@/lib/auth'
+import { isGovAuthed, isGovAuthedForMission } from '@/lib/auth'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
 
 export const runtime = 'nodejs'
@@ -21,18 +21,24 @@ type Body = {
   solution_id?: string
   cluster_id?: string
   ward_id?: string
+  mission_id?: string
   status?: string
   action_desc?: string
   evidence_url?: string
 }
 
 export async function POST(req: NextRequest) {
-  if (!isGovAuthed(req)) {
-    return new NextResponse('Unauthorized', { status: 401 })
-  }
-
   let body: Body
   try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
+
+  // Accepts the master GOV_ACCESS_TOKEN, or a per-mission signed token (see
+  // lib/gov-token.ts) scoped to this exact mission_id — lets an officer close
+  // the loop directly from their emailed/WhatsApped brief link without that
+  // link also unlocking the rest of /gov.
+  const authed = body.mission_id ? isGovAuthedForMission(req, body.mission_id) : isGovAuthed(req)
+  if (!authed) {
+    return new NextResponse('Unauthorized', { status: 401 })
+  }
 
   const { solution_id, cluster_id, ward_id, status, action_desc, evidence_url } = body
   if (!status || !action_desc) {
