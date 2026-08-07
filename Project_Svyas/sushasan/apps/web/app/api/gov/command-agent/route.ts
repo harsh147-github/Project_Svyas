@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createDeepAgent } from 'deepagents'
 import { isGovAuthed } from '@/lib/auth'
-import { selectAgentModel } from '@/lib/agents/model-select'
+import { selectCommandAgentModel } from '@/lib/agents/model-select'
 import { GOV_TOOLS } from '@/lib/agents/gov-tools'
 import { checkRateLimit, clientIp } from '@/lib/rate-limit'
+import { recordAiCall } from '@/lib/ai-telemetry'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -42,9 +43,10 @@ export async function POST(req: NextRequest) {
   const question = body.question?.trim()
   if (!question || question.length < 3) return NextResponse.json({ error: 'question is required' }, { status: 400 })
 
+  const startedAt = Date.now()
   try {
     const agent = createDeepAgent({
-      model: selectAgentModel(),
+      model: selectCommandAgentModel(),
       tools: GOV_TOOLS,
       systemPrompt: SYSTEM_PROMPT,
     })
@@ -78,11 +80,42 @@ export async function POST(req: NextRequest) {
 
     if (!answer) {
       console.error('[gov/command-agent] empty answer; last message shape:', JSON.stringify(last)?.slice(0, 500))
+      await recordAiCall({
+        intendedProvider: 'anthropic', servedBy: 'anthropic', task: 'assist', callSite: 'command-agent',
+        outcome: 'error', errorKind: 'unknown', errorDetail: 'empty answer from agent',
+        latencyMs: Date.now() - startedAt,
+      })
       return NextResponse.json({ error: 'The agent returned no answer — please rephrase.' }, { status: 502 })
     }
+
+    // Raw tool-call syntax leaking into the final content is a known deep-agent
+    // failure mode (the model emits a tool-call-shaped string instead of
+    // actually invoking the tool) — surfacing that to an officer as if it were
+    // an answer is worse than an error message.
+    const looksLikeLeakedToolCall = /^\s*\{[\s\S]*"(tool_calls|tool_use|function_call|name"\s*:\s*"[a-z_]+"\s*,\s*"(arguments|input))/i.test(answer)
+    if (looksLikeLeakedToolCall) {
+      console.error('[gov/command-agent] tool-call syntax leaked into content:', answer.slice(0, 300))
+      await recordAiCall({
+        intendedProvider: 'anthropic', servedBy: 'anthropic', task: 'assist', callSite: 'command-agent',
+        outcome: 'error', errorKind: 'bad_json', errorDetail: 'tool-call syntax leaked into content',
+        latencyMs: Date.now() - startedAt,
+      })
+      return NextResponse.json({ error: 'The agent produced a malformed response — please try again.' }, { status: 502 })
+    }
+
+    await recordAiCall({
+      intendedProvider: 'anthropic', servedBy: 'anthropic', task: 'assist', callSite: 'command-agent',
+      outcome: 'ok', latencyMs: Date.now() - startedAt,
+    })
     return NextResponse.json({ answer })
   } catch (err) {
     console.error('[gov/command-agent]', err)
+    await recordAiCall({
+      intendedProvider: 'anthropic', servedBy: 'anthropic', task: 'assist', callSite: 'command-agent',
+      outcome: 'error', errorKind: 'unknown',
+      errorDetail: err instanceof Error ? err.message.slice(0, 500) : String(err).slice(0, 500),
+      latencyMs: Date.now() - startedAt,
+    })
     return NextResponse.json({ error: 'Command Agent is busy or misconfigured — please try again.' }, { status: 502 })
   }
 }
