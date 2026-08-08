@@ -217,22 +217,17 @@ async function apifyPost(actor: string, token: string, body: unknown, timeoutSec
 }
 
 // ── Day-based rotation (0=Sun … 6=Sat) ───────────────────────────────────────
-// Even days (Sun/Tue/Thu/Sat): Instagram + Google Maps
-// Odd days (Mon/Wed/Fri): Instagram + Facebook
-// Twitter + Reddit run every day (cheapest / free)
+// Instagram still alternates two hashtag banks daily (below) — Google Maps
+// and Facebook used to alternate days too (RUN_GMAPS/RUN_FACEBOOK) but now
+// run daily with smaller per-run limits instead (see scrapeGoogleMaps /
+// scrapeFacebook) so no source has a guaranteed-stale day.
 //
 // Computed per-call, not at module scope: a warm serverless instance can be
 // invoked on either side of midnight, and a module-scope `const` captured
-// at cold-start would keep using yesterday's rotation for the rest of that
+// at cold-start would keep using yesterday's bank for the rest of that
 // instance's lifetime.
 function today(): number {
   return new Date().getDay()
-}
-function runGmapsToday(): boolean {
-  return today() % 2 === 0
-}
-function runFacebookToday(): boolean {
-  return today() % 2 === 1
 }
 
 // ── Instagram — two alternating hashtag banks, 35 each ───────────────────────
@@ -350,11 +345,15 @@ const GMAPS_SEARCHES = [
 ]
 
 async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
-  if (!runGmapsToday()) return []
+  // Used to run only on even days (RUN_GMAPS) to spread Apify credit spend —
+  // that meant a genuinely new review posted on an off-day waited up to 24h
+  // longer than necessary, and the map had a guaranteed-stale source every
+  // other day. Runs daily now with a smaller per-run limit instead, so
+  // credit spend stays roughly flat while freshness improves.
   const items = await apifyPost('compass~crawler-google-places', token, {
     searchStringsArray: GMAPS_SEARCHES,
-    maxCrawledPlaces: 4,
-    reviewsCount: 50,
+    maxCrawledPlaces: 3,
+    reviewsCount: 30,
     reviewsSort: 'newest',
     language: 'en',
     countryCode: 'in',
@@ -401,10 +400,11 @@ const FB_URLS = [
 ]
 
 async function scrapeFacebook(token: string): Promise<NormPost[]> {
-  if (!runFacebookToday()) return []
+  // Same day-rotation removal as Google Maps above — was every-other-day
+  // (RUN_FACEBOOK), now daily with a smaller per-run limit.
   const items = await apifyPost('apify~facebook-posts-scraper', token, {
     startUrls: FB_URLS.map((url) => ({ url })),
-    resultsLimit: 80,
+    resultsLimit: 45,
     commentsMode: 'RANKED_THREADED',
     maxComments: 15,
   }, 220)
@@ -508,19 +508,80 @@ async function scrapeReddit(): Promise<NormPost[]> {
   return out
 }
 
-// ── Pune civic news via Google News RSS — free, genuinely new content daily ──
+// ── Pune civic news via RSS — free, genuinely new content daily ────────────
 // Unlike hashtag re-scrapes (mostly dedup'd), news publishes fresh articles
-// every day, so this source reliably grows the map. `when:2d` limits results
-// to the last 48h; the raw_posts upsert dedups any overlap between runs.
+// every day, so this source reliably grows the map — it's the one source
+// guaranteed to have something new. Two feed types:
+//  1. Targeted Google News queries, now crossed per issue-type × zone
+//     instead of 8 generic city-wide queries — a "water" query naming NIBM
+//     specifically surfaces different articles than a bare "Pune water".
+//  2. Direct outlet RSS feeds (Pune Mirror, ToI Pune, Indian Express Pune,
+//     Hindustan Times Pune, PMC press releases) — these are checked against
+//     isPuneCivic() + the issue keyword gate exactly like Google News
+//     results, so a feed's general-Pune-news noise doesn't flood the map;
+//     only civic-issue articles survive the filter.
+const ZONES = ['NIBM', 'Kondhwa', 'Salunke Vihar Wanowrie', 'Hadapsar', 'Pune']
+const ISSUE_QUERY_TERMS: Record<string, string> = {
+  water: 'water supply tanker shortage',
+  traffic: 'pothole road traffic jam',
+  garbage: 'garbage waste dump SWM',
+  electricity: 'MSEDCL power cut transformer',
+}
 const NEWS_QUERIES = [
-  'Pune PMC water supply', 'Pune pothole road repair', 'Pune traffic jam signal',
-  'Pune garbage waste PMC', 'Pune MSEDCL power cut', 'Pune waterlogging drain monsoon',
+  ...ZONES.flatMap((zone) =>
+    Object.values(ISSUE_QUERY_TERMS).map((term) => `Pune ${zone} ${term}`),
+  ),
   'Pune civic ward corporator', 'PMC Pune complaint residents',
+]
+
+// Direct outlet feeds — best-effort. Each is fetched independently with its
+// own try/catch (see scrapeNews below), so one outlet renaming/breaking its
+// feed URL doesn't take the others down with it; the per-source yield
+// alerting in uptime-check (3.2) surfaces a feed that's gone dark for 3
+// days so it can be re-pointed rather than silently returning zero forever.
+const DIRECT_NEWS_FEEDS: { label: string; url: string }[] = [
+  { label: 'punemirror', url: 'https://punemirror.com/pune/civic/feed' },
+  { label: 'toi-pune', url: 'https://timesofindia.indiatimes.com/rssfeeds/-2128821994.cms' },
+  { label: 'ie-pune', url: 'https://indianexpress.com/section/cities/pune/feed/' },
+  { label: 'ht-pune', url: 'https://www.hindustantimes.com/feeds/rss/cities/pune-news/rssfeed.xml' },
+  { label: 'pmc-press', url: 'https://www.pmc.gov.in/en/rss.xml' },
 ]
 
 function rssField(item: string, tag: string): string {
   const m = item.match(new RegExp(`<${tag}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${tag}>`))
   return (m?.[1] ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+/** Parses <item> (RSS) entries from raw feed XML into NormPosts, applying
+ * the same civic/issue gate every source goes through. Shared by Google
+ * News queries and direct outlet feeds — they're both just RSS. */
+function parseRssItems(xml: string, sourceLabel: string, cap: number): NormPost[] {
+  const out: NormPost[] = []
+  const items = xml.split('<item>').slice(1)
+  for (const item of items.slice(0, cap)) {
+    const title = rssField(item, 'title')
+    const desc = rssField(item, 'description')
+    const link = rssField(item, 'link')
+    const text = desc && !desc.startsWith(title) ? `${title}. ${desc}` : title
+    if (title.length < 15) continue
+    if (!isPuneCivic(text)) continue
+    const issue = classifyIssueOrTagged(text); if (!issue) continue
+    const ward = resolveWard(text)
+    // Stable id from the article URL so the same story dedups across runs
+    // and across feeds (the same story often runs on multiple outlets).
+    const id = crypto.createHash('sha256').update(link || title).digest('hex').slice(0, 24)
+    const pubDate = new Date(rssField(item, 'pubDate'))
+    out.push({
+      source: 'news', source_post_id: `news_${id}`,
+      raw_text: text.slice(0, 4000),
+      author_hash: hashAuthor(`news-rss-${sourceLabel}`),
+      posted_at: isNaN(pubDate.getTime()) ? null : pubDate.toISOString(),
+      geo_hint: ward.name,
+      ward_id: ward.id, issue_tag: issue, severity: severityFor(text),
+      ward_lng: ward.lng, ward_lat: ward.lat,
+    })
+  }
+  return out
 }
 
 async function scrapeNews(): Promise<NormPost[]> {
@@ -532,32 +593,20 @@ async function scrapeNews(): Promise<NormPost[]> {
         headers: { 'User-Agent': 'Mozilla/5.0 (Sushasan civic monitor; sushaasan.in)' },
         signal: AbortSignal.timeout(20_000),
       })
-      if (!r.ok) continue
-      const items = (await r.text()).split('<item>').slice(1)
-      for (const item of items.slice(0, 20)) {
-        const title = rssField(item, 'title')
-        const desc = rssField(item, 'description')
-        const link = rssField(item, 'link')
-        const text = desc && !desc.startsWith(title) ? `${title}. ${desc}` : title
-        if (title.length < 15) continue
-        if (!isPuneCivic(text)) continue
-        const issue = classifyIssueOrTagged(text); if (!issue) continue
-        const ward = resolveWard(text)
-        // Stable id from the article URL so the same story dedups across runs
-        const id = crypto.createHash('sha256').update(link || title).digest('hex').slice(0, 24)
-        const pubDate = new Date(rssField(item, 'pubDate'))
-        out.push({
-          source: 'news', source_post_id: `news_${id}`,
-          raw_text: text.slice(0, 4000),
-          author_hash: hashAuthor('news-rss'),
-          posted_at: isNaN(pubDate.getTime()) ? null : pubDate.toISOString(),
-          geo_hint: ward.name,
-          ward_id: ward.id, issue_tag: issue, severity: severityFor(text),
-          ward_lng: ward.lng, ward_lat: ward.lat,
-        })
-      }
-      await new Promise((res) => setTimeout(res, 500))
+      if (r.ok) out.push(...parseRssItems(await r.text(), 'google-news', 20))
+      await new Promise((res) => setTimeout(res, 400))
     } catch (e) { console.error(`[news] ${q}:`, e) }
+  }
+  for (const feed of DIRECT_NEWS_FEEDS) {
+    try {
+      const r = await fetch(feed.url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Sushasan civic monitor; sushaasan.in)' },
+        signal: AbortSignal.timeout(20_000),
+      })
+      if (r.ok) out.push(...parseRssItems(await r.text(), feed.label, 30))
+      else console.warn(`[news] ${feed.label} HTTP ${r.status} — feed URL may have moved`)
+      await new Promise((res) => setTimeout(res, 400))
+    } catch (e) { console.error(`[news] ${feed.label}:`, e) }
   }
   return out
 }
@@ -637,7 +686,7 @@ async function runPipelineBody(
     scrapeFacebook(token),      // [] on off-days (RUN_FACEBOOK=false)
     scrapeNews(),               // free RSS — runs every day
   ])
-  console.log(`[pipeline] day=${today()} gmaps=${runGmapsToday()} fb=${runFacebookToday()} raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length} nw=${nw.length}`)
+  console.log(`[pipeline] day=${today()} raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length} nw=${nw.length}`)
 
   const all: NormPost[] = [...ig, ...rd, ...tw, ...gm, ...fb, ...nw]
 
