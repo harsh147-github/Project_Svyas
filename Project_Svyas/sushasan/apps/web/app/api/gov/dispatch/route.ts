@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isGovAuthed, isAdminAuthed } from '@/lib/auth'
 import { getMission } from '@/lib/gov-mission'
 import { buildBrief } from '@/lib/gov-brief'
+import { signGovBriefToken } from '@/lib/gov-token'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -14,7 +15,13 @@ export const dynamic = 'force-dynamic'
 // Cron-composable: a daily job can POST the top open missions to push briefs to
 // officers automatically as their "daily civic news".
 
+// Attacker-controllable Host/X-Forwarded-Host headers used to flow straight
+// into brief links sent by email — a forged Host header could point the
+// "Open War Room" link at a phishing domain. PUBLIC_BASE_URL is the only
+// source of truth in production; headers are a dev-only convenience.
 function baseUrlFrom(req: NextRequest): string {
+  if (process.env.PUBLIC_BASE_URL) return process.env.PUBLIC_BASE_URL
+  if (process.env.VERCEL_ENV === 'production') return 'https://sushaasan.in'
   const proto = req.headers.get('x-forwarded-proto') ?? 'https'
   const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'sushaasan.in'
   return `${proto}://${host}`
@@ -54,8 +61,13 @@ export async function POST(req: NextRequest) {
   const mission = await getMission(body.missionId)
   if (!mission) return NextResponse.json({ error: 'Mission not found' }, { status: 404 })
 
-  // Token used in the deep link so the officer lands authenticated in the War Room.
-  const token = body.token ?? req.nextUrl.searchParams.get('token') ?? process.env.GOV_ACCESS_TOKEN ?? ''
+  // Mission-scoped signed token for the deep link (never the master
+  // GOV_ACCESS_TOKEN) so a forwarded manual-dispatch link only unlocks this
+  // one mission's War Room. Falls back to whatever the caller supplied only
+  // if signing isn't configured.
+  const token =
+    signGovBriefToken(mission.id, body.to || 'manual-dispatch') ??
+    body.token ?? req.nextUrl.searchParams.get('token') ?? process.env.GOV_ACCESS_TOKEN ?? ''
   const brief = buildBrief(mission, baseUrlFrom(req), token)
 
   let delivery: { ok: boolean; detail?: string } | null = null

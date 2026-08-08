@@ -16,7 +16,7 @@ export function createSarvamModel(opts?: { temperature?: number }) {
     model: process.env.SARVAM_MODEL ?? 'sarvam-m',
     temperature: opts?.temperature ?? 0.2,
     configuration: {
-      baseURL: process.env.SARVAM_API_URL ?? 'https://api.sarvam.ai/v1',
+      baseURL: process.env.SARVAM_BASE_URL ?? 'https://api.sarvam.ai/v1',
       defaultHeaders: { 'api-subscription-key': apiKey },
     },
   })

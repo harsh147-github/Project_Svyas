@@ -14,20 +14,22 @@ DO $$ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint
     WHERE conname = 'clusters_ward_id_issue_tag_unique'
+       OR conname = 'clusters_ward_id_issue_tag_key'  -- 002_pipeline_columns.sql's constraint, if it ran instead
   ) THEN
-    -- Deduplicate first: keep the row with the highest post_count per (ward_id, issue_tag)
-    DELETE FROM clusters c1
-    USING clusters c2
-    WHERE c1.ward_id = c2.ward_id
-      AND c1.issue_tag = c2.issue_tag
-      AND c1.post_count < c2.post_count;
-
-    -- If counts are equal, keep the newer row
-    DELETE FROM clusters c1
-    USING clusters c2
-    WHERE c1.ward_id = c2.ward_id
-      AND c1.issue_tag = c2.issue_tag
-      AND c1.id < c2.id;
+    -- Deduplicate first, keeping exactly one row per (ward_id, issue_tag):
+    -- highest post_count wins (most signal), ties broken by newest created_at,
+    -- final tiebreak by id for determinism. The old logic's second DELETE used
+    -- `id < id` as a "keep the newer row" tiebreak — uuid v4 ordering is random,
+    -- not chronological, so ties were resolved arbitrarily.
+    DELETE FROM clusters c
+    USING (
+      SELECT id, ROW_NUMBER() OVER (
+        PARTITION BY ward_id, issue_tag
+        ORDER BY post_count DESC NULLS LAST, created_at DESC NULLS LAST, id DESC
+      ) AS rn
+      FROM clusters
+    ) ranked
+    WHERE c.id = ranked.id AND ranked.rn > 1;
 
     ALTER TABLE clusters
       ADD CONSTRAINT clusters_ward_id_issue_tag_unique UNIQUE (ward_id, issue_tag);

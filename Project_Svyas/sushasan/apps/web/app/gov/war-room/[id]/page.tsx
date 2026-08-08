@@ -5,6 +5,7 @@ import { getMission } from '@/lib/gov-mission'
 import { buildBrief } from '@/lib/gov-brief'
 import { WarRoomCopilot } from '@/components/gov/WarRoomCopilot'
 import { DispatchPanel } from '@/components/gov/DispatchPanel'
+import { BriefAudioButton } from '@/components/gov/BriefAudioButton'
 import { LoopCloseButtons } from '@/components/gov/LoopCloseButtons'
 
 export const dynamic = 'force-dynamic'
@@ -64,6 +65,7 @@ export default async function WarRoomPage({
               {label}
             </span>
             <span className="hidden md:inline text-[11px] text-white/45">Ward {ward.ward_number} · {ward.name}</span>
+            <BriefAudioButton missionId={mission.id} token={token} />
             <DispatchPanel subject={brief.subject} whatsappText={brief.whatsappText} link={brief.link} />
           </div>
         </div>
@@ -198,7 +200,7 @@ export default async function WarRoomPage({
                 <div className="pt-3 border-t border-white/10 space-y-2">
                   <div className="text-[10px] font-bold tracking-[0.16em] uppercase text-white/40">Human command — close the loop</div>
                   <div className="bg-white/[0.04] rounded-xl p-3 border border-white/10">
-                    <LoopCloseButtons solutionId={solution.id} wardId={ward.id} currentStatus={solution.status} />
+                    <LoopCloseButtons solutionId={solution.id} wardId={ward.id} missionId={mission.id} currentStatus={solution.status} />
                   </div>
                   <p className="text-[10.5px] text-white/35 leading-relaxed">
                     Marking progress updates the public citizen dashboard automatically — closing the loop transparently.

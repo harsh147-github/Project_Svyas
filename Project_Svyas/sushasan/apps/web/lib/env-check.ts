@@ -15,6 +15,11 @@ export const REQUIRED = {
   // outage. Once the fallback rate holds at zero, ANTHROPIC_API_KEY can be
   // dropped from this list and from the deployment.
   ai: ['SARVAM_API_KEY', 'ANTHROPIC_API_KEY'],
+  // Only relevant when AI_PROVIDER=bharatgen — unlike SARVAM_BASE_URL,
+  // BHARATGEN_API_URL has no default, and leaving it unset used to throw a
+  // confusing "Failed to parse URL from ''" at request time (see lib/ai.ts)
+  // instead of surfacing as a missing-config item here.
+  bharatgen: ['BHARATGEN_API_URL', 'BHARATGEN_API_KEY'],
   scraping: ['APIFY_API_TOKEN'],
   email: ['RESEND_API_KEY', 'FOUNDER_EMAIL'],
   // Production-required, not optional. The /api/cron/* routes treat an unset

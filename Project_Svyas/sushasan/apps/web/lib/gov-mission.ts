@@ -55,18 +55,27 @@ async function getSamplePosts(wardId: string, issueTag: string): Promise<SampleP
   }
 }
 
+// 5-minute TTL; a failed read is never cached (see the identical fix in
+// lib/gov-recipients.ts — `_registryCache = {}` in the catch block used to
+// serve "no incharge data for any ward" for the rest of the process's life
+// after a single transient failure).
+const REGISTRY_CACHE_TTL_MS = 5 * 60 * 1000
 let _registryCache: Record<string, unknown> | null = null
+let _registryCachedAt = 0
 
 async function loadInchargeRegistry(): Promise<Record<string, unknown>> {
-  if (_registryCache) return _registryCache
+  if (_registryCache && Date.now() - _registryCachedAt < REGISTRY_CACHE_TTL_MS) return _registryCache
   try {
     const p = path.join(process.cwd(), 'public', 'data', 'pune-ward-incharge.json')
     const raw = await fs.readFile(p, 'utf-8')
-    _registryCache = JSON.parse(raw) as Record<string, unknown>
-  } catch {
-    _registryCache = {}
+    const loaded = JSON.parse(raw) as Record<string, unknown>
+    _registryCache = loaded
+    _registryCachedAt = Date.now()
+    return loaded
+  } catch (err) {
+    console.error('[gov-mission] incharge registry load failed:', err)
+    return _registryCache ?? {}
   }
-  return _registryCache ?? {}
 }
 
 function inchargeFor(registry: Record<string, unknown>, wardId: string): Incharge {
@@ -140,9 +149,14 @@ export function missionToContext(m: Mission): string {
   if (m.ward.annual_budget_inr) lines.push(`Annual ward allocation (approx): ₹${m.ward.annual_budget_inr.toLocaleString('en-IN')}.`)
   lines.push(`ISSUE TYPE: ${m.issueTag}.`)
   if (c) {
-    lines.push(`WHAT IS HAPPENING: ${c.centroid_text}`)
+    // centroid_text/gov_summary are LLM-derived from scraped social text, not
+    // raw — but still untrusted content one hop removed. Delimited like the
+    // raw-text call sites (classify-worker, add-report) for the same reason:
+    // the gov copilot's system prompt (lib/agents SYSTEM in app/api/gov/assist)
+    // treats <post> content as data, never instructions.
+    lines.push(`WHAT IS HAPPENING: <post>${c.centroid_text}</post>`)
     lines.push(`EVIDENCE: ${c.post_count} citizen/public reports; average severity ${(c.severity_avg ?? 0).toFixed(1)}/5; sources: ${(c.source_platforms ?? []).join(', ') || 'mixed public'}; status: ${c.status}.`)
-    if (c.gov_summary) lines.push(`GOV SUMMARY: ${c.gov_summary}`)
+    if (c.gov_summary) lines.push(`GOV SUMMARY: <post>${c.gov_summary}</post>`)
   }
   if (s) {
     lines.push(`AI BATTLE PLAN (indicative): ${s.summary}`)

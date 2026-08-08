@@ -167,7 +167,10 @@ ALTER TABLE government_displays ENABLE ROW LEVEL SECURITY;
 -- Public read on display tables (citizen-facing)
 CREATE POLICY "Public read citizen_displays" ON citizen_displays FOR SELECT USING (true);
 CREATE POLICY "Public read government_displays" ON government_displays FOR SELECT USING (true);
-CREATE POLICY "Public read pipeline_runs" ON pipeline_runs FOR SELECT USING (true);
+-- pipeline_runs is internal ops telemetry (run status, per-source scrape
+-- yield, error detail) — never public-read. Service role (which bypasses
+-- RLS entirely) is the only writer/reader; see 010_rls_lockdown.sql for the
+-- fix on databases where this migration already ran with the public policy.
 
 -- Service role has full access via bypassing RLS
 -- synthesis_batches, master_syntheses, research_data: service role only

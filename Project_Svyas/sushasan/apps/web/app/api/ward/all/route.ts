@@ -426,12 +426,18 @@ async function fetchFromSupabase() {
 
 export async function GET() {
   let clusters: Record<string, unknown>[] = SEED_CLUSTERS
+  // Previously silent: a total Supabase outage fell back to fabricated seed
+  // data with no signal anywhere in the response — the public map looked
+  // perfectly fine during a real outage. dataSource is surfaced as both a
+  // response header and a body field so the frontend can show a banner.
+  let dataSource: 'live' | 'seed' = 'seed'
 
   if (isSupabaseConfigured()) {
     try {
       const dbClusters = await fetchFromSupabase()
       if (dbClusters && dbClusters.length > 0) {
         clusters = dbClusters
+        dataSource = 'live'
       }
     } catch (err) {
       console.error('[ward/all] Supabase fetch failed, using seed data:', err)
@@ -450,5 +456,7 @@ export async function GET() {
     severity_avg: vals.reduce((a, b) => a + b, 0) / vals.length,
   }))
 
-  return NextResponse.json({ clusters, wardSeverity })
+  const res = NextResponse.json({ clusters, wardSeverity, dataSource })
+  res.headers.set('X-Data-Source', dataSource)
+  return res
 }

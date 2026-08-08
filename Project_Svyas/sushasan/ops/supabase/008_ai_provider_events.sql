@@ -32,11 +32,39 @@ CREATE INDEX IF NOT EXISTS ai_provider_events_time_idx
 CREATE INDEX IF NOT EXISTS ai_provider_events_outcome_idx
   ON ai_provider_events(outcome, created_at DESC);
 
+-- RLS enabled with zero policies = deny-all to anon/authenticated. No
+-- `FOR ALL TO service_role` policy is needed: service_role bypasses RLS
+-- entirely regardless of what policies exist.
 ALTER TABLE ai_provider_events ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS ai_provider_events_service ON ai_provider_events;
-CREATE POLICY ai_provider_events_service ON ai_provider_events
-  FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- Retention: this is high-volume operational telemetry, not product data.
--- Re-run this statement (or schedule it) to keep the table small.
+-- This used to be a one-off DELETE that only ran once, at migration time —
+-- rows kept accumulating forever after that. Schedule it nightly via
+-- pg_cron instead. pg_cron must be enabled first (Supabase dashboard →
+-- Database → Extensions, or `create extension if not exists pg_cron;` with
+-- sufficient privileges) — this block tries to enable it and schedule the
+-- job, and degrades to a no-op with a warning (rather than aborting the
+-- migration) if the role running this doesn't have permission to do so.
+DO $$
+BEGIN
+  BEGIN
+    CREATE EXTENSION IF NOT EXISTS pg_cron;
+  EXCEPTION WHEN insufficient_privilege OR feature_not_supported THEN
+    RAISE WARNING 'pg_cron could not be enabled (insufficient privilege on this plan/role) — ai_provider_events retention must be run manually or scheduled another way.';
+    RETURN;
+  END;
+
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+    PERFORM cron.unschedule(jobid) FROM cron.job WHERE jobname = 'ai_provider_events_retention';
+    PERFORM cron.schedule(
+      'ai_provider_events_retention',
+      '0 20 * * *', -- 20:00 UTC = 01:30 IST, off the daily-pipeline/dispatch windows
+      $job$DELETE FROM ai_provider_events WHERE created_at < now() - interval '30 days'$job$
+    );
+  END IF;
+END $$;
+
+-- One immediate run so existing rows aren't stuck waiting for the first
+-- scheduled firing.
 DELETE FROM ai_provider_events WHERE created_at < now() - interval '30 days';

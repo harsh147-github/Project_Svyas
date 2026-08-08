@@ -1,8 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
 import { missingEnv, REQUIRED } from '@/lib/env-check'
 import { providerStatus } from '@/lib/ai'
 import { sovereigntyReport } from '@/lib/ai-telemetry'
+import { evalGateStatus } from '@/lib/workers/eval-worker'
+import { isAdminAuthed } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,6 +35,7 @@ async function migrationReport(db: ReturnType<typeof createServerClient>) {
   const optional: { table: string; file: string; enables: string }[] = [
     { table: 'dispatch_log', file: '007_dispatch_log.sql', enables: 'authority-brief delivery audit trail' },
     { table: 'ai_provider_events', file: '008_ai_provider_events.sql', enables: 'AI sovereignty measurement' },
+    { table: 'eval_results', file: '017_eval_gate.sql', enables: 'AI provider eval gate / parity measurement' },
   ]
   const results = await Promise.all(
     optional.map(async (m) => {
@@ -53,16 +56,29 @@ async function migrationReport(db: ReturnType<typeof createServerClient>) {
   }
 }
 
+function noStore(body: unknown, init?: { status?: number }) {
+  const res = NextResponse.json(body, init)
+  res.headers.set('Cache-Control', 'no-store')
+  return res
+}
+
 /**
  * GET /api/health
- * Public pipeline health check — returns row counts and last pipeline run.
- * Used for autonomous monitoring without requiring auth.
+ *
+ * Public response is deliberately minimal — `{status, timestamp}` only. The
+ * full breakdown (missing env vars, whether CRON_SECRET is set, dead scrape
+ * sources, AI provider config) used to be served to anyone: an unauthenticated
+ * attack roadmap. It's still available, but only with ADMIN_TOKEN (header
+ * `x-admin-token` or `?token=`) — pass that to external monitors instead of
+ * scraping the public body.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const detailed = isAdminAuthed(req)
   const supabaseReady = isSupabaseConfigured()
 
   if (!supabaseReady) {
-    return NextResponse.json({
+    if (!detailed) return noStore({ status: 'degraded', timestamp: new Date().toISOString() })
+    return noStore({
       status: 'seed-mode',
       message: 'Supabase not configured — running on seed data',
       supabase: false,
@@ -130,9 +146,10 @@ export async function GET() {
     // the way. Null means migration 008 hasn't been applied yet, which is
     // reported honestly rather than as a clean 100%.
     const provider = providerStatus()
-    const [sovereignty, migrations] = await Promise.all([
+    const [sovereignty, migrations, evalGate] = await Promise.all([
       sovereigntyReport(24),
       migrationReport(db),
+      evalGateStatus().catch(() => []), // eval_golden_set/eval_results may not be migrated yet
     ])
 
     // Per-source yield from the most recent run — lets a monitor spot a single
@@ -147,7 +164,18 @@ export async function GET() {
       ? Object.entries(bySource).filter(([, n]) => !(n > 0)).map(([s]) => s)
       : []
 
-    return NextResponse.json({
+    const isOk =
+      pipelineHealthy &&
+      classifyKeepingPace !== false &&
+      !provider.misconfigured &&
+      deadSources.length < 4 &&
+      (sovereignty === null || sovereignty.calls === 0 || (sovereignty.sovereignty_pct ?? 100) >= 50)
+
+    if (!detailed) {
+      return noStore({ status: isOk ? 'ok' : 'degraded', timestamp: new Date().toISOString() })
+    }
+
+    return noStore({
       status: pipelineHealthy ? 'live' : 'idle',
       supabase: true,
       env: envReport(),
@@ -176,6 +204,11 @@ export async function GET() {
         last_channel: lastDispatch?.channel ?? null,
       },
       ai: { ...provider, last_24h: sovereignty },
+      // Eval gate (ops/supabase/017_eval_gate.sql, lib/workers/eval-worker.ts)
+      // — per-provider parity against the golden set, most recent runs
+      // first. Empty until the nightly eval-gate Inngest run has fired at
+      // least once with >=2 providers configured.
+      evalGate,
       // Committed ≠ applied. Nothing runs these automatically.
       migrations,
       pipeline: lastRun ?? null,
@@ -203,7 +236,8 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     })
   } catch (err) {
-    return NextResponse.json({
+    if (!detailed) return noStore({ status: 'degraded', timestamp: new Date().toISOString() }, { status: 500 })
+    return noStore({
       status: 'error',
       error: String(err),
       supabase: true,

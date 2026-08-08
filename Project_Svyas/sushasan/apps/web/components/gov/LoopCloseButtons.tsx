@@ -6,10 +6,11 @@ import Link from 'next/link'
 interface Props {
   solutionId: string
   wardId: string
+  missionId?: string
   currentStatus?: string
 }
 
-export function LoopCloseButtons({ solutionId, wardId, currentStatus }: Props) {
+export function LoopCloseButtons({ solutionId, wardId, missionId, currentStatus }: Props) {
   const [status, setStatus] = useState(currentStatus ?? 'draft')
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
@@ -29,6 +30,7 @@ export function LoopCloseButtons({ solutionId, wardId, currentStatus }: Props) {
         body: JSON.stringify({
           solution_id: solutionId,
           ward_id: wardId,
+          mission_id: missionId,
           status: newStatus,
           action_desc: newStatus === 'completed'
             ? 'Marked resolved by ward office'

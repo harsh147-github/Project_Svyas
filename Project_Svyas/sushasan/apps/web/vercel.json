@@ -3,6 +3,7 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "framework": "nextjs",
+  "regions": ["bom1"],
   "crons": [
     {
       "path": "/api/cron/daily-pipeline",
@@ -32,11 +33,38 @@
       ]
     },
     {
-      "source": "/api/(.*)",
+      "source": "/api/ward/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "s-maxage=120, stale-while-revalidate=60"
+        }
+      ]
+    },
+    {
+      "source": "/api/solution/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "s-maxage=120, stale-while-revalidate=60"
+        }
+      ]
+    },
+    {
+      "source": "/api/(gov|admin|cron)/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/api/(health|transcribe|add-report|plus-one)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
         }
       ]
     }

@@ -13,7 +13,8 @@ import { isSupabaseConfigured, createServerClient } from './supabase'
 
 export type AiOutcome = 'ok' | 'fallback' | 'error'
 export type ErrorKind =
-  | 'auth' | 'rate_limit' | 'timeout' | 'server' | 'bad_request' | 'bad_json' | 'unknown'
+  | 'auth' | 'rate_limit' | 'timeout' | 'server' | 'bad_request' | 'bad_json' | 'truncation'
+  | 'circuit_open' | 'unknown'
 
 export type AiEvent = {
   intendedProvider: string
@@ -25,6 +26,25 @@ export type AiEvent = {
   errorKind?: ErrorKind | null
   errorDetail?: string | null
   latencyMs?: number
+  promptTokens?: number | null
+  completionTokens?: number | null
+  costEstInr?: number | null
+}
+
+// Rough, documented estimates — good enough to compare providers directionally,
+// not an invoice. Update when a provider's published pricing changes materially.
+// USD→INR at ~83; per-1K-token rates as of the models this project defaults to.
+const PRICE_PER_1K_TOKENS_INR: Record<string, { prompt: number; completion: number }> = {
+  sarvam: { prompt: 0.15, completion: 0.15 },       // sarvam-m — inference-only Indian pricing, materially cheaper than frontier US models
+  bharatgen: { prompt: 0.15, completion: 0.15 },    // no published pricing yet — sarvam's rate used as a placeholder
+  anthropic: { prompt: 0.25, completion: 1.25 },    // Claude Sonnet-class, USD $3/$15 per 1M tokens converted to INR/1K
+}
+
+export function estimateCostInr(provider: string, promptTokens?: number | null, completionTokens?: number | null): number | null {
+  if (!promptTokens && !completionTokens) return null
+  const rate = PRICE_PER_1K_TOKENS_INR[provider] ?? PRICE_PER_1K_TOKENS_INR.anthropic
+  const cost = ((promptTokens ?? 0) / 1000) * rate.prompt + ((completionTokens ?? 0) / 1000) * rate.completion
+  return Math.round(cost * 10000) / 10000
 }
 
 /**
@@ -40,8 +60,20 @@ export function classifyError(err: unknown): ErrorKind {
   const msg = err instanceof Error ? err.message : String(err)
   const name = err instanceof Error ? err.name : ''
 
+  // Explicitly flagged by lib/ai.ts's continuation-retry logic — a response
+  // still truncated at max_tokens after one retry. Must be checked before
+  // the bad_json heuristic below: truncated JSON also fails JSON.parse, and
+  // used to get bucketed as 'bad_json' ("tighten the prompt") instead of
+  // 'truncation' ("raise maxTokens") — the daily fix list read the wrong
+  // diagnosis for every truncation.
+  if (err instanceof Error && (err as Error & { truncation?: boolean }).truncation) return 'truncation'
   if (name === 'AbortError' || name === 'TimeoutError' || /timeout|timed out|ETIMEDOUT/i.test(msg)) return 'timeout'
-  if (err instanceof SyntaxError || /validation failed|JSON/i.test(msg)) return 'bad_json'
+  // `JSON` alone used to match provider 400 bodies that merely mention the
+  // word (e.g. "response_format not supported: invalid json schema") and
+  // mis-bucket a config/request problem as our own parse failure. Only
+  // classifyError callers that constructed the error via chatJSON's own
+  // 'validation failed' or JSON.parse's SyntaxError should land here.
+  if (err instanceof SyntaxError || /validation failed/i.test(msg)) return 'bad_json'
 
   // Provider errors are thrown as `${model} ${status}: ${body}` by chatOpenAICompatible.
   const status = Number(msg.match(/\s(\d{3}):/)?.[1])
@@ -98,6 +130,9 @@ export async function recordAiCall(ev: AiEvent): Promise<void> {
       error_kind: ev.errorKind ?? null,
       error_detail: ev.errorDetail ?? null,
       latency_ms: ev.latencyMs ?? null,
+      prompt_tokens: ev.promptTokens ?? null,
+      completion_tokens: ev.completionTokens ?? null,
+      cost_est_inr: ev.costEstInr ?? estimateCostInr(ev.servedBy, ev.promptTokens, ev.completionTokens),
     })
   } catch (e) {
     // Telemetry must never break the pipeline it measures.

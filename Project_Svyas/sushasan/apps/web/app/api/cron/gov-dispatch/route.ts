@@ -6,6 +6,8 @@ import { buildBrief, type Brief } from '@/lib/gov-brief'
 import { isWhatsAppConfigured, sendWhatsApp, waShareLink } from '@/lib/whatsapp'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
 import { missingEnv, REQUIRED } from '@/lib/env-check'
+import { isCronAuthorized } from '@/lib/cron-auth'
+import { signGovBriefToken, isGovTokenSigningConfigured } from '@/lib/gov-token'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -24,15 +26,9 @@ export const dynamic = 'force-dynamic'
 //     an audit trail of what was sent to whom, when.
 //
 // Runs at 05:00 UTC — after the 03:30 scrape + classification, so briefs carry
-// today's data. Cron-gated (open when CRON_SECRET is unset, like the others).
+// today's data. Cron-gated via lib/cron-auth (fails closed in production).
 
 const TOP_N = 12
-
-function checkAuth(req: Request): boolean {
-  const secret = process.env.CRON_SECRET
-  if (!secret) return true
-  return req.headers.get('authorization') === `Bearer ${secret}`
-}
 
 async function sendEmail(to: string[], subject: string, html: string): Promise<boolean> {
   const key = process.env.RESEND_API_KEY
@@ -45,6 +41,7 @@ async function sendEmail(to: string[], subject: string, html: string): Promise<b
         from: process.env.DISPATCH_FROM ?? 'Sushaasan <briefs@sushaasan.in>',
         to, subject, html,
       }),
+      signal: AbortSignal.timeout(15_000),
     })
     if (!res.ok) {
       // dispatch.last_dispatched_at has been null in production with no
@@ -140,12 +137,50 @@ async function logDispatches(items: DispatchItem[], digestEmailedTo: string[]): 
 
 async function run() {
   const baseUrl = process.env.PUBLIC_BASE_URL ?? 'https://sushaasan.in'
-  const token = process.env.GOV_ACCESS_TOKEN ?? ''
+  if (!isGovTokenSigningConfigured()) {
+    console.error(
+      '[gov-dispatch] GOV_TOKEN_SIGNING_SECRET not set — falling back to the master ' +
+        'GOV_ACCESS_TOKEN in dispatched links. Set GOV_TOKEN_SIGNING_SECRET so briefs carry ' +
+        'per-recipient, per-mission, expiring links instead of the full-access credential.',
+    )
+  }
+  const legacyMasterToken = process.env.GOV_ACCESS_TOKEN ?? ''
 
   const snap = await getDashboardSnapshot()
+
+  // Solution generation (weekly synthesis) used to run on a different cadence
+  // than dispatch (daily) with no memory of what was already sent — officers
+  // got the identical brief for the same solution up to 7×/week, which reads
+  // as spam and erodes exactly the trust this product needs from them.
+  // Skip any mission dispatched in the last 6 days UNLESS its solution was
+  // regenerated more recently than that dispatch (a genuinely fresh brief
+  // for an already-notified mission should still go out).
+  const lastDispatchByMission = new Map<string, string>()
+  if (isSupabaseConfigured()) {
+    try {
+      const db = createServerClient()
+      const sixDaysAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
+      const { data: recent } = await db
+        .from('dispatch_log')
+        .select('mission_id, dispatched_at')
+        .gte('dispatched_at', sixDaysAgo)
+        .order('dispatched_at', { ascending: false })
+      for (const row of (recent ?? []) as { mission_id: string; dispatched_at: string }[]) {
+        if (!lastDispatchByMission.has(row.mission_id)) lastDispatchByMission.set(row.mission_id, row.dispatched_at)
+      }
+    } catch (e) { console.error('[gov-dispatch] dispatch_log lookup:', e) }
+  }
+
   // Rank open/in-progress solutions by priority; one brief per (ward, issue).
+  // 'preview' solutions are synthesized placeholders (see
+  // getDashboardSnapshot) with made-up cost estimates — never real enough to
+  // dispatch to an officer as if they were a generated brief.
   const ranked = snap.solutions
-    .filter((s) => ['published', 'draft', 'actioned', 'in_progress', 'preview'].includes(s.status))
+    .filter((s) => ['published', 'draft', 'actioned', 'in_progress'].includes(s.status))
+    .filter((s) => {
+      const lastSent = lastDispatchByMission.get(missionId(s.ward_id, s.issue_tag))
+      return !lastSent || String(s.generated_at ?? '') > lastSent
+    })
     .sort((a, b) => (b.priority_score ?? 0) - (a.priority_score ?? 0))
     .slice(0, TOP_N)
 
@@ -158,8 +193,13 @@ async function run() {
     const id = missionId(sol.ward_id, sol.issue_tag)
     const mission = await getMission(id)
     if (!mission) continue
-    const brief = buildBrief(mission, baseUrl, token)
     const rcpt = await getRecipient(sol.ward_id)
+    // Mission-scoped, expiring token — never the master GOV_ACCESS_TOKEN.
+    // Falls back to the master token only if signing isn't configured yet,
+    // so dispatch doesn't silently break during migration.
+    const token =
+      signGovBriefToken(id, rcpt.email || rcpt.phone || 'digest') ?? legacyMasterToken
+    const brief = buildBrief(mission, baseUrl, token)
 
     let sentMail = false
     let sentWa = false
@@ -208,7 +248,8 @@ export async function GET(req: Request) {
   if (missing.length) {
     console.error(`[env] missing required keys for dispatch: ${missing.join(', ')}`)
   }
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = isCronAuthorized(req)
+  if (!auth.ok) return auth.response
   try { return NextResponse.json(await run()) }
   catch (e) { return NextResponse.json({ ok: false, error: String(e) }, { status: 500 }) }
 }
@@ -218,7 +259,8 @@ export async function POST(req: Request) {
   if (missing.length) {
     console.error(`[env] missing required keys for dispatch: ${missing.join(', ')}`)
   }
-  if (!checkAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = isCronAuthorized(req)
+  if (!auth.ok) return auth.response
   try { return NextResponse.json(await run()) }
   catch (e) { return NextResponse.json({ ok: false, error: String(e) }, { status: 500 }) }
 }

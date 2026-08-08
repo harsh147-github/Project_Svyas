@@ -2,75 +2,14 @@ import { NextResponse } from 'next/server'
 import crypto from 'node:crypto'
 import { createServerClient, isSupabaseConfigured } from '../../../../lib/supabase'
 import { inngest } from '../../../../lib/inngest'
+import { isCronAuthorized } from '../../../../lib/cron-auth'
+import { detectWard as detectWardShared, CITY_WIDE_ID, type WardEntry } from '../../../../lib/wards'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
 export const dynamic = 'force-dynamic'
 
 // ── Ward keyword → ward_id + lng/lat ─────────────────────────────────────────
-type WardEntry = { kw: string[]; id: string; name: string; lng: number; lat: number }
-const WARD_MAP: WardEntry[] = [
-  // ── Pilot belt (NIBM / Kondhwa / Wanowrie / Hadapsar) ──────────────────────
-  { kw: ['mohammadwadi', 'mohammad wadi', 'nibm', 'nibm road', 'uruli devachi', 'undri', 'pisoli', 'handewadi', 'autadewadi', 'konark pyramid', 'clover park', 'corinthians', 'kumar park'], id: '46', name: 'Mohammad Wadi - Uruli Devachi (NIBM)', lng: 73.9102, lat: 18.4651 },
-  { kw: ['kondhwa bk', 'kondhwa budruk', 'yewalewadi'], id: '47', name: 'Kondhwa Bk - Yewalewadi', lng: 73.8780, lat: 18.4489 },
-  { kw: ['wanawadi', 'salunke vihar', 'salunke', 'wanowrie', 'wanowarie', 'kausar baug', 'fatima nagar', 'salisbury park'], id: '43', name: 'Wanawadi - Kausar Baug', lng: 73.8985, lat: 18.4793 },
-  { kw: ['kondhwa kh', 'kondhwa khurd', 'mithanagar', 'kondhwa', 'kondhwa road', 'khadi machine', 'medha nagar'], id: '41', name: 'Kondhwa Kh - Mithanagar', lng: 73.8762, lat: 18.4642 },
-  { kw: ['ramtekadi', 'sayyadnagar', 'gondhale nagar'], id: '42', name: 'Ramtekadi - Sayyadnagar', lng: 73.8950, lat: 18.4750 },
-  { kw: ['boratenagar', 'sasanenagar', 'kale borate'], id: '44', name: 'Kale Boratenagar - Sasanenagar', lng: 73.9000, lat: 18.4680 },
-  { kw: ['hadapsar', 'satavwadi', 'gadital', 'sasane nagar', 'malwadi'], id: '25', name: 'Hadapsar Gaothan - Satavwadi', lng: 73.9265, lat: 18.5082 },
-  { kw: ['wanwadi', 'vaiduwadi'], id: '26', name: 'Wanwadi Gaothan - Vaiduwadi', lng: 73.9128, lat: 18.5058 },
-  // ── East ────────────────────────────────────────────────────────────────────
-  { kw: ['magarpatta', 'sadhana vidyalaya'], id: '24', name: 'Magarpatta - Sadhana Vidyalaya', lng: 73.9291, lat: 18.5114 },
-  { kw: ['amanora', 'amanora park', 'sadesataranali'], id: '23', name: 'Sadesataranali - Aakashwani (Amanora)', lng: 73.9402, lat: 18.5167 },
-  { kw: ['koregaon park', 'kp pune', 'north main road', 'mundhwa', 'mundhwa road', 'keshav nagar', 'sopan baug', 'ghorpadi', 'ghorpadi gaon', 'b t kawade', 'kawade road'], id: '21', name: 'Koregaon Park - Mundhwa', lng: 73.8946, lat: 18.5365 },
-  { kw: ['kharadi', 'eon it', 'eon free zone', 'wagholi'], id: '4', name: 'East Kharadi - Wagholi', lng: 73.9558, lat: 18.5512 },
-  { kw: ['chandan nagar', 'vadgaon sheri'], id: '5', name: 'West Kharadi - Vadgaon Sheri', lng: 73.9339, lat: 18.5511 },
-  { kw: ['viman nagar', 'vimannagar', 'phoenix marketcity', 'phoenix mall', 'lohegaon', 'pune airport', 'airport road'], id: '3', name: 'Lohegaon - Vimannagar', lng: 73.9194, lat: 18.5651 },
-  { kw: ['kalyani nagar', 'kalyaninagar', 'nagpur chawl'], id: '7', name: 'Kalyaninagar - Nagpur Chawl', lng: 73.9055, lat: 18.5489 },
-  { kw: ['yerwada', 'yerawada', 'gunjan'], id: '9', name: 'Yerwada', lng: 73.8918, lat: 18.5495 },
-  { kw: ['manjari', 'shewalwadi'], id: '22', name: 'Manjari Bk - Shewalwadi', lng: 73.9714, lat: 18.5087 },
-  { kw: ['fursungi'], id: '45', name: 'Fursungi', lng: 73.9589, lat: 18.4786 },
-  // ── Central ─────────────────────────────────────────────────────────────────
-  { kw: ['camp pune', 'mg road pune', 'east street', 'pune camp', 'sachapir street', 'pune station'], id: '20', name: 'Pune Station - Ambedkar Road', lng: 73.8742, lat: 18.5242 },
-  { kw: ['shivajinagar', 'shivaji nagar', 'jm road', 'jangli maharaj', 'deccan gymkhana', 'model colony', 'sangamwadi'], id: '10', name: 'Shivajinagar Gaothan - Sangamwadi', lng: 73.8475, lat: 18.5308 },
-  // 28 must precede 17: detectWard is first-match-wins and 17's bare 'peth'
-  // would otherwise swallow 'bhavani peth'.
-  { kw: ['bhavani peth', 'kasewadi', 'lohiyanagar'], id: '28', name: 'Mahatma Phule Smarak - Bhavani Peth', lng: 73.8640, lat: 18.5100 },
-  { kw: ['peth', 'kasba peth', 'budhwar peth', 'shaniwar peth', 'narayan peth', 'sadashiv peth', 'shukrawar peth', 'tulshibaug', 'mandai'], id: '17', name: 'Shaniwar Peth - Navi Peth', lng: 73.8550, lat: 18.5130 },
-  { kw: ['bopodi'], id: '11', name: 'Bopodi - SPPU', lng: 73.8323, lat: 18.5541 },
-  // ── North ───────────────────────────────────────────────────────────────────
-  { kw: ['vishrantwadi', 'dhanori'], id: '1', name: 'Dhanori - Vishrantwadi', lng: 73.8895, lat: 18.5908 },
-  { kw: ['tingre nagar', 'tingrenagar', 'sanjay park'], id: '2', name: 'Tingrenagar - Sanjay Park', lng: 73.8985, lat: 18.5767 },
-  { kw: ['kalas', 'phulenagar'], id: '8', name: 'Kalas - Phulenagar', lng: 73.8780, lat: 18.5694 },
-  // ── West ────────────────────────────────────────────────────────────────────
-  { kw: ['kothrud', 'kothrud depot', 'paud road', 'mayur colony', 'dahanukar colony'], id: '31', name: 'Kothrud Gaothan - Shivtirthnagar', lng: 73.8083, lat: 18.5072 },
-  { kw: ['karve nagar', 'karvenagar'], id: '36', name: 'Karvenagar', lng: 73.8218, lat: 18.4988 },
-  { kw: ['erandwane', 'erandwana', 'mehendale garage', 'nal stop', 'fergusson', 'fc road'], id: '16', name: 'Fergusson College - Erandwane', lng: 73.8348, lat: 18.5052 },
-  { kw: ['aundh', 'sakal nagar', 'parihar chowk', 'bremen chowk', 'balewadi', 'balewadi stadium'], id: '12', name: 'Aundh - Balewadi', lng: 73.8082, lat: 18.5612 },
-  { kw: ['baner', 'baner road', 'pancard club', 'sus road', 'sus gaon', 'mahalunge'], id: '13', name: 'Baner - Sus - Mahalunge', lng: 73.7872, lat: 18.5482 },
-  { kw: ['pashan', 'bavdhan', 'nda road'], id: '14', name: 'Pashan - Bawdhan', lng: 73.7775, lat: 18.5408 },
-  { kw: ['warje', 'warje malwadi', 'malwadi warje', 'kondhave dhavde'], id: '34', name: 'Warje - Kondhave Dhavde', lng: 73.7918, lat: 18.4795 },
-  // ── South ───────────────────────────────────────────────────────────────────
-  { kw: ['dhayari', 'sinhagad road', 'sinhgad road', 'dhayari phata'], id: '54', name: 'Dhayari - Ambegaon', lng: 73.8088, lat: 18.4612 },
-  { kw: ['vadgaon bk', 'vadgaon budruk', 'manik baug', 'manikbaug'], id: '51', name: 'Vadgaon Bk - Manikbaug', lng: 73.8311, lat: 18.4746 },
-  { kw: ['nanded city', 'sun city'], id: '52', name: 'Nanded City - Sun City', lng: 73.8169, lat: 18.4746 },
-  { kw: ['narhe', 'khadakwasla'], id: '53', name: 'Khadakwasla - Narhe', lng: 73.8008, lat: 18.4372 },
-  { kw: ['katraj', 'gokulnagar'], id: '58', name: 'Katraj - Gokulnagar', lng: 73.8578, lat: 18.4428 },
-  { kw: ['bibwewadi', 'bibvewadi', 'gangadham'], id: '40', name: 'Bibvewadi - Gangadham', lng: 73.8759, lat: 18.4839 },
-  { kw: ['dhankawadi', 'ambegaon pathar'], id: '55', name: 'Dhankawadi - Ambegaon Pathar', lng: 73.8376, lat: 18.4605 },
-  { kw: ['balaji nagar', 'balajinagar', 'shankar maharaj'], id: '49', name: 'Balajinagar - Shankar Maharaj Math', lng: 73.8605, lat: 18.4713 },
-  { kw: ['bharati vidyapeeth', 'chaitanyanagar'], id: '56', name: 'Chaitanyanagar - Bharati Vidyapeeth', lng: 73.8528, lat: 18.4588 },
-  { kw: ['sukhsagarnagar', 'rajiv gandhinagar'], id: '57', name: 'Sukhsagarnagar - Rajiv Gandhinagar', lng: 73.8652, lat: 18.4518 },
-  { kw: ['swargate', 'market yard', 'gultekdi', 'mukund nagar', 'maharshi nagar', 'maharshinagar'], id: '39', name: 'Market Yard - Maharshinagar', lng: 73.8580, lat: 18.5010 },
-  { kw: ['sahakar nagar', 'sahakarnagar', 'taljai'], id: '50', name: 'Sahakarnagar - Taljai', lng: 73.8479, lat: 18.4820 },
-  { kw: ['parvati', 'padmavati', 'shivdarshan'], id: '38', name: 'Shivdarshan - Padmavati', lng: 73.8521, lat: 18.4931 },
-  { kw: ['super indiranagar', 'upper indiranagar'], id: '48', name: 'Upper Super Indiranagar', lng: 73.8702, lat: 18.4665 },
-]
-
-// Central-Pune fallback so a clearly civic Pune post that names no specific
-// area is still shown (rather than silently dropped). Quality is already gated
-// by isPuneCivic() + classifyIssue() before this is used.
-const FALLBACK_WARD: WardEntry = { kw: [], id: '10', name: 'Pune (city-wide)', lng: 73.8567, lat: 18.5204 }
 
 const ISSUE_KW: Record<string, string[]> = {
   traffic:     ['traffic jam', 'traffic problem', 'signal not working', 'broken signal', 'junction blocked', 'congestion', 'pothole', 'potholes', 'illegal parking', 'gridlock', 'ambulance stuck', 'encroachment', 'road broken', 'bad road', 'road damage', 'speed breaker', 'footpath', 'divider', 'flyover', 'waterlogging road', 'open manhole', 'manhole'],
@@ -117,6 +56,15 @@ function hashAuthor(u: string): string {
   return crypto.createHash('sha256').update(`${u}|sushasan_2026_05`).digest('hex').slice(0, 32)
 }
 
+// Fallback source_post_id when a provider doesn't give us a stable id.
+// A time-based fallback (`ig${Date.now()}`) defeats the upsert dedup on
+// source_post_id — the same content gets re-inserted as a "new" row on
+// every run instead of being recognized as already-seen. Content-derived
+// hashing is stable across runs for the same post.
+function deterministicId(source: string, text: string, author: string): string {
+  return crypto.createHash('sha256').update(`${source}|${text.slice(0, 500)}|${author}`).digest('hex').slice(0, 24)
+}
+
 // A citizen who tags #sushaasan (or sushaasan.in / @sushaasan) is explicitly
 // asking us to amplify their report — the branded-hashtag growth loop. These
 // are picked up even if they don't name a Pune locality.
@@ -149,20 +97,14 @@ function classifyIssueOrTagged(text: string): string | null {
   return classifyIssue(text) ?? (isTagged(text) ? 'other' : null)
 }
 
-function detectWard(text: string): WardEntry | null {
-  const t = text.toLowerCase()
-  for (const w of WARD_MAP) {
-    if (w.kw.some((k) => t.includes(k))) return w
-  }
-  return null
-}
-
-// Always resolves to a ward for a post that already passed isPuneCivic() +
-// classifyIssue(). Uses the specific area if named, else the city-wide bucket —
-// so genuinely civic Pune complaints are never silently dropped and the map
-// keeps growing every day.
+// Delegates to lib/wards.ts — the single shared ward registry (58 wards,
+// scored keyword matching) also used by classify-worker and add-report.
+// Always resolves to a WardEntry for a post that already passed
+// isPuneCivic() + classifyIssue(): the specific ward if the scored match
+// clears the threshold, else the CITY_WIDE pseudo-ward (excluded from
+// per-ward cluster aggregation below — see runPipelineBody).
 function resolveWard(text: string): WardEntry {
-  return detectWard(text) ?? FALLBACK_WARD
+  return detectWardShared(text)
 }
 
 function severityFor(text: string): number {
@@ -240,15 +182,20 @@ function envTimeout(key: string, fallback: number): number {
   return Math.min(n, 280)
 }
 
-function apifyUrl(actor: string, token: string, timeoutSec: number) {
-  return `https://api.apify.com/v2/acts/${actor}/run-sync-get-dataset-items?token=${token}&timeout=${timeoutSec}`
+// Apify's REST API accepts the token as either a `?token=` query param or an
+// `Authorization: Bearer` header — the query-param form puts the token in
+// plain text in every upstream proxy/CDN access log this request passes
+// through. Use the header instead; only `timeout` (not a secret) stays in
+// the query string.
+function apifyUrl(actor: string, timeoutSec: number) {
+  return `https://api.apify.com/v2/acts/${actor}/run-sync-get-dataset-items?timeout=${timeoutSec}`
 }
 
 async function apifyPost(actor: string, token: string, body: unknown, timeoutSec: number): Promise<Array<Record<string, unknown>>> {
   try {
-    const res = await fetch(apifyUrl(actor, token, timeoutSec), {
+    const res = await fetch(apifyUrl(actor, timeoutSec), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout((timeoutSec + 20) * 1000),
     })
@@ -270,12 +217,18 @@ async function apifyPost(actor: string, token: string, body: unknown, timeoutSec
 }
 
 // ── Day-based rotation (0=Sun … 6=Sat) ───────────────────────────────────────
-// Even days (Sun/Tue/Thu/Sat): Instagram + Google Maps
-// Odd days (Mon/Wed/Fri): Instagram + Facebook
-// Twitter + Reddit run every day (cheapest / free)
-const TODAY = new Date().getDay()
-const RUN_GMAPS    = TODAY % 2 === 0   // Sun, Tue, Thu, Sat
-const RUN_FACEBOOK = TODAY % 2 === 1   // Mon, Wed, Fri
+// Instagram still alternates two hashtag banks daily (below) — Google Maps
+// and Facebook used to alternate days too (RUN_GMAPS/RUN_FACEBOOK) but now
+// run daily with smaller per-run limits instead (see scrapeGoogleMaps /
+// scrapeFacebook) so no source has a guaranteed-stale day.
+//
+// Computed per-call, not at module scope: a warm serverless instance can be
+// invoked on either side of midnight, and a module-scope `const` captured
+// at cold-start would keep using yesterday's bank for the rest of that
+// instance's lifetime.
+function today(): number {
+  return new Date().getDay()
+}
 
 // ── Instagram — two alternating hashtag banks, 35 each ───────────────────────
 const IG_BANK_A = [
@@ -300,7 +253,7 @@ const IG_BANK_B = [
 
 async function scrapeInstagram(token: string): Promise<NormPost[]> {
   // Alternate banks daily so we cover 70 unique hashtags across 2 days
-  const bank = TODAY % 2 === 0 ? IG_BANK_A : IG_BANK_B
+  const bank = today() % 2 === 0 ? IG_BANK_A : IG_BANK_B
   const directUrls = bank.map((h) => `https://www.instagram.com/explore/tags/${h}/`)
   const items = await apifyPost('apify~instagram-scraper', token,
     { directUrls, resultsType: 'posts', resultsLimit: 100, addParentData: false }, 240)
@@ -312,7 +265,8 @@ async function scrapeInstagram(token: string): Promise<NormPost[]> {
     if (!isPuneCivic(caption)) continue
     const issue = classifyIssueOrTagged(caption); if (!issue) continue
     const ward = resolveWard(caption)
-    const shortCode = (p.shortCode as string | undefined) ?? (p.id as string | undefined) ?? `ig${Date.now()}`
+    const shortCode = (p.shortCode as string | undefined) ?? (p.id as string | undefined) ??
+      deterministicId('instagram', caption, (p.ownerUsername as string | undefined) ?? 'unknown')
     out.push({
       source: 'instagram', source_post_id: `ig_${shortCode}`,
       raw_text: caption.slice(0, 4000),
@@ -363,7 +317,7 @@ async function scrapeTwitter(token: string): Promise<NormPost[]> {
     if (!isPuneCivic(text)) continue
     const issue = classifyIssueOrTagged(text); if (!issue) continue
     const ward = resolveWard(text)
-    const id = (p.id_str ?? p.id ?? `tw${Date.now()}`) as string
+    const id = (p.id_str ?? p.id ?? deterministicId('twitter', text, ((p.user as Record<string,unknown>)?.screen_name as string | undefined) ?? 'unknown')) as string
     out.push({
       source: 'twitter', source_post_id: `tw_${id}`,
       raw_text: text.slice(0, 4000),
@@ -391,11 +345,15 @@ const GMAPS_SEARCHES = [
 ]
 
 async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
-  if (!RUN_GMAPS) return []
+  // Used to run only on even days (RUN_GMAPS) to spread Apify credit spend —
+  // that meant a genuinely new review posted on an off-day waited up to 24h
+  // longer than necessary, and the map had a guaranteed-stale source every
+  // other day. Runs daily now with a smaller per-run limit instead, so
+  // credit spend stays roughly flat while freshness improves.
   const items = await apifyPost('compass~crawler-google-places', token, {
     searchStringsArray: GMAPS_SEARCHES,
-    maxCrawledPlaces: 4,
-    reviewsCount: 50,
+    maxCrawledPlaces: 3,
+    reviewsCount: 30,
     reviewsSort: 'newest',
     language: 'en',
     countryCode: 'in',
@@ -414,7 +372,7 @@ async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
       if (!isPuneCivic(combined)) continue
       const issue = classifyIssueOrTagged(combined); if (!issue) continue
       const ward = resolveWard(`${text} ${placeName}`)
-      const rId = (r.reviewId ?? r.id ?? `gm${Date.now()}${Math.random()}`) as string
+      const rId = (r.reviewId ?? r.id ?? deterministicId('gmaps', text, placeName)) as string
       out.push({
         source: 'gmaps', source_post_id: `gm_${rId}`,
         raw_text: `[${placeName}] ${text}`.slice(0, 4000),
@@ -442,10 +400,11 @@ const FB_URLS = [
 ]
 
 async function scrapeFacebook(token: string): Promise<NormPost[]> {
-  if (!RUN_FACEBOOK) return []
+  // Same day-rotation removal as Google Maps above — was every-other-day
+  // (RUN_FACEBOOK), now daily with a smaller per-run limit.
   const items = await apifyPost('apify~facebook-posts-scraper', token, {
     startUrls: FB_URLS.map((url) => ({ url })),
-    resultsLimit: 80,
+    resultsLimit: 45,
     commentsMode: 'RANKED_THREADED',
     maxComments: 15,
   }, 220)
@@ -457,7 +416,7 @@ async function scrapeFacebook(token: string): Promise<NormPost[]> {
     if (!isPuneCivic(text)) continue
     const issue = classifyIssueOrTagged(text); if (!issue) continue
     const ward = resolveWard(text)
-    const id = (p.postId ?? p.id ?? `fb${Date.now()}`) as string
+    const id = (p.postId ?? p.id ?? deterministicId('facebook', text, 'unknown')) as string
     out.push({
       source: 'facebook', source_post_id: `fb_${id}`,
       raw_text: text.slice(0, 4000),
@@ -501,7 +460,7 @@ async function scrapeReddit(): Promise<NormPost[]> {
   // change — nothing here breaks while those vars are unset.
   const token = await redditToken()
   const base = token ? 'https://oauth.reddit.com' : 'https://www.reddit.com'
-  const ua = process.env.REDDIT_USER_AGENT ?? 'Sushasan/1.0 (civic; sonawaneharsh147@gmail.com)'
+  const ua = process.env.REDDIT_USER_AGENT ?? 'Sushasan/1.0 (civic; contact@sushaasan.in)'
   if (token) console.log('[reddit] using authenticated OAuth endpoint')
 
   for (const [sub, q] of queries) {
@@ -534,7 +493,10 @@ async function scrapeReddit(): Promise<NormPost[]> {
           source_post_id: `reddit_${d.id as string}`,
           raw_text: text.slice(0, 4000),
           author_hash: hashAuthor(((d.author as string) ?? 'unknown').slice(0, 50)),
-          posted_at: new Date(((d.created_utc as number) ?? 0) * 1000).toISOString(),
+          // `?? 0` used to produce 1970-01-01 for any item missing
+          // created_utc; null is honest about "we don't know when this
+          // was posted" instead of a fake epoch date.
+          posted_at: typeof d.created_utc === 'number' ? new Date(d.created_utc * 1000).toISOString() : null,
           geo_hint: `r/${d.subreddit as string}`,
           ward_id: ward.id, issue_tag: issue, severity: severityFor(text),
           ward_lng: ward.lng, ward_lat: ward.lat,
@@ -546,19 +508,80 @@ async function scrapeReddit(): Promise<NormPost[]> {
   return out
 }
 
-// ── Pune civic news via Google News RSS — free, genuinely new content daily ──
+// ── Pune civic news via RSS — free, genuinely new content daily ────────────
 // Unlike hashtag re-scrapes (mostly dedup'd), news publishes fresh articles
-// every day, so this source reliably grows the map. `when:2d` limits results
-// to the last 48h; the raw_posts upsert dedups any overlap between runs.
+// every day, so this source reliably grows the map — it's the one source
+// guaranteed to have something new. Two feed types:
+//  1. Targeted Google News queries, now crossed per issue-type × zone
+//     instead of 8 generic city-wide queries — a "water" query naming NIBM
+//     specifically surfaces different articles than a bare "Pune water".
+//  2. Direct outlet RSS feeds (Pune Mirror, ToI Pune, Indian Express Pune,
+//     Hindustan Times Pune, PMC press releases) — these are checked against
+//     isPuneCivic() + the issue keyword gate exactly like Google News
+//     results, so a feed's general-Pune-news noise doesn't flood the map;
+//     only civic-issue articles survive the filter.
+const ZONES = ['NIBM', 'Kondhwa', 'Salunke Vihar Wanowrie', 'Hadapsar', 'Pune']
+const ISSUE_QUERY_TERMS: Record<string, string> = {
+  water: 'water supply tanker shortage',
+  traffic: 'pothole road traffic jam',
+  garbage: 'garbage waste dump SWM',
+  electricity: 'MSEDCL power cut transformer',
+}
 const NEWS_QUERIES = [
-  'Pune PMC water supply', 'Pune pothole road repair', 'Pune traffic jam signal',
-  'Pune garbage waste PMC', 'Pune MSEDCL power cut', 'Pune waterlogging drain monsoon',
+  ...ZONES.flatMap((zone) =>
+    Object.values(ISSUE_QUERY_TERMS).map((term) => `Pune ${zone} ${term}`),
+  ),
   'Pune civic ward corporator', 'PMC Pune complaint residents',
+]
+
+// Direct outlet feeds — best-effort. Each is fetched independently with its
+// own try/catch (see scrapeNews below), so one outlet renaming/breaking its
+// feed URL doesn't take the others down with it; the per-source yield
+// alerting in uptime-check (3.2) surfaces a feed that's gone dark for 3
+// days so it can be re-pointed rather than silently returning zero forever.
+const DIRECT_NEWS_FEEDS: { label: string; url: string }[] = [
+  { label: 'punemirror', url: 'https://punemirror.com/pune/civic/feed' },
+  { label: 'toi-pune', url: 'https://timesofindia.indiatimes.com/rssfeeds/-2128821994.cms' },
+  { label: 'ie-pune', url: 'https://indianexpress.com/section/cities/pune/feed/' },
+  { label: 'ht-pune', url: 'https://www.hindustantimes.com/feeds/rss/cities/pune-news/rssfeed.xml' },
+  { label: 'pmc-press', url: 'https://www.pmc.gov.in/en/rss.xml' },
 ]
 
 function rssField(item: string, tag: string): string {
   const m = item.match(new RegExp(`<${tag}>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?</${tag}>`))
   return (m?.[1] ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+/** Parses <item> (RSS) entries from raw feed XML into NormPosts, applying
+ * the same civic/issue gate every source goes through. Shared by Google
+ * News queries and direct outlet feeds — they're both just RSS. */
+function parseRssItems(xml: string, sourceLabel: string, cap: number): NormPost[] {
+  const out: NormPost[] = []
+  const items = xml.split('<item>').slice(1)
+  for (const item of items.slice(0, cap)) {
+    const title = rssField(item, 'title')
+    const desc = rssField(item, 'description')
+    const link = rssField(item, 'link')
+    const text = desc && !desc.startsWith(title) ? `${title}. ${desc}` : title
+    if (title.length < 15) continue
+    if (!isPuneCivic(text)) continue
+    const issue = classifyIssueOrTagged(text); if (!issue) continue
+    const ward = resolveWard(text)
+    // Stable id from the article URL so the same story dedups across runs
+    // and across feeds (the same story often runs on multiple outlets).
+    const id = crypto.createHash('sha256').update(link || title).digest('hex').slice(0, 24)
+    const pubDate = new Date(rssField(item, 'pubDate'))
+    out.push({
+      source: 'news', source_post_id: `news_${id}`,
+      raw_text: text.slice(0, 4000),
+      author_hash: hashAuthor(`news-rss-${sourceLabel}`),
+      posted_at: isNaN(pubDate.getTime()) ? null : pubDate.toISOString(),
+      geo_hint: ward.name,
+      ward_id: ward.id, issue_tag: issue, severity: severityFor(text),
+      ward_lng: ward.lng, ward_lat: ward.lat,
+    })
+  }
+  return out
 }
 
 async function scrapeNews(): Promise<NormPost[]> {
@@ -570,32 +593,20 @@ async function scrapeNews(): Promise<NormPost[]> {
         headers: { 'User-Agent': 'Mozilla/5.0 (Sushasan civic monitor; sushaasan.in)' },
         signal: AbortSignal.timeout(20_000),
       })
-      if (!r.ok) continue
-      const items = (await r.text()).split('<item>').slice(1)
-      for (const item of items.slice(0, 20)) {
-        const title = rssField(item, 'title')
-        const desc = rssField(item, 'description')
-        const link = rssField(item, 'link')
-        const text = desc && !desc.startsWith(title) ? `${title}. ${desc}` : title
-        if (title.length < 15) continue
-        if (!isPuneCivic(text)) continue
-        const issue = classifyIssueOrTagged(text); if (!issue) continue
-        const ward = resolveWard(text)
-        // Stable id from the article URL so the same story dedups across runs
-        const id = crypto.createHash('sha256').update(link || title).digest('hex').slice(0, 24)
-        const pubDate = new Date(rssField(item, 'pubDate'))
-        out.push({
-          source: 'news', source_post_id: `news_${id}`,
-          raw_text: text.slice(0, 4000),
-          author_hash: hashAuthor('news-rss'),
-          posted_at: isNaN(pubDate.getTime()) ? null : pubDate.toISOString(),
-          geo_hint: ward.name,
-          ward_id: ward.id, issue_tag: issue, severity: severityFor(text),
-          ward_lng: ward.lng, ward_lat: ward.lat,
-        })
-      }
-      await new Promise((res) => setTimeout(res, 500))
+      if (r.ok) out.push(...parseRssItems(await r.text(), 'google-news', 20))
+      await new Promise((res) => setTimeout(res, 400))
     } catch (e) { console.error(`[news] ${q}:`, e) }
+  }
+  for (const feed of DIRECT_NEWS_FEEDS) {
+    try {
+      const r = await fetch(feed.url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Sushasan civic monitor; sushaasan.in)' },
+        signal: AbortSignal.timeout(20_000),
+      })
+      if (r.ok) out.push(...parseRssItems(await r.text(), feed.label, 30))
+      else console.warn(`[news] ${feed.label} HTTP ${r.status} — feed URL may have moved`)
+      await new Promise((res) => setTimeout(res, 400))
+    } catch (e) { console.error(`[news] ${feed.label}:`, e) }
   }
   return out
 }
@@ -606,6 +617,10 @@ type ClusterAgg = { ward_id: string; issue_tag: string; lng: number; lat: number
 function aggregate(posts: NormPost[]): ClusterAgg[] {
   const map = new Map<string, ClusterAgg>()
   for (const p of posts) {
+    // City-wide (unresolved-locality) posts are still scraped and stored in
+    // raw_posts, but never clustered into a ward — a real ward's rankings
+    // and dispatch priority should reflect real, locatable evidence only.
+    if (p.ward_id === CITY_WIDE_ID) continue
     const k = `${p.ward_id}|${p.issue_tag}`
     let c = map.get(k)
     if (!c) {
@@ -630,6 +645,37 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   const { data: run } = await supabase.from('pipeline_runs').insert({ trigger_type: triggerType, status: 'running' }).select('id').single()
   const runId = (run as { id: string } | null)?.id
 
+  // Everything below used to be unguarded: a thrown error here (a scraper
+  // helper is documented to return [] on failure, but the DB writes further
+  // down are not immune to a transient Supabase error, timeout, or a killed
+  // function) fell straight through to the route handler's catch, which
+  // only returns a 500 — the pipeline_runs row inserted above stayed
+  // 'running' forever, an invisible zombie uptime-check couldn't tell apart
+  // from "still in progress". Record the failure before rethrowing so it
+  // shows up immediately instead of only via the >2h reaper.
+  try {
+    return await runPipelineBody(token, supabase, runId, startedAt)
+  } catch (err) {
+    if (runId) {
+      await supabase.from('pipeline_runs').update({
+        status: 'failed',
+        completed_at: new Date().toISOString(),
+        errors: {
+          message: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack?.slice(0, 2000) : undefined,
+        },
+      }).eq('id', runId)
+    }
+    throw err
+  }
+}
+
+async function runPipelineBody(
+  token: string,
+  supabase: ReturnType<typeof createServerClient>,
+  runId: string | undefined,
+  startedAt: number,
+) {
   // All scrapers in parallel — each returns [] on failure, never throws
   // Google Maps + Facebook alternate days to spread Apify credit spend evenly
   const [ig, rd, tw, gm, fb, nw] = await Promise.all([
@@ -640,7 +686,7 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
     scrapeFacebook(token),      // [] on off-days (RUN_FACEBOOK=false)
     scrapeNews(),               // free RSS — runs every day
   ])
-  console.log(`[pipeline] day=${TODAY} gmaps=${RUN_GMAPS} fb=${RUN_FACEBOOK} raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length} nw=${nw.length}`)
+  console.log(`[pipeline] day=${today()} raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length} nw=${nw.length}`)
 
   const all: NormPost[] = [...ig, ...rd, ...tw, ...gm, ...fb, ...nw]
 
@@ -695,43 +741,52 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
     const addCount = c.severities.length
     if (addCount === 0) continue
     const sevSum = c.severities.reduce((a, b) => a + b, 0)
+    const sources = [...c.sources].join(', ')
+    const centroid = `${addCount} report${addCount === 1 ? '' : 's'} via ${sources} about ${c.issue_tag} issues in this area. Avg severity ${(sevSum / addCount).toFixed(1)}/5.`
 
-    // limit(1) (not maybeSingle) so a legacy duplicate (ward,issue) row can't
-    // throw and abort the run; we accumulate into the first match.
-    const { data: existingRows } = await supabase
-      .from('clusters')
-      .select('id, post_count, severity_avg, source_platforms')
-      .eq('ward_id', c.ward_id)
-      .eq('issue_tag', c.issue_tag)
-      .order('post_count', { ascending: false })
-      .limit(1)
-    const existing = existingRows?.[0]
+    // Single atomic upsert (ops/supabase/012_atomic_cluster_upsert.sql) —
+    // replaces a select-then-update/insert that raced against concurrent
+    // runs (a retry or a manual refresh overlapping the cron) and could
+    // silently drop a delta or throw on the unique constraint.
+    const { data: upserted, error } = await supabase.rpc('upsert_cluster_delta', {
+      p_ward_id: c.ward_id, p_issue_tag: c.issue_tag, p_add_count: addCount,
+      p_sev_sum: sevSum, p_sources: [...c.sources], p_lng: c.lng, p_lat: c.lat,
+      p_centroid_text: centroid,
+    })
+    if (error) {
+      console.error('[clusters upsert]', error.message)
+      continue
+    }
+    clustersWritten += 1
 
-    if (existing) {
-      // Accumulate: weighted-average severity, union of source platforms.
-      const oldCount = (existing.post_count as number) ?? 0
-      const oldAvg = (existing.severity_avg as number) ?? 0
-      const newCount = oldCount + addCount
-      const newAvg = newCount > 0 ? (oldAvg * oldCount + sevSum) / newCount : oldAvg
-      const mergedSources = [...new Set([...(((existing.source_platforms as string[]) ?? [])), ...c.sources])]
-      // Preserve the richer existing centroid_text + position; only bump counts.
-      const { error } = await supabase.from('clusters').update({
-        post_count: newCount, severity_avg: newAvg,
-        source_platforms: mergedSources, updated_at: new Date().toISOString(),
-      }).eq('id', existing.id as string)
-      if (error) console.error('[clusters update]', error.message)
-      else clustersWritten += 1
-    } else {
-      const sev_avg = sevSum / addCount
-      const sources = [...c.sources].join(', ')
-      const centroid = `${addCount} report${addCount === 1 ? '' : 's'} via ${sources} about ${c.issue_tag} issues in this area. Avg severity ${sev_avg.toFixed(1)}/5.`
-      const { error } = await supabase.from('clusters').insert({
-        ward_id: c.ward_id, issue_tag: c.issue_tag, centroid_text: centroid,
-        post_count: addCount, severity_avg: sev_avg, status: 'open',
-        lng: c.lng, lat: c.lat, source_platforms: [...c.sources], updated_at: new Date().toISOString(),
-      })
-      if (error) console.error('[clusters insert]', error.message)
-      else clustersWritten += 1
+    // Solutions only regenerate weekly by default (solution-worker.ts) —
+    // a cluster that explodes mid-week would otherwise wait until the next
+    // Sunday for a brief reflecting its real severity. If this cluster grew
+    // ≥20% or ≥5 reports since its last solution was generated, ask
+    // solution-worker to regenerate just that one today.
+    const upsertedRow = (Array.isArray(upserted) ? upserted[0] : upserted) as
+      { id: string; post_count: number } | undefined
+    if (upsertedRow && process.env.INNGEST_EVENT_KEY) {
+      try {
+        const { data: lastSolution } = await supabase
+          .from('solutions')
+          .select('post_count_at_generation')
+          .eq('ward_id', c.ward_id)
+          .eq('issue_tag', c.issue_tag)
+          .order('generated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        const prevCount = (lastSolution as { post_count_at_generation: number | null } | null)?.post_count_at_generation
+        const newCount = upsertedRow.post_count
+        const grew = prevCount == null
+          ? false // no prior solution to compare against — the weekly batch will pick it up
+          : newCount - prevCount >= 5 || (prevCount > 0 && (newCount - prevCount) / prevCount >= 0.2)
+        if (grew) {
+          await inngest.send({ name: 'sushasan/clusters.grew', data: { clusterId: upsertedRow.id } })
+        }
+      } catch (err) {
+        console.error('[clusters.grew emit]', err)
+      }
     }
   }
 
@@ -752,18 +807,9 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   }
 }
 
-function checkAuth(request: Request): boolean {
-  const cronSecret = process.env.CRON_SECRET
-  // If CRON_SECRET not configured, allow all calls (dev/staging)
-  if (!cronSecret) return true
-  const authHeader = request.headers.get('authorization')
-  return authHeader === `Bearer ${cronSecret}`
-}
-
 export async function GET(request: Request) {
-  if (!checkAuth(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = isCronAuthorized(request)
+  if (!auth.ok) return auth.response
   try {
     const result = await runPipeline('cron')
     return NextResponse.json({ ok: true, ...result, timestamp: new Date().toISOString() })
@@ -773,9 +819,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!checkAuth(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = isCronAuthorized(request)
+  if (!auth.ok) return auth.response
   try {
     const result = await runPipeline('manual')
     return NextResponse.json({ ok: true, ...result, timestamp: new Date().toISOString() })

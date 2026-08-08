@@ -12,17 +12,27 @@ export type Recipient = {
   office: string | null
 }
 
+// 5-minute TTL, and a failed read is never cached — it used to set
+// `_cache = {}` in the catch block, which then served as "no recipients for
+// any ward" for the rest of the process's lifetime with no way to recover
+// short of a redeploy. A transient read failure should retry next call, not
+// silently blank out every ward's dispatch recipient forever.
+const CACHE_TTL_MS = 5 * 60 * 1000
 let _cache: Record<string, unknown> | null = null
+let _cachedAt = 0
 
 async function load(): Promise<Record<string, unknown>> {
-  if (_cache) return _cache
+  if (_cache && Date.now() - _cachedAt < CACHE_TTL_MS) return _cache
   try {
     const p = path.join(process.cwd(), 'public', 'data', 'gov-recipients.json')
-    _cache = JSON.parse(await fs.readFile(p, 'utf-8')) as Record<string, unknown>
-  } catch {
-    _cache = {}
+    const loaded = JSON.parse(await fs.readFile(p, 'utf-8')) as Record<string, unknown>
+    _cache = loaded
+    _cachedAt = Date.now()
+    return loaded
+  } catch (err) {
+    console.error('[gov-recipients] load failed:', err)
+    return _cache ?? {} // serve the last good value (if any) rather than blanking out
   }
-  return _cache ?? {}
 }
 
 export async function getRecipient(wardId: string): Promise<Recipient> {
