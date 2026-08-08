@@ -9,10 +9,15 @@ import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
 import { weekStart } from '../week'
 
+// Real citations: up to 5 actual posts feeding this (ward, issue), with
+// their post id so the model can cite what it's grounded in and the caller
+// can verify the citation isn't invented (see validateCitations below).
+type Citation = { id: string; location: string | null; quote: string }
+
 const SOLUTION_PROMPT = (ctx: {
   ward_name: string; ward_number: string; corporator_name: string
   budget_lakh: number; issue_tag: string; centroid_text: string
-  post_count: number; severity_avg: number; locations: string; quotes: string
+  post_count: number; severity_avg: number; citations: Citation[]
 }) => `You are a civic infrastructure advisor helping a Pune municipal corporator solve real problems.
 
 WARD CONTEXT:
@@ -25,12 +30,15 @@ CLUSTER DATA:
 - Issue cluster: ${ctx.centroid_text}
 - Reports this week: ${ctx.post_count}
 - Average severity: ${ctx.severity_avg}/5
-- Top cited locations: ${ctx.locations}
-- Representative anonymized quotes: ${ctx.quotes}
+- Cited posts (the ONLY locations/quotes you may reference — cite by id):
+${ctx.citations.length
+    ? ctx.citations.map((c) => `  [${c.id}] location: ${c.location ?? 'not specified'} — "${c.quote}"`).join('\n')
+    : '  (none retrieved — the cluster centroid summary above is all the grounding available)'}
 
 OUTPUT (strict JSON only — no markdown, no explanation):
 {
   "summary": "2-sentence TL;DR, evidence-based, no opinions",
+  "cited_post_ids": ["only post ids from the Cited posts list above that support this solution"],
   "steps": [
     {
       "step": 1,
@@ -47,10 +55,23 @@ OUTPUT (strict JSON only — no markdown, no explanation):
 }
 
 RULES:
-- Never invent statistics or locations not in the data provided
+- Every specific location or quote you reference must come from the Cited
+  posts list above, by id. Never invent a location, statistic, or quote not
+  present in that list or the cluster summary.
+- cited_post_ids must be a subset of the ids shown in the Cited posts list —
+  never fabricate a post id.
 - Frame the corporator as the capable actor, never as target of blame
 - Steps must be concrete and actionable (not vague like "coordinate with PMC")
-- If data is insufficient, return priority_score: 0 and explain in summary`
+- If the Cited posts list is empty and the cluster summary alone is
+  insufficient, return priority_score: 0 and explain in summary`
+
+/** Rejects any cited_post_ids the model invented — a cheap hallucination
+ * guard now that citations are real ids instead of a "See centroid above"
+ * placeholder nothing could ever validate against. */
+function validateCitations(citedIds: unknown, realIds: Set<string>): boolean {
+  if (!Array.isArray(citedIds)) return true // field is optional; absence isn't a hallucination
+  return citedIds.every((id) => typeof id === 'string' && realIds.has(id))
+}
 
 export const solutionSynthesisWorker = inngest.createFunction(
   {
@@ -133,6 +154,30 @@ export const solutionSynthesisWorker = inngest.createFunction(
         }
 
         const ward = wardMap.get(cluster.ward_id)
+
+        // Real grounding: up to 5 actual, PII-scrubbed posts matching this
+        // cluster's (ward, issue) — replaces the previous placeholder junk
+        // (`locations: cluster.ward_id` — a bare ward number — and
+        // `quotes: 'See cluster centroid above.'`, a literal string with no
+        // actual quotes) that told the model "never invent" while giving it
+        // almost nothing real to cite. No cluster_posts join table is
+        // populated by the live pipeline, so this queries posts directly on
+        // the same (ward_id, issue_tag) the cluster itself keys on — an
+        // approximation of "posts that fed this cluster", not an exact join.
+        const { data: citingPosts } = await db
+          .from('posts')
+          .select('id, text_clean, cited_location')
+          .eq('ward_id', cluster.ward_id)
+          .eq('issue_tag', cluster.issue_tag)
+          .order('created_at', { ascending: false })
+          .limit(5)
+        const citations: Citation[] = (citingPosts ?? []).map((p: { id: string; text_clean: string; cited_location: string | null }) => ({
+          id: p.id,
+          location: p.cited_location,
+          quote: (p.text_clean ?? '').slice(0, 200),
+        }))
+        const realIds = new Set(citations.map((c) => c.id))
+
         const ctx = {
           ward_name: ward?.name ?? `Ward ${cluster.ward_id}`,
           ward_number: ward?.ward_number ? String(ward.ward_number) : cluster.ward_id,
@@ -142,8 +187,7 @@ export const solutionSynthesisWorker = inngest.createFunction(
           centroid_text: cluster.centroid_text ?? '',
           post_count: cluster.post_count ?? 0,
           severity_avg: Number((cluster.severity_avg ?? 3).toFixed(1)),
-          locations: cluster.ward_id,
-          quotes: 'See cluster centroid above.',
+          citations,
         }
 
         try {
@@ -153,6 +197,9 @@ export const solutionSynthesisWorker = inngest.createFunction(
           // chatJSON parses + retries once on malformed output. `steps` must be
           // an array because it is written to a jsonb column the gov dashboard
           // renders directly — a string there would break the brief silently.
+          // The validator now also rejects a response citing a post id that
+          // isn't in the real citations list — a cheap hallucination guard
+          // that the previous placeholder grounding made impossible to check.
           const parsed = await chatJSON<Record<string, unknown>>(
             {
               task: 'synthesize',
@@ -163,7 +210,10 @@ export const solutionSynthesisWorker = inngest.createFunction(
                 { role: 'user', content: 'Generate the solution JSON for the ward and cluster described above. Output JSON only.' },
               ],
             },
-            (v) => !!v && typeof v === 'object' && Array.isArray((v as { steps?: unknown }).steps),
+            (v) =>
+              !!v && typeof v === 'object' &&
+              Array.isArray((v as { steps?: unknown }).steps) &&
+              validateCitations((v as { cited_post_ids?: unknown }).cited_post_ids, realIds),
           )
 
           await db.from('solutions').upsert({
