@@ -27,6 +27,9 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
   const { ward, cluster, solution, issueTag } = mission
   const label = ISSUE_LABEL[issueTag] ?? 'Civic'
   const link = `${baseUrl}/gov/war-room/${mission.id}${token ? `?token=${token}` : ''}`
+  // Direct-play link — opens in the device's native audio player rather
+  // than requiring the War Room's JS button. See app/api/gov/brief-audio.
+  const audioLink = `${baseUrl}/api/gov/brief-audio?missionId=${mission.id}${token ? `&token=${token}` : ''}&format=audio`
 
   const headline = cluster?.gov_summary || cluster?.centroid_text || `${label} grievance in ${ward.name}`
   const evidence = cluster
@@ -50,6 +53,9 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
     `Open the War Room to dissect, plan with Sushaasan AI, and close the loop:`,
     link,
     ``,
+    `Listen to this brief:`,
+    audioLink,
+    ``,
     `— Sushaasan (independent civic-tech). Indicative advisory; the officer decides.`,
   ].join('\n')
 
@@ -63,6 +69,7 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
     ``,
     `▶ Solve it with Sushaasan AI:`,
     link,
+    `🔊 Listen: ${audioLink}`,
   ].filter(Boolean).join('\n')
 
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -78,6 +85,7 @@ export function buildBrief(mission: Mission, baseUrl: string, token: string): Br
     <p style="font-size:13px;color:#555;margin:0 0 6px">📊 ${esc(evidence)}</p>
     <p style="font-size:13px;color:#333;margin:0 0 18px">🛠 ${esc(plan)}</p>
     <a href="${link}" style="display:inline-block;background:#FF9933;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 22px;border-radius:999px">Open the War Room →</a>
+    <a href="${audioLink}" style="display:inline-block;background:#0B1F3A;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 18px;border-radius:999px;margin-left:8px">🔊 Listen</a>
     <p style="font-size:11px;color:#999;margin-top:20px;line-height:1.5">Sushaasan is an independent civic-technology platform, not a government body. This brief is AI-generated, indicative advisory only — the officer decides and acts.</p>
   </div>
 </div>`.trim()

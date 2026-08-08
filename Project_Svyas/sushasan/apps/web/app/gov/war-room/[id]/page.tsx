@@ -5,6 +5,7 @@ import { getMission } from '@/lib/gov-mission'
 import { buildBrief } from '@/lib/gov-brief'
 import { WarRoomCopilot } from '@/components/gov/WarRoomCopilot'
 import { DispatchPanel } from '@/components/gov/DispatchPanel'
+import { BriefAudioButton } from '@/components/gov/BriefAudioButton'
 import { LoopCloseButtons } from '@/components/gov/LoopCloseButtons'
 
 export const dynamic = 'force-dynamic'
@@ -64,6 +65,7 @@ export default async function WarRoomPage({
               {label}
             </span>
             <span className="hidden md:inline text-[11px] text-white/45">Ward {ward.ward_number} · {ward.name}</span>
+            <BriefAudioButton missionId={mission.id} token={token} />
             <DispatchPanel subject={brief.subject} whatsappText={brief.whatsappText} link={brief.link} />
           </div>
         </div>
