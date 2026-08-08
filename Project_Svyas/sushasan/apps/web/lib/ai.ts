@@ -168,7 +168,7 @@ function getAnthropicClient(apiKey: string): Anthropic {
   return anthropicClient
 }
 
-type ProviderResult = { text: string; truncated: boolean }
+type ProviderResult = { text: string; truncated: boolean; promptTokens?: number; completionTokens?: number }
 
 async function chatAnthropicOnce(args: ChatArgs, msgs: ChatMessage[]): Promise<ProviderResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY
@@ -183,7 +183,12 @@ async function chatAnthropicOnce(args: ChatArgs, msgs: ChatMessage[]): Promise<P
     messages: msgs,
   })
   const text = msg.content.map((b) => (b.type === 'text' ? (b as { text: string }).text : '')).join('\n').trim()
-  return { text, truncated: msg.stop_reason === 'max_tokens' }
+  return {
+    text,
+    truncated: msg.stop_reason === 'max_tokens',
+    promptTokens: msg.usage?.input_tokens,
+    completionTokens: msg.usage?.output_tokens,
+  }
 }
 
 /**
@@ -195,7 +200,7 @@ async function chatAnthropicOnce(args: ChatArgs, msgs: ChatMessage[]): Promise<P
  * once with a continuation, and only give up (as a distinctly-classified
  * 'truncation' error) if the model is still cut off after that.
  */
-async function chatAnthropic(args: ChatArgs): Promise<string> {
+async function chatAnthropic(args: ChatArgs): Promise<ProviderResult> {
   // Attach the image to the final user turn, as a native Anthropic image block.
   const msgs = args.image
     ? args.messages.map((m, i) =>
@@ -219,7 +224,7 @@ async function chatAnthropic(args: ChatArgs): Promise<string> {
     : args.messages
 
   const first = await chatAnthropicOnce(args, msgs as ChatMessage[])
-  if (!first.truncated) return first.text
+  if (!first.truncated) return first
 
   console.warn('[ai] anthropic response truncated at max_tokens — retrying once with a continuation')
   const continued = await chatAnthropicOnce(args, [
@@ -232,13 +237,18 @@ async function chatAnthropic(args: ChatArgs): Promise<string> {
     ;(err as Error & { truncation?: boolean }).truncation = true
     throw err
   }
-  return first.text + continued.text
+  return {
+    text: first.text + continued.text,
+    truncated: false,
+    promptTokens: (first.promptTokens ?? 0) + (continued.promptTokens ?? 0),
+    completionTokens: (first.completionTokens ?? 0) + (continued.completionTokens ?? 0),
+  }
 }
 
 // ── OpenAI-compatible (Sarvam AI, BharatGen) ─────────────────────────────────
 async function chatOpenAICompatible(args: ChatArgs, cfg: {
   url: string; key: string; model: string; keyHeader?: string
-}): Promise<string> {
+}): Promise<ProviderResult> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   // Sarvam uses 'api-subscription-key'; most others use Bearer.
   if (cfg.keyHeader === 'api-subscription-key') headers['api-subscription-key'] = cfg.key
@@ -291,13 +301,21 @@ async function chatOpenAICompatible(args: ChatArgs, cfg: {
       res = await send(messages, false)
     }
     if (!res.ok) throw new Error(`${cfg.model} ${res.status}: ${await res.text().catch(() => '')}`)
-    const data = (await res.json()) as { choices?: { message?: { content?: string }; finish_reason?: string }[] }
+    const data = (await res.json()) as {
+      choices?: { message?: { content?: string }; finish_reason?: string }[]
+      usage?: { prompt_tokens?: number; completion_tokens?: number }
+    }
     const text = (data.choices?.[0]?.message?.content ?? '').trim()
-    return { text, truncated: data.choices?.[0]?.finish_reason === 'length' }
+    return {
+      text,
+      truncated: data.choices?.[0]?.finish_reason === 'length',
+      promptTokens: data.usage?.prompt_tokens,
+      completionTokens: data.usage?.completion_tokens,
+    }
   }
 
   const first = await once(baseMessages)
-  if (!first.truncated) return first.text
+  if (!first.truncated) return first
 
   console.warn(`[ai] ${cfg.model} response truncated at max_tokens — retrying once with a continuation`)
   const continued = await once([
@@ -310,7 +328,12 @@ async function chatOpenAICompatible(args: ChatArgs, cfg: {
     ;(err as Error & { truncation?: boolean }).truncation = true
     throw err
   }
-  return first.text + continued.text
+  return {
+    text: first.text + continued.text,
+    truncated: false,
+    promptTokens: (first.promptTokens ?? 0) + (continued.promptTokens ?? 0),
+    completionTokens: (first.completionTokens ?? 0) + (continued.completionTokens ?? 0),
+  }
 }
 
 /**
@@ -405,6 +428,32 @@ export async function chatJSON<T = unknown>(
   }
 }
 
+/**
+ * Single-provider JSON call with NO fallback and no circuit breaker — used
+ * only by the eval gate (lib/workers/eval-worker.ts), which exists
+ * specifically to compare providers against each other on identical inputs.
+ * chatJSON()/chat() always route through activeProvider() and may silently
+ * fall back to Claude; the eval gate needs to know what THIS provider,
+ * specifically, produces, including its failures.
+ */
+export async function chatJSONWithProvider<T = unknown>(
+  provider: Provider,
+  args: ChatArgs,
+): Promise<{ text: string; parsed: T | null; jsonValid: boolean; latencyMs: number; error?: string }> {
+  const started = Date.now()
+  try {
+    const { text } = await runProvider(provider, { ...args, json: true })
+    try {
+      const parsed = JSON.parse(extractJson(text)) as T
+      return { text, parsed, jsonValid: true, latencyMs: Date.now() - started }
+    } catch (parseErr) {
+      return { text, parsed: null, jsonValid: false, latencyMs: Date.now() - started, error: errorDetail(parseErr) }
+    }
+  } catch (err) {
+    return { text: '', parsed: null, jsonValid: false, latencyMs: Date.now() - started, error: errorDetail(err) }
+  }
+}
+
 // ── Public API ───────────────────────────────────────────────────────────────
 
 /** The concrete model id a provider will use, for the telemetry record. */
@@ -414,7 +463,7 @@ function modelFor(provider: Provider, args: ChatArgs): string {
   return args.task === 'synthesize' ? ASSIST_SYNTH_MODEL : ASSIST_MODEL
 }
 
-function runProvider(provider: Provider, args: ChatArgs): Promise<string> {
+function runProvider(provider: Provider, args: ChatArgs): Promise<ProviderResult> {
   if (provider === 'sarvam') {
     const baseUrl = process.env.SARVAM_BASE_URL ?? 'https://api.sarvam.ai/v1'
     return chatOpenAICompatible(args, {
@@ -479,8 +528,9 @@ export async function chat(args: ChatArgs): Promise<string> {
           ...base, servedBy: 'anthropic', outcome: 'fallback',
           model: modelFor('anthropic', args), errorKind: 'circuit_open',
           errorDetail: `${intended} circuit open`, latencyMs: Date.now() - started,
+          promptTokens: out.promptTokens, completionTokens: out.completionTokens,
         })
-        return out
+        return out.text
       } catch (fallbackErr) {
         await recordAiCall({
           ...base, servedBy: 'anthropic', outcome: 'error',
@@ -509,8 +559,10 @@ export async function chat(args: ChatArgs): Promise<string> {
       outcome: 'ok',
       model: modelFor(intended, args),
       latencyMs: Date.now() - started,
+      promptTokens: out.promptTokens,
+      completionTokens: out.completionTokens,
     })
-    return out
+    return out.text
   } catch (err) {
     const kind = classifyError(err)
     const detail = errorDetail(err)
@@ -539,8 +591,10 @@ export async function chat(args: ChatArgs): Promise<string> {
           errorKind: kind,
           errorDetail: detail,
           latencyMs: Date.now() - started,
+          promptTokens: out.promptTokens,
+          completionTokens: out.completionTokens,
         })
-        return out
+        return out.text
       } catch (fallbackErr) {
         // Both providers down — record the sovereign failure, then surface the
         // fallback's error, which is the one an operator can act on.

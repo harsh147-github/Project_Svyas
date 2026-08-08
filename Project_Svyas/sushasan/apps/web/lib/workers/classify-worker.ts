@@ -18,7 +18,7 @@ import { WARDS, isKnownWardId } from '../wards'
 // a category the map cannot colour and clustering cannot group. Validate on the
 // way in and normalise on the way out — belt and braces, because this is the
 // one field the entire public product depends on.
-const ISSUE_TAGS = ['traffic', 'water', 'electricity', 'garbage', 'other'] as const
+export const ISSUE_TAGS = ['traffic', 'water', 'electricity', 'garbage', 'other'] as const
 const SUB_TAGS: Record<string, string[]> = {
   traffic: ['junction-jam', 'signal-failure', 'parking-spillover', 'construction-blockage',
             'encroachment', 'ambulance-blocked', 'accident', 'mall-traffic', 'wedding-traffic'],
@@ -141,7 +141,7 @@ Return the JSON object only.`
 
 // Built once per cold start (WARDS is static), not per-post — the prompt
 // text itself doesn't change within a single worker invocation.
-const CLASSIFY_PROMPT = buildClassifyPrompt()
+export const CLASSIFY_PROMPT = buildClassifyPrompt()
 
 async function getVoyageEmbedding(text: string): Promise<number[] | null> {
   const key = process.env.VOYAGE_API_KEY

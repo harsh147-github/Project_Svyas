@@ -2,6 +2,7 @@ import { serve } from 'inngest/next'
 import { inngest } from '../../../lib/inngest'
 import { classifyPostsWorker } from '../../../lib/workers/classify-worker'
 import { solutionSynthesisWorker } from '../../../lib/workers/solution-worker'
+import { evalGateWorker } from '../../../lib/workers/eval-worker'
 
 // Every other serverless route in this app declares maxDuration explicitly;
 // this one didn't, silently falling back to the platform default (10s on
@@ -13,5 +14,5 @@ export const maxDuration = 300
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [classifyPostsWorker, solutionSynthesisWorker],
+  functions: [classifyPostsWorker, solutionSynthesisWorker, evalGateWorker],
 })

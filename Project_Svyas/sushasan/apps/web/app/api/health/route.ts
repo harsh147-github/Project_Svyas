@@ -3,6 +3,7 @@ import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
 import { missingEnv, REQUIRED } from '@/lib/env-check'
 import { providerStatus } from '@/lib/ai'
 import { sovereigntyReport } from '@/lib/ai-telemetry'
+import { evalGateStatus } from '@/lib/workers/eval-worker'
 import { isAdminAuthed } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
@@ -34,6 +35,7 @@ async function migrationReport(db: ReturnType<typeof createServerClient>) {
   const optional: { table: string; file: string; enables: string }[] = [
     { table: 'dispatch_log', file: '007_dispatch_log.sql', enables: 'authority-brief delivery audit trail' },
     { table: 'ai_provider_events', file: '008_ai_provider_events.sql', enables: 'AI sovereignty measurement' },
+    { table: 'eval_results', file: '017_eval_gate.sql', enables: 'AI provider eval gate / parity measurement' },
   ]
   const results = await Promise.all(
     optional.map(async (m) => {
@@ -144,9 +146,10 @@ export async function GET(req: NextRequest) {
     // the way. Null means migration 008 hasn't been applied yet, which is
     // reported honestly rather than as a clean 100%.
     const provider = providerStatus()
-    const [sovereignty, migrations] = await Promise.all([
+    const [sovereignty, migrations, evalGate] = await Promise.all([
       sovereigntyReport(24),
       migrationReport(db),
+      evalGateStatus().catch(() => []), // eval_golden_set/eval_results may not be migrated yet
     ])
 
     // Per-source yield from the most recent run — lets a monitor spot a single
@@ -201,6 +204,11 @@ export async function GET(req: NextRequest) {
         last_channel: lastDispatch?.channel ?? null,
       },
       ai: { ...provider, last_24h: sovereignty },
+      // Eval gate (ops/supabase/017_eval_gate.sql, lib/workers/eval-worker.ts)
+      // — per-provider parity against the golden set, most recent runs
+      // first. Empty until the nightly eval-gate Inngest run has fired at
+      // least once with >=2 providers configured.
+      evalGate,
       // Committed ≠ applied. Nothing runs these automatically.
       migrations,
       pipeline: lastRun ?? null,
