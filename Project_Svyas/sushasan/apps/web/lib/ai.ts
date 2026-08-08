@@ -352,15 +352,51 @@ function envTimeoutMs(): number {
  * they wrap output: Claude usually returns bare JSON, OpenAI-compatible models
  * (Sarvam / BharatGen) frequently fence it or add a sentence of preamble.
  */
+/**
+ * Scans from the first `{` or `[` in `s`, tracking nesting depth (and
+ * skipping over string-literal contents, so a brace inside a quoted string
+ * doesn't miscount) until the matching close is found. Returns null if no
+ * balanced structure exists.
+ */
+function firstBalancedJsonValue(s: string): string | null {
+  const start = s.search(/[{[]/)
+  if (start === -1) return null
+  const open = s[start]
+  const close = open === '{' ? '}' : ']'
+  let depth = 0
+  let inString = false
+  let escaped = false
+  for (let i = start; i < s.length; i++) {
+    const ch = s[i]
+    if (inString) {
+      if (escaped) escaped = false
+      else if (ch === '\\') escaped = true
+      else if (ch === '"') inString = false
+      continue
+    }
+    if (ch === '"') { inString = true; continue }
+    if (ch === open) depth++
+    else if (ch === close) {
+      depth--
+      if (depth === 0) return s.slice(start, i + 1)
+    }
+  }
+  return null
+}
+
 export function extractJson(raw: string): string {
   const t = raw.trim()
   if (t.startsWith('{') || t.startsWith('[')) return t
   // strip ``` / ```json fences
   const unfenced = t.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim()
   if (unfenced.startsWith('{') || unfenced.startsWith('[')) return unfenced
-  // last resort: first balanced-looking object in the text
-  const match = unfenced.match(/\{[\s\S]*\}/)
-  return match ? match[0] : unfenced
+  // Last resort: scan for the first balanced {...} or [...] in surrounding
+  // prose. The previous implementation was `/\{[\s\S]*\}/` — greedy
+  // first-`{`-to-LAST-`}`, which grabs trailing prose containing any brace
+  // (e.g. "...} let me know if you need {anything} else") and is simply
+  // wrong for a top-level JSON array (no `{` at all, or the greedy match
+  // spans past the array into unrelated braces later in the text).
+  return firstBalancedJsonValue(unfenced) ?? unfenced
 }
 
 /**
@@ -474,8 +510,15 @@ function runProvider(provider: Provider, args: ChatArgs): Promise<ProviderResult
     })
   }
   if (provider === 'bharatgen') {
+    // BHARATGEN_API_URL has no default (unlike SARVAM_BASE_URL) — leaving it
+    // unset while AI_PROVIDER=bharatgen used to fall through to fetch(''),
+    // which throws an opaque "Failed to parse URL from ''" deep inside
+    // chatOpenAICompatible instead of a clear configuration error at the
+    // one place a human can act on it.
+    const url = process.env.BHARATGEN_API_URL
+    if (!url) throw new Error('BHARATGEN_API_URL not set — required when AI_PROVIDER=bharatgen')
     return chatOpenAICompatible(args, {
-      url: process.env.BHARATGEN_API_URL ?? '',
+      url,
       key: process.env.BHARATGEN_API_KEY!,
       model: modelFor('bharatgen', args),
     })

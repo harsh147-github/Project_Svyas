@@ -812,11 +812,33 @@ function applyClusterData(map: any, apiClusters: Record<string, unknown>[]) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _lastApiClusters: Record<string, unknown>[] = []
 
+// A total Supabase outage used to make /api/ward/all fall back to seed data
+// with no signal anywhere — the public map looked perfectly healthy during
+// a real outage. The route now sets X-Data-Source: seed|live; show a small
+// banner rather than silently rendering fabricated numbers as if live.
+function showSeedDataBanner() {
+  if (document.getElementById('sushasan-seed-data-banner')) return
+  const el = document.createElement('div')
+  el.id = 'sushasan-seed-data-banner'
+  el.textContent = '⚠️ Showing sample data — live data is temporarily unavailable.'
+  el.style.cssText = [
+    'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:9999',
+    'background:#7A3B00', 'color:#fff', 'font-size:12px', 'font-weight:600',
+    'text-align:center', 'padding:6px 12px',
+  ].join(';')
+  document.body.prepend(el)
+}
+function hideSeedDataBanner() {
+  document.getElementById('sushasan-seed-data-banner')?.remove()
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchClusters(map: any, retryOnce = true) {
   try {
     const res = await fetch('/api/ward/all')
     if (!res.ok) throw new Error(`ward/all ${res.status}`)
+    if (res.headers.get('X-Data-Source') === 'seed') showSeedDataBanner()
+    else hideSeedDataBanner()
     const { clusters, wardSeverity } = await res.json()
     _lastApiClusters = clusters as Record<string, unknown>[]
     applyClusterData(map, _lastApiClusters)

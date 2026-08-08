@@ -76,25 +76,32 @@ async function build() {
   }
 }
 
+// Same escaper gov-dispatch.ts uses — ward_id/issue_tag/status are
+// currently closed-vocabulary/registry values, not raw user input, but
+// interpolating any of them straight into HTML with no escaping is exactly
+// the pattern that turns into an XSS hole the moment that assumption stops
+// holding (e.g. a future free-text ward name).
+const esc = (s: unknown): string => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
 function html(d: Record<string, unknown>): string {
   const rows = ((d.top_hotspots as Array<Record<string, unknown>>) ?? []).map((c) =>
-    `<tr><td style="padding:4px 8px">Ward ${c.ward_id}</td><td style="padding:4px 8px">${c.issue_tag}</td><td style="padding:4px 8px;text-align:right">${c.post_count}</td><td style="padding:4px 8px">${c.status}</td></tr>`).join('')
+    `<tr><td style="padding:4px 8px">Ward ${esc(c.ward_id)}</td><td style="padding:4px 8px">${esc(c.issue_tag)}</td><td style="padding:4px 8px;text-align:right">${esc(c.post_count)}</td><td style="padding:4px 8px">${esc(c.status)}</td></tr>`).join('')
   return `
 <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#0A0A0A">
   <div style="background:#0B1F3A;padding:18px 22px;border-radius:14px 14px 0 0">
     <div style="color:#FF9933;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:700">Sushaasan · weekly founder digest</div>
-    <div style="color:#fff;font-size:18px;font-weight:600;margin-top:4px">Week of ${d.week_of}</div>
+    <div style="color:#fff;font-size:18px;font-weight:600;margin-top:4px">Week of ${esc(d.week_of)}</div>
   </div>
   <div style="border:1px solid #eee;border-top:none;border-radius:0 0 14px 14px;padding:20px 22px">
     <table style="width:100%;border-collapse:collapse;font-size:14px">
-      <tr><td>📥 New reports this week</td><td style="text-align:right;font-weight:700">${d.reports_this_week}</td></tr>
-      <tr><td>🗺️ Live hotspots on the map</td><td style="text-align:right;font-weight:700">${d.clusters}</td></tr>
-      <tr><td>🛠️ AI solution briefs</td><td style="text-align:right;font-weight:700">${d.solutions}</td></tr>
-      <tr><td>🔧 In progress (govt acting)</td><td style="text-align:right;font-weight:700">${d.in_progress}</td></tr>
-      <tr><td>✅ Resolved</td><td style="text-align:right;font-weight:700;color:#138808">${d.resolved}</td></tr>
-      <tr><td>📈 Total reports all-time</td><td style="text-align:right">${d.reports_total}</td></tr>
+      <tr><td>📥 New reports this week</td><td style="text-align:right;font-weight:700">${esc(d.reports_this_week)}</td></tr>
+      <tr><td>🗺️ Live hotspots on the map</td><td style="text-align:right;font-weight:700">${esc(d.clusters)}</td></tr>
+      <tr><td>🛠️ AI solution briefs</td><td style="text-align:right;font-weight:700">${esc(d.solutions)}</td></tr>
+      <tr><td>🔧 In progress (govt acting)</td><td style="text-align:right;font-weight:700">${esc(d.in_progress)}</td></tr>
+      <tr><td>✅ Resolved</td><td style="text-align:right;font-weight:700;color:#138808">${esc(d.resolved)}</td></tr>
+      <tr><td>📈 Total reports all-time</td><td style="text-align:right">${esc(d.reports_total)}</td></tr>
     </table>
-    ${d.needs_escalation ? `<p style="background:#FFF7ED;border:1px solid #FFD9A8;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:14px">⚠️ <b>${d.needs_escalation} hotspot(s)</b> are busy but still unactioned — worth a nudge to the ward office.</p>` : ''}
+    ${d.needs_escalation ? `<p style="background:#FFF7ED;border:1px solid #FFD9A8;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:14px">⚠️ <b>${esc(d.needs_escalation)} hotspot(s)</b> are busy but still unactioned — worth a nudge to the ward office.</p>` : ''}
     <h3 style="font-size:13px;color:#555;margin:18px 0 6px">Top hotspots</h3>
     <table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid #eee">${rows}</table>
     <p style="font-size:11px;color:#999;margin-top:18px">Automated weekly. You don't have to do anything — this is just so you always know how Sushaasan is doing.</p>
