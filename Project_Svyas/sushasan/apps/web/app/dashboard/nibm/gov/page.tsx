@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { NibmCorridorMap } from '@/components/nibm/NibmCorridorMap'
 import { GovActionBrief } from '@/components/nibm/GovActionBrief'
+import { createServerClient, isSupabaseConfigured } from '@/lib/supabase'
 
 export const metadata: Metadata = {
   title: 'NIBM Traffic — Government Action Brief',
@@ -11,32 +12,26 @@ export const metadata: Metadata = {
 }
 
 // ── Supabase fetch ────────────────────────────────────────────────────────────
+// Same optional-read pattern as app/dashboard/nibm/page.tsx — routed through
+// the standard lib/supabase.ts client instead of a hand-rolled REST fetch
+// against an undocumented SUPABASE_URL fallback.
 
 async function fetchNibmSolution() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
-  const serviceKey  = process.env.SUPABASE_SERVICE_KEY
-  if (!supabaseUrl || !serviceKey) return null
-
-  const base    = `${supabaseUrl}/rest/v1`
-  const headers = {
-    apikey: serviceKey,
-    Authorization: `Bearer ${serviceKey}`,
-    'Content-Type': 'application/json',
-  }
+  if (!isSupabaseConfigured()) return null
   try {
-    const solRes  = await fetch(
-      `${base}/sushaasan_phase3_optimized_solutions?ward_id=eq.46&order=created_at.desc&limit=1&select=*`,
-      { headers, next: { revalidate: 60 } }
-    )
-    const solutions = await solRes.json()
-    const solution  = solutions?.[0]
+    const supabase = createServerClient()
+    const { data: solutions } = await supabase
+      .from('sushaasan_phase3_optimized_solutions')
+      .select('*')
+      .eq('ward_id', '46')
+      .order('created_at', { ascending: false })
+      .limit(1)
+    const solution = solutions?.[0]
     if (!solution) return null
 
-    const gdRes = await fetch(
-      `${base}/sushaasan_phase4_government_display?solution_id=eq.${solution.solution_id}&limit=1&select=*`,
-      { headers, next: { revalidate: 60 } }
-    )
-    const govDisplays = await gdRes.json()
+    const { data: govDisplays } = await supabase
+      .from('sushaasan_phase4_government_display')
+      .select('*').eq('solution_id', solution.solution_id).limit(1)
 
     return { solution, govDisplay: govDisplays?.[0] || null }
   } catch {
