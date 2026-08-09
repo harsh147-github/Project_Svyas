@@ -28,4 +28,20 @@ export const REQUIRED = {
   // dispatch routes from the public internet. Surfacing it here makes that
   // exposure visible on /api/health instead of being invisible until abused.
   cron: ['CRON_SECRET'],
+  // Durable (Upstash-backed) rate limiting on public write endpoints. Unset
+  // isn't a hard failure — lib/rate-limit.ts falls back to a per-instance
+  // in-memory limiter — but that fallback resets on every cold start, so it
+  // belongs here rather than being invisible until abused.
+  rateLimit: ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'],
+}
+
+// Vars with a working built-in default — never block anything and are never
+// "missing" in the REQUIRED sense, but are worth surfacing to an operator
+// reading /api/health so an explicit override that silently doesn't match
+// the code (wrong name, typo) doesn't look identical to "using the default".
+export const OPTIONAL = {
+  // lib/ai.ts and lib/agents/sarvam-model.ts both fall back to
+  // https://api.sarvam.ai/v1 when unset — only set this to point at a
+  // different Sarvam-compatible endpoint.
+  ai: ['SARVAM_BASE_URL'],
 }

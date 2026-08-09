@@ -12,34 +12,9 @@
 import { chatJSON, activeProvider, type Provider } from '../ai'
 import { toBool, toInt } from '../coerce'
 import { WARDS, isKnownWardId } from '../wards'
+import { ISSUE_TAGS, normaliseIssueTag, normaliseSubTags } from '../issue-tags'
 
-// Closed vocabularies. The `posts` table and the ward map key off issue_tag,
-// so a model returning "Traffic", "roads", or a sentence would silently create
-// a category the map cannot colour and clustering cannot group. Validate on the
-// way in and normalise on the way out — belt and braces, because this is the
-// one field the entire public product depends on.
-export const ISSUE_TAGS = ['traffic', 'water', 'electricity', 'garbage', 'other'] as const
-const SUB_TAGS: Record<string, string[]> = {
-  traffic: ['junction-jam', 'signal-failure', 'parking-spillover', 'construction-blockage',
-            'encroachment', 'ambulance-blocked', 'accident', 'mall-traffic', 'wedding-traffic'],
-  water: ['tanker-shortage', 'supply-failure', 'pricing-surge', 'contamination',
-          'pipeline-burst', 'pmc-schedule-mismatch'],
-  electricity: ['outage', 'low-voltage', 'transformer-fault', 'billing-issue'],
-  garbage: ['overflow', 'irregular-pickup', 'dumping', 'drain-block'],
-  other: [],
-}
-
-function normaliseIssueTag(v: unknown): (typeof ISSUE_TAGS)[number] {
-  const t = String(v ?? '').trim().toLowerCase()
-  return (ISSUE_TAGS as readonly string[]).includes(t) ? (t as (typeof ISSUE_TAGS)[number]) : 'other'
-}
-
-/** Drop anything outside the controlled vocabulary rather than storing free text. */
-function normaliseSubTags(tags: unknown, issueTag: string): string[] {
-  if (!Array.isArray(tags)) return []
-  const allowed = new Set(SUB_TAGS[issueTag] ?? [])
-  return [...new Set(tags.map((t) => String(t).trim().toLowerCase()).filter((t) => allowed.has(t)))]
-}
+export { ISSUE_TAGS }
 
 /**
  * A ward outside the real 58-ward PMC registry (lib/wards.ts) cannot be
@@ -271,5 +246,57 @@ export const classifyPostsWorker = inngest.createFunction(
     }
 
     return { classified, total: posts.length, withEmbeddings: process.env.VOYAGE_API_KEY ? classified : 0 }
+  }
+)
+
+/**
+ * Inngest worker: backfill embeddings for posts that were already classified
+ * outside this worker's normal upsert path.
+ *
+ * add-report (citizen intake) runs its own inline synthesis and inserts
+ * directly into `posts` — it never called getVoyageEmbedding, so every
+ * citizen-submitted post had embedding=null forever, silently excluding it
+ * from cosine-similarity clustering. Triggered by "sushasan/posts.enrich"
+ * with the ids of posts just inserted; idempotent (skips anything that
+ * already has an embedding), so re-sending the same ids is always safe.
+ */
+export const postsEnrichWorker = inngest.createFunction(
+  {
+    id: 'posts-enrich',
+    name: 'Backfill embeddings for non-worker-classified posts',
+    concurrency: { limit: 3 },
+    triggers: [{ event: 'sushasan/posts.enrich' }],
+  },
+  async ({ event, step }: { event: { data: { postIds: string[] } }; step: any }) => {
+    const { postIds } = event.data
+    if (!postIds?.length) return { enriched: 0 }
+    if (!process.env.VOYAGE_API_KEY) return { enriched: 0, skipped: 'VOYAGE_API_KEY not configured' }
+
+    const db = createServerClient()
+    const { data: posts, error } = await db
+      .from('posts')
+      .select('id, text_clean, translated_text_en, embedding')
+      .in('id', postIds)
+      .is('embedding', null)
+
+    if (error || !posts?.length) return { enriched: 0 }
+
+    let enriched = 0
+    for (const post of posts) {
+      await step.run(`enrich-${post.id}`, async () => {
+        try {
+          const textForEmbed = (post.translated_text_en || post.text_clean || '').slice(0, 8000)
+          if (!textForEmbed) return
+          const embedding = await getVoyageEmbedding(textForEmbed)
+          if (!embedding) return
+          await db.from('posts').update({ embedding }).eq('id', post.id).is('embedding', null)
+          enriched++
+        } catch (err) {
+          console.error(`[posts-enrich] post ${post.id}:`, err)
+        }
+      })
+    }
+
+    return { enriched, total: posts.length }
   }
 )

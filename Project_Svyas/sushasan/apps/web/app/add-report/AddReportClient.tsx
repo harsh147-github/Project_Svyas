@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { nearestWard } from '@/lib/wards'
 
 // Resize image to max 1024px, encode as JPEG base64
 function resizeAndEncode(file: File, maxPx = 1024): Promise<{ base64: string; mimeType: string }> {
@@ -54,75 +55,10 @@ type Result = {
   lat: number
 }
 
-const WARD_CENTROIDS = [
-  { ward_id: '1',  name: 'Dhanori - Vishrantwadi',                               lat: 18.5908, lng: 73.8895 },
-  { ward_id: '2',  name: 'Tingrenagar - Sanjay Park',                            lat: 18.5767, lng: 73.8985 },
-  { ward_id: '3',  name: 'Lohegaon - Vimannagar',                                lat: 18.5895, lng: 73.9254 },
-  { ward_id: '4',  name: 'East Kharadi - Wagholi',                               lat: 18.5770, lng: 73.9665 },
-  { ward_id: '5',  name: 'West Kharadi - Vadgaon Sheri',                         lat: 18.5511, lng: 73.9339 },
-  { ward_id: '6',  name: 'Vadgaon Sheri - Ramwadi',                              lat: 18.5502, lng: 73.9203 },
-  { ward_id: '7',  name: 'Kalyaninagar - Nagpur Chawl',                          lat: 18.5527, lng: 73.9049 },
-  { ward_id: '8',  name: 'Kalas - Phulenagar',                                   lat: 18.5694, lng: 73.8780 },
-  { ward_id: '9',  name: 'Yerwada',                                              lat: 18.5479, lng: 73.8835 },
-  { ward_id: '10', name: 'Shivajinagar Gaothan - Sangamwadi',                    lat: 18.5393, lng: 73.8584 },
-  { ward_id: '11', name: 'Bopodi - Savitribai Phule Pune University',            lat: 18.5541, lng: 73.8323 },
-  { ward_id: '12', name: 'Aundh - Balewadi',                                     lat: 18.5639, lng: 73.7918 },
-  { ward_id: '13', name: 'Baner - Sus - Mahalunge',                              lat: 18.5584, lng: 73.7680 },
-  { ward_id: '14', name: 'Pashan - Bawdhan',                                     lat: 18.5257, lng: 73.7775 },
-  { ward_id: '15', name: 'Gokhalenagar - Vadarwadi',                             lat: 18.5307, lng: 73.8232 },
-  { ward_id: '16', name: 'Fergusson College - Erandwane',                        lat: 18.5114, lng: 73.8331 },
-  { ward_id: '17', name: 'Shaniwar Peth - Navi Peth',                            lat: 18.5113, lng: 73.8482 },
-  { ward_id: '18', name: 'Shaniwarwada - Kasba Peth',                            lat: 18.5191, lng: 73.8600 },
-  { ward_id: '19', name: 'CSM Stadium - Rasta Peth',                             lat: 18.5213, lng: 73.8651 },
-  { ward_id: '20', name: 'Pune Station - Ramabai Ambedkar Road',                 lat: 18.5255, lng: 73.8727 },
-  { ward_id: '21', name: 'Koregaon Park - Mundhwa',                              lat: 18.5291, lng: 73.9035 },
-  { ward_id: '22', name: 'Manjari Bk - Shewalwadi',                              lat: 18.5087, lng: 73.9714 },
-  { ward_id: '23', name: 'Sadesataranali - Aakashwani',                          lat: 18.5135, lng: 73.9425 },
-  { ward_id: '24', name: 'Magarpatta - Sadhana Vidyalaya',                       lat: 18.5114, lng: 73.9291 },
-  { ward_id: '25', name: 'Hadapsar Gaothan - Satavwadi',                         lat: 18.4975, lng: 73.9395 },
-  { ward_id: '26', name: 'Wanwadi Gaothan - Vaiduwadi',                          lat: 18.5072, lng: 73.9087 },
-  { ward_id: '27', name: 'Kasewadi - Lohiyanagar',                               lat: 18.5062, lng: 73.8704 },
-  { ward_id: '28', name: 'Bhavani Peth - Mahatma Phule Smarak',                  lat: 18.5100, lng: 73.8640 },
-  { ward_id: '29', name: 'Ghorpade Peth - Mahatma Phule Mandai',                 lat: 18.5068, lng: 73.8598 },
-  { ward_id: '30', name: 'Jai Bhavaninagar - Kelewadi',                          lat: 18.5145, lng: 73.8162 },
-  { ward_id: '31', name: 'Kothrud Gaothan - Shivtirthnagar',                     lat: 18.5042, lng: 73.8070 },
-  { ward_id: '32', name: 'Bhusari Colony - Bavdhan Khurd',                       lat: 18.5113, lng: 73.7901 },
-  { ward_id: '33', name: 'Ideal Colony - Mahatma Society',                       lat: 18.5006, lng: 73.7953 },
-  { ward_id: '34', name: 'Warje - Kondhave Dhavde',                              lat: 18.4713, lng: 73.7614 },
-  { ward_id: '35', name: 'Ramnagar - Uttamnagar Shivane',                        lat: 18.4737, lng: 73.7914 },
-  { ward_id: '36', name: 'Karvenagar',                                           lat: 18.4858, lng: 73.8145 },
-  { ward_id: '37', name: 'Janata Vasahat - Dattawadi',                           lat: 18.4955, lng: 73.8402 },
-  { ward_id: '38', name: 'Shivdarshan - Padmavati',                              lat: 18.4931, lng: 73.8521 },
-  { ward_id: '39', name: 'Market Yard - Maharshinagar',                          lat: 18.4902, lng: 73.8636 },
-  { ward_id: '40', name: 'Bibvewadi - Gangadham',                                lat: 18.4839, lng: 73.8759 },
-  { ward_id: '41', name: 'Kondhwa Kh - Mithanagar',                              lat: 18.4726, lng: 73.8840 },
-  { ward_id: '42', name: 'Ramtekadi - Sayyadnagar',                              lat: 18.4775, lng: 73.9118 },
-  { ward_id: '43', name: 'Wanawadi - Kausar Baug',                               lat: 18.4868, lng: 73.8982 },
-  { ward_id: '44', name: 'Kale Boratenagar - Sasanenagar',                       lat: 18.4863, lng: 73.9393 },
-  { ward_id: '45', name: 'Fursungi',                                             lat: 18.4786, lng: 73.9589 },
-  { ward_id: '46', name: 'NIBM–Mohammadwadi'         ,                        lat: 18.4567, lng: 73.9334 },
-  { ward_id: '47', name: 'Kondhwa Bk - Yewalewadi',                              lat: 18.4440, lng: 73.8924 },
-  { ward_id: '48', name: 'Upper Super Indiranagar',                              lat: 18.4665, lng: 73.8702 },
-  { ward_id: '49', name: 'Balajinagar - Shankar Maharaj Math',                   lat: 18.4713, lng: 73.8605 },
-  { ward_id: '50', name: 'Sahakarnagar - Taljai',                                lat: 18.4820, lng: 73.8479 },
-  { ward_id: '51', name: 'Vadgaon Bk - Manikbaug',                              lat: 18.4746, lng: 73.8311 },
-  { ward_id: '52', name: 'Nanded City - Sun City',                               lat: 18.4746, lng: 73.8169 },
-  { ward_id: '53', name: 'Khadakwasla - Narhe',                                  lat: 18.4364, lng: 73.7958 },
-  { ward_id: '54', name: 'Dhayari - Ambegaon',                                   lat: 18.4362, lng: 73.8274 },
-  { ward_id: '55', name: 'Dhankawadi - Ambegaon Pathar',                         lat: 18.4605, lng: 73.8376 },
-  { ward_id: '56', name: 'Chaitanyanagar - Bharati Vidyapeeth',                  lat: 18.4601, lng: 73.8519 },
-  { ward_id: '57', name: 'Sukhsagarnagar - Rajiv Gandhinagar',                   lat: 18.4513, lng: 73.8668 },
-  { ward_id: '58', name: 'Katraj - Gokulnagar',                                  lat: 18.4389, lng: 73.8632 },
-]
-
-function nearestWard(lat: number, lng: number) {
-  let min = Infinity, best = WARD_CENTROIDS[0]
-  for (const w of WARD_CENTROIDS) {
-    const d = (w.lat - lat) ** 2 + (w.lng - lng) ** 2
-    if (d < min) { min = d; best = w }
-  }
-  return best
-}
+// Ward centroids and nearest-ward resolution now come from lib/wards.ts —
+// the same registry daily-pipeline, classify-worker, and add-report's server
+// route use — instead of a third, separately maintained copy that could (and
+// did) disagree with the other two on ward boundaries and names.
 
 const MANUAL_AREAS = [
   // Pilot wards — data-dense
@@ -141,7 +77,7 @@ const MANUAL_AREAS = [
   { ward_id: '45', name: 'Fursungi' },
   { ward_id: '5',  name: 'West Kharadi / Vadgaon Sheri' },
   { ward_id: '4',  name: 'East Kharadi / Wagholi' },
-  { ward_id: '6',  name: 'Viman Nagar / Ramwadi' },
+  { ward_id: '6',  name: 'Vadgaon Sheri / Ramwadi' },
   { ward_id: '7',  name: 'Kalyaninagar / Kalyani Nagar' },
   { ward_id: '21', name: 'Koregaon Park / Mundhwa' },
   // North Pune
@@ -239,13 +175,15 @@ export function AddReportClient() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const voiceActiveRef = useRef(false)
   const isIOS = useRef(false)
+  // Silence-based auto-stop for Whisper-path recording — see startWhisperRecording.
+  const silenceMonitorRef = useRef<{ audioCtx: AudioContext; intervalId: number } | null>(null)
 
   useEffect(() => {
     if (!navigator.geolocation) { setLocation({ status: 'denied' }); return }
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         const ward = nearestWard(coords.latitude, coords.longitude)
-        setLocation({ status: 'found', lat: coords.latitude, lng: coords.longitude, wardId: ward.ward_id, wardName: ward.name })
+        setLocation({ status: 'found', lat: coords.latitude, lng: coords.longitude, wardId: ward.id, wardName: ward.name })
       },
       () => setLocation({ status: 'denied' }),
       { timeout: 8000, maximumAge: 60_000 },
@@ -311,6 +249,17 @@ export function AddReportClient() {
     recognitionRef.current = r
   }
 
+  // Stops and tears down the AnalyserNode-based silence monitor started in
+  // startWhisperRecording — called from both the auto-stop path and every
+  // manual-stop path (toggleVoice) so a leftover AudioContext never lingers.
+  function stopSilenceMonitor() {
+    const m = silenceMonitorRef.current
+    if (!m) return
+    clearInterval(m.intervalId)
+    m.audioCtx.close().catch(() => {})
+    silenceMonitorRef.current = null
+  }
+
   async function startWhisperRecording() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -320,8 +269,54 @@ export function AddReportClient() {
       const recorder = new MediaRecorder(stream, { mimeType })
       const chunks: BlobPart[] = []
 
+      // Silence-based auto-stop: once the citizen has spoken and then gone
+      // quiet for 2s straight, stop automatically instead of requiring a
+      // second tap. Waits for at least one loud sample before arming so a
+      // few seconds of thinking silence at the start doesn't trigger it.
+      // Best-effort — AnalyserNode is broadly supported, but if it throws
+      // for any reason, recording still works via the manual toggle.
+      try {
+        const AudioCtxCtor = window.AudioContext || (window as any).webkitAudioContext
+        const audioCtx = new AudioCtxCtor()
+        const source = audioCtx.createMediaStreamSource(stream)
+        const analyser = audioCtx.createAnalyser()
+        analyser.fftSize = 512
+        source.connect(analyser)
+        const timeData = new Uint8Array(analyser.frequencyBinCount)
+        const SILENCE_RMS_THRESHOLD = 0.02
+        const SILENCE_MS = 2000
+        const MIN_RECORDING_MS = 1500
+        const recordingStartedAt = Date.now()
+        let hasSpoken = false
+        let silenceStartedAt: number | null = null
+        const intervalId = window.setInterval(() => {
+          analyser.getByteTimeDomainData(timeData)
+          let sumSquares = 0
+          for (let i = 0; i < timeData.length; i++) {
+            const v = (timeData[i] - 128) / 128
+            sumSquares += v * v
+          }
+          const rms = Math.sqrt(sumSquares / timeData.length)
+          if (rms >= SILENCE_RMS_THRESHOLD) {
+            hasSpoken = true
+            silenceStartedAt = null
+            return
+          }
+          if (!hasSpoken || Date.now() - recordingStartedAt < MIN_RECORDING_MS) return
+          if (silenceStartedAt === null) silenceStartedAt = Date.now()
+          else if (Date.now() - silenceStartedAt >= SILENCE_MS) {
+            stopSilenceMonitor()
+            if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop()
+          }
+        }, 200)
+        silenceMonitorRef.current = { audioCtx, intervalId }
+      } catch {
+        // No auto-stop this session — manual tap-to-stop still works.
+      }
+
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
       recorder.onstop = async () => {
+        stopSilenceMonitor()
         stream.getTracks().forEach(t => t.stop())
         setTranscribing(true)
         const blob = new Blob(chunks, { type: mimeType })
@@ -353,6 +348,7 @@ export function AddReportClient() {
       recorder.start()
       mediaRecorderRef.current = recorder
     } catch (err) {
+      stopSilenceMonitor()
       voiceActiveRef.current = false
       setVoiceActive(false)
       if (err instanceof Error) {

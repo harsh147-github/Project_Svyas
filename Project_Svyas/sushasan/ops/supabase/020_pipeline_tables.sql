@@ -1,6 +1,14 @@
 -- Sushasan Pipeline — Phase 2 Schema Extension
 -- Adds tables for the 4-phase AI pipeline (scrape → synthesize → solve → display)
 -- Run after 001_init.sql in Supabase SQL editor
+--
+-- Renumbered from 002_pipeline_tables.sql — this repo had two different
+-- files both named "002_*" (this one, and 002_pipeline_columns.sql), which
+-- meant a fresh bring-up had no unambiguous ordering for that slot. This
+-- file's content doesn't depend on anything added between the original
+-- 002 and here, so moving it to the end of the numbered sequence is safe;
+-- see ops/supabase/APPLIED.md for the full migration ledger. Comments in
+-- other files that still say "002_pipeline_tables.sql" refer to this file.
 
 -- ── Fix wards.id type (001_init.sql had uuid but seeds text values) ──────────
 -- Skip if wards table already uses text (check first)

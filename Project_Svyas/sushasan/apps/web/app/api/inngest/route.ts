@@ -1,6 +1,6 @@
 import { serve } from 'inngest/next'
 import { inngest } from '../../../lib/inngest'
-import { classifyPostsWorker } from '../../../lib/workers/classify-worker'
+import { classifyPostsWorker, postsEnrichWorker } from '../../../lib/workers/classify-worker'
 import { solutionSynthesisWorker } from '../../../lib/workers/solution-worker'
 import { evalGateWorker } from '../../../lib/workers/eval-worker'
 
@@ -14,5 +14,5 @@ export const maxDuration = 300
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [classifyPostsWorker, solutionSynthesisWorker, evalGateWorker],
+  functions: [classifyPostsWorker, postsEnrichWorker, solutionSynthesisWorker, evalGateWorker],
 })

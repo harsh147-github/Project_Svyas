@@ -180,10 +180,20 @@ function synthesizeSolution(c: Cluster, ward: Ward): Solution {
 
 // ── Ward registry: merge seed wards with anything Supabase knows about ─────
 
+// 5-minute TTL, mirroring lib/gov-recipients.ts. A failed Supabase fetch is
+// never cached — it used to poison `_wardRegistryCache` with the seed-only
+// fallback for the rest of the instance's life (a transient DB blip froze
+// the registry until the next cold start). Now a fetch error just serves the
+// seed fallback for this one call and leaves the last good cache (if any)
+// alone, so the next call retries fresh instead of being stuck.
+const WARD_REGISTRY_TTL_MS = 5 * 60 * 1000
 let _wardRegistryCache: Map<string, Ward> | null = null
+let _wardRegistryCachedAt = 0
 
 async function loadWardRegistry(): Promise<Map<string, Ward>> {
-  if (_wardRegistryCache) return _wardRegistryCache
+  if (_wardRegistryCache && Date.now() - _wardRegistryCachedAt < WARD_REGISTRY_TTL_MS) {
+    return _wardRegistryCache
+  }
   const map = new Map<string, Ward>()
   // Seed first — guaranteed names/budgets for ~25 PMC wards
   for (const w of getSeedWards()) map.set(w.id, w)
@@ -211,10 +221,12 @@ async function loadWardRegistry(): Promise<Map<string, Ward>> {
       }
     } catch (err) {
       console.error('[supabase-data] ward registry fetch failed:', err)
+      return map // seed-only fallback for this call; do not cache
     }
   }
 
   _wardRegistryCache = map
+  _wardRegistryCachedAt = Date.now()
   return map
 }
 

@@ -138,6 +138,15 @@ async function logDispatches(items: DispatchItem[], digestEmailedTo: string[]): 
 async function run() {
   const baseUrl = process.env.PUBLIC_BASE_URL ?? 'https://sushaasan.in'
   if (!isGovTokenSigningConfigured()) {
+    // Fail closed in production — the fallback below is the master
+    // GOV_ACCESS_TOKEN (full, unscoped /gov access, no expiry) embedded in
+    // every dispatched email/WhatsApp link. That's the same fail-open class
+    // the cron-auth fix eliminated elsewhere; refuse to send rather than leak
+    // it. Outside production (preview/dev) the fallback still applies so
+    // local testing isn't blocked on a secret that's irrelevant there.
+    if (process.env.VERCEL_ENV === 'production') {
+      throw new Error('GOV_TOKEN_SIGNING_SECRET not configured — refusing to dispatch in production')
+    }
     console.error(
       '[gov-dispatch] GOV_TOKEN_SIGNING_SECRET not set — falling back to the master ' +
         'GOV_ACCESS_TOKEN in dispatched links. Set GOV_TOKEN_SIGNING_SECRET so briefs carry ' +
@@ -164,6 +173,13 @@ async function run() {
         .from('dispatch_log')
         .select('mission_id, dispatched_at')
         .gte('dispatched_at', sixDaysAgo)
+        // Only a row with at least one successful channel counts as "already
+        // dispatched" — logDispatches records every attempt, including pure
+        // failures (channel:'digest-only', emailed:false, whatsapped:false).
+        // Without this filter, one failed/blocked send suppressed retries for
+        // that mission for a full 6 days even though nothing was ever
+        // delivered.
+        .or('emailed.eq.true,whatsapped.eq.true')
         .order('dispatched_at', { ascending: false })
       for (const row of (recent ?? []) as { mission_id: string; dispatched_at: string }[]) {
         if (!lastDispatchByMission.has(row.mission_id)) lastDispatchByMission.set(row.mission_id, row.dispatched_at)

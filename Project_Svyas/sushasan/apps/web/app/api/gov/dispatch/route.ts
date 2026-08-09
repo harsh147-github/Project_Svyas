@@ -40,6 +40,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<{ o
         subject,
         html,
       }),
+      signal: AbortSignal.timeout(15_000),
     })
     if (!res.ok) return { ok: false, detail: `Resend ${res.status}: ${await res.text().catch(() => '')}` }
     return { ok: true }

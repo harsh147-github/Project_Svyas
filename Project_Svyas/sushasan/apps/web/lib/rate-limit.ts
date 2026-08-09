@@ -41,6 +41,17 @@ function limiterFor(route: string, limit: number, windowSec: number): Ratelimit 
 const _memory = new Map<string, { count: number; resetAt: number }>()
 const MEMORY_PRUNE_THRESHOLD = 5000
 
+// Silent degradation here means an operator believes public write endpoints
+// are durably rate-limited when they're actually only protected per-instance
+// (resets on every cold start, and each concurrent instance gets its own
+// budget). Warn once per cold start rather than staying quiet.
+let _warnedInMemory = false
+function warnInMemoryOnce(): void {
+  if (_warnedInMemory) return
+  _warnedInMemory = true
+  console.warn('[rate-limit] Upstash env missing — using per-instance in-memory limiter (NOT durable)')
+}
+
 function memoryLimit(key: string, limit: number, windowSec: number): boolean {
   const now = Date.now()
   if (_memory.size >= MEMORY_PRUNE_THRESHOLD) {
@@ -71,6 +82,7 @@ export async function checkRateLimit(
     const { success } = await rl.limit(identifier)
     return success
   }
+  warnInMemoryOnce()
   return memoryLimit(`${route}:${identifier}`, opts.limit, opts.windowSec)
 }
 
