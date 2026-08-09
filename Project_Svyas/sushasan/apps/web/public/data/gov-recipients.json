@@ -1,15 +1,471 @@
 {
-  "note": "Per-ward delivery targets for Sushaasan briefs (the 'missile'). Fill 'email' with the PMC ward officer / ward-office email to switch on automated email dispatch. 'phone' (PMC ward office, from the public registry) is used for WhatsApp delivery. 'name' is the officer's name once known. Leave email null to keep a ward in WhatsApp/link-only delivery.",
-  "schema_version": "1",
+  "note": "Per-ward delivery targets for Sushaasan briefs (the 'missile') and the daily per-officer war-room digest. Fill 'email' with the PMC ward officer / ward-office email to switch on automated email dispatch. 'phone' (PMC ward office, from the public registry) is used for WhatsApp delivery. 'name' is the officer's name once known. 'designation' is seeded from public/data/pune-ward-incharge.json where available. Leave email null to keep a ward out of automated delivery — both gov-dispatch and the war-room digest skip null-email wards.",
+  "schema_version": "2",
   "default_office_email": null,
   "wards": {
-    "46": { "name": null, "email": null, "phone": "020-26993100", "office": "Hadapsar–Mundhwa Ward Office" },
-    "47": { "name": null, "email": null, "phone": "020-26854949", "office": "Kondhwa–Wanowrie Ward Office" },
-    "43": { "name": null, "email": null, "phone": "020-26854949", "office": "Wanowrie–Ramtekdi Ward Office" },
-    "41": { "name": null, "email": null, "phone": "020-26854949", "office": "Kondhwa–Wanowrie Ward Office" },
-    "42": { "name": null, "email": null, "phone": "020-26993100", "office": "Hadapsar–Mundhwa Ward Office" },
-    "44": { "name": null, "email": null, "phone": "020-26993100", "office": "Hadapsar–Mundhwa Ward Office" },
-    "25": { "name": null, "email": null, "phone": "020-26993100", "office": "Hadapsar–Mundhwa Ward Office" },
-    "26": { "name": null, "email": null, "phone": "020-26993100", "office": "Hadapsar–Mundhwa Ward Office" }
+    "1": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "2": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "3": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "4": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "5": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "6": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "7": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "8": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "9": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "10": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "11": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "12": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "13": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "14": {
+      "name": null,
+      "email": null,
+      "phone": "020-26854949",
+      "office": "Wanowrie–Ramtekdi Ward Office",
+      "designation": "Asst. Municipal Commissioner — Wanowrie Region",
+      "war_room_opt_in": true
+    },
+    "15": {
+      "name": null,
+      "email": null,
+      "phone": "020-26993100",
+      "office": "Hadapsar–Mundhwa Ward Office",
+      "designation": "Asst. Municipal Commissioner — Hadapsar Region",
+      "war_room_opt_in": true
+    },
+    "16": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "17": {
+      "name": null,
+      "email": null,
+      "phone": "020-26854949",
+      "office": "Kondhwa–Wanowrie Ward Office",
+      "designation": "Asst. Municipal Commissioner — Kondhwa-Wanowrie Region",
+      "war_room_opt_in": true
+    },
+    "18": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "19": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "20": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "21": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "22": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "23": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "24": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "25": {
+      "name": null,
+      "email": null,
+      "phone": "020-26993100",
+      "office": "Hadapsar–Mundhwa Ward Office",
+      "designation": "Asst. Municipal Commissioner — Hadapsar Region",
+      "war_room_opt_in": true
+    },
+    "26": {
+      "name": null,
+      "email": null,
+      "phone": "020-26993100",
+      "office": "Hadapsar–Mundhwa Ward Office",
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "27": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "28": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "29": {
+      "name": null,
+      "email": null,
+      "phone": "020-26854949",
+      "office": "Kondhwa–Wanowrie Ward Office",
+      "designation": "Asst. Municipal Commissioner — Kondhwa-Wanowrie Region",
+      "war_room_opt_in": true
+    },
+    "30": {
+      "name": null,
+      "email": null,
+      "phone": "020-26854949",
+      "office": "Kondhwa–Wanowrie Ward Office",
+      "designation": "Asst. Municipal Commissioner — Kondhwa-Wanowrie Region",
+      "war_room_opt_in": true
+    },
+    "31": {
+      "name": null,
+      "email": null,
+      "phone": "020-26854949",
+      "office": "Kondhwa–Wanowrie Ward Office",
+      "designation": "Asst. Municipal Commissioner — Kondhwa-Wanowrie Region",
+      "war_room_opt_in": true
+    },
+    "32": {
+      "name": null,
+      "email": null,
+      "phone": "020-26854949",
+      "office": "Kondhwa–Wanowrie Ward Office",
+      "designation": "Asst. Municipal Commissioner — Kondhwa-Wanowrie Region",
+      "war_room_opt_in": true
+    },
+    "33": {
+      "name": null,
+      "email": null,
+      "phone": "020-26993100",
+      "office": "Hadapsar–Mundhwa Ward Office",
+      "designation": "Asst. Municipal Commissioner — Hadapsar Region",
+      "war_room_opt_in": true
+    },
+    "34": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "35": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "36": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "37": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "38": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "39": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "40": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "41": {
+      "name": null,
+      "email": null,
+      "phone": "020-26854949",
+      "office": "Kondhwa–Wanowrie Ward Office",
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "42": {
+      "name": null,
+      "email": null,
+      "phone": "020-26993100",
+      "office": "Hadapsar–Mundhwa Ward Office",
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "43": {
+      "name": null,
+      "email": null,
+      "phone": "020-26854949",
+      "office": "Wanowrie–Ramtekdi Ward Office",
+      "designation": "Asst. Municipal Commissioner — Wanowrie Region",
+      "war_room_opt_in": true
+    },
+    "44": {
+      "name": null,
+      "email": null,
+      "phone": "020-26993100",
+      "office": "Hadapsar–Mundhwa Ward Office",
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "45": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "46": {
+      "name": null,
+      "email": null,
+      "phone": "020-26993100",
+      "office": "Hadapsar–Mundhwa Ward Office",
+      "designation": "Asst. Municipal Commissioner — Hadapsar Region",
+      "war_room_opt_in": true
+    },
+    "47": {
+      "name": null,
+      "email": null,
+      "phone": "020-26854949",
+      "office": "Kondhwa–Wanowrie Ward Office",
+      "designation": "Asst. Municipal Commissioner — Kondhwa-Wanowrie Region",
+      "war_room_opt_in": true
+    },
+    "48": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "49": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "50": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "51": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "52": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "53": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "54": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "55": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "56": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "57": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    },
+    "58": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "office": null,
+      "designation": null,
+      "war_room_opt_in": true
+    }
   }
 }
