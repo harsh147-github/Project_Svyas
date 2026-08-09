@@ -6,6 +6,14 @@ import { checkRateLimit, clientIp } from '@/lib/rate-limit'
 //   2. Groq Whisper            — fast, free tier, universal, needs GROQ_API_KEY
 //   3. OpenAI Whisper          — fallback, needs OPENAI_API_KEY
 
+export const runtime = 'nodejs'
+// Worst case is Sarvam (2 attempts) -> Groq (1) -> OpenAI (1), 15s each = 60s,
+// but the platform default (10s Hobby / 15s Pro unless raised) would kill
+// this mid-fallback-chain long before that. Vercel's Hobby plan caps
+// maxDuration at 60s — this needs Pro.
+export const maxDuration = 120
+export const dynamic = 'force-dynamic'
+
 // Unauthenticated, uncapped, and previously unrated — anyone could burn
 // Sarvam/Groq/OpenAI credits in a loop. 15 requests / 10 min / IP, and audio
 // is capped well below the 25MB Whisper ceiling (real recordings should be
@@ -44,19 +52,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid form data' }, { status: 400 })
   }
 
-  // fetchWithRetry: one retry on 429/5xx per provider, always with a hard
-  // timeout so a hung provider socket can't burn the whole function duration.
-  async function fetchWithRetry(url: string, init: RequestInit, providerLabel: string): Promise<Response | null> {
-    for (let attempt = 0; attempt < 2; attempt++) {
+  // fetchWithRetry: up to `maxAttempts` on 429/5xx per provider, always with a
+  // hard timeout so a hung provider socket can't burn the whole function
+  // duration. Sarvam (primary, most likely to succeed) gets 2 attempts;
+  // Groq and OpenAI (fallbacks further down an already-long chain) get 1
+  // each — keeps the worst-case total well under maxDuration instead of
+  // letting three providers each retry twice.
+  async function fetchWithRetry(url: string, init: RequestInit, providerLabel: string, maxAttempts: number): Promise<Response | null> {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        const res = await fetch(url, { ...init, signal: AbortSignal.timeout(20_000) })
+        const res = await fetch(url, { ...init, signal: AbortSignal.timeout(15_000) })
         if (res.ok) return res
-        if (attempt === 0 && (res.status === 429 || res.status >= 500)) continue
+        if (attempt < maxAttempts - 1 && (res.status === 429 || res.status >= 500)) continue
         console.error(`[transcribe] ${providerLabel} HTTP ${res.status}: ${(await res.text().catch(() => '')).slice(0, 300)}`)
         return null
       } catch (err) {
         console.error(`[transcribe] ${providerLabel} attempt ${attempt + 1} threw:`, err)
-        if (attempt === 1) return null
+        if (attempt === maxAttempts - 1) return null
       }
     }
     return null
@@ -79,6 +91,7 @@ export async function POST(req: NextRequest) {
       'https://api.sarvam.ai/speech-to-text',
       { method: 'POST', headers: { 'api-subscription-key': process.env.SARVAM_API_KEY }, body: sarvamForm },
       'sarvam',
+      2,
     )
     if (res) {
       const data = await res.json() as { transcript?: string; language_code?: string }
@@ -97,6 +110,7 @@ export async function POST(req: NextRequest) {
       'https://api.groq.com/openai/v1/audio/transcriptions',
       { method: 'POST', headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}` }, body: groqForm },
       'groq',
+      1,
     )
     if (res) {
       const data = await res.json() as { text?: string }
@@ -115,6 +129,7 @@ export async function POST(req: NextRequest) {
       'https://api.openai.com/v1/audio/transcriptions',
       { method: 'POST', headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` }, body: oaiForm },
       'openai',
+      1,
     )
     if (res) {
       const data = await res.json() as { text?: string }

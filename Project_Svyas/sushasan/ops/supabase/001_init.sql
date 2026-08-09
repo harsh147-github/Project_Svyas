@@ -106,7 +106,7 @@ create index if not exists solutions_status_idx       on solutions(status);
 -- ── wards ─────────────────────────────────────────────────────────────────────
 -- Ward metadata: corporator info, budget
 create table if not exists wards (
-  id                uuid   primary key,    -- matches GeoJSON wardnum field (cast to text)
+  id                text   primary key,    -- matches GeoJSON wardnum field, e.g. '46'
   name              text   not null,
   corporator_name   text,
   party             text,

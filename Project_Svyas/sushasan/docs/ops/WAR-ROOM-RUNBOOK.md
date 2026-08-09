@@ -58,7 +58,7 @@ Read these fields:
 | `scrape.dead_sources` | `[]` or shrinking | lists sources returning zero → Step 2 |
 | `scrape.last_run_scraped` | `> 0` | `0` = every source failed at once (usually token or credit) |
 | `dispatch.last_dispatched_at` | recent date | `null` = has never sent → Step 4 |
-| `migrations.missing` | `[]` | each entry names a file in `ops/supabase/` that was committed but never applied. **Nothing applies these automatically** — the Supabase GitHub integration watches `supabase/`, not `ops/supabase/`, and skips this repo's PRs entirely. Escalate with the exact filename |
+| `migrations.missing` | `[]` | each entry names a file in `ops/supabase/` that was committed but never applied. **Nothing applies these automatically** — the Supabase GitHub integration watches `supabase/`, not `ops/supabase/`, and skips this repo's PRs entirely. Escalate with the exact filename, and check/update `ops/supabase/APPLIED.md` (the migration ledger — this directory has no other record of what's actually been pasted into the SQL editor) once it's run |
 
 > **If the endpoint is unreachable from your sandbox** (egress is restricted in
 > some environments — `curl` returns HTTP 000), say so plainly and continue
@@ -299,7 +299,12 @@ Be honest about these rather than letting them look covered:
 - **It is not second-by-second.** Routines fire on a schedule (hourly at the
   fastest). Real-time detection is the job of the `uptime-check` cron, which
   emails `FOUNDER_EMAIL` when the pipeline degrades — that is the always-on
-  layer; this Routine is the daily deep sweep.
+  layer; this Routine is the daily deep sweep. `uptime-check` also posts to
+  `SLACK_ALERT_WEBHOOK_URL` (a Slack incoming webhook) when set, as a second
+  alert channel independent of Resend — Resend alone fails silently on an
+  unverified sending domain, which would otherwise mean the one alerting path
+  could die with nothing to notice it died. Optional; unset just means
+  Slack alerts don't fire, email still does.
 - **It cannot fix vendor-side problems.** Expired keys, exhausted Anthropic or
   Apify credit, unverified DNS, an expired Reddit app — all require the founder
   in an external dashboard.

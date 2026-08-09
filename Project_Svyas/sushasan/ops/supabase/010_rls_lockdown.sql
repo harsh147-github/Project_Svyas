@@ -5,7 +5,7 @@
 --
 -- Run in the Supabase SQL editor after applying 001-009.
 
--- ── pipeline_runs was publicly readable (002_pipeline_tables.sql) ──────────
+-- ── pipeline_runs was publicly readable (020_pipeline_tables.sql) ──────────
 -- Ops telemetry — per-source scrape yield, error detail, run status — should
 -- never be public. service_role (which bypasses RLS regardless of policy)
 -- is the only reader/writer.

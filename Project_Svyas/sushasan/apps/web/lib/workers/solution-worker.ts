@@ -4,7 +4,7 @@
  * Self-contained — no cross-package imports. Lives in apps/web.
  */
 import { chatJSON, activeProvider } from '../ai'
-import { toBool, toNum } from '../coerce'
+import { toNum } from '../coerce'
 import { inngest } from '../inngest'
 import { createServerClient } from '../supabase'
 import { weekStart } from '../week'
@@ -41,17 +41,17 @@ OUTPUT (strict JSON only — no markdown, no explanation):
   "cited_post_ids": ["only post ids from the Cited posts list above that support this solution"],
   "steps": [
     {
-      "step": 1,
+      "step": <integer, 1-based step number>,
       "action": "What exactly needs to be done",
       "dept": "Responsible PMC department",
-      "timeline_days": 7,
-      "cost_est_inr": 50000
+      "timeline_days": <integer, days>,
+      "cost_est_inr": <integer, INR>
     }
   ],
-  "total_cost_est_inr": 150000,
-  "timeline_days": 21,
-  "priority_score": 78,
-  "budget_feasible": true
+  "total_cost_est_inr": <integer, INR — sum of all steps' cost_est_inr>,
+  "timeline_days": <integer, days — the longest critical-path step, not the sum>,
+  "priority_score": <integer, 0-100>,
+  "budget_feasible": <true|false — your best estimate; the caller recomputes this against the ward's actual budget, so it is advisory only>
 }
 
 RULES:
@@ -216,6 +216,16 @@ export const solutionSynthesisWorker = inngest.createFunction(
               validateCitations((v as { cited_post_ids?: unknown }).cited_post_ids, realIds),
           )
 
+          // budget_feasible was previously whatever truthy-ish value the model
+          // wrote — a self-assessment with no arithmetic behind it, and
+          // nothing stopped it disagreeing with the actual numbers in the
+          // same response. Recompute it in code against the real ward
+          // budget (same fallback ctx.budget_lakh used) instead of trusting
+          // the model's word for its own math.
+          const totalCostInr = toNum(parsed.total_cost_est_inr, 0) ?? 0
+          const wardBudgetInr = ward?.annual_budget_inr ?? 50_000_000
+          const budgetFeasible = totalCostInr <= wardBudgetInr
+
           await db.from('solutions').upsert({
             ward_id: cluster.ward_id,
             cluster_id: cluster.id,
@@ -223,10 +233,10 @@ export const solutionSynthesisWorker = inngest.createFunction(
             issue_tag: cluster.issue_tag,
             summary: parsed.summary ?? '',
             steps: parsed.steps ?? [],
-            total_cost_est_inr: toNum(parsed.total_cost_est_inr),
+            total_cost_est_inr: totalCostInr,
             timeline_days: toNum(parsed.timeline_days),
             priority_score: toNum(parsed.priority_score, 0),
-            budget_feasible: toBool(parsed.budget_feasible),
+            budget_feasible: budgetFeasible,
             status: 'published',
             generated_at: new Date().toISOString(),
             post_count_at_generation: cluster.post_count ?? 0,

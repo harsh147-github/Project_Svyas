@@ -6,6 +6,8 @@ import { toInt } from '@/lib/coerce'
 import { randomUUID, createHash } from 'crypto'
 import { checkRateLimit, clientIp } from '@/lib/rate-limit'
 import { WARDS, wardById, nearestWard as nearestWardShared } from '@/lib/wards'
+import { normaliseIssueTag } from '@/lib/issue-tags'
+import { inngest } from '@/lib/inngest'
 
 const RATE_LIMIT = 10
 const RATE_WINDOW_SEC = 10 * 60 // 10 minutes
@@ -235,6 +237,13 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Route the intake result through the same closed-set normalizer
+  // classify-worker uses for scraped posts — previously this stored whatever
+  // string the model returned verbatim, un-validated, so an intake synthesis
+  // that drifted from the schema (e.g. "roads" instead of "traffic") could
+  // create an issue_tag the map cannot colour and clustering cannot group.
+  synthesized.issue_tag = normaliseIssueTag(synthesized.issue_tag)
+
   // Scrub PII from everything that reaches a public surface (map centroid,
   // posts table, success card) — phones, emails, ids, vehicle plates.
   synthesized.grievance_formal = scrubPII(synthesized.grievance_formal)
@@ -300,6 +309,19 @@ export async function POST(req: NextRequest) {
           console.error('[add-report] posts insert:', postErr.message)
         } else if (post) {
           postId = post.id
+          // classify-worker's normal path also computes a Voyage embedding
+          // before the row lands in `posts` — this intake path inserts
+          // directly and never did, so citizen reports were silently
+          // excluded from cosine-similarity clustering forever. Emit the
+          // same enrichment event classify-worker listens for; the handler
+          // is idempotent (skips posts that already have an embedding), and
+          // a delivery failure here just means embedding backfill is missed
+          // for this one post, not that the report itself is lost.
+          try {
+            await inngest.send({ name: 'sushasan/posts.enrich', data: { postIds: [post.id] } })
+          } catch (err) {
+            console.error('[add-report] posts.enrich event send failed:', err)
+          }
           // Same select-then-insert/update race daily-pipeline had, plus this
           // wrote `severity_avg: synthesized.severity` unclamped straight from
           // the model — a value outside 1..5 here doesn't hit a CHECK

@@ -20,6 +20,10 @@
     {
       "path": "/api/cron/uptime-check",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/ward-warroom-digest",
+      "schedule": "30 5 * * *"
     }
   ],
   "headers": [

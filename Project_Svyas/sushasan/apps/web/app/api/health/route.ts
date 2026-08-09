@@ -18,6 +18,9 @@ function envReport() {
     email: missingEnv(REQUIRED.email),
     // Non-empty here means the /api/cron/* routes are publicly triggerable.
     cron: missingEnv(REQUIRED.cron),
+    // Non-empty here means public write endpoints are rate-limited only by a
+    // per-instance in-memory counter, not the durable Upstash-backed limiter.
+    rateLimit: missingEnv(REQUIRED.rateLimit),
   }
 }
 

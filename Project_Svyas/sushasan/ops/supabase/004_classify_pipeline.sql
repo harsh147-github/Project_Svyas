@@ -1,5 +1,5 @@
 -- Migration 004: Fix posts upsert + add Voyage embedding support
--- Run in Supabase SQL editor after 001_init.sql and 002_pipeline_tables.sql
+-- Run in Supabase SQL editor after 001_init.sql and 020_pipeline_tables.sql
 
 -- ── Unique constraint on posts.raw_post_id ────────────────────────────────────
 -- Required for the classify worker's upsert(onConflict: 'raw_post_id') to work.
@@ -13,6 +13,24 @@ DO $$ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint WHERE conname = 'posts_raw_post_id_unique'
   ) THEN
+    -- Deduplicate first, same pattern as 005's clusters(ward_id, issue_tag)
+    -- fix: on a database that ran classification before this constraint
+    -- existed, the classify worker's upsert(onConflict: 'raw_post_id')
+    -- silently fell back to plain inserts and could have left duplicate
+    -- raw_post_id rows behind — ADD CONSTRAINT would abort on those. Keep
+    -- the newest row per raw_post_id (most recent classification wins),
+    -- tiebreak by id for determinism.
+    DELETE FROM posts p
+    USING (
+      SELECT id, ROW_NUMBER() OVER (
+        PARTITION BY raw_post_id
+        ORDER BY created_at DESC NULLS LAST, id DESC
+      ) AS rn
+      FROM posts
+      WHERE raw_post_id IS NOT NULL
+    ) ranked
+    WHERE p.id = ranked.id AND ranked.rn > 1;
+
     ALTER TABLE posts ADD CONSTRAINT posts_raw_post_id_unique UNIQUE (raw_post_id);
   END IF;
 END $$;

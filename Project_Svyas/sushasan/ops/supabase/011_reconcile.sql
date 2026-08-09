@@ -13,7 +13,7 @@
 -- numbers ('41', '47', ...) — those aren't valid UUIDs, so on a project
 -- where 001_init.sql ran exactly as written, either the wards table doesn't
 -- exist at all (insert failed) or the FK from official_actions was never
--- created (type mismatch). 002_pipeline_tables.sql already carries this
+-- created (type mismatch). 020_pipeline_tables.sql already carries this
 -- exact fix; repeated here so it applies even on a project where only
 -- 002_pipeline_columns.sql ran (the other same-numbered file, which does
 -- not carry this fix).
@@ -32,7 +32,7 @@ END $$;
 -- ── pipeline_runs must carry every column the app reads/writes ─────────────
 -- Two different "002" files both `CREATE TABLE IF NOT EXISTS pipeline_runs`
 -- with different columns — 002_pipeline_columns.sql has `started_at` +
--- `error_message`; 002_pipeline_tables.sql has `triggered_at` + `errors` +
+-- `error_message`; 020_pipeline_tables.sql has `triggered_at` + `errors` +
 -- `ward_id` + `issue_tag`. Whichever ran first "won" and the table may be
 -- missing columns the app (daily-pipeline, uptime-check, /api/health,
 -- lib/agents/gov-tools.ts) requires. Backfill every column either version
@@ -44,7 +44,7 @@ ALTER TABLE pipeline_runs ADD COLUMN IF NOT EXISTS issue_tag text;
 ALTER TABLE pipeline_runs ADD COLUMN IF NOT EXISTS started_at timestamptz DEFAULT now();
 ALTER TABLE pipeline_runs ADD COLUMN IF NOT EXISTS error_message text;
 -- 002_pipeline_columns.sql's status check doesn't include 'partial' (added
--- later by 002_pipeline_tables.sql); widen it so a status value from either
+-- later by 020_pipeline_tables.sql); widen it so a status value from either
 -- code path is always valid.
 ALTER TABLE pipeline_runs DROP CONSTRAINT IF EXISTS pipeline_runs_status_check;
 ALTER TABLE pipeline_runs ADD CONSTRAINT pipeline_runs_status_check
