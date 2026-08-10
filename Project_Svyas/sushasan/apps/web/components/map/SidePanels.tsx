@@ -1003,8 +1003,8 @@ export function MobilePanel() {
     <>
       {/* ── Floating filter-chip row — anchored above the sheet, visible at every snap point ── */}
       <div
-        className="md:hidden absolute left-0 right-0 z-40 pointer-events-none transition-[bottom] duration-300 ease-in-out"
-        style={{ bottom: sheetHeight }}
+        className="md:hidden absolute left-0 right-0 z-40 pointer-events-none transition-[bottom]"
+        style={{ bottom: sheetHeight, transitionDuration: '380ms', transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
         <div ref={chipsBarRef} className="pointer-events-auto bg-white/92 backdrop-blur-md border-t border-ink/[0.06]">
           <MobileFilterChips />
@@ -1027,11 +1027,11 @@ export function MobilePanel() {
             onPointerDown={onHandlePointerDown}
             onPointerUp={onHandlePointerUp}
             style={{ touchAction: 'none' }}
-            className="w-full flex justify-center items-center h-11 rounded-t-3xl cursor-grab active:cursor-grabbing"
+            className="group w-full flex justify-center items-center h-11 rounded-t-3xl cursor-grab active:cursor-grabbing"
             data-no-min-size
             aria-label={expanded ? 'Collapse ward info' : 'Expand ward info'}
           >
-            <div className="w-10 h-[4px] rounded-full bg-ink/20" />
+            <div className="w-9 h-[4px] rounded-full bg-ink/20 transition-all duration-150 group-active:w-11 group-active:bg-ink/35" />
           </button>
 
           {snap !== 'min' && (
@@ -1124,10 +1124,15 @@ export function MobilePanel() {
                 </button>
               </div>
 
-              {/* ── Expandable content — smooth CSS height transition ── */}
+              {/* ── Expandable content — same spring easing as the report sheet's slide-up ── */}
               <div
-                className="transition-all duration-300 ease-in-out"
-                style={{ maxHeight: expanded ? '58dvh' : '0px', overflow: expanded ? 'visible' : 'hidden' }}
+                className="transition-all"
+                style={{
+                  maxHeight: expanded ? '58dvh' : '0px',
+                  overflow: expanded ? 'visible' : 'hidden',
+                  transitionDuration: '380ms',
+                  transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
               >
                 <div
                   ref={contentRef}

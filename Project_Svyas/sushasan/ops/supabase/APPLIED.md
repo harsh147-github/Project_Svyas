@@ -23,7 +23,7 @@ a no-op, not a hazard.
 | 004 | `004_classify_pipeline.sql` | ☐ | | |
 | 005 | `005_fix_constraints.sql` | ☐ | | |
 | 006 | `006_scale_indexes.sql` | ☐ | | |
-| 007 | `007_dispatch_log.sql` | ☐ | | |
+| 007 | `007_dispatch_log.sql` | ☑ | 2026-08-10 | Applied via Supabase MCP. |
 | 008 | `008_ai_provider_events.sql` | ☐ | | |
 | 009 | `009_plus_one_events.sql` | ☐ | | |
 | 010 | `010_rls_lockdown.sql` | ☐ | | |
@@ -35,8 +35,9 @@ a no-op, not a hazard.
 | 016 | `016_brief_audio_storage.sql` | ☐ | | |
 | 017 | `017_eval_gate.sql` | ☐ | | |
 | 018 | `018_ai_token_usage.sql` | ☐ | | |
-| 019 | `019_officer_digest_idempotency.sql` | ☐ | | |
-| 020 | `020_pipeline_tables.sql` | ☐ | | Renumbered from `002_pipeline_tables.sql` — see the file header. Same content; if you already ran it under the old name, don't re-run, just check this row. |
+| 019 | `019_officer_digest_idempotency.sql` | ☑ | 2026-08-10 | Applied via Supabase MCP. |
+| 020 | `020_pipeline_tables.sql` | ☑ | 2026-08-10 | Renumbered from `002_pipeline_tables.sql` — see the file header. Re-run confirmed idempotent: tables/columns already existed from an earlier hand-run under the old name; ledger now accurate. |
+| 021 | `021_solutions_tone_backup_rls.sql` | ☑ | 2026-08-10 | Not in the numbered migration files (applied directly) — enables RLS on `solutions_tone_backup`, which was found fully exposed to anon/authenticated. Same deny-all-with-no-policy pattern as `dispatch_log`. |
 
 ## Known repo history gotchas (context, not action items)
 
