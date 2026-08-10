@@ -21,7 +21,7 @@ const GovSheet = dynamic(
 
 function MapSkeleton() {
   return (
-    <div className="w-full h-full h-[100dvh] bg-[#e8e4dc] relative flex items-center justify-center">
+    <div className="w-full h-[100dvh] bg-[#e8e4dc] relative flex items-center justify-center">
       <div className="absolute inset-0 opacity-10"
         style={{ backgroundImage: 'linear-gradient(#aaa 1px, transparent 1px), linear-gradient(90deg, #aaa 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
       <div className="text-center">

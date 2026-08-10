@@ -194,9 +194,9 @@ Read Vercel logs for `[gov-dispatch] resend`:
 Run from `Project_Svyas/sushasan`:
 
 ```bash
-pnpm install
-pnpm --filter @sushasan/web build   # must exit 0
-pnpm --filter @sushasan/web lint    # must exit 0
+npm --prefix apps/web install
+npm --prefix apps/web run build   # must exit 0
+npm --prefix apps/web run lint    # must exit 0
 ```
 
 Then confirm config invariants:
@@ -224,7 +224,7 @@ For anything fixable in code:
 git fetch origin main
 git checkout -B claude/warroom-<yyyy-mm-dd> origin/main
 # ... make the fix ...
-pnpm --filter @sushasan/web build && pnpm --filter @sushasan/web lint
+npm --prefix apps/web run build && npm --prefix apps/web run lint
 git commit -m "fix(warroom): <what and why>"
 git push -u origin claude/warroom-<yyyy-mm-dd>
 ```

@@ -197,6 +197,10 @@ async function claimDigestSlot(
   if (!error) return { conflict: false, rowId: (data as { id?: string } | null)?.id }
   if ((error as { code?: string }).code === '23505') return { conflict: true }
   console.error('[ward-digest] dispatch_log claim insert:', error.message)
+  // The claim itself failed for a non-conflict reason (not a duplicate) —
+  // the send below will still proceed, so record a best-effort failure row
+  // now or this attempt is otherwise invisible to /api/gov/delivery-status.
+  await logDigest(db, wardId, false, officerEmail, digestDate, '')
   return { conflict: false }
 }
 
