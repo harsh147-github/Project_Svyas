@@ -49,6 +49,20 @@ export function DesktopCTABar() {
           >
             View AI Solution Briefs
           </a>
+
+          <a
+            href="/gov"
+            className="flex items-center gap-2.5 px-6 py-2.5 rounded-full
+                       bg-navy text-white font-semibold text-xs tracking-wide
+                       shadow-[0_4px_18px_rgba(11,31,58,0.35)]
+                       hover:bg-[#0f2a4d] active:scale-95 transition-all duration-150"
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 12h.01M9 15h.01M15 9h.01M15 12h.01M15 15h.01" />
+            </svg>
+            Government War Room
+          </a>
         </div>
 
         {/* Secondary row */}

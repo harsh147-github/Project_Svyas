@@ -1214,6 +1214,15 @@ function MobileEmptyContent({ totalPosts }: { totalPosts: number }) {
           AI Solution Briefs
         </a>
         <a
+          href="/gov"
+          className="flex items-center px-4 py-2.5 rounded-full
+                     bg-navy text-white font-semibold text-[11px] tracking-wide
+                     shadow-[0_4px_18px_rgba(11,31,58,0.35)]
+                     active:scale-95 transition-all duration-150"
+        >
+          Government War Room
+        </a>
+        <a
           href="/ward/46"
           className="text-[11px] font-medium text-ink/60
                      px-4 py-2.5 rounded-full bg-white border border-ink/10 shadow-sm
