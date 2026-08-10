@@ -49,9 +49,9 @@ export default function GovAccessPage() {
               <div className="text-sm font-semibold text-ink">For ward officers &amp; PMC officials</div>
               <div className="text-[12px] text-ink-3 mt-1 leading-relaxed">
                 Request a secure access code for your ward at{' '}
-                <a href="mailto:access@sushaasan.in"
+                <a href="mailto:harshsonavane@sushaasan.in"
                    className="text-saffron-dark underline underline-offset-2 hover:text-saffron transition-colors">
-                  access@sushaasan.in
+                  harshsonavane@sushaasan.in
                 </a>
                 . We verify your office and issue a code the same day.
               </div>
@@ -84,7 +84,7 @@ export default function GovAccessPage() {
 
         <p className="text-[11px] text-ink-4">
           Sushaasan · Pune Civic Intelligence ·{' '}
-          <a href="mailto:access@sushaasan.in" className="underline">Contact</a>
+          <a href="mailto:harshsonavane@sushaasan.in" className="underline">Contact</a>
         </p>
       </div>
     </div>
