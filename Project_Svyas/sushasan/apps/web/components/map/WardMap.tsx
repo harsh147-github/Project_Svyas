@@ -825,6 +825,7 @@ function showSeedDataBanner() {
     'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:9999',
     'background:#7A3B00', 'color:#fff', 'font-size:12px', 'font-weight:600',
     'text-align:center', 'padding:6px 12px',
+    'padding-top:calc(6px + env(safe-area-inset-top))',
   ].join(';')
   document.body.prepend(el)
 }

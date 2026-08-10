@@ -61,6 +61,17 @@ export function MapHint() {
     sessionStorage.setItem('sush:mobile-onboarding-done', '1')
   }
 
+  // Re-open on demand — the mobile peek row's ⓘ "How this map works" button.
+  useEffect(() => {
+    function reopen() {
+      sessionStorage.removeItem('sush:mobile-onboarding-done')
+      setMobileDone(false)
+      setMobileVisible(true)
+    }
+    window.addEventListener('sushaasan:reopen-mobile-hint', reopen)
+    return () => window.removeEventListener('sushaasan:reopen-mobile-hint', reopen)
+  }, [])
+
   return (
     <>
       {/* ── Desktop hint card ──────────────────────────────────────── */}

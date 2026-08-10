@@ -21,7 +21,7 @@ const GovSheet = dynamic(
 
 function MapSkeleton() {
   return (
-    <div className="w-full h-full bg-[#e8e4dc] relative flex items-center justify-center">
+    <div className="w-full h-full h-[100dvh] bg-[#e8e4dc] relative flex items-center justify-center">
       <div className="absolute inset-0 opacity-10"
         style={{ backgroundImage: 'linear-gradient(#aaa 1px, transparent 1px), linear-gradient(90deg, #aaa 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
       <div className="text-center">
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <main className="relative w-full h-screen overflow-hidden bg-paper">
+    <main className="relative w-full h-screen h-[100dvh] overflow-hidden bg-paper">
 
       {/* Page heading for screen readers + SEO — visually the map is the hero */}
       <h1 className="sr-only">Sushaasan — live civic issue map of Pune wards</h1>

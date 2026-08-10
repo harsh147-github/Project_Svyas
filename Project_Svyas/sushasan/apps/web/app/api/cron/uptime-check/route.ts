@@ -5,6 +5,7 @@ import { sovereigntyReport } from '@/lib/ai-telemetry'
 import { isCronAuthorized } from '@/lib/cron-auth'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60
 export const dynamic = 'force-dynamic'
 
 async function sendEmail(html: string, subject: string): Promise<boolean> {

@@ -1,7 +1,7 @@
 'use client'
 
 import { InlineReportSheet } from './InlineReportSheet'
-import { FindMyWardButton } from './SelectedWardPanel'
+import { FindMyWardButton, FindMyWardIconButton } from './SelectedWardPanel'
 
 /**
  * SidePanels — left (citizen) + right (government) analysis panels
@@ -11,7 +11,7 @@ import { FindMyWardButton } from './SelectedWardPanel'
  * Mobile:   MobilePanel — a bottom sheet anchored above the bottom CTA bar
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 // ─── Types matching /api/ward/all + /api/ward/[id] ────────────────────────
 
@@ -690,26 +690,6 @@ function GovEmpty() {
   )
 }
 
-function GovNoSignal({ name }: { name: string }) {
-  return (
-    <div className="space-y-3">
-      <div>
-        <div className="text-[10px] font-bold tracking-[0.18em] text-ink-3 uppercase">
-          {name}
-        </div>
-        <div className="font-serif text-lg font-semibold text-ink mt-1 leading-tight">
-          Brief generation in queue
-        </div>
-      </div>
-      <p className="text-[12px] leading-relaxed text-ink-2">
-        Sushaasan generates action briefs once enough citizen reports have been
-        collected and clustered for this ward. Data is building — a brief will
-        appear here automatically.
-      </p>
-    </div>
-  )
-}
-
 function GovContent({ full }: { full: WardFull }) {
   const { ward, solutions, clusters, hasRealSolutions } = full
   const top = solutions
@@ -879,7 +859,7 @@ function MobileFilterChips() {
     }))
   }
   return (
-    <div className="flex gap-2 overflow-x-auto scrollbar-none px-4 pb-3.5">
+    <div className="flex gap-2 overflow-x-auto scrollbar-none px-4 py-2.5">
       {ISSUE_FILTERS.map((f) => {
         const isActive = active === f.key
         return (
@@ -909,6 +889,8 @@ function MobileFilterChips() {
 
 // ─── Mobile Panel (bottom sheet — visible only on mobile) ─────────────────
 
+type MobileSnap = 'min' | 'peek' | 'expanded'
+
 export function MobilePanel() {
   const { active } = useActiveWard()
   const all = useAllClustersIndex()
@@ -921,18 +903,56 @@ export function MobilePanel() {
   }, [all, wardId])
   const full = useWardFull(active?.wardnum)
 
-  const [expanded, setExpanded] = useState(false)
+  const [snap, setSnap] = useState<MobileSnap>('peek')
   const [reportOpen, setReportOpen] = useState(false)
+  const expanded = snap === 'expanded'
 
-  // Auto-expand when a ward is tapped
+  const sheetRef = useRef<HTMLDivElement>(null)
+  const chipsBarRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [sheetHeight, setSheetHeight] = useState(0)
+  const [chipsBarHeight, setChipsBarHeight] = useState(0)
+
+  // Measure the visible card's height so the floating filter-chip row can
+  // anchor itself just above it regardless of which snap point is active.
+  useLayoutEffect(() => {
+    const el = sheetRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver((entries) => setSheetHeight(entries[0].contentRect.height))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  // Measure the floating chip row too, and also measure it. Together they
+  // publish the combined stack height as a CSS var so InstallPrompt (a
+  // sibling, higher z-index) can clear BOTH instead of overlapping either
+  // one at a guessed offset.
+  useLayoutEffect(() => {
+    const el = chipsBarRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver((entries) => setChipsBarHeight(entries[0].contentRect.height))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   useEffect(() => {
-    if (active) setExpanded(true)
+    document.documentElement.style.setProperty('--mobile-sheet-h', `${sheetHeight + chipsBarHeight}px`)
+    return () => { document.documentElement.style.removeProperty('--mobile-sheet-h') }
+  }, [sheetHeight, chipsBarHeight])
+
+  // Auto-expand when a ward is tapped, and scroll the sheet back to top.
+  useEffect(() => {
+    if (active) {
+      setSnap('expanded')
+      contentRef.current?.scrollTo({ top: 0 })
+    }
   }, [active?.wardnum])
 
-  // ── Drag/swipe the handle to expand & collapse ──────────────────────────────
+  // ── Drag/swipe the handle to move between snap points ──────────────────────
   // The grabber looked draggable but only toggled on tap; people instinctively
   // swipe it. Pointer-capture so the gesture tracks even when the finger slides
-  // off the small handle. Swipe up → expand, down → collapse, tap → toggle.
+  // off the small handle. Swipe up → advance toward expanded, down → retreat
+  // toward minimized, tap → toggle between peek and expanded.
   const dragStartY = useRef<number | null>(null)
   const didSwipe = useRef(false)
   const SWIPE_THRESHOLD = 28
@@ -946,150 +966,214 @@ export function MobilePanel() {
     if (dragStartY.current == null) return
     const delta = dragStartY.current - e.clientY // +ve = swiped up
     dragStartY.current = null
-    if (delta > SWIPE_THRESHOLD) { setExpanded(true); didSwipe.current = true }
-    else if (delta < -SWIPE_THRESHOLD) { setExpanded(false); didSwipe.current = true }
+    if (delta > SWIPE_THRESHOLD) {
+      setSnap((s) => (s === 'min' ? 'peek' : 'expanded'))
+      didSwipe.current = true
+    } else if (delta < -SWIPE_THRESHOLD) {
+      setSnap((s) => (s === 'expanded' ? 'peek' : 'min'))
+      didSwipe.current = true
+    }
   }
   function onHandleActivate() {
     // Suppress the synthetic click that follows a swipe; plain taps still toggle.
     if (didSwipe.current) { didSwipe.current = false; return }
-    setExpanded((v) => !v)
+    setSnap((s) => (s === 'expanded' ? 'peek' : s === 'min' ? 'peek' : 'expanded'))
+  }
+
+  // Swipe-down-to-collapse on the expanded content body itself, not just the
+  // handle — only engages when the scroll area is already at the top so it
+  // never fights a normal scroll/flick gesture.
+  const bodyDragStartY = useRef<number | null>(null)
+  const BODY_SWIPE_THRESHOLD = 50
+  function onBodyPointerDown(e: React.PointerEvent) {
+    bodyDragStartY.current = contentRef.current && contentRef.current.scrollTop <= 0 ? e.clientY : null
+  }
+  function onBodyPointerUp(e: React.PointerEvent) {
+    if (bodyDragStartY.current == null) return
+    const delta = e.clientY - bodyDragStartY.current // +ve = swiped down
+    bodyDragStartY.current = null
+    if (delta > BODY_SWIPE_THRESHOLD) setSnap('peek')
+  }
+
+  function reopenMapHint() {
+    window.dispatchEvent(new CustomEvent('sushaasan:reopen-mobile-hint'))
   }
 
   return (
-    <div className="md:hidden absolute bottom-0 left-0 right-0 z-40 pointer-events-auto">
-      {/* Inline report sheet */}
-      <InlineReportSheet isOpen={reportOpen} onClose={() => setReportOpen(false)} />
+    <>
+      {/* ── Floating filter-chip row — anchored above the sheet, visible at every snap point ── */}
+      <div
+        className="md:hidden absolute left-0 right-0 z-40 pointer-events-none transition-[bottom]"
+        style={{ bottom: sheetHeight, transitionDuration: '380ms', transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+      >
+        <div ref={chipsBarRef} className="pointer-events-auto bg-white/92 backdrop-blur-md border-t border-ink/[0.06]">
+          <MobileFilterChips />
+        </div>
+      </div>
 
-      <div className="bg-white border-t border-ink/[0.07] rounded-t-3xl
-                      shadow-[0_-6px_32px_rgba(10,31,58,0.13)]">
+      <div className="md:hidden absolute bottom-0 left-0 right-0 z-40 pointer-events-auto">
+        {/* Inline report sheet */}
+        <InlineReportSheet isOpen={reportOpen} onClose={() => setReportOpen(false)} />
 
-        {/* ── Drag handle — swipe up/down or tap to toggle ── */}
-        <button
-          onClick={onHandleActivate}
-          onPointerDown={onHandlePointerDown}
-          onPointerUp={onHandlePointerUp}
-          style={{ touchAction: 'none' }}
-          className="w-full flex justify-center items-center h-11 rounded-t-3xl cursor-grab active:cursor-grabbing"
-          data-no-min-size
-          aria-label={expanded ? 'Collapse ward info' : 'Expand ward info'}
+        <div
+          ref={sheetRef}
+          className="bg-white border-t border-ink/[0.07] rounded-t-3xl
+                    shadow-[0_-6px_32px_rgba(10,31,58,0.13)]"
         >
-          <div className="w-10 h-[4px] rounded-full bg-ink/20" />
-        </button>
 
-        {/* ── Header row — ward info + Report CTA ── */}
-        <div className="flex items-center px-4 pb-3 gap-3">
-          {/* Left: tap to expand, or swipe up/down */}
+          {/* ── Drag handle — swipe up/down or tap to toggle (44px target, minimized state is this alone) ── */}
           <button
             onClick={onHandleActivate}
             onPointerDown={onHandlePointerDown}
             onPointerUp={onHandlePointerUp}
-            style={{ touchAction: 'pan-y' }}
-            className="flex items-center gap-3 flex-1 min-w-0 text-left"
+            style={{ touchAction: 'none' }}
+            className="group w-full flex justify-center items-center h-11 rounded-t-3xl cursor-grab active:cursor-grabbing"
             data-no-min-size
-            aria-expanded={expanded}
+            aria-label={expanded ? 'Collapse ward info' : 'Expand ward info'}
           >
-            {/* Icon */}
-            {active && clusters.length > 0 ? (
-              <div className="w-9 h-9 rounded-xl bg-india-green/10 flex items-center justify-center flex-shrink-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-india-green" />
-              </div>
-            ) : (
-              <div className="w-9 h-9 rounded-xl bg-saffron flex items-center justify-center
-                              flex-shrink-0 shadow-[0_2px_8px_rgba(255,153,51,0.30)]">
-                <span className="text-white font-serif font-bold text-sm">स</span>
-              </div>
-            )}
-
-            {/* Text */}
-            <div className="min-w-0 flex-1">
-              <div className="text-[14.5px] font-semibold text-ink leading-tight truncate">
-                {active ? active.name : 'Sushaasan'}
-              </div>
-              <div className="text-[11.5px] text-ink-3 mt-0.5 flex items-center gap-1.5 leading-none">
-                {active && clusters.length > 0 ? (
-                  <>
-                    <span className="w-1.5 h-1.5 rounded-full bg-india-green flex-shrink-0" />
-                    <span>{clusters.length} issue{clusters.length === 1 ? '' : 's'} tracked this week</span>
-                  </>
-                ) : active ? (
-                  <span>No reports for this ward yet</span>
-                ) : (
-                  <span>Civic Signal · Pune</span>
-                )}
-              </div>
-            </div>
-
-            {/* Chevron */}
-            <svg
-              className={`w-4 h-4 text-ink-3 flex-shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
-              viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
+            <div className="w-9 h-[4px] rounded-full bg-ink/20 transition-all duration-150 group-active:w-11 group-active:bg-ink/35" />
           </button>
 
-          {/* Report CTA — primary action button */}
-          <button
-            onClick={() => setReportOpen(true)}
-            data-no-min-size
-            className="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-2xl
-                       text-[13px] font-bold text-white tracking-wide
-                       shadow-[0_4px_18px_rgba(255,153,51,0.45)]
-                       active:scale-95 active:shadow-[0_2px_8px_rgba(255,153,51,0.30)]
-                       transition-all duration-100"
-            style={{ background: 'linear-gradient(135deg,#FF9933 0%,#e8891e 100%)' }}
-            aria-label="Report a civic issue"
-          >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" strokeWidth="3"
-                 strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Report
-          </button>
+          {snap !== 'min' && (
+            <>
+              {/* ── Header row — ward info + find-my-ward + info + Report CTA ── */}
+              <div className="flex items-center px-4 pb-3 gap-2">
+                {/* Left: tap to expand, or swipe up/down */}
+                <button
+                  onClick={onHandleActivate}
+                  onPointerDown={onHandlePointerDown}
+                  onPointerUp={onHandlePointerUp}
+                  style={{ touchAction: 'pan-y' }}
+                  className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                  data-no-min-size
+                  aria-expanded={expanded}
+                >
+                  {/* Icon */}
+                  {active && clusters.length > 0 ? (
+                    <div className="w-9 h-9 rounded-xl bg-india-green/10 flex items-center justify-center flex-shrink-0">
+                      <span className="w-2.5 h-2.5 rounded-full bg-india-green" />
+                    </div>
+                  ) : (
+                    <div className="w-9 h-9 rounded-xl bg-saffron flex items-center justify-center
+                                    flex-shrink-0 shadow-[0_2px_8px_rgba(255,153,51,0.30)]">
+                      <span className="text-white font-serif font-bold text-sm">स</span>
+                    </div>
+                  )}
+
+                  {/* Text */}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[14.5px] font-semibold text-ink leading-tight truncate">
+                      {active ? active.name : 'Sushaasan'}
+                    </div>
+                    <div className="text-[11.5px] text-ink-3 mt-0.5 flex items-center gap-1.5 leading-none">
+                      {active && clusters.length > 0 ? (
+                        <>
+                          <span className="w-1.5 h-1.5 rounded-full bg-india-green flex-shrink-0" />
+                          <span>{clusters.length} issue{clusters.length === 1 ? '' : 's'} tracked this week</span>
+                        </>
+                      ) : active ? (
+                        <span>No reports for this ward yet</span>
+                      ) : (
+                        <span>Civic Signal · Pune</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Chevron */}
+                  <svg
+                    className={`w-4 h-4 text-ink-3 flex-shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+
+                {/* Info — reopens the "How this map works" onboarding card */}
+                <button
+                  onClick={reopenMapHint}
+                  aria-label="How this map works"
+                  className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-full
+                             bg-white border border-ink/10 active:border-saffron/40 shadow-sm
+                             text-ink-2 text-[15px] font-serif font-semibold transition-all active:scale-95"
+                >
+                  ⓘ
+                </button>
+
+                {/* Find my ward */}
+                <FindMyWardIconButton />
+
+                {/* Report CTA — primary action button */}
+                <button
+                  onClick={() => setReportOpen(true)}
+                  className="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-2xl
+                             text-[13px] font-bold text-white tracking-wide
+                             shadow-[0_4px_18px_rgba(255,153,51,0.45)]
+                             active:scale-95 active:shadow-[0_2px_8px_rgba(255,153,51,0.30)]
+                             transition-all duration-100"
+                  style={{ background: 'linear-gradient(135deg,#FF9933 0%,#e8891e 100%)' }}
+                  aria-label="Report a civic issue"
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" strokeWidth="3"
+                       strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  Report
+                </button>
+              </div>
+
+              {/* ── Expandable content — same spring easing as the report sheet's slide-up ── */}
+              <div
+                className="transition-all"
+                style={{
+                  maxHeight: expanded ? '58dvh' : '0px',
+                  overflow: expanded ? 'visible' : 'hidden',
+                  transitionDuration: '380ms',
+                  transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
+              >
+                <div
+                  ref={contentRef}
+                  onPointerDown={onBodyPointerDown}
+                  onPointerUp={onBodyPointerUp}
+                  className="overflow-y-auto overscroll-contain px-4 pt-2 pb-6"
+                  style={{ maxHeight: '58dvh', WebkitOverflowScrolling: 'touch' }}
+                >
+                  <div className="space-y-4">
+                    {!active ? (
+                      <MobileEmptyContent totalPosts={all?.totalPosts ?? 0} />
+                    ) : clusters.length === 0 ? (
+                      <MobileNoSignal name={active.name} />
+                    ) : (
+                      <MobileWardContent
+                        name={active.name}
+                        tier={active.tier}
+                        clusters={clusters}
+                        full={full}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ── iOS safe area spacer ── */}
+          <div style={{ height: 'env(safe-area-inset-bottom)', minHeight: '8px' }} />
         </div>
-
-        {/* ── Filter chips — always visible, replaces LegendBar on mobile ── */}
-        <MobileFilterChips />
-
-        {/* ── Expandable content — smooth CSS height transition ── */}
-        <div
-          className="transition-all duration-300 ease-in-out"
-          style={{ maxHeight: expanded ? '58vh' : '0px', overflow: expanded ? 'visible' : 'hidden' }}
-        >
-          <div
-            className="overflow-y-auto overscroll-contain px-4 pt-2 pb-6"
-            style={{ maxHeight: '58vh', WebkitOverflowScrolling: 'touch' }}
-          >
-            <div className="space-y-4">
-              {!active ? (
-                <MobileEmptyContent totalPosts={all?.totalPosts ?? 0} />
-              ) : clusters.length === 0 ? (
-                <MobileNoSignal name={active.name} />
-              ) : (
-                <MobileWardContent
-                  name={active.name}
-                  tier={active.tier}
-                  clusters={clusters}
-                  full={full}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* ── iOS safe area spacer ── */}
-        <div style={{ height: 'env(safe-area-inset-bottom)', minHeight: '8px' }} />
       </div>
-    </div>
+    </>
   )
 }
 
 function MobileEmptyContent({ totalPosts }: { totalPosts: number }) {
   return (
     <div className="space-y-3 pb-1">
+      {/* Ward search — the mobile sheet previously had no way to search by name/area */}
+      <WardSearch />
+
       <p className="text-[13px] leading-relaxed text-ink-2">
         Tap any icon on the map to see what citizens are reporting in that area.
       </p>
@@ -1116,6 +1200,35 @@ function MobileEmptyContent({ totalPosts }: { totalPosts: number }) {
       {/* Find my ward — mobile geolocation CTA */}
       <div className="pt-1">
         <FindMyWardButton />
+      </div>
+
+      {/* Other entry points — same routes/styles as DesktopCTABar */}
+      <div className="flex items-center gap-2.5 flex-wrap pt-1">
+        <a
+          href="/dashboard"
+          className="flex items-center px-4 py-2.5 rounded-full
+                     bg-saffron text-white font-semibold text-[11px] tracking-wide
+                     shadow-[0_4px_18px_rgba(255,153,51,0.45)]
+                     active:scale-95 transition-all duration-150"
+        >
+          AI Solution Briefs
+        </a>
+        <a
+          href="/ward/46"
+          className="text-[11px] font-medium text-ink/60
+                     px-4 py-2.5 rounded-full bg-white border border-ink/10 shadow-sm
+                     active:scale-95 transition-all duration-150"
+        >
+          Ward analysis →
+        </a>
+        <a
+          href="/about"
+          className="text-[11px] font-medium text-ink/60
+                     px-4 py-2.5 rounded-full bg-white border border-ink/10 shadow-sm
+                     active:scale-95 transition-all duration-150"
+        >
+          About
+        </a>
       </div>
 
       {totalPosts > 0 && (

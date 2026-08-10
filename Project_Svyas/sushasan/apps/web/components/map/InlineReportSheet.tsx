@@ -428,7 +428,7 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
           background: '#ffffff',
           borderRadius: '24px 24px 0 0',
           boxShadow: '0 -2px 20px rgba(0,0,0,0.08), 0 -1px 0 rgba(0,0,0,0.06)',
-          maxHeight: isDesktop ? '55vh' : '70vh',
+          maxHeight: isDesktop ? '55dvh' : '70dvh',
           maxWidth: isDesktop ? 640 : undefined,
           width: isDesktop ? '100%' : undefined,
           overflowY: 'auto',

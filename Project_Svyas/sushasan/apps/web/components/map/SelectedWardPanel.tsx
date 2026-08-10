@@ -60,7 +60,10 @@ export function SelectedWardPanel() {
   )
 }
 
-export function FindMyWardButton() {
+// Shared "locate me" logic behind FindMyWardButton (full pill) and
+// FindMyWardIconButton (compact, for the mobile peek row where there's no
+// room for a text label).
+export function useFindMyWard() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -91,6 +94,20 @@ export function FindMyWardButton() {
     )
   }
 
+  return { busy, error, handleClick }
+}
+
+const LocateIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="10" r="3" />
+    <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" />
+  </svg>
+)
+
+export function FindMyWardButton() {
+  const { busy, error, handleClick } = useFindMyWard()
+
   return (
     <div className="flex flex-col items-start gap-1">
       <button
@@ -101,11 +118,7 @@ export function FindMyWardButton() {
                    text-ink text-xs font-semibold tracking-wide
                    transition-all active:scale-95 disabled:opacity-60"
       >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <circle cx="12" cy="10" r="3" />
-          <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" />
-        </svg>
+        <LocateIcon />
         {busy ? 'Locating…' : 'Find my ward'}
       </button>
       {error && (
@@ -114,5 +127,28 @@ export function FindMyWardButton() {
         </p>
       )}
     </div>
+  )
+}
+
+// Icon-only variant for the mobile bottom-sheet peek row — same behavior,
+// no text label, fixed 44px touch target.
+export function FindMyWardIconButton() {
+  const { busy, handleClick } = useFindMyWard()
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={busy}
+      aria-label="Find my ward"
+      className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-full
+                 bg-white border border-ink/10 active:border-saffron/40 shadow-sm
+                 text-ink transition-all active:scale-95 disabled:opacity-60"
+    >
+      {busy ? (
+        <div className="w-3.5 h-3.5 border-2 border-ink/30 border-t-transparent rounded-full animate-spin" />
+      ) : (
+        <LocateIcon />
+      )}
+    </button>
   )
 }

@@ -100,7 +100,7 @@ export function GovSheet() {
         className="fixed bottom-0 left-0 right-0 z-50
                    bg-white rounded-t-3xl
                    shadow-[0_-8px_40px_rgba(10,31,58,0.22)]
-                   max-h-[min(92vh,600px)] flex flex-col overflow-hidden
+                   max-h-[min(92dvh,600px)] flex flex-col overflow-hidden
                    md:max-w-2xl md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-full
                    md:bottom-8 md:rounded-3xl"
         role="dialog"

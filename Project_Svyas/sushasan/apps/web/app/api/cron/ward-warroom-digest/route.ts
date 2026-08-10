@@ -140,10 +140,10 @@ function buildWardDigestText(rcpt: Recipient, cards: DigestCard[], dateLabel: st
   return lines.join('\n')
 }
 
-// Best-effort audit trail row. `officer_email` + `digest_date` back the
-// unique index in 019_officer_digest_idempotency.sql — a 23505 conflict
-// here means a concurrent/retried invocation already sent this officer's
-// digest today, which we treat as success, not an error.
+// Best-effort audit trail row for ward-level failures (mission fetch, etc.)
+// that happen before an officer/day slot is ever claimed. officer_email is
+// null here so it never touches the unique index in
+// 019_officer_digest_idempotency.sql.
 async function logDigest(
   db: ReturnType<typeof createServerClient>,
   wardId: string,
@@ -168,6 +168,48 @@ async function logDigest(
   if ((error as { code?: string }).code === '23505') return { conflict: true }
   console.error('[ward-digest] dispatch_log insert:', error.message)
   return { conflict: false }
+}
+
+// Claim the (officer, day) slot BEFORE sending — the unique index in
+// 019_officer_digest_idempotency.sql turns a 23505 conflict here into a
+// clean skip, so a retried/overlapping invocation can never send twice.
+async function claimDigestSlot(
+  db: ReturnType<typeof createServerClient>,
+  wardId: string,
+  officerEmail: string,
+  digestDate: string,
+): Promise<{ conflict: boolean; rowId?: string }> {
+  const { data, error } = await db
+    .from('dispatch_log')
+    .insert({
+      mission_id: `ward-digest-${wardId}`,
+      ward_id: wardId,
+      channel: `email:${officerEmail}`,
+      emailed: false,
+      whatsapped: false,
+      digest_recipients: [officerEmail],
+      link: '',
+      officer_email: officerEmail,
+      digest_date: digestDate,
+    })
+    .select('id')
+    .single()
+  if (!error) return { conflict: false, rowId: (data as { id?: string } | null)?.id }
+  if ((error as { code?: string }).code === '23505') return { conflict: true }
+  console.error('[ward-digest] dispatch_log claim insert:', error.message)
+  return { conflict: false }
+}
+
+// Best-effort: update the claimed row with the actual delivery outcome.
+async function updateDigestResult(
+  db: ReturnType<typeof createServerClient>,
+  rowId: string | undefined,
+  emailed: boolean,
+  link: string,
+): Promise<void> {
+  if (!rowId) return
+  const { error } = await db.from('dispatch_log').update({ emailed, link }).eq('id', rowId)
+  if (error) console.error('[ward-digest] dispatch_log update:', error.message)
 }
 
 async function run() {
@@ -232,11 +274,22 @@ async function run() {
         if (!mission) continue
         const token = signGovBriefToken(mission.id, email) ?? ''
         const brief = buildBrief(mission, baseUrl, token)
-        cards.push({ mission, link: brief.link, audioLink: '' })
+        const audioLink = token ? `${baseUrl}/api/gov/brief-audio?missionId=${mission.id}&token=${token}` : ''
+        cards.push({ mission, link: brief.link, audioLink })
       }
       if (cards.length === 0) {
         results.push({ wardId: rcpt.wardId, email, sent: false, skipped: 'missions resolved to nothing' })
         continue
+      }
+
+      let claimedRowId: string | undefined
+      if (db) {
+        const claim = await claimDigestSlot(db, rcpt.wardId, email, todayIST)
+        if (claim.conflict) {
+          results.push({ wardId: rcpt.wardId, email, sent: false, skipped: 'already sent today (race)' })
+          continue
+        }
+        claimedRowId = claim.rowId
       }
 
       const subject = `Ward ${cards[0].mission.ward.ward_number} ${cards[0].mission.ward.name} — ${cards.length} priority civic brief${cards.length === 1 ? '' : 's'} · ${dateLabel}`
@@ -244,13 +297,7 @@ async function run() {
       const text = buildWardDigestText(rcpt, cards, dateLabel)
       const delivery = await sendOfficerEmail(email, subject, html, text)
 
-      if (db) {
-        const { conflict } = await logDigest(db, rcpt.wardId, delivery.ok, delivery.ok ? email : null, todayIST, cards[0].link)
-        if (conflict) {
-          results.push({ wardId: rcpt.wardId, email, sent: false, skipped: 'already sent today (race)' })
-          continue
-        }
-      }
+      if (db) await updateDigestResult(db, claimedRowId, delivery.ok, cards[0].link)
 
       results.push({ wardId: rcpt.wardId, email, sent: delivery.ok, error: delivery.ok ? undefined : delivery.detail })
       await new Promise((r) => setTimeout(r, RESEND_PACING_MS))

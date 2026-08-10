@@ -5,6 +5,7 @@ import { buildBrief } from '@/lib/gov-brief'
 import { signGovBriefToken } from '@/lib/gov-token'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60
 export const dynamic = 'force-dynamic'
 
 // Deliver a grievance brief to a ward officer — the "missile". Builds the brief

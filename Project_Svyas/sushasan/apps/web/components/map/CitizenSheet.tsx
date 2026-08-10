@@ -39,7 +39,6 @@ const ISSUE_EMOJI: Record<string, string> = {
 function PlusOneButton({ wardId, issueTag, clusterId }: { wardId: string; issueTag: string; clusterId?: string }) {
   const [tapped, setTapped] = useState(false)
   const [loading, setLoading] = useState(false)
-  const color = ISSUE_COLOR[issueTag] ?? ISSUE_COLOR.other
 
   async function handleTap() {
     if (tapped || loading) return
@@ -125,7 +124,7 @@ export function CitizenSheet() {
       <div
         className="fixed bottom-0 left-0 right-0 z-50
                    bg-white rounded-t-3xl shadow-[0_-8px_40px_rgba(10,31,58,0.18)]
-                   max-h-[min(92vh,600px)] flex flex-col overflow-hidden
+                   max-h-[min(92dvh,600px)] flex flex-col overflow-hidden
                    md:max-w-xl md:mx-auto md:bottom-8 md:rounded-3xl md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-full"
         role="dialog"
         aria-modal

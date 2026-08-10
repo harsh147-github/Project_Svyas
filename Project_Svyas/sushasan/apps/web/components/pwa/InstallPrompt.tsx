@@ -94,7 +94,13 @@ export function InstallPrompt() {
     <div
       role="dialog"
       aria-label="Add Sushaasan to your home screen"
-      className="fixed inset-x-0 bottom-0 z-[60] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pointer-events-none"
+      // --mobile-sheet-h (set by MobilePanel, sheet + floating chip row
+      // combined) already bakes in the sheet's own safe-area spacer, so we
+      // only add an 8px gap here — no separate env(safe-area-inset-bottom)
+      // term, or it'd double-count.
+      className="fixed inset-x-0 z-[60] px-3 pointer-events-none
+                bottom-[calc(var(--mobile-sheet-h,190px)_+_8px)]
+                md:bottom-[max(0.75rem,env(safe-area-inset-bottom))]"
     >
       <div className="pointer-events-auto mx-auto max-w-md bg-white rounded-2xl border border-ink/10
                       shadow-[0_-6px_32px_rgba(10,31,58,0.18)] p-3.5 flex items-center gap-3">
