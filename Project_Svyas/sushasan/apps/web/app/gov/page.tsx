@@ -425,7 +425,7 @@ export default async function GovPage({ searchParams }: { searchParams: { token?
                         </Link>
 
                         {/* Loop closure CTAs */}
-                        <LoopCloseButtons solutionId={s.id} wardId={ward.id} currentStatus={s.status} />
+                        <LoopCloseButtons solutionId={s.id} wardId={ward.id} clusterId={s.cluster_id} currentStatus={s.status} />
                       </article>
                     )
                   })}

@@ -218,7 +218,7 @@ export const classifyPostsWorker = inngest.createFunction(
 
           // Step C: Upsert to posts table
           // Requires migration 004_classify_pipeline.sql (UNIQUE on raw_post_id)
-          await db.from('posts').upsert({
+          const { error: upsertError } = await db.from('posts').upsert({
             raw_post_id: post.id,
             text_clean: scrubPII(post.raw_text.slice(0, 4000)),
             translated_text_en: parsed.translated_text_en ? scrubPII(parsed.translated_text_en) : null,
@@ -237,6 +237,16 @@ export const classifyPostsWorker = inngest.createFunction(
             // the data agree with each other.
             classifier_ver: `${servedBy}-v2`,
           }, { onConflict: 'raw_post_id', ignoreDuplicates: false })
+
+          // supabase-js never throws on a failed write — it returns
+          // {error} — so without this check a schema mismatch or constraint
+          // violation here silently drops the classified row while
+          // `classified++` below still reports success: the same
+          // silent-failure shape claimDigestSlot was already fixed for.
+          if (upsertError) {
+            console.error(`[classify] post ${post.id} upsert failed:`, upsertError.message)
+            return
+          }
 
           classified++
         } catch (err) {
@@ -289,7 +299,11 @@ export const postsEnrichWorker = inngest.createFunction(
           if (!textForEmbed) return
           const embedding = await getVoyageEmbedding(textForEmbed)
           if (!embedding) return
-          await db.from('posts').update({ embedding }).eq('id', post.id).is('embedding', null)
+          const { error: updateError } = await db.from('posts').update({ embedding }).eq('id', post.id).is('embedding', null)
+          if (updateError) {
+            console.error(`[posts-enrich] post ${post.id} update failed:`, updateError.message)
+            return
+          }
           enriched++
         } catch (err) {
           console.error(`[posts-enrich] post ${post.id}:`, err)

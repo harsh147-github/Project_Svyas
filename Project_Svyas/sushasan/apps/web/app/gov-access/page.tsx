@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { GovAccessForm } from '@/components/gov/GovAccessForm'
 
 export const metadata: Metadata = {
@@ -35,7 +36,9 @@ export default function GovAccessPage() {
 
         {/* Access-code entry */}
         <div className="bg-white rounded-2xl border border-ink/8 shadow-sm p-6 text-left">
-          <GovAccessForm />
+          <Suspense fallback={null}>
+            <GovAccessForm />
+          </Suspense>
         </div>
 
         {/* How to get access */}

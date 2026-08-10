@@ -1,5 +1,20 @@
 import { NextRequest } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { verifyGovBriefToken } from './gov-token'
+
+/**
+ * Constant-time string compare for shared secrets. A plain `===` short-circuits
+ * on the first differing byte, which leaks a timing signal an attacker can use
+ * to guess GOV_ACCESS_TOKEN / ADMIN_TOKEN byte-by-byte — the same class of bug
+ * lib/gov-token.ts already guards against for signed mission tokens. Length is
+ * compared first (timingSafeEqual throws on mismatched buffer lengths), which
+ * leaks only the secret's length, not its content.
+ */
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
+  return bufA.length === bufB.length && timingSafeEqual(bufA, bufB)
+}
 
 /**
  * Simple env-token government dashboard gate.
@@ -14,7 +29,8 @@ export function isGovAuthed(req: NextRequest): boolean {
   const headerToken = req.headers.get('x-gov-token')
   const queryToken  = req.nextUrl.searchParams.get('token')
 
-  return headerToken === govToken || queryToken === govToken
+  return (!!headerToken && safeEqual(headerToken, govToken)) ||
+         (!!queryToken && safeEqual(queryToken, govToken))
 }
 
 /**
@@ -41,5 +57,6 @@ export function isAdminAuthed(req: NextRequest): boolean {
   const headerToken = req.headers.get('x-admin-token')
   const queryToken  = req.nextUrl.searchParams.get('token')
 
-  return headerToken === adminToken || queryToken === adminToken
+  return (!!headerToken && safeEqual(headerToken, adminToken)) ||
+         (!!queryToken && safeEqual(queryToken, adminToken))
 }

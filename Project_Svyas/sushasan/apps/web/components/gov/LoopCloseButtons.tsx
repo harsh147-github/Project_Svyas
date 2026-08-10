@@ -6,19 +6,27 @@ import Link from 'next/link'
 interface Props {
   solutionId: string
   wardId: string
+  /** clusters.id — required for the status change to reach clusters.status,
+   *  which is what the public /dashboard actually reads. Without it, marking
+   *  a solution resolved here updated `solutions.status` but left the
+   *  citizen-facing cluster status untouched, so nothing changed for citizens
+   *  despite the "updates the public dashboard automatically" copy below. */
+  clusterId?: string
   missionId?: string
   currentStatus?: string
 }
 
-export function LoopCloseButtons({ solutionId, wardId, missionId, currentStatus }: Props) {
+export function LoopCloseButtons({ solutionId, wardId, clusterId, missionId, currentStatus }: Props) {
   const [status, setStatus] = useState(currentStatus ?? 'draft')
   const [loading, setLoading] = useState(false)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   async function handleAction(newStatus: 'in_progress' | 'completed') {
     if (loading) return
     setLoading(true)
     setSuccessMsg(null)
+    setErrorMsg(null)
     try {
       const token = new URLSearchParams(window.location.search).get('token') ?? ''
       const res = await fetch('/api/gov/action', {
@@ -29,6 +37,7 @@ export function LoopCloseButtons({ solutionId, wardId, missionId, currentStatus 
         },
         body: JSON.stringify({
           solution_id: solutionId,
+          cluster_id: clusterId,
           ward_id: wardId,
           mission_id: missionId,
           status: newStatus,
@@ -42,6 +51,9 @@ export function LoopCloseButtons({ solutionId, wardId, missionId, currentStatus 
         setStatus(newStatus === 'completed' ? 'resolved' : 'in_progress')
         setSuccessMsg('✓ Dashboard updated')
         setTimeout(() => setSuccessMsg(null), 3000)
+      } else {
+        const body = await res.json().catch(() => null)
+        setErrorMsg(body?.error || `Could not save — try again (${res.status})`)
       }
     } catch {
       setSuccessMsg('✓ Noted locally')
@@ -72,7 +84,9 @@ export function LoopCloseButtons({ solutionId, wardId, missionId, currentStatus 
   return (
     <div className="px-5 py-3 border-t border-ink/8 bg-paper flex items-center justify-between flex-wrap gap-3">
       <div className="text-[10px] text-ink-3">
-        {successMsg ? (
+        {errorMsg ? (
+          <span className="text-red-600 font-semibold">⚠ {errorMsg}</span>
+        ) : successMsg ? (
           <span className="text-india-green font-semibold">{successMsg}</span>
         ) : (
           'Mark progress to update the public dashboard automatically.'

@@ -74,12 +74,19 @@ export async function GET(request: Request) {
     .select('id, triggered_at')
     .eq('status', 'running')
     .lt('triggered_at', twoHoursAgo)
+  let zombiesReaped = false
   if (zombies && zombies.length > 0) {
-    await db.from('pipeline_runs').update({
+    const { error: reapError } = await db.from('pipeline_runs').update({
       status: 'failed',
       completed_at: new Date().toISOString(),
       errors: { reason: 'timeout-reaper', note: 'no completion recorded within 2h' },
     }).in('id', zombies.map((z: { id: string }) => z.id))
+    // supabase-js doesn't throw on a failed write — without checking this,
+    // a reap failure was silent AND the alert below unconditionally claimed
+    // "Reaped N zombie run(s)" regardless of whether the update actually
+    // went through, misinforming whoever reads the alert.
+    if (reapError) console.error('[uptime-check] zombie reap update failed:', reapError.message)
+    else zombiesReaped = true
   }
 
   const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
@@ -90,7 +97,8 @@ export async function GET(request: Request) {
   ])
 
   const problems: string[] = []
-  if (zombies && zombies.length > 0) problems.push(`Reaped ${zombies.length} zombie pipeline run(s) stuck at 'running' for >2h.`)
+  if (zombiesReaped) problems.push(`Reaped ${zombies!.length} zombie pipeline run(s) stuck at 'running' for >2h.`)
+  else if (zombies && zombies.length > 0) problems.push(`${zombies.length} zombie pipeline run(s) stuck at 'running' for >2h — reap update FAILED, still stuck.`)
   if (!rawPosts24h) problems.push('No raw posts scraped in the last 24h.')
   const r24 = rawPosts24h ?? 0
   const p24 = posts24h ?? 0

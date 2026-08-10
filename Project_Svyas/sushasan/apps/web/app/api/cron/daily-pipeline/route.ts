@@ -463,7 +463,20 @@ async function scrapeReddit(): Promise<NormPost[]> {
   const ua = process.env.REDDIT_USER_AGENT ?? 'Sushasan/1.0 (civic; contact@sushaasan.in)'
   if (token) console.log('[reddit] using authenticated OAuth endpoint')
 
+  // Wall-clock budget for this whole source. Each of the 16 queries below
+  // carries its own 30s abort, and Reddit is documented above to sometimes
+  // black-hole (not fast-reject) datacenter-IP requests — a run where every
+  // query hangs to its abort would take 16×30s=480s, blowing past this
+  // route's 300s maxDuration and hard-killing the ENTIRE pipeline function,
+  // discarding every other source's already-scraped results too (nothing is
+  // written to the DB until Promise.all resolves). Bail out with whatever
+  // was collected so far instead of risking that.
+  const redditDeadline = Date.now() + 90_000
   for (const [sub, q] of queries) {
+    if (Date.now() > redditDeadline) {
+      console.warn(`[reddit] time budget exceeded, stopping early with ${out.length} post(s) from partial coverage`)
+      break
+    }
     try {
       const url = `${base}/r/${sub}/search.json?q=${encodeURIComponent(q)}&sort=new&t=month&limit=50&restrict_sr=on`
       const headers: Record<string, string> = { 'User-Agent': ua }
@@ -586,7 +599,20 @@ function parseRssItems(xml: string, sourceLabel: string, cap: number): NormPost[
 
 async function scrapeNews(): Promise<NormPost[]> {
   const out: NormPost[] = []
+  // Wall-clock budget for this whole source: NEWS_QUERIES (22) +
+  // DIRECT_NEWS_FEEDS (5) = 27 sequential requests, each with its own 20s
+  // abort and no aggregate deadline — a run where every request hangs to
+  // its abort would take 27×20s=540s, blowing well past this route's 300s
+  // maxDuration and hard-killing the ENTIRE pipeline function (discarding
+  // every other source's already-scraped results too, since nothing is
+  // written to the DB until Promise.all resolves). Bail out with whatever
+  // was collected so far instead of risking that.
+  const newsDeadline = Date.now() + 120_000
   for (const q of NEWS_QUERIES) {
+    if (Date.now() > newsDeadline) {
+      console.warn(`[news] time budget exceeded before direct feeds, stopping early with ${out.length} post(s)`)
+      return out
+    }
     try {
       const url = `https://news.google.com/rss/search?q=${encodeURIComponent(`${q} when:2d`)}&hl=en-IN&gl=IN&ceid=IN:en`
       const r = await fetch(url, {
@@ -598,6 +624,10 @@ async function scrapeNews(): Promise<NormPost[]> {
     } catch (e) { console.error(`[news] ${q}:`, e) }
   }
   for (const feed of DIRECT_NEWS_FEEDS) {
+    if (Date.now() > newsDeadline) {
+      console.warn(`[news] time budget exceeded during direct feeds, stopping early with ${out.length} post(s)`)
+      break
+    }
     try {
       const r = await fetch(feed.url, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Sushasan civic monitor; sushaasan.in)' },
@@ -642,7 +672,14 @@ async function runPipeline(triggerType: 'cron' | 'manual') {
   if (!isSupabaseConfigured()) throw new Error('Supabase not configured')
 
   const supabase = createServerClient()
-  const { data: run } = await supabase.from('pipeline_runs').insert({ trigger_type: triggerType, status: 'running' }).select('id').single()
+  const { data: run, error: runInsertError } = await supabase.from('pipeline_runs').insert({ trigger_type: triggerType, status: 'running' }).select('id').single()
+  // If this insert fails, runId stays undefined and every later write below
+  // is gated on `if (runId)` — including the failure-recording branch in the
+  // catch just below — so the run would otherwise leave literally zero trace
+  // in pipeline_runs: not even the >2h zombie reaper in uptime-check has
+  // anything to find. Log it so a broken pipeline_runs insert (bad schema,
+  // RLS, etc.) is visible immediately instead of silently invisible forever.
+  if (runInsertError) console.error('[pipeline_runs] initial insert failed:', runInsertError.message)
   const runId = (run as { id: string } | null)?.id
 
   // Everything below used to be unguarded: a thrown error here (a scraper

@@ -66,10 +66,13 @@ export async function POST(req: NextRequest) {
   // Mission-scoped signed token for the deep link (never the master
   // GOV_ACCESS_TOKEN) so a forwarded manual-dispatch link only unlocks this
   // one mission's War Room. Falls back to whatever the caller supplied only
-  // if signing isn't configured.
+  // if signing isn't configured — deliberately NOT process.env.GOV_ACCESS_TOKEN,
+  // since that would embed the master dashboard credential in an emailed/
+  // WhatsApped link forwardable to anyone, exactly what signed tokens exist
+  // to prevent (see lib/gov-token.ts).
   const token =
     signGovBriefToken(mission.id, body.to || 'manual-dispatch') ??
-    body.token ?? req.nextUrl.searchParams.get('token') ?? process.env.GOV_ACCESS_TOKEN ?? ''
+    body.token ?? req.nextUrl.searchParams.get('token') ?? ''
   const brief = buildBrief(mission, baseUrlFrom(req), token)
 
   let delivery: { ok: boolean; detail?: string } | null = null

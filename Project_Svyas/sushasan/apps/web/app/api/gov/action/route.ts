@@ -28,6 +28,19 @@ type Body = {
   evidence_url?: string
 }
 
+// solutions.id / clusters.id are uuid columns. Seed data (lib/data.ts, e.g.
+// "s1"/"c1") and on-the-fly "preview" solutions (lib/supabase-data.ts,
+// "synth-<clusterId>") are never real uuids — inserting either as a FK into
+// official_actions previously threw a Postgres "invalid input syntax for
+// type uuid" error (a 500 the loop-closure buttons had no way to surface,
+// so clicking "Mark Resolved" on any seed/preview brief silently did
+// nothing). Only forward ids that are actually uuids; the action is still
+// recorded (ward_id + action_desc) either way.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+function asDbId(id?: string | null): string | null {
+  return id && UUID_RE.test(id) ? id : null
+}
+
 export async function POST(req: NextRequest) {
   let body: Body
   try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
@@ -64,8 +77,8 @@ export async function POST(req: NextRequest) {
       .from('official_actions')
       .insert({
         ward_id: ward_id ?? null,
-        solution_id: solution_id ?? null,
-        cluster_id: cluster_id ?? null,
+        solution_id: asDbId(solution_id),
+        cluster_id: asDbId(cluster_id),
         action_desc,
         status,
         evidence_url: evidence_url ?? null,
@@ -92,8 +105,11 @@ export async function POST(req: NextRequest) {
     const CLUSTER_STATUS_RANK: Record<string, number> = { open: 1, in_progress: 2, resolved: 3 }
     const newRank = ACTION_RANK[status] ?? 0
 
-    if (solution_id && !solution_id.startsWith('synth-')) {
-      const { data: currentSol } = await supabase.from('solutions').select('status').eq('id', solution_id).maybeSingle()
+    const dbSolutionId = asDbId(solution_id)
+    const dbClusterId = asDbId(cluster_id)
+
+    if (dbSolutionId) {
+      const { data: currentSol } = await supabase.from('solutions').select('status').eq('id', dbSolutionId).maybeSingle()
       const currentRank = SOLUTION_STATUS_RANK[(currentSol as { status?: string } | null)?.status ?? ''] ?? 0
       if (newRank >= currentRank) {
         const update: Record<string, unknown> = {}
@@ -108,14 +124,14 @@ export async function POST(req: NextRequest) {
           update.actioned_at = new Date().toISOString()
           update.resolved_at = new Date().toISOString()
         }
-        await supabase.from('solutions').update(update).eq('id', solution_id)
+        await supabase.from('solutions').update(update).eq('id', dbSolutionId)
       } else {
-        console.warn(`[gov/action] ignored backward status transition on solution ${solution_id}: ${(currentSol as { status?: string } | null)?.status} -> ${status}`)
+        console.warn(`[gov/action] ignored backward status transition on solution ${dbSolutionId}: ${(currentSol as { status?: string } | null)?.status} -> ${status}`)
       }
     }
 
-    if (cluster_id) {
-      const { data: currentCluster } = await supabase.from('clusters').select('status').eq('id', cluster_id).maybeSingle()
+    if (dbClusterId) {
+      const { data: currentCluster } = await supabase.from('clusters').select('status').eq('id', dbClusterId).maybeSingle()
       const currentClusterRank = CLUSTER_STATUS_RANK[(currentCluster as { status?: string } | null)?.status ?? ''] ?? 0
       if (newRank >= currentClusterRank) {
         const clusterStatus = status === 'completed' ? 'resolved'
@@ -124,7 +140,7 @@ export async function POST(req: NextRequest) {
         await supabase.from('clusters').update({
           status: clusterStatus,
           updated_at: new Date().toISOString(),
-        }).eq('id', cluster_id)
+        }).eq('id', dbClusterId)
       } else {
         console.warn(`[gov/action] ignored backward status transition on cluster ${cluster_id}: ${(currentCluster as { status?: string } | null)?.status} -> ${status}`)
       }

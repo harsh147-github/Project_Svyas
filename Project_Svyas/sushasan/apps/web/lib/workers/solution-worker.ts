@@ -226,7 +226,7 @@ export const solutionSynthesisWorker = inngest.createFunction(
           const wardBudgetInr = ward?.annual_budget_inr ?? 50_000_000
           const budgetFeasible = totalCostInr <= wardBudgetInr
 
-          await db.from('solutions').upsert({
+          const { error: upsertError } = await db.from('solutions').upsert({
             ward_id: cluster.ward_id,
             cluster_id: cluster.id,
             week_start: weekStartStr,
@@ -241,6 +241,15 @@ export const solutionSynthesisWorker = inngest.createFunction(
             generated_at: new Date().toISOString(),
             post_count_at_generation: cluster.post_count ?? 0,
           }, { onConflict: 'ward_id,issue_tag,week_start' })
+
+          // supabase-js returns {error} rather than throwing — without this
+          // check, a failed write to the solutions table (the core output of
+          // the whole product) is invisible: `synthesized++` still runs and
+          // the ward never gets a solution brief with nothing in any log.
+          if (upsertError) {
+            console.error(`[solution] cluster ${cluster.id} upsert failed:`, upsertError.message)
+            return
+          }
 
           synthesized++
         } catch (err) {

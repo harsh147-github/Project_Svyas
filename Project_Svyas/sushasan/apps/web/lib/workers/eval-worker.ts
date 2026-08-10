@@ -79,7 +79,8 @@ export const evalGateWorker = inngest.createFunction(
       .eq('active', true)
     if (error || !golden?.length) return { ran: false, reason: error?.message ?? 'no golden items' }
 
-    const { data: run } = await db.from('eval_runs').insert({ status: 'running' }).select('id').single()
+    const { data: run, error: runInsertError } = await db.from('eval_runs').insert({ status: 'running' }).select('id').single()
+    if (runInsertError) console.error('[eval-gate] eval_runs insert failed:', runInsertError.message)
     const runId = (run as { id: string } | null)?.id
 
     let scored = 0
@@ -99,7 +100,7 @@ export const evalGateWorker = inngest.createFunction(
             messages: [{ role: 'user', content: `<post>\n${item.input_text.slice(0, 2000)}\n</post>` }],
           })
           const passed = result.jsonValid && scoreClassifyItem(result.parsed, item.expected_json)
-          await db.from('eval_results').insert({
+          const { error: insertError } = await db.from('eval_results').insert({
             run_id: runId,
             golden_id: item.id,
             provider,
@@ -112,13 +113,23 @@ export const evalGateWorker = inngest.createFunction(
             output_json: result.parsed,
             error_detail: result.error ?? null,
           })
+          // supabase-js doesn't throw on a failed write — without this check
+          // a row silently never lands in eval_results while `scored++` still
+          // fires, quietly corrupting the pass/promotion-bar stats in
+          // evalGateStatus() with no trace of why a provider's numbers look
+          // off.
+          if (insertError) {
+            console.error(`[eval-gate] eval_results insert failed for ${item.id}/${provider}:`, insertError.message)
+            return
+          }
           scored++
         })
       }
     }
 
     if (runId) {
-      await db.from('eval_runs').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', runId)
+      const { error: completeError } = await db.from('eval_runs').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', runId)
+      if (completeError) console.error('[eval-gate] eval_runs completion update failed:', completeError.message)
     }
     return { ran: true, runId, itemsScored: scored, providers }
   },
