@@ -690,26 +690,6 @@ function GovEmpty() {
   )
 }
 
-function GovNoSignal({ name }: { name: string }) {
-  return (
-    <div className="space-y-3">
-      <div>
-        <div className="text-[10px] font-bold tracking-[0.18em] text-ink-3 uppercase">
-          {name}
-        </div>
-        <div className="font-serif text-lg font-semibold text-ink mt-1 leading-tight">
-          Brief generation in queue
-        </div>
-      </div>
-      <p className="text-[12px] leading-relaxed text-ink-2">
-        Sushaasan generates action briefs once enough citizen reports have been
-        collected and clustered for this ward. Data is building — a brief will
-        appear here automatically.
-      </p>
-    </div>
-  )
-}
-
 function GovContent({ full }: { full: WardFull }) {
   const { ward, solutions, clusters, hasRealSolutions } = full
   const top = solutions

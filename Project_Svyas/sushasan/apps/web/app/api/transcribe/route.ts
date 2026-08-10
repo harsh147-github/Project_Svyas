@@ -7,10 +7,11 @@ import { checkRateLimit, clientIp } from '@/lib/rate-limit'
 //   3. OpenAI Whisper          — fallback, needs OPENAI_API_KEY
 
 export const runtime = 'nodejs'
-// Worst case is Sarvam (2 attempts) -> Groq (1) -> OpenAI (1), 15s each = 60s,
-// but the platform default (10s Hobby / 15s Pro unless raised) would kill
-// this mid-fallback-chain long before that. Vercel's Hobby plan caps
-// maxDuration at 60s — this needs Pro.
+// Worst case is Sarvam (2 attempts) -> Groq (1) -> OpenAI (1), 15s each =
+// ~60s, but the platform default (10s Hobby / 15s Pro unless raised) would
+// kill this mid-fallback-chain long before that. maxDuration is set to 120
+// for headroom above that worst case; Vercel's Hobby plan caps maxDuration
+// at 60s, so this route needs Pro.
 export const maxDuration = 120
 export const dynamic = 'force-dynamic'
 

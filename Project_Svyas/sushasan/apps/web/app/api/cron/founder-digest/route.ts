@@ -4,6 +4,7 @@ import { missingEnv, REQUIRED } from '@/lib/env-check'
 import { isCronAuthorized } from '@/lib/cron-auth'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60
 export const dynamic = 'force-dynamic'
 
 // Weekly founder digest — the "you do nothing but stay fully informed" loop.

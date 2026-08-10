@@ -39,7 +39,6 @@ const ISSUE_EMOJI: Record<string, string> = {
 function PlusOneButton({ wardId, issueTag, clusterId }: { wardId: string; issueTag: string; clusterId?: string }) {
   const [tapped, setTapped] = useState(false)
   const [loading, setLoading] = useState(false)
-  const color = ISSUE_COLOR[issueTag] ?? ISSUE_COLOR.other
 
   async function handleTap() {
     if (tapped || loading) return

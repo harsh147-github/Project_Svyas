@@ -3,6 +3,7 @@ import { isGovAuthed } from '@/lib/auth'
 import { isSupabaseConfigured, createServerClient } from '@/lib/supabase'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60
 export const dynamic = 'force-dynamic'
 
 /**

@@ -162,7 +162,6 @@ export function GovActionBrief({
   recommendedAction,
 }: GovActionBriefProps) {
   const totalLakh = PHASES.reduce((s, p) => s + p.costLakh, 0)
-  const totalDays = PHASES.reduce((s, p) => s + parseInt(p.timeline), 0)
 
   return (
     <div className="font-sans text-[#1a1a1a] space-y-0">

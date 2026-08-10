@@ -396,7 +396,6 @@ async function fetchFromSupabase() {
   if (clusterErr || !clusters || clusters.length === 0) return null
 
   const clusterIds = clusters.map((c: { id: string }) => c.id)
-  const wardIds = [...new Set(clusters.map((c: { ward_id: string }) => c.ward_id))]
 
   // Solutions table (the only real table — populated once AI synthesis runs)
   const { data: solutions } = await supabase
