@@ -4,11 +4,9 @@
   "version": "0.1.0",
   "description": "Sushasan — Government OS for Pune civic intelligence",
   "scripts": {
-    "dev": "pnpm --filter @sushasan/web dev",
-    "build": "pnpm --filter @sushasan/web build",
-    "lint": "pnpm -r lint",
-    "db:generate": "pnpm --filter @sushasan/db generate",
-    "db:migrate": "pnpm --filter @sushasan/db migrate",
+    "dev": "npm --prefix apps/web run dev",
+    "build": "npm --prefix apps/web run build",
+    "lint": "npm --prefix apps/web run lint",
     "inngest:dev": "npx inngest-cli@latest dev"
   },
   "devDependencies": {
@@ -16,8 +14,7 @@
     "typescript": "^5.3.0"
   },
   "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=8.0.0"
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",

@@ -99,7 +99,7 @@ export function InstallPrompt() {
       // only add an 8px gap here — no separate env(safe-area-inset-bottom)
       // term, or it'd double-count.
       className="fixed inset-x-0 z-[60] px-3 pointer-events-none
-                bottom-[calc(var(--mobile-sheet-h,190px)_+_8px)]
+                bottom-[calc(var(--mobile-sheet-h,0px)_+_8px)]
                 md:bottom-[max(0.75rem,env(safe-area-inset-bottom))]"
     >
       <div className="pointer-events-auto mx-auto max-w-md bg-white rounded-2xl border border-ink/10
