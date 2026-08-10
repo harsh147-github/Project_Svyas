@@ -35,7 +35,7 @@
     -moz-osx-font-smoothing: grayscale;
   }
   /* Prevent pull-to-refresh and bounce on map page */
-  .h-screen { overscroll-behavior: none; }
+  .h-screen, .h-\[100dvh\] { overscroll-behavior: none; }
   /* Hide scrollbar on filter chip rows */
   .scrollbar-none::-webkit-scrollbar { display: none; }
   .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }

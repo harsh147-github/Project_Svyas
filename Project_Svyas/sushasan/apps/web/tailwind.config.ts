@@ -1,9 +1,14 @@
 import type { Config } from 'tailwindcss'
+import defaultTheme from 'tailwindcss/defaultTheme'
 
 const config: Config = {
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      screens: {
+        xs: '400px',
+        ...defaultTheme.screens,
+      },
       colors: {
         saffron:       { DEFAULT: '#FF9933', light: '#FFD699', dark: '#c8741a' },
         'india-green': '#138808',
