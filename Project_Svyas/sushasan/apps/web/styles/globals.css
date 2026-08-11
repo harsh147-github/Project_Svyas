@@ -23,6 +23,10 @@
     font-feature-settings: "cv11", "ss01";
     /* Prevent layout shift from scrollbar appearing */
     scrollbar-gutter: stable;
+    /* Guard against any descendant briefly overflowing horizontally and
+       inflating the mobile layout viewport (fixed-position sheets then
+       size themselves off the inflated width, clipping their content). */
+    overflow-x: hidden;
   }
   body {
     @apply bg-paper text-ink font-sans;
@@ -33,6 +37,7 @@
     /* Smooth text on all platforms */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
   /* Prevent pull-to-refresh and bounce on map page */
   .h-screen, .h-\[100dvh\] { overscroll-behavior: none; }
