@@ -1003,9 +1003,15 @@ export function MobilePanel() {
     <>
       {/* ── Floating filter-chip row — anchored above the sheet, visible at every snap point ── */}
       <div
-        className="md:hidden absolute left-0 right-0 z-40 pointer-events-none transition-[bottom]"
+        className="md:hidden absolute left-0 right-0 z-40 pointer-events-none transition-[bottom] overflow-x-hidden"
         style={{ bottom: sheetHeight, transitionDuration: '380ms', transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
       >
+        {/* overflow-x-hidden here (rather than relying only on the inner row's
+            overflow-x-auto) stops the horizontally-scrolled chips from being
+            counted into the page's layout width on mobile browsers — without
+            it, tapping a hotspot briefly inflates window.innerWidth past the
+            device width and every fixed-position sheet that sizes off it
+            (e.g. CitizenSheet) renders too wide and clips its own text. */}
         <div ref={chipsBarRef} className="pointer-events-auto bg-white/92 backdrop-blur-md border-t border-ink/[0.06]">
           <MobileFilterChips />
         </div>
@@ -1036,7 +1042,14 @@ export function MobilePanel() {
 
           {snap !== 'min' && (
             <>
-              {/* ── Header row — ward info + find-my-ward + info + Report CTA ── */}
+              {/* ── Header row — ward info + Report CTA ──────────────────────────
+                   Kept to just two elements on mobile width: the expand button
+                   (icon + name + status, the only flexible-width element) and the
+                   Report CTA. Info + Find-my-ward used to live here too, but three
+                   flex-shrink-0 buttons alongside the name column left almost no
+                   room for it — "Wanawadi–Kausar Baug" rendered as "W…" and the
+                   status line wrapped into a single-word-per-line column. They now
+                   live in the utility row just below, where there's actual space. */}
               <div className="flex items-center px-4 pb-3 gap-2">
                 {/* Left: tap to expand, or swipe up/down */}
                 <button
@@ -1069,12 +1082,12 @@ export function MobilePanel() {
                       {active && clusters.length > 0 ? (
                         <>
                           <span className="w-1.5 h-1.5 rounded-full bg-india-green flex-shrink-0" />
-                          <span>{clusters.length} issue{clusters.length === 1 ? '' : 's'} tracked this week</span>
+                          <span className="truncate">{clusters.length} issue{clusters.length === 1 ? '' : 's'} tracked this week</span>
                         </>
                       ) : active ? (
-                        <span>No reports for this ward yet</span>
+                        <span className="truncate">No reports for this ward yet</span>
                       ) : (
-                        <span>Civic Signal · Pune</span>
+                        <span className="truncate">Civic Signal · Pune</span>
                       )}
                     </div>
                   </div>
@@ -1088,20 +1101,6 @@ export function MobilePanel() {
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </button>
-
-                {/* Info — reopens the "How this map works" onboarding card */}
-                <button
-                  onClick={reopenMapHint}
-                  aria-label="How this map works"
-                  className="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-full
-                             bg-white border border-ink/10 active:border-saffron/40 shadow-sm
-                             text-ink-2 text-[15px] font-serif font-semibold transition-all active:scale-95"
-                >
-                  ⓘ
-                </button>
-
-                {/* Find my ward */}
-                <FindMyWardIconButton />
 
                 {/* Report CTA — primary action button */}
                 <button
@@ -1123,6 +1122,25 @@ export function MobilePanel() {
                   Report
                 </button>
               </div>
+
+              {/* ── Utility row — Info + Find-my-ward, only while expanded ──────
+                   Moved out of the always-visible header (see note above) so the
+                   ward name and status never get squeezed. Shown only when the
+                   sheet is open since these are secondary, exploratory actions. */}
+              {expanded && (
+                <div className="flex items-center gap-2 px-4 pb-3 -mt-1">
+                  <button
+                    onClick={reopenMapHint}
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-full
+                               bg-white border border-ink/10 active:border-saffron/40 shadow-sm
+                               text-ink-2 text-[12px] font-semibold transition-all active:scale-95"
+                  >
+                    <span className="text-[13px] font-serif font-semibold leading-none">ⓘ</span>
+                    How this map works
+                  </button>
+                  <FindMyWardIconButton />
+                </div>
+              )}
 
               {/* ── Expandable content — same spring easing as the report sheet's slide-up ── */}
               <div
