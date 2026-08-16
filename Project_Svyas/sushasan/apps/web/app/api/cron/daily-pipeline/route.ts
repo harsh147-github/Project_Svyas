@@ -737,6 +737,13 @@ async function runPipelineBody(
   // a post that gets re-scraped on later days.
   let insertedIds: string[] = []
   const newSourceIds = new Set<string>()
+  // Records whether the classify-worker was actually asked to run, and why not
+  // if it wasn't — distinguishes "INNGEST_EVENT_KEY isn't configured, so the
+  // event was never sent" from "the event was sent but the worker is broken",
+  // which used to look identical from the outside: raw_posts kept growing,
+  // posts silently stopped, and nothing recorded which of the two it was.
+  const classifyTrigger: { attempted: boolean; triggered: boolean; reason?: string } =
+    { attempted: false, triggered: false }
   if (unique.length > 0) {
     const rows = unique.map((p) => ({
       source: p.source, source_post_id: p.source_post_id, raw_text: p.raw_text,
@@ -751,17 +758,25 @@ async function runPipelineBody(
     for (const r of (inserted ?? []) as { source_post_id: string }[]) newSourceIds.add(r.source_post_id)
 
     // Trigger AI classification for newly inserted posts
-    if (insertedIds.length > 0 && process.env.INNGEST_EVENT_KEY) {
-      try {
-        // Batch into chunks of 50 to stay within Inngest payload limits
-        for (let i = 0; i < insertedIds.length; i += 50) {
-          await inngest.send({
-            name: 'sushasan/posts.scraped',
-            data: { batchIds: insertedIds.slice(i, i + 50) },
-          })
+    if (insertedIds.length > 0) {
+      classifyTrigger.attempted = true
+      if (!process.env.INNGEST_EVENT_KEY) {
+        classifyTrigger.reason = 'INNGEST_EVENT_KEY not configured — classify event never sent'
+        console.error('[inngest emit] skipped:', classifyTrigger.reason)
+      } else {
+        try {
+          // Batch into chunks of 50 to stay within Inngest payload limits
+          for (let i = 0; i < insertedIds.length; i += 50) {
+            await inngest.send({
+              name: 'sushasan/posts.scraped',
+              data: { batchIds: insertedIds.slice(i, i + 50) },
+            })
+          }
+          classifyTrigger.triggered = true
+        } catch (err) {
+          classifyTrigger.reason = err instanceof Error ? err.message : String(err)
+          console.error('[inngest emit]', err)
         }
-      } catch (err) {
-        console.error('[inngest emit]', err)
       }
     }
   }
@@ -832,8 +847,12 @@ async function runPipelineBody(
       status: 'completed', phase_completed: 4, posts_scraped: unique.length,
       batches_processed: aggregates.length, completed_at: new Date().toISOString(),
       // Per-source yield, persisted for observability — a source stuck at 0
-      // for days means its actor/API needs attention.
-      errors: { by_source: { instagram: ig.length, reddit: rd.length, twitter: tw.length, gmaps: gm.length, facebook: fb.length, news: nw.length } },
+      // for days means its actor/API needs attention. `classify` records
+      // whether the classify-worker was actually asked to run this batch.
+      errors: {
+        by_source: { instagram: ig.length, reddit: rd.length, twitter: tw.length, gmaps: gm.length, facebook: fb.length, news: nw.length },
+        classify: classifyTrigger,
+      },
     }).eq('id', runId)
   }
 
