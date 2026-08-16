@@ -494,7 +494,7 @@ export async function chatJSONWithProvider<T = unknown>(
 
 /** The concrete model id a provider will use, for the telemetry record. */
 function modelFor(provider: Provider, args: ChatArgs): string {
-  if (provider === 'sarvam') return process.env.SARVAM_MODEL ?? 'sarvam-m'
+  if (provider === 'sarvam') return process.env.SARVAM_MODEL ?? 'sarvam-105b'
   if (provider === 'bharatgen') return process.env.BHARATGEN_MODEL ?? 'bharatgen-chat'
   return args.task === 'synthesize' ? ASSIST_SYNTH_MODEL : ASSIST_MODEL
 }

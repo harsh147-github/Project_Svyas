@@ -178,7 +178,7 @@ the `ai` block:
 - `"active": "sarvam"` → sovereign, working
 - `"misconfigured"` non-null → the key didn't land; re-check §A
 
-**Optional but useful:** `SARVAM_MODEL` (defaults to `sarvam-m`). Set this only
+**Optional but useful:** `SARVAM_MODEL` (defaults to `sarvam-105b`). Set this only
 if your account has access to a different or newer model — a model id your key
 cannot reach shows up as `auth` failures in the sovereignty ledger.
 

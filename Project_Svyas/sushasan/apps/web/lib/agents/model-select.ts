@@ -25,7 +25,7 @@ export function selectAgentModel() {
  * Phase 4.6) proves Sarvam's tool-calling is reliable enough for a
  * multi-step deep agent. This route bypasses lib/ai.ts entirely (deepagents
  * drives the model directly), so a Sarvam failure here is a raw 502 to the
- * officer with nothing recorded, and sarvam-m's weaker tool-calling can
+ * officer with nothing recorded, and Sarvam's weaker tool-calling can
  * loop the agent to RECURSION_LIMIT on paid turns before failing. It's
  * low-volume and high-stakes (a senior official asking cross-ward
  * questions) — the right tradeoff today is reliability over sovereignty

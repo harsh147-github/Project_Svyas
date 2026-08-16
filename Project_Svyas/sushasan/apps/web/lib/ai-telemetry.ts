@@ -35,7 +35,7 @@ export type AiEvent = {
 // not an invoice. Update when a provider's published pricing changes materially.
 // USD→INR at ~83; per-1K-token rates as of the models this project defaults to.
 const PRICE_PER_1K_TOKENS_INR: Record<string, { prompt: number; completion: number }> = {
-  sarvam: { prompt: 0.15, completion: 0.15 },       // sarvam-m — inference-only Indian pricing, materially cheaper than frontier US models
+  sarvam: { prompt: 0.15, completion: 0.15 },       // sarvam-105b — inference-only Indian pricing, materially cheaper than frontier US models
   bharatgen: { prompt: 0.15, completion: 0.15 },    // no published pricing yet — sarvam's rate used as a placeholder
   anthropic: { prompt: 0.25, completion: 1.25 },    // Claude Sonnet-class, USD $3/$15 per 1M tokens converted to INR/1K
 }
