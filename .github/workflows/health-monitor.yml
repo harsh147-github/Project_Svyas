@@ -32,11 +32,14 @@ jobs:
           # workflow parses below; it's now `{status, timestamp}` only (an
           # unauthenticated attack roadmap otherwise — missing env vars,
           # whether CRON_SECRET is set, dead scrape sources, AI provider
-          # config). The detailed body this workflow needs is now
-          # ADMIN_TOKEN-gated. Add ADMIN_TOKEN as a repo secret
-          # (Settings → Secrets and variables → Actions) for this to keep
-          # working — without it every field below is undefined and every
-          # `fail(...)` check trips.
+          # config). The detailed body is ADMIN_TOKEN-gated. Add ADMIN_TOKEN
+          # as a repo secret (Settings → Secrets and variables → Actions),
+          # matching the ADMIN_TOKEN env var set on Vercel, to get full
+          # diagnostics here. The check script below no longer hard-depends
+          # on it: without ADMIN_TOKEN it falls back to a plain status=='ok'
+          # check against the public payload, so a missing/stale secret
+          # degrades diagnostics instead of causing a permanent false-alarm
+          # failure.
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
         run: |
           curl -sS -m 30 "$BASE_URL/api/health?token=$ADMIN_TOKEN" -o /tmp/health.json -w 'health HTTP %{http_code}\n'
@@ -45,39 +48,61 @@ jobs:
           const h = require('/tmp/health.json')
           const fail = (m) => { console.error('::error::' + m); process.exitCode = 1 }
 
-          if (h.supabase !== true) { fail('Supabase not connected in production (status=' + h.status + ')'); }
+          // /api/health only returns the detailed payload (supabase/counts/pipeline/
+          // env/...) when the request authenticates via ADMIN_TOKEN (see lib/auth.ts
+          // isAdminAuthed + app/api/health/route.ts). `env` is present on every
+          // detailed branch (seed-mode, live/idle, error) and on none of the public
+          // ones, so it's a reliable "did we authenticate" signal.
+          const authed = h.env !== undefined
 
-          const c = h.counts || {}
-          if (!(c.clusters > 0)) fail('No clusters on the map (clusters=' + c.clusters + ')')
+          if (!authed) {
+            console.warn('::warning::ADMIN_TOKEN repo secret is missing/incorrect (or does not ' +
+              'match the ADMIN_TOKEN env var configured on Vercel) — /api/health only returned the ' +
+              'public {status, timestamp} shape. Falling back to a status-only check; add/fix the ' +
+              'ADMIN_TOKEN repository secret (Settings → Secrets and variables → Actions) for full ' +
+              'diagnostics (clusters, pipeline age, scraper yield).')
 
-          const last = h.pipeline && h.pipeline.completed_at
-          if (!last) { fail('No completed pipeline run recorded') }
-          else {
-            const ageH = (Date.now() - new Date(last).getTime()) / 3.6e6
-            console.log('last pipeline run ' + ageH.toFixed(1) + 'h ago; clusters=' + c.clusters + ', raw_posts=' + c.raw_posts)
-            if (ageH > 26) fail('Pipeline has NOT run in ' + ageH.toFixed(1) + 'h — the map is not refreshing')
-          }
-
-          const t = h.last_24h || {}
-          console.log('last 24h: scraped=' + t.raw_posts_scraped + ', classified=' + t.posts_classified)
-
-          // Scraper-alive alarm. The cumulative checks above stay green even if
-          // every scrape returns nothing (expired Apify token / broken actor),
-          // because clusters already exist. Catch that here so a silently-dead
-          // scraper surfaces instead of freezing the map behind a green light.
-          const s = h.scrape || {}
-          if (s.last_run_scraped != null) {
-            console.log('last run scraped=' + s.last_run_scraped +
-              ' by_source=' + JSON.stringify(s.by_source))
-            // Hard fail only on total breakage — every source returned 0. This is
-            // unambiguous (not a quiet/saturated day) and won't reintroduce noise.
-            if (s.last_run_scraped === 0) {
-              fail('Scrapers returned NOTHING on the last run — Apify token/actors likely broken')
+            if (h.status !== 'ok') {
+              fail('Public health status is "' + h.status + '" (expected "ok") — pipeline is degraded. ' +
+                'Detailed diagnostics unavailable without ADMIN_TOKEN; check Vercel logs / Supabase directly.')
+            } else {
+              console.log('✅ Healthy (status=ok) — no detailed diagnostics available without ADMIN_TOKEN')
             }
-            // Individual dead sources are a warning, not a failure: day-rotated
-            // sources (gmaps/facebook) are legitimately 0 on their off-days.
-            const dead = (s.dead_sources || []).filter((x) => x !== 'gmaps' && x !== 'facebook')
-            if (dead.length) console.warn('::warning::Scraper source(s) yielded 0 last run: ' + dead.join(', '))
+          } else {
+            if (h.supabase !== true) { fail('Supabase not connected in production (status=' + h.status + ')'); }
+
+            const c = h.counts || {}
+            if (!(c.clusters > 0)) fail('No clusters on the map (clusters=' + c.clusters + ')')
+
+            const last = h.pipeline && h.pipeline.completed_at
+            if (!last) { fail('No completed pipeline run recorded') }
+            else {
+              const ageH = (Date.now() - new Date(last).getTime()) / 3.6e6
+              console.log('last pipeline run ' + ageH.toFixed(1) + 'h ago; clusters=' + c.clusters + ', raw_posts=' + c.raw_posts)
+              if (ageH > 26) fail('Pipeline has NOT run in ' + ageH.toFixed(1) + 'h — the map is not refreshing')
+            }
+
+            const t = h.last_24h || {}
+            console.log('last 24h: scraped=' + t.raw_posts_scraped + ', classified=' + t.posts_classified)
+
+            // Scraper-alive alarm. The cumulative checks above stay green even if
+            // every scrape returns nothing (expired Apify token / broken actor),
+            // because clusters already exist. Catch that here so a silently-dead
+            // scraper surfaces instead of freezing the map behind a green light.
+            const s = h.scrape || {}
+            if (s.last_run_scraped != null) {
+              console.log('last run scraped=' + s.last_run_scraped +
+                ' by_source=' + JSON.stringify(s.by_source))
+              // Hard fail only on total breakage — every source returned 0. This is
+              // unambiguous (not a quiet/saturated day) and won't reintroduce noise.
+              if (s.last_run_scraped === 0) {
+                fail('Scrapers returned NOTHING on the last run — Apify token/actors likely broken')
+              }
+              // Individual dead sources are a warning, not a failure: day-rotated
+              // sources (gmaps/facebook) are legitimately 0 on their off-days.
+              const dead = (s.dead_sources || []).filter((x) => x !== 'gmaps' && x !== 'facebook')
+              if (dead.length) console.warn('::warning::Scraper source(s) yielded 0 last run: ' + dead.join(', '))
+            }
           }
 
           if (process.exitCode === 1) console.error('Health check FAILED — see errors above')
