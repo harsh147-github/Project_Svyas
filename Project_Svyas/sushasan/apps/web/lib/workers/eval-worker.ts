@@ -104,7 +104,7 @@ export const evalGateWorker = inngest.createFunction(
             run_id: runId,
             golden_id: item.id,
             provider,
-            model: provider === 'sarvam' ? (process.env.SARVAM_MODEL ?? 'sarvam-m')
+            model: provider === 'sarvam' ? (process.env.SARVAM_MODEL ?? 'sarvam-105b')
               : provider === 'bharatgen' ? (process.env.BHARATGEN_MODEL ?? 'bharatgen-chat')
               : 'claude',
             json_valid: result.jsonValid,

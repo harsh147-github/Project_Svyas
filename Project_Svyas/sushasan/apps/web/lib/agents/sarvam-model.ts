@@ -13,7 +13,7 @@ export function createSarvamModel(opts?: { temperature?: number }) {
   if (!apiKey) throw new Error('SARVAM_API_KEY not set')
   return new ChatOpenAI({
     apiKey,
-    model: process.env.SARVAM_MODEL ?? 'sarvam-m',
+    model: process.env.SARVAM_MODEL ?? 'sarvam-105b',
     temperature: opts?.temperature ?? 0.2,
     configuration: {
       baseURL: process.env.SARVAM_BASE_URL ?? 'https://api.sarvam.ai/v1',
