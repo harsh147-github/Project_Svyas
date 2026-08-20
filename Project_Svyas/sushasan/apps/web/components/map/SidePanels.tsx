@@ -859,16 +859,16 @@ function MobileFilterChips() {
     }))
   }
   return (
-    <div className="flex gap-2 overflow-x-auto scrollbar-none px-4 py-2.5">
+    <div className="relative">
+      <div className="flex gap-2 overflow-x-auto scrollbar-none px-4 py-2.5">
       {ISSUE_FILTERS.map((f) => {
         const isActive = active === f.key
         return (
           <button
             key={f.key}
             onClick={() => tap(f.key)}
-            data-no-min-size
             className={[
-              'flex items-center gap-1.5 flex-shrink-0 px-3.5 py-2.5 rounded-full',
+              'flex items-center gap-1.5 flex-shrink-0 min-h-[44px] px-3.5 py-2.5 rounded-full',
               'text-[12px] font-semibold whitespace-nowrap transition-all duration-150',
               'active:scale-95',
             ].join(' ')}
@@ -883,6 +883,14 @@ function MobileFilterChips() {
           </button>
         )
       })}
+      </div>
+      {/* Right-edge fade — signals there are more chips to scroll to when the
+          row overflows (the last chip otherwise gets hard-cropped at the
+          viewport edge with no visual cue it's scrollable). */}
+      <div
+        className="pointer-events-none absolute right-0 top-0 bottom-0 w-8"
+        style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.92))' }}
+      />
     </div>
   )
 }
@@ -1034,8 +1042,15 @@ export function MobilePanel() {
             <div className="w-9 h-[4px] rounded-full bg-ink/20 transition-all duration-150 group-active:w-11 group-active:bg-ink/35" />
           </button>
 
-          {snap !== 'min' && (
-            <>
+          {/* Always mounted (not conditionally unmounted) so the min ⇄ peek/expanded
+              transition animates via grid-template-rows instead of jumping instantly —
+              the nested maxHeight trick below already smooths peek ⇄ expanded, but this
+              outer block used to hard-toggle with no transition at all. */}
+          <div
+            className="grid transition-[grid-template-rows] duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            style={{ gridTemplateRows: snap !== 'min' ? '1fr' : '0fr' }}
+          >
+            <div className="overflow-hidden min-h-0">
               {/* ── Header row — ward info + find-my-ward + info + Report CTA ── */}
               <div className="flex items-center px-4 pb-3 gap-2">
                 {/* Left: tap to expand, or swipe up/down */}
@@ -1157,8 +1172,8 @@ export function MobilePanel() {
                   </div>
                 </div>
               </div>
-            </>
-          )}
+            </div>
+          </div>
 
           {/* ── iOS safe area spacer ── */}
           <div style={{ height: 'env(safe-area-inset-bottom)', minHeight: '8px' }} />
