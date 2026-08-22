@@ -1,19 +1,29 @@
 import { NextRequest } from 'next/server'
-import { timingSafeEqual } from 'crypto'
 import { verifyGovBriefToken } from './gov-token'
 
 /**
  * Constant-time string compare for shared secrets. A plain `===` short-circuits
  * on the first differing byte, which leaks a timing signal an attacker can use
  * to guess GOV_ACCESS_TOKEN / ADMIN_TOKEN byte-by-byte — the same class of bug
- * lib/gov-token.ts already guards against for signed mission tokens. Length is
- * compared first (timingSafeEqual throws on mismatched buffer lengths), which
- * leaks only the secret's length, not its content.
+ * lib/gov-token.ts already guards against for signed mission tokens.
+ *
+ * This is a hand-rolled XOR loop rather than Node's crypto.timingSafeEqual —
+ * this module is imported by middleware.ts, and Next.js middleware always
+ * executes in the Edge Runtime (no way to opt into the Node.js runtime there,
+ * unlike API routes), which does not support Node's `crypto` module. A plain
+ * JS loop works identically in every runtime. Length is compared first (both
+ * branches of `&&` still run in the mismatched-length case, so this leaks
+ * only whether lengths matched, not which byte differed).
  */
 function safeEqual(a: string, b: string): boolean {
   const bufA = Buffer.from(a)
   const bufB = Buffer.from(b)
-  return bufA.length === bufB.length && timingSafeEqual(bufA, bufB)
+  const len = Math.max(bufA.length, bufB.length, 1)
+  let diff = bufA.length === bufB.length ? 0 : 1
+  for (let i = 0; i < len; i++) {
+    diff |= (bufA[i] ?? 0) ^ (bufB[i] ?? 0)
+  }
+  return diff === 0
 }
 
 /**
