@@ -13,6 +13,7 @@
     "@langchain/anthropic": "^1.5.2",
     "@langchain/core": "^1.2.4",
     "@langchain/openai": "^1.5.5",
+    "@noble/hashes": "^1.8.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.1",
     "@upstash/ratelimit": "^2.0.5",

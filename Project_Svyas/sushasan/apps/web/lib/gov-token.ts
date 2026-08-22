@@ -1,4 +1,33 @@
-import { createHmac, timingSafeEqual } from 'crypto'
+import { hmac } from '@noble/hashes/hmac.js'
+import { sha256 } from '@noble/hashes/sha2.js'
+
+// @noble/hashes is a zero-dependency, pure-JS, synchronous implementation —
+// used instead of Node's `crypto` module because this file is imported by
+// middleware.ts, and Next.js middleware always runs in the Edge Runtime
+// (no way to opt into the Node.js runtime there), which does not support
+// Node's `crypto`. Web Crypto's SubtleCrypto would work in both runtimes but
+// is Promise-based, which would force every caller of signGovBriefToken /
+// verifyGovBriefToken (and isGovAuthedForMission, and middleware.ts itself)
+// to become async — a much larger, riskier change for the same result.
+
+function hmacSha256(secret: string, payload: string): Uint8Array {
+  return hmac(sha256, new TextEncoder().encode(secret), new TextEncoder().encode(payload))
+}
+
+function toBase64Url(bytes: Uint8Array): string {
+  return Buffer.from(bytes).toString('base64url')
+}
+
+// Constant-time compare — see lib/auth.ts's safeEqual for why this is a
+// hand-rolled loop instead of Node's crypto.timingSafeEqual.
+function safeEqualBytes(a: Uint8Array, b: Uint8Array): boolean {
+  const len = Math.max(a.length, b.length, 1)
+  let diff = a.length === b.length ? 0 : 1
+  for (let i = 0; i < len; i++) {
+    diff |= (a[i] ?? 0) ^ (b[i] ?? 0)
+  }
+  return diff === 0
+}
 
 // Per-recipient, per-mission signed links for gov briefs.
 //
@@ -30,7 +59,7 @@ export function signGovBriefToken(
   if (!secret) return null
   const exp = Date.now() + expiresInDays * 24 * 60 * 60 * 1000
   const payload = `${missionId}|${recipient}|${exp}`
-  const sig = createHmac('sha256', secret).update(payload).digest('base64url')
+  const sig = toBase64Url(hmacSha256(secret, payload))
   return `${Buffer.from(payload, 'utf8').toString('base64url')}${SEP}${sig}`
 }
 
@@ -48,10 +77,8 @@ export function verifyGovBriefToken(token: string): { missionId: string; recipie
     return null
   }
 
-  const expectedSig = createHmac('sha256', secret).update(payload).digest('base64url')
-  const sigBuf = Buffer.from(sig)
-  const expectedBuf = Buffer.from(expectedSig)
-  if (sigBuf.length !== expectedBuf.length || !timingSafeEqual(sigBuf, expectedBuf)) return null
+  const expectedSig = toBase64Url(hmacSha256(secret, payload))
+  if (!safeEqualBytes(Buffer.from(sig), Buffer.from(expectedSig))) return null
 
   const [missionId, recipient, expStr] = payload.split('|')
   const exp = Number(expStr)
