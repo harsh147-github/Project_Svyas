@@ -1,0 +1,25 @@
+name: TEMP gov smoke test (delete after use)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Curl /gov with a bogus token
+        run: |
+          code=$(curl -sS -m 20 -o /tmp/gov.html -w '%{http_code}' "https://sushaasan.in/gov?token=x")
+          echo "HTTP status: $code"
+          echo "--- body (first 2000 chars) ---"
+          head -c 2000 /tmp/gov.html
+          echo ""
+          if [ "$code" = "500" ]; then
+            echo "::error::/gov returned 500 — edge-runtime crypto crash may still be present in production"
+            exit 1
+          elif [ "$code" = "307" ] || [ "$code" = "308" ]; then
+            echo "::notice::/gov correctly redirected ($code) for a bad token — no crash"
+          else
+            echo "::warning::Unexpected status $code — inspect body above"
+          fi
