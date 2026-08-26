@@ -108,3 +108,19 @@ jobs:
           if (process.exitCode === 1) console.error('Health check FAILED — see errors above')
           else console.log('✅ Healthy: map is live and refreshing')
           EOF
+
+      - name: TEMP — smoke-test /gov edge-crypto fix (branch-only, not on main)
+        run: |
+          code=$(curl -sS -m 20 -o /tmp/gov.html -w '%{http_code}' "$BASE_URL/gov?token=x")
+          echo "HTTP status: $code"
+          echo "--- body (first 1500 chars) ---"
+          head -c 1500 /tmp/gov.html
+          echo ""
+          if [ "$code" = "500" ]; then
+            echo "::error::/gov returned 500 — edge-runtime crypto crash may still be present in production"
+            exit 1
+          elif [ "$code" = "307" ] || [ "$code" = "308" ]; then
+            echo "::notice::/gov correctly redirected ($code) for a bad token — no crash"
+          else
+            echo "::warning::Unexpected status $code — inspect body above"
+          fi
