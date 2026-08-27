@@ -108,3 +108,94 @@ jobs:
           if (process.exitCode === 1) console.error('Health check FAILED — see errors above')
           else console.log('✅ Healthy: map is live and refreshing')
           EOF
+
+      - name: TEMP — real mobile-emulated Playwright test against production (branch-only)
+        run: |
+          npm init -y > /dev/null 2>&1
+          npm install --no-save playwright@1 > /tmp/npm-install.log 2>&1
+          npx playwright install --with-deps chromium >> /tmp/npm-install.log 2>&1
+        shell: bash
+
+      - name: Run production mobile check
+        run: |
+          node <<'EOF'
+          const { chromium, devices } = require('playwright');
+          (async () => {
+            const pixel = devices['Pixel 5'];
+            const b = await chromium.launch();
+            const ctx = await b.newContext({ ...pixel });
+            const page = await ctx.newPage();
+            const client = await ctx.newCDPSession(page);
+
+            const t0 = Date.now();
+            await page.goto('https://sushaasan.in/', { waitUntil: 'load', timeout: 45000 });
+            const loadMs = Date.now() - t0;
+            await page.waitForSelector('.maplibregl-canvas, canvas', { timeout: 20000 }).catch(() => {});
+            await page.waitForTimeout(1500);
+
+            const timing = await page.evaluate(() => {
+              const nav = performance.getEntriesByType('navigation')[0];
+              const paint = performance.getEntriesByType('paint');
+              const fcp = paint.find(p => p.name === 'first-contentful-paint');
+              return {
+                domContentLoaded: nav ? Math.round(nav.domContentLoadedEventEnd) : null,
+                transferSize: nav ? nav.transferSize : null,
+                firstContentfulPaint: fcp ? Math.round(fcp.startTime) : null,
+              };
+            });
+            console.log('REAL PRODUCTION LOAD (no throttle):', JSON.stringify(timing), 'wall-clock ms:', loadMs);
+
+            await page.screenshot({ path: '/tmp/prod-mobile-home.png' });
+
+            // 4x CPU throttle + real pan gesture, same methodology as local test
+            await client.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+            const canvas = await page.$('.maplibregl-canvas, canvas');
+            if (canvas) {
+              const box = await canvas.boundingBox();
+              await page.evaluate(() => {
+                window.__frameTimes = [];
+                function collect(t) { window.__frameTimes.push(t); window.__raf = requestAnimationFrame(collect); }
+                window.__raf = requestAnimationFrame(collect);
+              });
+              const startX = box.x + box.width * 0.7, y = box.y + box.height * 0.5;
+              const endX = box.x + box.width * 0.3;
+              await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: startX, y, id: 1 }] });
+              for (let i = 1; i <= 20; i++) {
+                const x = startX + (endX - startX) * (i / 20);
+                await client.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y, id: 1 }] });
+                await page.waitForTimeout(16);
+              }
+              await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+              await page.waitForTimeout(500);
+              const result = await page.evaluate(() => {
+                cancelAnimationFrame(window.__raf);
+                const times = window.__frameTimes;
+                const deltas = [];
+                for (let i = 1; i < times.length; i++) deltas.push(times[i] - times[i-1]);
+                return { frameCount: times.length, deltas };
+              });
+              const d = result.deltas;
+              if (d.length) {
+                const avg = d.reduce((a,b)=>a+b,0)/d.length;
+                const max = Math.max(...d);
+                const over33 = d.filter(x => x > 33.3).length;
+                console.log('REAL PRODUCTION PAN under 4x CPU throttle — frames:', result.frameCount, 'avg ms:', avg.toFixed(1), 'max ms:', max.toFixed(1), 'sub-30fps frames:', over33, '/', d.length);
+              } else {
+                console.log('No frames captured — canvas may not have been interactive');
+              }
+            } else {
+              console.log('No map canvas found on production homepage');
+            }
+
+            await ctx.close();
+            await b.close();
+          })().catch(e => { console.error('FAILED:', e.message); process.exit(1); });
+          EOF
+        shell: bash
+
+      - name: Upload production screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-mobile-screenshot
+          path: /tmp/prod-mobile-home.png
+          retention-days: 3
