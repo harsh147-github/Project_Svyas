@@ -159,16 +159,20 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const [photo,          setPhoto]          = useState<File | null>(null)
   const [photoPreview,   setPhotoPreview]   = useState<string | null>(null)
   const [transcribeError, setTranscribeError] = useState(false)
-  const [dragOffset,       setDragOffset]       = useState(0)
+  const [prefersReduced, setPrefersReduced] = useState(false)
 
   const textareaRef    = useRef<HTMLTextAreaElement>(null)
   const sheetRef       = useRef<HTMLDivElement>(null)
+  const handleBarRef   = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<any>(null)
   const recorderRef    = useRef<MediaRecorder | null>(null)
   const voiceActiveRef = useRef(false)
   const isIOS          = useRef(false)
   const closingTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
   const touchStartYRef = useRef(0)
+  // Drag distance lives in a ref, not state — the handle is dragged directly via
+  // DOM style mutations on sheetRef so the whole tree doesn't re-render on every
+  // touchmove (that render-storm was the source of the "laggy/glitchy" toggle).
   const dragOffsetRef  = useRef(0)
 
   useEffect(() => {
@@ -181,7 +185,16 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
     const check = () => setIsDesktop(window.innerWidth >= 768)
     check()
     window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
+    // Read once + listen for changes, instead of calling matchMedia() on every
+    // render (it was previously recomputed inline in the render body).
+    const motionMQ = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReduced(motionMQ.matches)
+    const onMotionChange = () => setPrefersReduced(motionMQ.matches)
+    motionMQ.addEventListener?.('change', onMotionChange)
+    return () => {
+      window.removeEventListener('resize', check)
+      motionMQ.removeEventListener?.('change', onMotionChange)
+    }
   }, [])
 
   // Focus trap — keep keyboard focus inside the modal while it's open
@@ -242,7 +255,13 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   function handleClose() {
     recognitionRef.current?.stop(); recorderRef.current?.stop()
     voiceActiveRef.current = false; setVoiceActive(false)
-    dragOffsetRef.current = 0; setDragOffset(0)
+    dragOffsetRef.current = 0
+    // Clear any imperative drag transform so the closing transition (driven by
+    // `visible` below) takes over cleanly instead of fighting a stale offset.
+    if (sheetRef.current) {
+      sheetRef.current.style.transition = ''
+      sheetRef.current.style.transform = ''
+    }
     setVisible(false)
     closingTimer.current = setTimeout(onClose, 420)
   }
@@ -403,8 +422,6 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
   const canSubmit = text.trim().length >= 5 && !submitting && !result
   const showCursor = text === '' && !focused && !voiceActive && !transcribing
 
-  const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
   if (!mounted) return null
   return createPortal(<div
       role="dialog"
@@ -414,9 +431,14 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
       style={{
         pointerEvents: isOpen ? 'auto' : 'none',
         background: `rgba(0,0,0,${visible ? '0.10' : '0'})`,
+        // backdrop-filter is snapped instantly (not transitioned) — animating a
+        // blur value forces the browser to recompute the blur every frame of
+        // the transition, which is the single most expensive thing you can
+        // animate on a phone GPU and was the main cause of the janky open/close.
         backdropFilter: visible ? 'blur(3px)' : 'none',
         WebkitBackdropFilter: visible ? 'blur(3px)' : 'none',
-        transition: `background 0.3s ${EASE}, backdrop-filter 0.3s ${EASE}`,
+        transition: `background 0.3s ${EASE}`,
+        willChange: 'background',
       }}
       onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}
       onKeyDown={handleKeyDown}
@@ -433,29 +455,49 @@ export function InlineReportSheet({ isOpen, onClose }: { isOpen: boolean; onClos
           width: isDesktop ? '100%' : undefined,
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch' as any,
-          transform: `translateY(${!visible ? '100%' : dragOffset > 0 ? `${dragOffset}px` : '0'})`,
-          transition: dragOffset > 0 ? 'none' : prefersReduced ? 'none' : `transform 0.44s ${SPRING}`,
+          transform: `translateY(${!visible ? '100%' : '0'})`,
+          transition: prefersReduced ? 'none' : `transform 0.44s ${SPRING}`,
+          willChange: 'transform',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Drag handle — swipe down to dismiss */}
+        {/* Drag handle — swipe down to dismiss.
+            While dragging we mutate sheetRef/handleBarRef styles directly instead
+            of calling setState on every touchmove. touchmove can fire 60+ times a
+            second — routing that through React re-rendered the entire compose
+            form (textarea, voice card, language pills…) on every pixel of drag,
+            which is what made the sheet feel slow/glitchy. React only gets
+            involved again once, at the end of the gesture. */}
         <div
           aria-label="Drag to close"
           className="min-h-[44px] flex items-center justify-center cursor-grab active:cursor-grabbing w-full"
           style={{ touchAction: 'none' }}
-          onTouchStart={(e) => { touchStartYRef.current = e.touches[0].clientY }}
+          onTouchStart={(e) => {
+            touchStartYRef.current = e.touches[0].clientY
+            if (sheetRef.current) sheetRef.current.style.transition = 'none'
+          }}
           onTouchMove={(e) => {
             const dy = e.touches[0].clientY - touchStartYRef.current
-            if (dy > 0) { dragOffsetRef.current = dy; setDragOffset(dy) }
+            if (dy > 0) {
+              dragOffsetRef.current = dy
+              if (sheetRef.current) sheetRef.current.style.transform = `translateY(${dy}px)`
+              if (handleBarRef.current) handleBarRef.current.style.background = 'rgba(0,0,0,0.28)'
+            }
           }}
           onTouchEnd={() => {
-            if (dragOffsetRef.current > 80) { handleClose() } else { setDragOffset(0) }
+            if (sheetRef.current) sheetRef.current.style.transition = prefersReduced ? 'none' : `transform 0.44s ${SPRING}`
+            if (dragOffsetRef.current > 80) {
+              handleClose()
+            } else if (sheetRef.current) {
+              sheetRef.current.style.transform = 'translateY(0)'
+            }
+            if (handleBarRef.current) handleBarRef.current.style.background = 'rgba(0,0,0,0.12)'
             dragOffsetRef.current = 0
           }}
         >
-          <div style={{
+          <div ref={handleBarRef} style={{
             width: 36, height: 5, borderRadius: 999,
-            background: dragOffset > 0 ? 'rgba(0,0,0,0.28)' : 'rgba(0,0,0,0.12)',
+            background: 'rgba(0,0,0,0.12)',
             transition: 'background 0.15s ease',
           }} />
         </div>
