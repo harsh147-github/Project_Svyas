@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic'
 import { LegendBar } from '@/components/map/LegendBar'
 import { SidePanels } from '@/components/map/SidePanels'
 import { DesktopCTABar } from '@/components/map/DesktopCTABar'
+import { MobileCTAPills } from '@/components/map/MobileCTAPills'
 
 const WardAutoSelect = dynamic(
   () => import('@/components/map/WardAutoSelect').then((m) => m.WardAutoSelect),
@@ -123,6 +124,8 @@ export default function HomePage() {
       {/* Bottom CTAs — desktop only (mobile uses MobilePanel from SidePanels) */}
       <DesktopCTABar />
 
+      {/* Floating "Add a grievance" / "Other features" pills — mobile only */}
+      <MobileCTAPills />
 
     </main>
   )

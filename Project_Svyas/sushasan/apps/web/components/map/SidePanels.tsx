@@ -948,6 +948,12 @@ export function MobilePanel() {
     return () => { document.documentElement.style.removeProperty('--mobile-sheet-h') }
   }, [sheetHeight, chipsBarHeight])
 
+  // Let independent floating elements (MobileCTAPills) know the sheet's snap
+  // state so they can fade out while it's expanded instead of overlapping it.
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('sushaasan:sheet-snap', { detail: { snap } }))
+  }, [snap])
+
   // Auto-expand when a ward is tapped, and scroll the sheet back to top.
   useEffect(() => {
     if (active) {
