@@ -20,23 +20,128 @@ const ISSUE_COLORS: Record<string, string> = {
   other:       '#8B5CF6',
 }
 
-const ISSUE_ICONS: Record<string, string> = {
-  traffic:     '🚗',
-  water:       '💧',
-  electricity: '⚡',
-  garbage:     '🗑️',
-  other:       '📌',
+type IssueKind = 'traffic' | 'water' | 'electricity' | 'garbage' | 'other'
+
+// Manual rounded-rect path (not ctx.roundRect — unsupported on older mobile
+// Safari still seen in the field) used by a couple of the glyphs below.
+function roundRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath()
+  ctx.moveTo(x + r, y)
+  ctx.arcTo(x + w, y, x + w, y + h, r)
+  ctx.arcTo(x + w, y + h, x, y + h, r)
+  ctx.arcTo(x, y + h, x, y, r)
+  ctx.arcTo(x, y, x + w, y, r)
+  ctx.closePath()
+}
+
+// Bold, solid-fill glyphs drawn with plain canvas primitives instead of the
+// OS emoji font — crisp at any size/DPR and consistent across every device
+// (system emoji rendering varies enough between platforms to look "off").
+function drawIssueGlyph(ctx: CanvasRenderingContext2D, kind: IssueKind, bgColor: string, size: number) {
+  const cx = size / 2
+  const cy = size / 2
+  ctx.fillStyle = '#ffffff'
+
+  switch (kind) {
+    case 'traffic': {
+      // Single-silhouette car glyph — hood/roof/trunk wedge with rounded
+      // corners, wheel-wells cut from the body with the circle's own colour.
+      const w = size * 0.5, h = size * 0.26
+      const bx = cx - w / 2, by = cy - h / 2
+      const r = h * 0.18
+      ctx.beginPath()
+      ctx.moveTo(bx + r, by + h)
+      ctx.lineTo(bx, by + h * 0.58)
+      ctx.quadraticCurveTo(bx, by + h * 0.5, bx + w * 0.06, by + h * 0.46)
+      ctx.lineTo(bx + w * 0.24, by + h * 0.16)
+      ctx.quadraticCurveTo(bx + w * 0.28, by, bx + w * 0.4, by)
+      ctx.lineTo(bx + w * 0.6, by)
+      ctx.quadraticCurveTo(bx + w * 0.72, by, bx + w * 0.76, by + h * 0.16)
+      ctx.lineTo(bx + w * 0.94, by + h * 0.46)
+      ctx.quadraticCurveTo(bx + w, by + h * 0.5, bx + w, by + h * 0.58)
+      ctx.lineTo(bx + w - r, by + h)
+      ctx.closePath()
+      ctx.fill()
+      ctx.fillStyle = bgColor
+      const wheelR = h * 0.32
+      ctx.beginPath(); ctx.arc(bx + w * 0.26, by + h, wheelR, 0, Math.PI * 2); ctx.fill()
+      ctx.beginPath(); ctx.arc(bx + w * 0.74, by + h, wheelR, 0, Math.PI * 2); ctx.fill()
+      break
+    }
+    case 'water': {
+      const r = size * 0.21
+      ctx.beginPath()
+      ctx.moveTo(cx, cy - r * 1.5)
+      ctx.bezierCurveTo(cx + r * 1.35, cy - r * 0.15, cx + r * 1.05, cy + r * 1.3, cx, cy + r * 1.3)
+      ctx.bezierCurveTo(cx - r * 1.05, cy + r * 1.3, cx - r * 1.35, cy - r * 0.15, cx, cy - r * 1.5)
+      ctx.closePath()
+      ctx.fill()
+      break
+    }
+    case 'electricity': {
+      const bs = size * 0.29
+      ctx.beginPath()
+      ctx.moveTo(cx + bs * 0.12, cy - bs * 1.1)
+      ctx.lineTo(cx - bs * 0.55, cy + bs * 0.12)
+      ctx.lineTo(cx - bs * 0.05, cy + bs * 0.12)
+      ctx.lineTo(cx - bs * 0.2, cy + bs * 1.1)
+      ctx.lineTo(cx + bs * 0.58, cy - bs * 0.14)
+      ctx.lineTo(cx + bs * 0.08, cy - bs * 0.14)
+      ctx.closePath()
+      ctx.fill()
+      break
+    }
+    case 'garbage': {
+      const w = size * 0.32, h = size * 0.3
+      const bx = cx - w / 2, by = cy - h / 2 + size * 0.03
+      roundRectPath(ctx, bx - w * 0.08, by - h * 0.24, w * 1.16, h * 0.16, h * 0.06)
+      ctx.fill()
+      roundRectPath(ctx, cx - w * 0.18, by - h * 0.4, w * 0.36, h * 0.14, h * 0.06)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.moveTo(bx + w * 0.08, by)
+      ctx.lineTo(bx + w * 0.92, by)
+      ctx.lineTo(bx + w * 0.8, by + h)
+      ctx.lineTo(bx + w * 0.2, by + h)
+      ctx.closePath()
+      ctx.fill()
+      ctx.fillStyle = bgColor
+      ctx.fillRect(cx - w * 0.14, by + h * 0.2, w * 0.07, h * 0.62)
+      ctx.fillRect(cx + w * 0.07, by + h * 0.2, w * 0.07, h * 0.62)
+      break
+    }
+    default: {
+      const r = size * 0.17
+      const topY = cy - size * 0.06
+      ctx.beginPath()
+      ctx.arc(cx, topY, r, Math.PI, 0, false)
+      ctx.lineTo(cx + r, topY)
+      ctx.quadraticCurveTo(cx + r, topY + r * 1.15, cx, cy + size * 0.24)
+      ctx.quadraticCurveTo(cx - r, topY + r * 1.15, cx - r, topY)
+      ctx.closePath()
+      ctx.fill()
+      ctx.fillStyle = bgColor
+      ctx.beginPath()
+      ctx.arc(cx, topY, r * 0.42, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
 }
 
 function makeIconImageData(
-  emoji: string,
+  kind: IssueKind,
   bgColor: string,
   size = 48,
-): { width: number; height: number; data: Uint8Array } {
+): { width: number; height: number; data: Uint8Array; pixelRatio: number } {
+  // Render at the device's real pixel density so markers stay crisp on
+  // retina phones instead of a soft 48px bitmap stretched up 2-3x.
+  const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 3) : 1
+  const px = Math.round(size * dpr)
   const canvas = document.createElement('canvas')
-  canvas.width = size
-  canvas.height = size
+  canvas.width = px
+  canvas.height = px
   const ctx = canvas.getContext('2d')!
+  ctx.scale(dpr, dpr) // draw in `size`-relative logical units from here on
 
   // Soft drop shadow
   ctx.shadowColor = 'rgba(0,0,0,0.28)'
@@ -55,14 +160,10 @@ function makeIconImageData(
   ctx.lineWidth = 2.5
   ctx.stroke()
 
-  // Emoji centred
-  ctx.font = `${Math.round(size * 0.44)}px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',serif`
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(emoji, size / 2, size / 2 + 1)
+  drawIssueGlyph(ctx, kind, bgColor, size)
 
-  const raw = ctx.getImageData(0, 0, size, size)
-  return { width: size, height: size, data: new Uint8Array(raw.data.buffer) }
+  const raw = ctx.getImageData(0, 0, px, px)
+  return { width: px, height: px, data: new Uint8Array(raw.data.buffer), pixelRatio: dpr }
 }
 
 // Real OSM vector tiles via OpenFreeMap (no API key, free).
@@ -290,17 +391,18 @@ export function WardMap() {
         data: { type: 'FeatureCollection', features: [] },
       })
 
-      // Pre-render emoji icons onto canvas and register with the map
-      const iconDefs = [
-        { name: 'icon-traffic',     emoji: ISSUE_ICONS.traffic,     color: ISSUE_COLORS.traffic },
-        { name: 'icon-water',       emoji: ISSUE_ICONS.water,       color: ISSUE_COLORS.water },
-        { name: 'icon-electricity', emoji: ISSUE_ICONS.electricity, color: ISSUE_COLORS.electricity },
-        { name: 'icon-garbage',     emoji: ISSUE_ICONS.garbage,     color: ISSUE_COLORS.garbage },
-        { name: 'icon-other',       emoji: ISSUE_ICONS.other,       color: ISSUE_COLORS.other },
+      // Pre-render retina-sharp vector glyphs onto canvas and register with the map
+      const iconDefs: { name: string; kind: IssueKind; color: string }[] = [
+        { name: 'icon-traffic',     kind: 'traffic',     color: ISSUE_COLORS.traffic },
+        { name: 'icon-water',       kind: 'water',       color: ISSUE_COLORS.water },
+        { name: 'icon-electricity', kind: 'electricity', color: ISSUE_COLORS.electricity },
+        { name: 'icon-garbage',     kind: 'garbage',     color: ISSUE_COLORS.garbage },
+        { name: 'icon-other',       kind: 'other',       color: ISSUE_COLORS.other },
       ]
-      for (const { name, emoji, color } of iconDefs) {
+      for (const { name, kind, color } of iconDefs) {
         if (!map.hasImage(name)) {
-          map.addImage(name, makeIconImageData(emoji, color, 48))
+          const { width, height, data, pixelRatio } = makeIconImageData(kind, color, 48)
+          map.addImage(name, { width, height, data }, { pixelRatio })
         }
       }
 

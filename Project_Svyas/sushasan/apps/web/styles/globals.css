@@ -355,3 +355,49 @@
 .stagger-children > *:nth-child(6)  { animation-delay: 250ms; }
 .stagger-children > *:nth-child(7)  { animation-delay: 300ms; }
 .stagger-children > *:nth-child(8)  { animation-delay: 350ms; }
+
+/* ── Mobile floating CTA pills (MobileCTAPills.tsx) ──────────────────────
+   Hidden by default; a real coarse-pointer + max-width media query (not a
+   JS/Tailwind width-only breakpoint) reveals them, so there is no
+   display:none → display:flex flash on load and no misfire on narrow
+   touch-emulated desktop/laptop windows that merely resize below 768px. */
+.mobile-cta-pills {
+  display: none;
+}
+@media (max-width: 768px) and (any-pointer: coarse) {
+  .mobile-cta-pills {
+    display: flex;
+  }
+}
+
+/* One-shot entrance: fade + slide up, ~250ms, ease-out. Runs once on mount
+   (animation-iteration-count defaults to 1 — never set to infinite here). */
+@keyframes cta-pill-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.cta-pill-in {
+  animation: cta-pill-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* One-shot soft shimmer sweep — a light diagonal band crosses the pill once,
+   immediately after the entrance settles, then stays fully transparent
+   (final keyframe opacity:0) so nothing lingers or repeats. */
+@keyframes cta-pill-shimmer {
+  0%   { opacity: 0; transform: translateX(-120%) rotate(8deg); }
+  15%  { opacity: 0.55; }
+  55%  { opacity: 0.35; }
+  100% { opacity: 0; transform: translateX(220%) rotate(8deg); }
+}
+.cta-pill-shimmer {
+  animation: cta-pill-shimmer 750ms ease-out 420ms 1 both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-pill-in,
+  .cta-pill-shimmer {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

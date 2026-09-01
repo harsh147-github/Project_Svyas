@@ -8,7 +8,9 @@ import { FindMyWardButton, FindMyWardIconButton } from './SelectedWardPanel'
  * that update as the user hovers / taps wards on the map.
  *
  * Desktop:  two fixed side panels (hidden on mobile via md:flex)
- * Mobile:   MobilePanel — a bottom sheet anchored above the bottom CTA bar
+ * Mobile:   just the map + MobileCTAPills — MobilePanel (bottom sheet) is
+ *           defined below but intentionally unmounted; kept in case the
+ *           bottom bar comes back, not currently rendered by SidePanels().
  */
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -948,6 +950,12 @@ export function MobilePanel() {
     return () => { document.documentElement.style.removeProperty('--mobile-sheet-h') }
   }, [sheetHeight, chipsBarHeight])
 
+  // Let independent floating elements (MobileCTAPills) know the sheet's snap
+  // state so they can fade out while it's expanded instead of overlapping it.
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('sushaasan:sheet-snap', { detail: { snap } }))
+  }, [snap])
+
   // Auto-expand when a ward is tapped, and scroll the sheet back to top.
   useEffect(() => {
     if (active) {
@@ -1434,7 +1442,9 @@ export function SidePanels() {
     <>
       <CitizenPanel />
       <GovernmentPanel />
-      <MobilePanel />
+      {/* MobilePanel (bottom sheet + filter chips) intentionally not rendered —
+          mobile now shows only the map plus MobileCTAPills; tapping a hotspot
+          still opens CitizenSheet/GovSheet for issue detail. */}
     </>
   )
 }
