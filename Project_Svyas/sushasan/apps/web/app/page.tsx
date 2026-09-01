@@ -121,7 +121,7 @@ export default function HomePage() {
       {/* Legend */}
       <LegendBar />
 
-      {/* Bottom CTAs — desktop only (mobile uses MobilePanel from SidePanels) */}
+      {/* Bottom CTAs — desktop only */}
       <DesktopCTABar />
 
       {/* Floating "Add a grievance" / "Other features" pills — mobile only */}

@@ -8,7 +8,9 @@ import { FindMyWardButton, FindMyWardIconButton } from './SelectedWardPanel'
  * that update as the user hovers / taps wards on the map.
  *
  * Desktop:  two fixed side panels (hidden on mobile via md:flex)
- * Mobile:   MobilePanel — a bottom sheet anchored above the bottom CTA bar
+ * Mobile:   just the map + MobileCTAPills — MobilePanel (bottom sheet) is
+ *           defined below but intentionally unmounted; kept in case the
+ *           bottom bar comes back, not currently rendered by SidePanels().
  */
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -1440,7 +1442,9 @@ export function SidePanels() {
     <>
       <CitizenPanel />
       <GovernmentPanel />
-      <MobilePanel />
+      {/* MobilePanel (bottom sheet + filter chips) intentionally not rendered —
+          mobile now shows only the map plus MobileCTAPills; tapping a hotspot
+          still opens CitizenSheet/GovSheet for issue detail. */}
     </>
   )
 }
