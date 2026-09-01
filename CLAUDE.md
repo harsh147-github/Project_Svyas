@@ -606,6 +606,7 @@ SERPAPI_KEY=
 - **Deploy constantly.** Every week something new goes live at sushasan.in. Never >7 days without a live update.
 - **Ship narrow, ship well.** Two pilot wards. Top 2 issue types. One closed loop. Then expand.
 - **Truth over comfort.** If a solution is wrong or budget-infeasible, say so clearly.
+- **Auto-ship by default.** Harsh has asked that Claude Code commit, push, and merge to `main` without pausing for approval on routine work in this repo — don't wait to be told to push. This covers ordinary commits/pushes/PR merges; it does not cover destructive git operations (force-push, history rewrite, hard reset) or anything outside this repo's own git history, which still get called out before acting.
 
 ---
 
