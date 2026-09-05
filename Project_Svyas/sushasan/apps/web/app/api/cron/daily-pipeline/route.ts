@@ -191,6 +191,25 @@ function apifyUrl(actor: string, timeoutSec: number) {
   return `https://api.apify.com/v2/acts/${actor}/run-sync-get-dataset-items?timeout=${timeoutSec}`
 }
 
+// Per-run diagnostics, keyed by source label — the actual reason a source
+// returned 0 (HTTP status + a snippet of the response body, or the abort
+// name) used to only ever reach a `console.error` line, invisible without
+// Vercel log access. gmaps and reddit have been 0 on literally every run
+// since by-source instrumentation began (months), and twitter sat at 0 for
+// the same reason for two months before someone diagnosed and fixed its
+// Apify config on 2026-08-22 — the fix each time was mundane (a token/actor
+// config issue) but took that long to even get looked at because nothing
+// short of tailing production logs at the right moment revealed WHY a
+// source was dead. Persisting the actual reason to pipeline_runs.errors
+// turns "gmaps has been 0 forever, no idea why" into a one-query answer.
+const sourceDiagnostics: Record<string, string> = {}
+
+function recordSourceError(label: string, detail: string) {
+  // Keep it short — this lands in a jsonb column read by humans and by
+  // uptime-check's alert email, not a log stream built for pasting a full body.
+  sourceDiagnostics[label] = detail.slice(0, 300)
+}
+
 async function apifyPost(actor: string, token: string, body: unknown, timeoutSec: number): Promise<Array<Record<string, unknown>>> {
   try {
     const res = await fetch(apifyUrl(actor, timeoutSec), {
@@ -199,7 +218,12 @@ async function apifyPost(actor: string, token: string, body: unknown, timeoutSec
       body: JSON.stringify(body),
       signal: AbortSignal.timeout((timeoutSec + 20) * 1000),
     })
-    if (!res.ok) { console.error(`[${actor}] ${res.status}: ${await res.text().catch(() => '')}`); return [] }
+    if (!res.ok) {
+      const bodyText = await res.text().catch(() => '')
+      console.error(`[${actor}] ${res.status}: ${bodyText}`)
+      recordSourceError(actor, `HTTP ${res.status}: ${bodyText}`)
+      return []
+    }
     const items = await res.json()
     // Distinguishes "actor ran and legitimately found nothing" from "actor is
     // broken/renamed/timing out" — both previously looked identical (0 rows) in
@@ -212,6 +236,7 @@ async function apifyPost(actor: string, token: string, body: unknown, timeoutSec
     // actor is broken. That distinction is the whole Phase 8 diagnosis.
     const name = e instanceof Error ? e.name : 'Error'
     console.error(`[${actor}] failed (${name}, timeout was ${timeoutSec}s):`, e)
+    recordSourceError(actor, `${name}: ${e instanceof Error ? e.message : String(e)} (timeout was ${timeoutSec}s)`)
     return []
   }
 }
@@ -331,7 +356,7 @@ async function scrapeTwitter(token: string): Promise<NormPost[]> {
   return out
 }
 
-// ── Google Maps Reviews — runs every other day (high signal, higher cost) ─────
+// ── Google Maps Reviews — runs daily, smaller per-run limit (high signal) ────
 const GMAPS_SEARCHES = [
   // PMC offices — guaranteed complaint context
   'PMC ward office Kondhwa Pune', 'PMC ward office NIBM Pune',
@@ -387,7 +412,7 @@ async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
   return out
 }
 
-// ── Facebook — runs every other day ──────────────────────────────────────────
+// ── Facebook — runs daily, smaller per-run limit ─────────────────────────────
 const FB_URLS = [
   'https://www.facebook.com/PMCPUNE/',
   'https://www.facebook.com/punemirror/',
@@ -459,6 +484,24 @@ async function scrapeReddit(): Promise<NormPost[]> {
   // as before. So registering the Reddit app is a config change, not a code
   // change — nothing here breaks while those vars are unset.
   const token = await redditToken()
+
+  // Confirmed against production: reddit has yielded 0 on literally every
+  // run since by-source instrumentation began (months), always via the
+  // unauthenticated fallback below — REDDIT_CLIENT_ID/SECRET have never
+  // been set. Reddit has blocked unauthenticated datacenter-IP traffic
+  // (which Vercel serverless is) since 2023; running 16 queries against it
+  // anyway just burns the wall-clock budget on requests virtually
+  // guaranteed to fail. Recording this distinctly (not just "0 yield") lets
+  // uptime-check/`/api/health` tell "waiting on Reddit app credentials" —
+  // a known, expected state — apart from "an actor/API that used to work
+  // just broke," which is the actually-alarming case the 3-consecutive-run
+  // alert exists to catch. Registering the Reddit app immediately turns
+  // this back on: this only short-circuits while the credentials are unset.
+  if (!token && !process.env.REDDIT_CLIENT_ID && !process.env.REDDIT_CLIENT_SECRET) {
+    recordSourceError('reddit', 'unconfigured — REDDIT_CLIENT_ID/REDDIT_CLIENT_SECRET not set; Reddit blocks unauthenticated datacenter-IP traffic, so the unauthenticated fallback cannot succeed. Register a "script" app at reddit.com/prefs/apps and set both env vars to enable this source.')
+    return out
+  }
+
   const base = token ? 'https://oauth.reddit.com' : 'https://www.reddit.com'
   const ua = process.env.REDDIT_USER_AGENT ?? 'Sushasan/1.0 (civic; contact@sushaasan.in)'
   if (token) console.log('[reddit] using authenticated OAuth endpoint')
@@ -488,7 +531,11 @@ async function scrapeReddit(): Promise<NormPost[]> {
       // "blocked" — log the real status and body so the next production run
       // self-diagnoses. A 403/429 here means the fix is Reddit OAuth.
       if (!r.ok) {
-        console.error(`[reddit] r/${sub} q="${q}" -> HTTP ${r.status}: ${(await r.text().catch(() => '')).slice(0, 300)}`)
+        const bodyText = (await r.text().catch(() => '')).slice(0, 300)
+        console.error(`[reddit] r/${sub} q="${q}" -> HTTP ${r.status}: ${bodyText}`)
+        // Only keep the first failure of the run as the persisted diagnosis —
+        // 16 near-identical "HTTP 403" lines add nothing a human needs.
+        if (!sourceDiagnostics.reddit) recordSourceError('reddit', `HTTP ${r.status} on r/${sub}: ${bodyText}`)
         continue
       }
       const data = (await r.json()) as { data?: { children?: Array<{ data: Record<string, unknown> }> } }
@@ -516,7 +563,10 @@ async function scrapeReddit(): Promise<NormPost[]> {
         })
       }
       await new Promise((r) => setTimeout(r, 1500))
-    } catch (e) { console.error(`[reddit] ${sub}/${q}:`, e) }
+    } catch (e) {
+      console.error(`[reddit] ${sub}/${q}:`, e)
+      if (!sourceDiagnostics.reddit) recordSourceError('reddit', e instanceof Error ? `${e.name}: ${e.message}` : String(e))
+    }
   }
   return out
 }
@@ -713,14 +763,21 @@ async function runPipelineBody(
   runId: string | undefined,
   startedAt: number,
 ) {
-  // All scrapers in parallel — each returns [] on failure, never throws
-  // Google Maps + Facebook alternate days to spread Apify credit spend evenly
+  // Reset per run — sourceDiagnostics is module-scope so a warm serverless
+  // instance handling a later run doesn't report this run's errors as if
+  // they belonged to a source that actually succeeded this time.
+  for (const k of Object.keys(sourceDiagnostics)) delete sourceDiagnostics[k]
+
+  // All scrapers in parallel — each returns [] on failure, never throws.
+  // Every source runs daily now (Google Maps + Facebook used to alternate
+  // days to spread Apify credit spend; see the day-rotation comments above
+  // scrapeGoogleMaps/scrapeFacebook for why that was dropped).
   const [ig, rd, tw, gm, fb, nw] = await Promise.all([
     scrapeInstagram(token),
     scrapeReddit(),
     scrapeTwitter(token),
-    scrapeGoogleMaps(token),    // [] on off-days (RUN_GMAPS=false)
-    scrapeFacebook(token),      // [] on off-days (RUN_FACEBOOK=false)
+    scrapeGoogleMaps(token),
+    scrapeFacebook(token),
     scrapeNews(),               // free RSS — runs every day
   ])
   console.log(`[pipeline] day=${today()} raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length} nw=${nw.length}`)
@@ -843,14 +900,36 @@ async function runPipelineBody(
   }
 
   if (runId) {
+    // Maps the Apify actor ids used in sourceDiagnostics back to the friendly
+    // labels used everywhere else (by_source, uptime-check, /api/health) —
+    // written out explicitly rather than derived, since actor ids can change
+    // (a renamed/replaced actor) without the source's identity changing.
+    const detailByLabel: Record<string, string> = {}
+    const actorForLabel: Record<string, string> = {
+      instagram: 'apify~instagram-scraper',
+      twitter: 'apidojo~tweet-scraper',
+      gmaps: 'compass~crawler-google-places',
+      facebook: 'apify~facebook-posts-scraper',
+    }
+    for (const [label, actor] of Object.entries(actorForLabel)) {
+      if (sourceDiagnostics[actor]) detailByLabel[label] = sourceDiagnostics[actor]
+    }
+    if (sourceDiagnostics.reddit) detailByLabel.reddit = sourceDiagnostics.reddit
+
     await supabase.from('pipeline_runs').update({
       status: 'completed', phase_completed: 4, posts_scraped: unique.length,
       batches_processed: aggregates.length, completed_at: new Date().toISOString(),
       // Per-source yield, persisted for observability — a source stuck at 0
-      // for days means its actor/API needs attention. `classify` records
-      // whether the classify-worker was actually asked to run this batch.
+      // for days means its actor/API needs attention. `by_source_detail`
+      // carries WHY (HTTP status + a snippet of the response body, or the
+      // abort reason) for any source that failed this run, so diagnosing a
+      // long-dead source (gmaps/reddit have been 0 since instrumentation
+      // began) no longer requires pulling Vercel function logs from the
+      // moment it happened. `classify` records whether the classify-worker
+      // was actually asked to run this batch.
       errors: {
         by_source: { instagram: ig.length, reddit: rd.length, twitter: tw.length, gmaps: gm.length, facebook: fb.length, news: nw.length },
+        by_source_detail: detailByLabel,
         classify: classifyTrigger,
       },
     }).eq('id', runId)

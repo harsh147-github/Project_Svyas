@@ -102,7 +102,36 @@ export async function GET(request: Request) {
   if (!rawPosts24h) problems.push('No raw posts scraped in the last 24h.')
   const r24 = rawPosts24h ?? 0
   const p24 = posts24h ?? 0
-  if (r24 > 0 && p24 < Math.floor(r24 * 0.3)) problems.push(`Classification badly lagging: ${p24}/${r24} in 24h.`)
+  if (r24 > 0 && p24 < Math.floor(r24 * 0.3)) {
+    // A bare "0/16" count tells nobody why — it could be the classify
+    // worker throwing on every post, or (as with p24=0 specifically) the
+    // "sushasan/posts.scraped" event never having been sent at all, which
+    // looks identical from the outside. daily-pipeline already records
+    // exactly which of those happened per run (classifyTrigger), so surface
+    // it here instead of leaving the operator to go dig through logs.
+    const classifyInfo = (lastRun as { errors?: { classify?: { attempted?: boolean; triggered?: boolean; reason?: string } } } | null)?.errors?.classify
+    const cause =
+      classifyInfo && classifyInfo.attempted && !classifyInfo.triggered
+        ? ` (last run: classify event never sent — ${classifyInfo.reason ?? 'unknown reason'})`
+        : classifyInfo && classifyInfo.attempted && classifyInfo.triggered
+          // The event WAS sent successfully (inngest.send() didn't throw) but
+          // classification is still lagging — this is the dangerous case,
+          // because it looks identical to "healthy" from pipeline_runs alone.
+          // The confirmed real-world cause of this shape: Inngest's app sync
+          // goes stale after a redeploy/domain change, so every subsequent
+          // event queues in Inngest Cloud and is never delivered to this
+          // app's /api/inngest endpoint — silently, with no failed job to
+          // alert on. /api/cron/classify-backlog sweeps any raw_posts left
+          // unclassified directly (bypassing Inngest entirely) as a
+          // self-healing backstop, but persistent lag despite it still
+          // firing daily means Inngest itself needs a manual re-sync
+          // (Inngest dashboard → Apps → resync) rather than a code fix.
+          ? ' (last run: classify event WAS sent — if this persists, check Inngest app sync in the Inngest dashboard; classify-backlog is sweeping the gap in the meantime)'
+          : classifyInfo && !classifyInfo.attempted
+            ? ' (last run: no new posts to classify — check an earlier run for the actual cause)'
+            : ''
+    problems.push(`Classification badly lagging: ${p24}/${r24} in 24h.${cause}`)
+  }
   const bySource = (lastRun as { errors?: { by_source?: Record<string, number> } } | null)?.errors?.by_source
   if (bySource) {
     const dead = Object.entries(bySource).filter(([, n]) => !(n > 0)).map(([s]) => s)
@@ -131,14 +160,35 @@ export async function GET(request: Request) {
     .order('triggered_at', { ascending: false })
     .limit(3)
   if (last3Runs && last3Runs.length === 3) {
-    const bySourceRuns = (last3Runs as { errors?: { by_source?: Record<string, number> } }[])
-      .map((r) => r.errors?.by_source)
-      .filter((b): b is Record<string, number> => !!b)
+    type RunErrors = { by_source?: Record<string, number>; by_source_detail?: Record<string, string> }
+    const runErrors = (last3Runs as { errors?: RunErrors }[]).map((r) => r.errors).filter((e): e is RunErrors => !!e)
+    const bySourceRuns = runErrors.map((e) => e.by_source).filter((b): b is Record<string, number> => !!b)
     if (bySourceRuns.length === 3) {
       const allSources = new Set(bySourceRuns.flatMap((b) => Object.keys(b)))
       const deadFor3Days = [...allSources].filter((s) => bySourceRuns.every((b) => !(b[s] > 0)))
       if (deadFor3Days.length > 0) {
-        problems.push(`Source(s) at 0 yield for 3 consecutive runs: ${deadFor3Days.join(', ')} — actor/API likely broken or renamed.`)
+        // by_source_detail (daily-pipeline/route.ts) carries WHY a source
+        // failed — the most recent run's reason, per dead source, so this
+        // alert names the actual cause instead of just the symptom. A
+        // source reporting "unconfigured" (e.g. reddit with no
+        // REDDIT_CLIENT_ID/SECRET) is a known, expected state pending setup
+        // — worth a reminder, but not the same alarm as a source that used
+        // to work and silently broke, which is what "actor/API likely
+        // broken or renamed" is meant to flag.
+        const mostRecentDetail = runErrors[0]?.by_source_detail ?? {}
+        const unconfigured = deadFor3Days.filter((s) => mostRecentDetail[s]?.startsWith('unconfigured'))
+        const trulyDead = deadFor3Days.filter((s) => !unconfigured.includes(s))
+        if (trulyDead.length > 0) {
+          const reasons = trulyDead
+            .map((s) => (mostRecentDetail[s] ? `${s}: ${mostRecentDetail[s]}` : null))
+            .filter((r): r is string => !!r)
+          const reasonSuffix = reasons.length ? ` — ${reasons.join(' | ')}` : ''
+          problems.push(`Source(s) at 0 yield for 3 consecutive runs: ${trulyDead.join(', ')} — actor/API likely broken or renamed.${reasonSuffix}`)
+        }
+        if (unconfigured.length > 0) {
+          const reasons = unconfigured.map((s) => `${s}: ${mostRecentDetail[s]}`)
+          problems.push(`Source(s) never configured (not an outage — needs one-time setup): ${reasons.join(' | ')}`)
+        }
       }
     }
   }

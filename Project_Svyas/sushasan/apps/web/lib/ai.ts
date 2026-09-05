@@ -541,9 +541,17 @@ export async function probeProvider(provider: Provider): Promise<{ ok: true } | 
   if (!key) return { ok: false, error: `${provider}: no API key configured` }
   try {
     await runProvider(provider, {
-      system: 'Reply with exactly one word.',
+      system: 'Reply with exactly one word, nothing else.',
       messages: [{ role: 'user', content: 'ping' }],
-      maxTokens: 8,
+      // Was 8 — too tight a budget for a probe meant to check "can this
+      // provider answer at all". A model that ignores the one-word
+      // instruction (Sarvam/BharatGen are the least steerable providers
+      // here) truncates well before it reaches a real answer, so this
+      // canary was flagging healthy providers as down on stylistic
+      // verbosity rather than an actual outage. 40 tokens is still tiny
+      // next to the retry-continuation ceiling but gives room for a
+      // sentence-shaped reply.
+      maxTokens: 40,
       task: 'assist',
     })
     return { ok: true }

@@ -98,9 +98,14 @@ jobs:
               if (s.last_run_scraped === 0) {
                 fail('Scrapers returned NOTHING on the last run — Apify token/actors likely broken')
               }
-              // Individual dead sources are a warning, not a failure: day-rotated
-              // sources (gmaps/facebook) are legitimately 0 on their off-days.
-              const dead = (s.dead_sources || []).filter((x) => x !== 'gmaps' && x !== 'facebook')
+              // Individual dead sources are a warning, not a failure — a quiet day
+              // for one source is not itself alarming (the 3-consecutive-run check
+              // above is what catches a truly dead actor/API). gmaps and facebook
+              // used to be exempted here because they only ran every other day, so
+              // a 0 on the off-day was expected noise; both now run daily (see
+              // daily-pipeline/route.ts), so that exemption would silently hide a
+              // real dead source instead of warning on it.
+              const dead = s.dead_sources || []
               if (dead.length) console.warn('::warning::Scraper source(s) yielded 0 last run: ' + dead.join(', '))
             }
           }
