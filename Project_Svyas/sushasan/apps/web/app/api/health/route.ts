@@ -163,11 +163,18 @@ export async function GET(req: NextRequest) {
           posts_scraped?: number
           errors?: {
             by_source?: Record<string, number>
+            by_source_detail?: Record<string, string>
             classify?: { attempted: boolean; triggered: boolean; reason?: string }
           }
         }
       | null
     const bySource = lastRunRow?.errors?.by_source ?? null
+    // WHY a dead source failed (HTTP status + response snippet, or abort
+    // reason) — see daily-pipeline/route.ts's sourceDiagnostics. Without
+    // this, a source stuck at 0 for months (gmaps and reddit both were, from
+    // the day this instrumentation shipped) was invisible without pulling
+    // Vercel function logs from the exact moment it last ran.
+    const bySourceDetail = lastRunRow?.errors?.by_source_detail ?? null
     const lastRunScraped = lastRunRow?.posts_scraped ?? null
     const deadSources = bySource
       ? Object.entries(bySource).filter(([, n]) => !(n > 0)).map(([s]) => s)
@@ -211,6 +218,7 @@ export async function GET(req: NextRequest) {
         last_run_scraped: lastRunScraped,
         by_source: bySource,
         dead_sources: deadSources,
+        dead_source_reasons: bySourceDetail,
       },
       dispatch: {
         last_dispatched_at: lastDispatch?.dispatched_at ?? null,

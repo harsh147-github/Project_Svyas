@@ -160,14 +160,22 @@ export async function GET(request: Request) {
     .order('triggered_at', { ascending: false })
     .limit(3)
   if (last3Runs && last3Runs.length === 3) {
-    const bySourceRuns = (last3Runs as { errors?: { by_source?: Record<string, number> } }[])
-      .map((r) => r.errors?.by_source)
-      .filter((b): b is Record<string, number> => !!b)
+    type RunErrors = { by_source?: Record<string, number>; by_source_detail?: Record<string, string> }
+    const runErrors = (last3Runs as { errors?: RunErrors }[]).map((r) => r.errors).filter((e): e is RunErrors => !!e)
+    const bySourceRuns = runErrors.map((e) => e.by_source).filter((b): b is Record<string, number> => !!b)
     if (bySourceRuns.length === 3) {
       const allSources = new Set(bySourceRuns.flatMap((b) => Object.keys(b)))
       const deadFor3Days = [...allSources].filter((s) => bySourceRuns.every((b) => !(b[s] > 0)))
       if (deadFor3Days.length > 0) {
-        problems.push(`Source(s) at 0 yield for 3 consecutive runs: ${deadFor3Days.join(', ')} — actor/API likely broken or renamed.`)
+        // by_source_detail (daily-pipeline/route.ts) carries WHY a source
+        // failed — the most recent run's reason, per dead source, so this
+        // alert names the actual cause instead of just the symptom.
+        const mostRecentDetail = runErrors[0]?.by_source_detail ?? {}
+        const reasons = deadFor3Days
+          .map((s) => (mostRecentDetail[s] ? `${s}: ${mostRecentDetail[s]}` : null))
+          .filter((r): r is string => !!r)
+        const reasonSuffix = reasons.length ? ` — ${reasons.join(' | ')}` : ''
+        problems.push(`Source(s) at 0 yield for 3 consecutive runs: ${deadFor3Days.join(', ')} — actor/API likely broken or renamed.${reasonSuffix}`)
       }
     }
   }
