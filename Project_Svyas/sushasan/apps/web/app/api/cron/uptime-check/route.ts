@@ -102,7 +102,22 @@ export async function GET(request: Request) {
   if (!rawPosts24h) problems.push('No raw posts scraped in the last 24h.')
   const r24 = rawPosts24h ?? 0
   const p24 = posts24h ?? 0
-  if (r24 > 0 && p24 < Math.floor(r24 * 0.3)) problems.push(`Classification badly lagging: ${p24}/${r24} in 24h.`)
+  if (r24 > 0 && p24 < Math.floor(r24 * 0.3)) {
+    // A bare "0/16" count tells nobody why — it could be the classify
+    // worker throwing on every post, or (as with p24=0 specifically) the
+    // "sushasan/posts.scraped" event never having been sent at all, which
+    // looks identical from the outside. daily-pipeline already records
+    // exactly which of those happened per run (classifyTrigger), so surface
+    // it here instead of leaving the operator to go dig through logs.
+    const classifyInfo = (lastRun as { errors?: { classify?: { attempted?: boolean; triggered?: boolean; reason?: string } } } | null)?.errors?.classify
+    const cause =
+      classifyInfo && classifyInfo.attempted && !classifyInfo.triggered
+        ? ` (last run: classify event never sent — ${classifyInfo.reason ?? 'unknown reason'})`
+        : classifyInfo && !classifyInfo.attempted
+          ? ' (last run: no new posts to classify — check an earlier run for the actual cause)'
+          : ''
+    problems.push(`Classification badly lagging: ${p24}/${r24} in 24h.${cause}`)
+  }
   const bySource = (lastRun as { errors?: { by_source?: Record<string, number> } } | null)?.errors?.by_source
   if (bySource) {
     const dead = Object.entries(bySource).filter(([, n]) => !(n > 0)).map(([s]) => s)

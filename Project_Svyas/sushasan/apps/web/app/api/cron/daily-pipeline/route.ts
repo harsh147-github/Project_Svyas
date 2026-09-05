@@ -331,7 +331,7 @@ async function scrapeTwitter(token: string): Promise<NormPost[]> {
   return out
 }
 
-// ── Google Maps Reviews — runs every other day (high signal, higher cost) ─────
+// ── Google Maps Reviews — runs daily, smaller per-run limit (high signal) ────
 const GMAPS_SEARCHES = [
   // PMC offices — guaranteed complaint context
   'PMC ward office Kondhwa Pune', 'PMC ward office NIBM Pune',
@@ -387,7 +387,7 @@ async function scrapeGoogleMaps(token: string): Promise<NormPost[]> {
   return out
 }
 
-// ── Facebook — runs every other day ──────────────────────────────────────────
+// ── Facebook — runs daily, smaller per-run limit ─────────────────────────────
 const FB_URLS = [
   'https://www.facebook.com/PMCPUNE/',
   'https://www.facebook.com/punemirror/',
@@ -713,14 +713,16 @@ async function runPipelineBody(
   runId: string | undefined,
   startedAt: number,
 ) {
-  // All scrapers in parallel — each returns [] on failure, never throws
-  // Google Maps + Facebook alternate days to spread Apify credit spend evenly
+  // All scrapers in parallel — each returns [] on failure, never throws.
+  // Every source runs daily now (Google Maps + Facebook used to alternate
+  // days to spread Apify credit spend; see the day-rotation comments above
+  // scrapeGoogleMaps/scrapeFacebook for why that was dropped).
   const [ig, rd, tw, gm, fb, nw] = await Promise.all([
     scrapeInstagram(token),
     scrapeReddit(),
     scrapeTwitter(token),
-    scrapeGoogleMaps(token),    // [] on off-days (RUN_GMAPS=false)
-    scrapeFacebook(token),      // [] on off-days (RUN_FACEBOOK=false)
+    scrapeGoogleMaps(token),
+    scrapeFacebook(token),
     scrapeNews(),               // free RSS — runs every day
   ])
   console.log(`[pipeline] day=${today()} raw: ig=${ig.length} rd=${rd.length} tw=${tw.length} gm=${gm.length} fb=${fb.length} nw=${nw.length}`)
