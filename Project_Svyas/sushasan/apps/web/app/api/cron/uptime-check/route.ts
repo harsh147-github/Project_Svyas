@@ -113,9 +113,23 @@ export async function GET(request: Request) {
     const cause =
       classifyInfo && classifyInfo.attempted && !classifyInfo.triggered
         ? ` (last run: classify event never sent — ${classifyInfo.reason ?? 'unknown reason'})`
-        : classifyInfo && !classifyInfo.attempted
-          ? ' (last run: no new posts to classify — check an earlier run for the actual cause)'
-          : ''
+        : classifyInfo && classifyInfo.attempted && classifyInfo.triggered
+          // The event WAS sent successfully (inngest.send() didn't throw) but
+          // classification is still lagging — this is the dangerous case,
+          // because it looks identical to "healthy" from pipeline_runs alone.
+          // The confirmed real-world cause of this shape: Inngest's app sync
+          // goes stale after a redeploy/domain change, so every subsequent
+          // event queues in Inngest Cloud and is never delivered to this
+          // app's /api/inngest endpoint — silently, with no failed job to
+          // alert on. /api/cron/classify-backlog sweeps any raw_posts left
+          // unclassified directly (bypassing Inngest entirely) as a
+          // self-healing backstop, but persistent lag despite it still
+          // firing daily means Inngest itself needs a manual re-sync
+          // (Inngest dashboard → Apps → resync) rather than a code fix.
+          ? ' (last run: classify event WAS sent — if this persists, check Inngest app sync in the Inngest dashboard; classify-backlog is sweeping the gap in the meantime)'
+          : classifyInfo && !classifyInfo.attempted
+            ? ' (last run: no new posts to classify — check an earlier run for the actual cause)'
+            : ''
     problems.push(`Classification badly lagging: ${p24}/${r24} in 24h.${cause}`)
   }
   const bySource = (lastRun as { errors?: { by_source?: Record<string, number> } } | null)?.errors?.by_source
