@@ -484,6 +484,24 @@ async function scrapeReddit(): Promise<NormPost[]> {
   // as before. So registering the Reddit app is a config change, not a code
   // change — nothing here breaks while those vars are unset.
   const token = await redditToken()
+
+  // Confirmed against production: reddit has yielded 0 on literally every
+  // run since by-source instrumentation began (months), always via the
+  // unauthenticated fallback below — REDDIT_CLIENT_ID/SECRET have never
+  // been set. Reddit has blocked unauthenticated datacenter-IP traffic
+  // (which Vercel serverless is) since 2023; running 16 queries against it
+  // anyway just burns the wall-clock budget on requests virtually
+  // guaranteed to fail. Recording this distinctly (not just "0 yield") lets
+  // uptime-check/`/api/health` tell "waiting on Reddit app credentials" —
+  // a known, expected state — apart from "an actor/API that used to work
+  // just broke," which is the actually-alarming case the 3-consecutive-run
+  // alert exists to catch. Registering the Reddit app immediately turns
+  // this back on: this only short-circuits while the credentials are unset.
+  if (!token && !process.env.REDDIT_CLIENT_ID && !process.env.REDDIT_CLIENT_SECRET) {
+    recordSourceError('reddit', 'unconfigured — REDDIT_CLIENT_ID/REDDIT_CLIENT_SECRET not set; Reddit blocks unauthenticated datacenter-IP traffic, so the unauthenticated fallback cannot succeed. Register a "script" app at reddit.com/prefs/apps and set both env vars to enable this source.')
+    return out
+  }
+
   const base = token ? 'https://oauth.reddit.com' : 'https://www.reddit.com'
   const ua = process.env.REDDIT_USER_AGENT ?? 'Sushasan/1.0 (civic; contact@sushaasan.in)'
   if (token) console.log('[reddit] using authenticated OAuth endpoint')

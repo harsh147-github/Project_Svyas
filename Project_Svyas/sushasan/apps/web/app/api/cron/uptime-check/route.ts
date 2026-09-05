@@ -169,13 +169,26 @@ export async function GET(request: Request) {
       if (deadFor3Days.length > 0) {
         // by_source_detail (daily-pipeline/route.ts) carries WHY a source
         // failed — the most recent run's reason, per dead source, so this
-        // alert names the actual cause instead of just the symptom.
+        // alert names the actual cause instead of just the symptom. A
+        // source reporting "unconfigured" (e.g. reddit with no
+        // REDDIT_CLIENT_ID/SECRET) is a known, expected state pending setup
+        // — worth a reminder, but not the same alarm as a source that used
+        // to work and silently broke, which is what "actor/API likely
+        // broken or renamed" is meant to flag.
         const mostRecentDetail = runErrors[0]?.by_source_detail ?? {}
-        const reasons = deadFor3Days
-          .map((s) => (mostRecentDetail[s] ? `${s}: ${mostRecentDetail[s]}` : null))
-          .filter((r): r is string => !!r)
-        const reasonSuffix = reasons.length ? ` — ${reasons.join(' | ')}` : ''
-        problems.push(`Source(s) at 0 yield for 3 consecutive runs: ${deadFor3Days.join(', ')} — actor/API likely broken or renamed.${reasonSuffix}`)
+        const unconfigured = deadFor3Days.filter((s) => mostRecentDetail[s]?.startsWith('unconfigured'))
+        const trulyDead = deadFor3Days.filter((s) => !unconfigured.includes(s))
+        if (trulyDead.length > 0) {
+          const reasons = trulyDead
+            .map((s) => (mostRecentDetail[s] ? `${s}: ${mostRecentDetail[s]}` : null))
+            .filter((r): r is string => !!r)
+          const reasonSuffix = reasons.length ? ` — ${reasons.join(' | ')}` : ''
+          problems.push(`Source(s) at 0 yield for 3 consecutive runs: ${trulyDead.join(', ')} — actor/API likely broken or renamed.${reasonSuffix}`)
+        }
+        if (unconfigured.length > 0) {
+          const reasons = unconfigured.map((s) => `${s}: ${mostRecentDetail[s]}`)
+          problems.push(`Source(s) never configured (not an outage — needs one-time setup): ${reasons.join(' | ')}`)
+        }
       }
     }
   }
